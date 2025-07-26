@@ -52,7 +52,16 @@ export function WeightChart(props: WeightChartProps) {
   const data = createMemo(() => {
     const periods = weightsByPeriod()
     if (Object.keys(periods).length === 0) return []
-    return buildChartData(periods)
+
+    // Apply responsive candle limits: 6 on mobile, 12 on desktop
+    const maxCandles = isMobile() ? 6 : 12
+    const periodEntries = Object.entries(periods)
+
+    // Take the last N periods (most recent) to respect candle limits
+    const limitedPeriods = periodEntries.slice(-maxCandles)
+    const limitedPeriodsObj = Object.fromEntries(limitedPeriods)
+
+    return buildChartData(limitedPeriodsObj)
   })
 
   const movingAverage = createMemo(() => {

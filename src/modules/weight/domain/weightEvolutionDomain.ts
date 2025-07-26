@@ -20,6 +20,8 @@ export function getCandlePeriod(type: string): { days: number; count: number } {
       return { days: 1, count: 14 }
     case '30d':
       return { days: 1, count: 30 }
+    case '3m':
+      return { days: 7, count: 12 }
     case '6m':
       return { days: 15, count: 12 }
     case '1y':
@@ -45,6 +47,7 @@ export function groupWeightsByPeriod(
   const sorted = [...weights].sort(
     (a, b) => a.target_timestamp.getTime() - b.target_timestamp.getTime(),
   )
+
   if (type === 'all') {
     const firstObj = sorted[0]
     const lastObj = sorted[sorted.length - 1]
@@ -69,29 +72,39 @@ export function groupWeightsByPeriod(
     }
     return result
   }
+
   const { days, count } = getCandlePeriod(type)
-  const lastObj = sorted[sorted.length - 1]
-  if (!lastObj) return {}
-  const last = lastObj.target_timestamp
+  const firstObj = sorted[0]
+  if (!firstObj) return {}
+  const first = firstObj.target_timestamp
   const result: Record<string, Weight[]> = {}
-  for (let i = count - 1; i >= 0; i--) {
+
+  // Calculate periods forward from earliest date for stability
+  for (let i = 0; i < count; i++) {
     let start: Date, end: Date
+
     if (days === 1) {
-      start = new Date(last)
-      start.setDate(start.getDate() - i)
+      // Daily periods: use calendar day boundaries
+      start = new Date(first)
+      start.setDate(start.getDate() + i)
+      start.setHours(0, 0, 0, 0) // Start of day
       end = new Date(start)
       end.setDate(end.getDate() + 1)
     } else {
-      start = new Date(last)
-      start.setDate(start.getDate() - i * days)
+      // Weekly/monthly periods: use fixed day intervals
+      start = new Date(first)
+      start.setDate(start.getDate() + i * days)
+      start.setHours(0, 0, 0, 0) // Start of day
       end = new Date(start)
       end.setDate(end.getDate() + days)
     }
+
     const key = `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`
     result[key] = sorted.filter(
       (w) => w.target_timestamp >= start && w.target_timestamp < end,
     )
   }
+
   return result
 }
 
