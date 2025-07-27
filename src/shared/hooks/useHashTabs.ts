@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { createEffect, createSignal, onMount } from 'solid-js'
+import { createEffect, createSignal, onCleanup, onMount } from 'solid-js'
 
 import { vibrate } from '~/shared/utils/vibrate'
 
@@ -73,7 +73,7 @@ export function useHashTabs<T extends string>(options: UseHashTabsOptions<T>) {
 
     window.addEventListener('hashchange', handleHashChange)
 
-    return () => window.removeEventListener('hashchange', handleHashChange)
+    onCleanup(() => window.removeEventListener('hashchange', handleHashChange))
   })
 
   return [activeTab, setActiveTab] as const

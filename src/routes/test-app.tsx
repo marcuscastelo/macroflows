@@ -41,7 +41,7 @@ import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
 
 export default function TestApp() {
-  const [, setUnifiedItemEditModalVisible] = createSignal(false)
+  const [_, setUnifiedItemEditModalVisible] = createSignal(false)
 
   const [item] = createSignal<UnifiedItem>(
     createUnifiedItem({

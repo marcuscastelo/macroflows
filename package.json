@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit --skipLibCheck",
     "test": "vitest run",
     "fix": "eslint . --fix --cache >/dev/null 2>&1 || exit 0",
-    "lint": "eslint . --quiet --cache",
+    "lint": "eslint . --cache",
     "flint": "npm run fix && npm run lint",
     "check": "run-p flint type-check test",
     "copilot:check": "npm run check 2>&1 && echo 'COPILOT: All checks passed!' || echo 'COPILOT: Some checks failed!'",
