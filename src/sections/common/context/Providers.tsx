@@ -1,5 +1,6 @@
-import { type JSXElement } from 'solid-js'
+import { createEffect, type JSXElement } from 'solid-js'
 
+import { initializeAuth } from '~/modules/auth/application/auth'
 import { lazyImport } from '~/shared/solid/lazyImport'
 
 const { UnifiedModalContainer } = lazyImport(
@@ -13,6 +14,11 @@ const { DarkToaster } = lazyImport(
 )
 
 export function Providers(props: { children: JSXElement }) {
+  // Initialize authentication system
+  createEffect(() => {
+    initializeAuth()
+  })
+
   return (
     <>
       <DarkToaster />
