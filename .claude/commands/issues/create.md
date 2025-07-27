@@ -16,6 +16,26 @@ Create any type of GitHub issue (bug, feature, improvement, refactor, task, subi
 
 This command creates GitHub issues using the appropriate templates from the docs/ directory. It handles all issue types with proper formatting, labels, and validation.
 
+## Memory Integration
+
+**Context Loading:**
+- Loads `workflow-optimization-patterns` for issue creation best practices
+- References `todo-issue-relationship-pattern` for TODO correlation
+- Uses `issue-creation-workflow-optimization` for template improvements
+- Applies learned patterns from previous issue creations
+
+**Smart Defaults:**
+- Suggests issue types based on code area and context
+- Pre-fills templates with relevant project information
+- Recommends appropriate labels based on module patterns
+- Correlates with existing issues to prevent duplicates
+
+**Workflow Awareness:**
+- Integrates with `/discover-issues` findings for context
+- Maintains consistency with project labeling conventions
+- Applies solo project adaptations automatically
+- Uses session context for better issue correlation
+
 ## What it does
 
 1. **Type Clarification:**

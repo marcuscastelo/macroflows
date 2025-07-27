@@ -12,6 +12,20 @@ Automatically run comprehensive checks and fix all detected issues until the cod
 
 This command performs automated codebase checks using `npm run copilot:check` and fixes all detected issues including linting errors, type errors, and test failures. It continues iterating until all checks pass.
 
+## Memory Integration
+
+**Context Loading:**
+- Loads `workflow-optimization-patterns` for quality standards
+- References project-specific error handling patterns  
+- Uses architectural guidelines for layer violation fixes
+- Applies consistent code style patterns from memory
+
+**Pattern Recognition:**
+- Remembers common error patterns and their solutions
+- Applies learned fixes from previous iterations
+- Uses project-specific conventions (absolute imports, error handling)
+- Maintains consistency with established patterns
+
 ## What it does
 
 1. **Check Execution:**

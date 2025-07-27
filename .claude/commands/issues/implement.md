@@ -15,6 +15,26 @@ Fully implement GitHub issues with autonomous execution after plan approval.
 
 This command provides complete autonomous implementation of GitHub issues. After plan approval, it executes all implementation steps without user interaction until completion or hard blockers.
 
+## Memory Integration
+
+**Context Loading:**
+- Loads `workflow-optimization-patterns` for implementation best practices
+- References `architecture_and_structure` for module organization
+- Uses `development_workflow` for quality gate integration
+- Applies `code_style_and_conventions` for consistent implementation
+
+**Implementation Intelligence:**
+- Recognizes implementation patterns from previous issues
+- Applies architectural guidelines automatically
+- Uses established error handling and validation patterns
+- Maintains consistency with project conventions
+
+**Quality Assurance:**
+- Integrates memory of common implementation pitfalls
+- Applies learned testing patterns for similar issues
+- Uses established commit message patterns
+- Leverages quality validation memories for faster fixes
+
 ## What it does
 
 1. **Preparation Phase:**
