@@ -109,7 +109,7 @@ export function WeightChart(props: WeightChartProps) {
   return (
     <Suspense fallback={<div>Loading chart...</div>}>
       <Chart
-        type="candlestick"
+        type="line"
         options={options()}
         series={series()}
         height={chartHeight()}
