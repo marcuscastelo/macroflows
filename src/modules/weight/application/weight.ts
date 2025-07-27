@@ -7,15 +7,16 @@ import {
   type Weight,
   weightSchema,
 } from '~/modules/weight/domain/weight'
+import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorageRepository'
 import {
   createSupabaseWeightRepository,
   setupWeightRealtimeSubscription,
 } from '~/modules/weight/infrastructure/supabaseWeightRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const weightRepository = createSupabaseWeightRepository()
+const storageRepository = createLocalStorageWeightRepository()
 
 /**
  * Lazy-loading resource for user weights
@@ -29,7 +30,7 @@ export const [
   async (userId: number) => {
     try {
       const weights = await weightRepository.fetchUserWeights(userId)
-      localStorage.setItem(`userWeights-${userId}`, JSON.stringify(weights))
+      storageRepository.setCachedWeights(userId, weights)
       return weights
     } catch (error) {
       errorHandler.error(error)
@@ -39,10 +40,7 @@ export const [
   {
     initialValue: parseWithStack(
       weightSchema.array(),
-      jsonParseWithStack(
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        localStorage.getItem(`userWeights-${currentUserId()}`) || '[]',
-      ) ?? [],
+      storageRepository.getCachedWeights(currentUserId() || 0),
     ),
     ssrLoadFrom: 'initial',
   },
