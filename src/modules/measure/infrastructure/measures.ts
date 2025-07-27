@@ -15,7 +15,7 @@ import {
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 const TABLE = 'body_measures'
 

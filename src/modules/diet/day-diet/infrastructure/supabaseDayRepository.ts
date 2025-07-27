@@ -15,8 +15,9 @@ import {
   createErrorHandler,
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
-import supabase, {
+import {
   registerSubapabaseRealtimeCallback,
+  supabase,
 } from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_DAYS = 'days'

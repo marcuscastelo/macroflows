@@ -7,7 +7,7 @@ import type {
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import type { AuthRepository } from '~/modules/auth/domain/authRepository'
-import supabase from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
   if (!user) return null
@@ -18,15 +18,9 @@ function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
     emailConfirmedAt: user.email_confirmed_at ?? undefined,
     lastSignInAt: user.last_sign_in_at ?? undefined,
     createdAt:
-      user.created_at !== null &&
-      user.created_at !== undefined &&
-      user.created_at !== ''
-        ? user.created_at
-        : new Date().toISOString(),
+      user.created_at !== '' ? user.created_at : new Date().toISOString(),
     updatedAt:
-      user.updated_at !== null &&
-      user.updated_at !== undefined &&
-      user.updated_at !== ''
+      user.updated_at !== undefined && user.updated_at !== ''
         ? user.updated_at
         : new Date().toISOString(),
     userMetadata: user.user_metadata,
@@ -50,15 +44,11 @@ function mapSupabaseSessionToAuthSession(
       email_confirmed_at: session.user.email_confirmed_at ?? undefined,
       last_sign_in_at: session.user.last_sign_in_at ?? undefined,
       created_at:
-        session.user.created_at !== null &&
-        session.user.created_at !== undefined &&
         session.user.created_at !== ''
           ? session.user.created_at
           : new Date().toISOString(),
       updated_at:
-        session.user.updated_at !== null &&
-        session.user.updated_at !== undefined &&
-        session.user.updated_at !== ''
+        session.user.updated_at !== undefined && session.user.updated_at !== ''
           ? session.user.updated_at
           : new Date().toISOString(),
       user_metadata: session.user.user_metadata,

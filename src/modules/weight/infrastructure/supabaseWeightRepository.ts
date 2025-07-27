@@ -10,8 +10,9 @@ import {
   createUpdateWeightDAOFromWeight,
 } from '~/modules/weight/infrastructure/weightDAO'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase, {
+import {
   registerSubapabaseRealtimeCallback,
+  supabase,
 } from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_WEIGHTS = 'weights'

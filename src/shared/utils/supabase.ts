@@ -29,4 +29,3 @@ export function registerSubapabaseRealtimeCallback(
     .on('postgres_changes', { event: '*', schema: 'public', table }, callback)
     .subscribe()
 }
-export default supabase
