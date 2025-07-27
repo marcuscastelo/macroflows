@@ -5,6 +5,7 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 ## Command Categories
 
 ### Workflow Commands (`workflow/`)
+- **`/workflow-context`** - Manage shared context between commands and agents
 - **`/commit`** - Generate conventional commit messages and execute commits
 - **`/pull-request`** (`/pr`) - Create pull requests with proper formatting and metadata
 
