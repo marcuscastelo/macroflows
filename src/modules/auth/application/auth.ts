@@ -9,6 +9,9 @@ import type {
 import type { AuthRepository } from '~/modules/auth/domain/authRepository'
 import { createSupabaseAuthRepository } from '~/modules/auth/infrastructure/supabaseAuthRepository'
 import { logError } from '~/shared/error/errorHandler'
+import { createDebug } from '~/shared/utils/createDebug'
+
+const debug = createDebug()
 
 // Auth state signals
 const [authState, setAuthState] = createSignal<AuthState>({
@@ -70,6 +73,7 @@ export function initializeAuth(): void {
 async function loadInitialSession(): Promise<void> {
   try {
     const session = await authRepository.getSession()
+    debug(`loadInitialSession session:`, session)
     setAuthState((prev) => ({
       ...prev,
       session,
@@ -85,7 +89,7 @@ async function loadInitialSession(): Promise<void> {
             appMetadata: session.user.app_metadata,
           }
         : null,
-      isAuthenticated: !!session,
+      isAuthenticated: session !== null,
       isLoading: false,
     }))
   } catch (e) {

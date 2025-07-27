@@ -1,5 +1,12 @@
-import { createEffect, createSignal, untrack } from 'solid-js'
+import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
+import {
+  authState,
+  getCurrentUser,
+  isAuthenticated,
+  signIn,
+  signOut,
+} from '~/modules/auth/application/auth'
 import {
   setTargetDay,
   targetDay,
@@ -39,6 +46,49 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
+
+function GoogleLoginButton() {
+  const handleLogin = async () => {
+    try {
+      await signIn({ provider: 'google' })
+    } catch (error) {
+      console.error('Login failed:', error)
+    }
+  }
+
+  return (
+    <button class="btn btn-primary" onClick={handleLogin}>
+      Login with Google (Test) [{getCurrentUser()?.id ?? 'not logged in'}]
+    </button>
+  )
+}
+
+function LogoutButton() {
+  const handleLogout = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
+  return (
+    <button class="btn btn-secondary" onClick={handleLogout}>
+      Logout
+    </button>
+  )
+}
+
+function UserInfo() {
+  return (
+    <Show when={isAuthenticated} fallback="not auth">
+      <div class="p-4 border rounded-md">
+        <p>User: {getCurrentUser()?.email}</p>
+        <LogoutButton />
+      </div>
+    </Show>
+  )
+}
 
 export default function TestApp() {
   const [_, setUnifiedItemEditModalVisible] = createSignal(false)
@@ -123,6 +173,15 @@ export default function TestApp() {
     <>
       <Providers>
         <DayMacros />
+
+        {/* Auth */}
+        <details open>
+          <summary class="text-lg cursor-pointer select-none">Auth</summary>
+          <div class="pl-4 flex flex-col gap-2">
+            <GoogleLoginButton />
+            <UserInfo />
+          </div>
+        </details>
 
         {/* Modals */}
         <details open>

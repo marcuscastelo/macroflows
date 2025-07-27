@@ -7,7 +7,10 @@ import type {
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import type { AuthRepository } from '~/modules/auth/domain/authRepository'
+import { createDebug } from '~/shared/utils/createDebug'
 import { supabase } from '~/shared/utils/supabase'
+
+const debug = createDebug()
 
 function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
   if (!user) return null
@@ -31,7 +34,7 @@ function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
 function mapSupabaseSessionToAuthSession(
   session: Session | null,
 ): AuthSession | null {
-  if (!session) return null
+  if (session === null) return null
 
   return {
     access_token: session.access_token,
@@ -61,6 +64,7 @@ export function createSupabaseAuthRepository(): AuthRepository {
   return {
     async getSession(): Promise<AuthSession | null> {
       const { data, error } = await supabase.auth.getSession()
+      debug(`getSession: data:`, data, `error:`, error)
       if (error !== null) {
         throw new Error('Failed to get session', { cause: error })
       }
