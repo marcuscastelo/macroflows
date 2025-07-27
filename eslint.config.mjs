@@ -52,11 +52,15 @@ export default [
       'no-restricted-imports': [
         'error',
         {
-          patterns: ['../*', './*'],
+          patterns: ['../*', './/*'],
           paths: [
             {
               name: 'zod',
               message: "Please use 'zod/v4' instead.",
+            },
+            {
+              name: '~/shared/utils/supabase',
+              message: "Direct import of '~/shared/utils/supabase' is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.",
             },
           ],
         },
@@ -143,6 +147,25 @@ export default [
           project: ['./tsconfig.json'],
         },
       },
+    },
+  },
+  {
+    // Allow supabase imports only in infrastructure layer
+    files: ['**/infrastructure/**/*.ts', '**/infrastructure/**/*.tsx', 'src/shared/utils/supabase.ts', 'vitest.setup.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['../*', './/*'],
+          paths: [
+            {
+              name: 'zod',
+              message: "Please use 'zod/v4' instead.",
+            },
+            // Note: supabase restriction removed for infrastructure layer
+          ],
+        },
+      ],
     },
   },
   {
