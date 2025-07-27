@@ -13,6 +13,7 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 - **`/review`** - Comprehensive code review for PR changes
 
 ### Issue Management (`issues/`)
+- **`/discover-issues`** - Automated discovery of existing issues and TODO patterns
 - **`/create-issue`** - Create GitHub issues using proper templates
 - **`/implement`** - Autonomous issue implementation after plan approval
 - **`/breakdown`** - Analyze issues to determine if they should be split into subissues
@@ -30,7 +31,8 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 ```bash
 # Start development
 /fix                    # Ensure clean codebase
-/create-issue feature   # Create feature request
+/discover-issues        # Check existing issues and TODOs
+/create-issue feature   # Create feature request (if needed)
 /implement 123          # Implement issue #123
 /commit                 # Generate and execute commit
 /pull-request          # Create PR for review
@@ -44,6 +46,7 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 
 ### Project Management
 ```bash
+/discover-issues       # Automated discovery of existing issues and TODOs
 /create-issue bug      # Report and create bug issue
 /create-issue refactor # Create refactoring task
 /breakdown 123         # Analyze issue #123 for potential breakdown
