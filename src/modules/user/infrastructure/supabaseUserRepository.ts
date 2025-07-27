@@ -8,7 +8,9 @@ import {
 } from '~/modules/user/infrastructure/userDAO'
 import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase from '~/shared/utils/supabase'
+import supabase, {
+  registerSubapabaseRealtimeCallback,
+} from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_USERS = 'users'
 
@@ -20,6 +22,14 @@ export function createSupabaseUserRepository(): UserRepository {
     updateUser,
     deleteUser,
   }
+}
+
+/**
+ * Sets up realtime subscription for user changes
+ * @param onUsersChange - Callback function to call when data changes
+ */
+export function setupUserRealtimeSubscription(onUsersChange: () => void): void {
+  registerSubapabaseRealtimeCallback(SUPABASE_TABLE_USERS, onUsersChange)
 }
 
 const fetchUsers = async (): Promise<User[]> => {

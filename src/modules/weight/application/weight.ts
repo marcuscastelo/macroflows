@@ -9,12 +9,11 @@ import {
 } from '~/modules/weight/domain/weight'
 import {
   createSupabaseWeightRepository,
-  SUPABASE_TABLE_WEIGHTS,
+  setupWeightRealtimeSubscription,
 } from '~/modules/weight/infrastructure/supabaseWeightRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
 
 const weightRepository = createSupabaseWeightRepository()
 
@@ -52,7 +51,7 @@ export const [
 /**
  * When a realtime event occurs, refetch user weights
  */
-registerSubapabaseRealtimeCallback(SUPABASE_TABLE_WEIGHTS, () => {
+setupWeightRealtimeSubscription(() => {
   void refetchUserWeights()
 })
 

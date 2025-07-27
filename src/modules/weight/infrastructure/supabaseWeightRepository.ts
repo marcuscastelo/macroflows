@@ -10,7 +10,9 @@ import {
   createUpdateWeightDAOFromWeight,
 } from '~/modules/weight/infrastructure/weightDAO'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase from '~/shared/utils/supabase'
+import supabase, {
+  registerSubapabaseRealtimeCallback,
+} from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_WEIGHTS = 'weights'
 
@@ -21,6 +23,16 @@ export function createSupabaseWeightRepository(): WeightRepository {
     updateWeight,
     deleteWeight,
   }
+}
+
+/**
+ * Sets up realtime subscription for weight changes
+ * @param onWeightsChange - Callback function to call when data changes
+ */
+export function setupWeightRealtimeSubscription(
+  onWeightsChange: () => void,
+): void {
+  registerSubapabaseRealtimeCallback(SUPABASE_TABLE_WEIGHTS, onWeightsChange)
 }
 
 async function fetchUserWeights(userId: User['id']) {
