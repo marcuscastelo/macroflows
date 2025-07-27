@@ -12,10 +12,9 @@ import {
 } from '~/modules/user/infrastructure/localStorageUserRepository'
 import {
   createSupabaseUserRepository,
-  SUPABASE_TABLE_USERS,
+  setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabaseUserRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
 
 const userRepository = createSupabaseUserRepository()
 
@@ -56,7 +55,7 @@ createEffect(() => {
 /**
  * When realtime event occurs, fetch all users again
  */
-registerSubapabaseRealtimeCallback(SUPABASE_TABLE_USERS, () => {
+setupUserRealtimeSubscription(() => {
   bootstrap()
 })
 

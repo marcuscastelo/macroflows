@@ -6,14 +6,13 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import {
   createSupabaseDayRepository,
-  SUPABASE_TABLE_DAYS,
+  setupDayDietRealtimeSubscription,
 } from '~/modules/diet/day-diet/infrastructure/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
 
 const dayRepository = createSupabaseDayRepository()
 const errorHandler = createErrorHandler('application', 'DayDiet')
@@ -124,8 +123,7 @@ createEffect(() => {
 /**
  * When realtime day diets change, update day diets for current user
  */
-// TODO: Move all registerSubapabaseRealtimeCallback to infra layer
-registerSubapabaseRealtimeCallback(SUPABASE_TABLE_DAYS, () => {
+setupDayDietRealtimeSubscription(() => {
   bootstrap()
 })
 

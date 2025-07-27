@@ -15,7 +15,9 @@ import {
   createErrorHandler,
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
-import supabase from '~/shared/utils/supabase'
+import supabase, {
+  registerSubapabaseRealtimeCallback,
+} from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_DAYS = 'days'
 
@@ -30,6 +32,16 @@ export function createSupabaseDayRepository(): DayRepository {
     updateDayDiet,
     deleteDayDiet,
   }
+}
+
+/**
+ * Sets up realtime subscription for day diet changes
+ * @param onDayDietsChange - Callback function to call when data changes
+ */
+export function setupDayDietRealtimeSubscription(
+  onDayDietsChange: () => void,
+): void {
+  registerSubapabaseRealtimeCallback(SUPABASE_TABLE_DAYS, onDayDietsChange)
 }
 
 /**

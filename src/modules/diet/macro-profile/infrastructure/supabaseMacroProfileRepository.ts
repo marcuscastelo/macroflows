@@ -12,7 +12,9 @@ import {
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase from '~/shared/utils/supabase'
+import supabase, {
+  registerSubapabaseRealtimeCallback,
+} from '~/shared/utils/supabase'
 
 /**
  * Supabase table name for macro profiles.
@@ -32,6 +34,19 @@ export function createSupabaseMacroProfileRepository(): MacroProfileRepository {
     updateMacroProfile,
     deleteMacroProfile,
   }
+}
+
+/**
+ * Sets up realtime subscription for macro profile changes
+ * @param onMacroProfilesChange - Callback function to call when data changes
+ */
+export function setupMacroProfileRealtimeSubscription(
+  onMacroProfilesChange: () => void,
+): void {
+  registerSubapabaseRealtimeCallback(
+    SUPABASE_TABLE_MACRO_PROFILES,
+    onMacroProfilesChange,
+  )
 }
 
 /**

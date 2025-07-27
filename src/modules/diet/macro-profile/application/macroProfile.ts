@@ -6,13 +6,12 @@ import {
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   createSupabaseMacroProfileRepository,
-  SUPABASE_TABLE_MACRO_PROFILES,
+  setupMacroProfileRealtimeSubscription,
 } from '~/modules/diet/macro-profile/infrastructure/supabaseMacroProfileRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { getLatestMacroProfile } from '~/shared/utils/macroProfileUtils'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
 
 const macroProfileRepository = createSupabaseMacroProfileRepository()
 
@@ -28,7 +27,7 @@ export const latestMacroProfile = () =>
 export const previousMacroProfile = () =>
   getLatestMacroProfile(userMacroProfiles.latest, 1)
 
-registerSubapabaseRealtimeCallback(SUPABASE_TABLE_MACRO_PROFILES, () => {
+setupMacroProfileRealtimeSubscription(() => {
   void refetchUserMacroProfiles()
 })
 
