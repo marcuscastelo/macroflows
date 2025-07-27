@@ -5,6 +5,7 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 ## Command Categories
 
 ### Workflow Commands (`workflow/`)
+- **`/orchestrate`** - Intelligent multi-step workflow automation
 - **`/workflow-context`** - Manage shared context between commands and agents
 - **`/commit`** - Generate conventional commit messages and execute commits
 - **`/pull-request`** (`/pr`) - Create pull requests with proper formatting and metadata
@@ -29,8 +30,18 @@ This directory contains Claude Code commands adapted from GitHub Copilot prompts
 ## Quick Reference
 
 ### Daily Workflow
+
+#### Orchestrated Workflow (Recommended)
 ```bash
-# Start development
+# Automated end-to-end workflows
+/orchestrate feature-development "dark mode toggle"  # Complete feature cycle
+/orchestrate issue-resolution 123                    # End-to-end issue implementation
+/orchestrate bug-investigation "login error"         # Bug discovery and resolution
+```
+
+#### Manual Step-by-Step Workflow
+```bash
+# Traditional manual approach
 /fix                    # Ensure clean codebase
 /discover-issues        # Check existing issues and TODOs
 /create-issue feature   # Create feature request (if needed)
