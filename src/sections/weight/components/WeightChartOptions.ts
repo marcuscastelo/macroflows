@@ -1,7 +1,9 @@
+import { type ApexOptions } from 'apexcharts'
+
 import ptBrLocale from '~/assets/locales/apex/pt-br.json'
 import { getYAxisConfig } from '~/modules/weight/application/weightChartUtils'
 import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
 import { WeightChartTooltip } from '~/sections/weight/components/WeightChartTooltip'
 
 /**
@@ -12,15 +14,13 @@ import { WeightChartTooltip } from '~/sections/weight/components/WeightChartTool
 export function buildWeightChartOptions({
   min,
   max,
-  type,
-  weights,
+  weightsByPeriod,
   polishedData,
   isMobile = false,
-}: {
+}: ApexOptions & {
   min: number
   max: number
-  type: string
-  weights: readonly Weight[]
+  weightsByPeriod: GroupedWeightsByPeriod
   polishedData: readonly ({
     movingAverage: number
     desiredWeight: number
@@ -89,10 +89,9 @@ export function buildWeightChartOptions({
         WeightChartTooltip({
           dataPointIndex,
           w,
-          weights,
-          type,
           polishedData,
+          weightsByPeriod,
         }),
     },
-  }
+  } satisfies ApexOptions
 }

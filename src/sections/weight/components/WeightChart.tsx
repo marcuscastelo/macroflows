@@ -46,12 +46,13 @@ export function WeightChart(props: WeightChartProps) {
   })
 
   const weightsByPeriod = createMemo(() => {
-    return groupWeightsByPeriod(props.weights.latest, props.type)
+    return groupWeightsByPeriod(props.weights.latest, props.type, isMobile())
   })
 
   const data = createMemo(() => {
     const periods = weightsByPeriod()
     if (Object.keys(periods).length === 0) return []
+
     return buildChartData(periods)
   })
 
@@ -95,21 +96,20 @@ export function WeightChart(props: WeightChartProps) {
     return buildWeightChartOptions({
       min,
       max,
-      type: props.type,
-      weights: props.weights.latest,
       polishedData: polishedData(),
       isMobile: isMobile(),
+      weightsByPeriod: weightsByPeriod(),
     })
   })
 
   const series = createMemo(() => buildWeightChartSeries(polishedData()))
 
-  const chartHeight = () => (isMobile() ? 400 : 600)
+  const chartHeight = () => (isMobile() ? 500 : 600)
 
   return (
     <Suspense fallback={<div>Loading chart...</div>}>
       <Chart
-        type="candlestick"
+        type="line"
         options={options()}
         series={series()}
         height={chartHeight()}

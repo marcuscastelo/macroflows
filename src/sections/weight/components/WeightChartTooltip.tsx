@@ -1,6 +1,6 @@
 import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
 import { type Weight } from '~/modules/weight/domain/weight'
-import { groupWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
+import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
 import { calculateWeightProgress } from '~/shared/utils/weightUtils'
 
 /**
@@ -11,18 +11,16 @@ import { calculateWeightProgress } from '~/shared/utils/weightUtils'
 export function WeightChartTooltip({
   dataPointIndex,
   w,
-  weights,
-  type,
   polishedData,
+  weightsByPeriod,
 }: {
   dataPointIndex: number
   w: unknown
-  weights: readonly Weight[]
-  type: string
   polishedData: readonly ({
     movingAverage: number
     desiredWeight: number
   } & WeightChartOHLC)[]
+  weightsByPeriod: GroupedWeightsByPeriod
 }): string {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const chartW = w as {
@@ -75,7 +73,6 @@ export function WeightChartTooltip({
   ) {
     const idx = polishedData.findIndex((w) => w.date === point.x)
     if (idx !== -1) {
-      const weightsByPeriod = groupWeightsByPeriod(weights, type)
       const periodKeys = Object.keys(weightsByPeriod)
       const periodKey = periodKeys[idx]
       const periodWeights: readonly Weight[] =
