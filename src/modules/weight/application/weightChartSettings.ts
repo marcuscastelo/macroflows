@@ -12,6 +12,7 @@ export const WEIGHT_CHART_OPTIONS = [
   { value: '7d', label: 'Últimos 7 dias' },
   { value: '14d', label: 'Últimos 14 dias' },
   { value: '30d', label: 'Últimos 30 dias' },
+  { value: '3m', label: 'Últimos 3 meses' },
   { value: '6m', label: 'Últimos 6 meses' },
   { value: '1y', label: 'Último ano' },
   { value: 'all', label: 'Todo o período' },

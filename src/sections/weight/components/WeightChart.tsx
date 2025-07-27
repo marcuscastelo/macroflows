@@ -46,22 +46,14 @@ export function WeightChart(props: WeightChartProps) {
   })
 
   const weightsByPeriod = createMemo(() => {
-    return groupWeightsByPeriod(props.weights.latest, props.type)
+    return groupWeightsByPeriod(props.weights.latest, props.type, isMobile())
   })
 
   const data = createMemo(() => {
     const periods = weightsByPeriod()
     if (Object.keys(periods).length === 0) return []
 
-    // Apply responsive candle limits: 6 on mobile, 12 on desktop
-    const maxCandles = isMobile() ? 6 : 12
-    const periodEntries = Object.entries(periods)
-
-    // Take the last N periods (most recent) to respect candle limits
-    const limitedPeriods = periodEntries.slice(-maxCandles)
-    const limitedPeriodsObj = Object.fromEntries(limitedPeriods)
-
-    return buildChartData(limitedPeriodsObj)
+    return buildChartData(periods)
   })
 
   const movingAverage = createMemo(() => {
@@ -104,16 +96,15 @@ export function WeightChart(props: WeightChartProps) {
     return buildWeightChartOptions({
       min,
       max,
-      type: props.type,
-      weights: props.weights.latest,
       polishedData: polishedData(),
       isMobile: isMobile(),
+      weightsByPeriod: weightsByPeriod(),
     })
   })
 
   const series = createMemo(() => buildWeightChartSeries(polishedData()))
 
-  const chartHeight = () => (isMobile() ? 400 : 600)
+  const chartHeight = () => (isMobile() ? 500 : 600)
 
   return (
     <Suspense fallback={<div>Loading chart...</div>}>

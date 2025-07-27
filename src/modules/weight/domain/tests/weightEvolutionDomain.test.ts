@@ -30,24 +30,24 @@ function createTestWeights(startDate: string, weights: number[]): Weight[] {
 describe('Weight Evolution Domain', () => {
   describe('getCandlePeriod', () => {
     it('should return correct period config for daily periods', () => {
-      expect(getCandlePeriod('7d')).toEqual({ days: 1, count: 7 })
-      expect(getCandlePeriod('14d')).toEqual({ days: 1, count: 14 })
-      expect(getCandlePeriod('30d')).toEqual({ days: 1, count: 30 })
+      expect(getCandlePeriod('7d', false)).toEqual({ days: 1, count: 7 })
+      expect(getCandlePeriod('14d', false)).toEqual({ days: 1, count: 14 })
+      expect(getCandlePeriod('30d', false)).toEqual({ days: 1, count: 30 })
     })
 
     it('should return correct period config for new 3m period', () => {
-      expect(getCandlePeriod('3m')).toEqual({ days: 7, count: 12 })
+      expect(getCandlePeriod('3m', false)).toEqual({ days: 7, count: 12 })
     })
 
     it('should return correct period config for longer periods', () => {
-      expect(getCandlePeriod('6m')).toEqual({ days: 15, count: 12 })
-      expect(getCandlePeriod('1y')).toEqual({ days: 30, count: 12 })
-      expect(getCandlePeriod('all')).toEqual({ days: 0, count: 12 })
+      expect(getCandlePeriod('6m', false)).toEqual({ days: 15, count: 12 })
+      expect(getCandlePeriod('1y', false)).toEqual({ days: 30, count: 12 })
+      expect(getCandlePeriod('all', false)).toEqual({ days: 0, count: 12 })
     })
 
     it('should return default period for unknown types', () => {
-      expect(getCandlePeriod('unknown')).toEqual({ days: 1, count: 7 })
-      expect(getCandlePeriod('')).toEqual({ days: 1, count: 7 })
+      expect(getCandlePeriod('unknown', false)).toEqual({ days: 1, count: 7 })
+      expect(getCandlePeriod('', false)).toEqual({ days: 1, count: 7 })
     })
   })
 
@@ -55,12 +55,12 @@ describe('Weight Evolution Domain', () => {
     it('should maintain stable periods when new data is added (7d)', () => {
       // Initial data: weights on days 1, 2, 3
       const initialWeights = createTestWeights('2024-01-01', [70, 71, 72])
-      const initialPeriods = groupWeightsByPeriod(initialWeights, '7d')
+      const initialPeriods = groupWeightsByPeriod(initialWeights, '7d', false)
 
       // Add new weight on day 4
       const newWeight = createTestWeights('2024-01-04', [73])[0]!
       const updatedWeights = [...initialWeights, newWeight]
-      const updatedPeriods = groupWeightsByPeriod(updatedWeights, '7d')
+      const updatedPeriods = groupWeightsByPeriod(updatedWeights, '7d', false)
 
       // Historical periods should remain unchanged
       const initialKeys = Object.keys(initialPeriods).slice(0, 3)
@@ -77,12 +77,12 @@ describe('Weight Evolution Domain', () => {
         '2024-01-01',
         [70, 71, 72, 73, 74],
       )
-      const initialPeriods = groupWeightsByPeriod(initialWeights, '3m')
+      const initialPeriods = groupWeightsByPeriod(initialWeights, '3m', false)
 
       // Add new weight 2 weeks later
       const additionalWeights = createTestWeights('2024-01-15', [75, 76])
       const updatedWeights = [...initialWeights, ...additionalWeights]
-      const updatedPeriods = groupWeightsByPeriod(updatedWeights, '3m')
+      const updatedPeriods = groupWeightsByPeriod(updatedWeights, '3m', false)
 
       // First few periods should remain identical
       const initialEntries = Object.entries(initialPeriods).slice(0, 2)
@@ -93,7 +93,7 @@ describe('Weight Evolution Domain', () => {
 
     it('should use calendar day boundaries for daily periods', () => {
       const weights = createTestWeights('2024-01-01T10:30:00Z', [70, 71])
-      const periods = groupWeightsByPeriod(weights, '7d')
+      const periods = groupWeightsByPeriod(weights, '7d', false)
 
       // Periods should start at 00:00:00 regardless of input time
       const periodKeys = Object.keys(periods)
@@ -107,8 +107,8 @@ describe('Weight Evolution Domain', () => {
 
     it('should create fixed intervals for weekly/monthly periods', () => {
       const weights = createTestWeights('2024-01-01', [70, 71, 72, 73, 74, 75])
-      const periods3m = groupWeightsByPeriod(weights, '3m')
-      const periods6m = groupWeightsByPeriod(weights, '6m')
+      const periods3m = groupWeightsByPeriod(weights, '3m', false)
+      const periods6m = groupWeightsByPeriod(weights, '6m', false)
 
       // Should create appropriate number of periods
       expect(Object.keys(periods3m).length).toBeLessThanOrEqual(12)
@@ -116,13 +116,13 @@ describe('Weight Evolution Domain', () => {
     })
 
     it('should handle empty weights array', () => {
-      const periods = groupWeightsByPeriod([], '7d')
+      const periods = groupWeightsByPeriod([], '7d', false)
       expect(periods).toEqual({})
     })
 
     it('should handle single weight entry', () => {
       const weights = createTestWeights('2024-01-01', [70])
-      const periods = groupWeightsByPeriod(weights, '7d')
+      const periods = groupWeightsByPeriod(weights, '7d', false)
 
       expect(Object.keys(periods).length).toBeGreaterThan(0)
       const firstPeriod = Object.values(periods)[0]!
@@ -133,14 +133,14 @@ describe('Weight Evolution Domain', () => {
     it('should maintain period stability across multiple additions', () => {
       // Start with 3 weights
       let weights = createTestWeights('2024-01-01', [70, 71, 72])
-      let periods = groupWeightsByPeriod(weights, '7d')
+      let periods = groupWeightsByPeriod(weights, '7d', false)
       const originalFirstPeriod = periods[Object.keys(periods)[0]!]!
 
       // Add weights one by one and verify first period stays stable
       for (let i = 4; i <= 10; i++) {
         const newWeight = createTestWeights(`2024-01-0${i}`, [70 + i])[0]!
         weights = [...weights, newWeight]
-        periods = groupWeightsByPeriod(weights, '7d')
+        periods = groupWeightsByPeriod(weights, '7d', false)
 
         const currentFirstPeriod = periods[Object.keys(periods)[0]!]!
         expect(currentFirstPeriod).toEqual(originalFirstPeriod)
@@ -149,7 +149,7 @@ describe('Weight Evolution Domain', () => {
 
     it('should keep "all" period logic unchanged (baseline)', () => {
       const weights = createTestWeights('2024-01-01', [70, 71, 72, 73])
-      const periods = groupWeightsByPeriod(weights, 'all')
+      const periods = groupWeightsByPeriod(weights, 'all', false)
 
       // Should create 12 periods for 'all' type
       expect(Object.keys(periods).length).toBe(12)
@@ -162,7 +162,7 @@ describe('Weight Evolution Domain', () => {
       const weight3 = createTestWeights('2024-01-02', [71])[0]!
 
       const unorderedWeights = [weight1, weight2, weight3]
-      const periods = groupWeightsByPeriod(unorderedWeights, '7d')
+      const periods = groupWeightsByPeriod(unorderedWeights, '7d', false)
 
       // Should process correctly regardless of input order
       expect(Object.keys(periods).length).toBeGreaterThan(0)
@@ -176,7 +176,7 @@ describe('Weight Evolution Domain', () => {
   describe('groupWeightsByPeriod - Data Integrity', () => {
     it('should not lose any weight data when grouping', () => {
       const weights = createTestWeights('2024-01-01', [70, 71, 72, 73, 74])
-      const periods = groupWeightsByPeriod(weights, '7d')
+      const periods = groupWeightsByPeriod(weights, '7d', false)
 
       // Count total weights in all periods
       const totalWeightsInPeriods = Object.values(periods).flat().length
@@ -189,7 +189,7 @@ describe('Weight Evolution Domain', () => {
         '2024-01-01',
         [70.5, 71.2, 72.8],
       )
-      const periods = groupWeightsByPeriod(originalWeights, '7d')
+      const periods = groupWeightsByPeriod(originalWeights, '7d', false)
 
       // All weights should maintain their original values
       const allPeriodsWeights = Object.values(periods).flat()
@@ -213,7 +213,7 @@ describe('Weight Evolution Domain', () => {
         ),
       ]
 
-      const periods = groupWeightsByPeriod(weights, '7d')
+      const periods = groupWeightsByPeriod(weights, '7d', false)
       const firstPeriodWeights = Object.values(periods)[0]!
 
       // Both weights should be in the same period

@@ -12,24 +12,34 @@ export type GroupedWeightsByPeriod = Record<string, Weight[]>
  * @param type - Chart type string
  * @returns Object with days and count
  */
-export function getCandlePeriod(type: string): { days: number; count: number } {
-  switch (type) {
-    case '7d':
-      return { days: 1, count: 7 }
-    case '14d':
-      return { days: 1, count: 14 }
-    case '30d':
-      return { days: 1, count: 30 }
-    case '3m':
-      return { days: 7, count: 12 }
-    case '6m':
-      return { days: 15, count: 12 }
-    case '1y':
-      return { days: 30, count: 12 }
-    case 'all':
-      return { days: 0, count: 12 }
-    default:
-      return { days: 1, count: 7 }
+export function getCandlePeriod(
+  type: string,
+  isMobile: boolean,
+): { days: number; count: number } {
+  function basePeriod() {
+    switch (type) {
+      case '7d':
+        return { days: 1, count: 7 }
+      case '14d':
+        return { days: 1, count: 14 }
+      case '30d':
+        return { days: 3, count: 12 }
+      case '3m':
+        return { days: 8, count: 12 }
+      case '6m':
+        return { days: 15, count: 12 }
+      case '1y':
+        return { days: 30, count: 12 }
+      case 'all':
+        return { days: 0, count: 12 }
+      default:
+        return { days: 1, count: 7 }
+    }
+  }
+  const { days, count } = basePeriod()
+  return {
+    days: isMobile ? days * 2 : days,
+    count: isMobile ? count / 2 : count,
   }
 }
 
@@ -42,6 +52,7 @@ export function getCandlePeriod(type: string): { days: number; count: number } {
 export function groupWeightsByPeriod(
   weights: readonly Weight[],
   type: string,
+  isMobile: boolean,
 ): GroupedWeightsByPeriod {
   if (!weights.length) return {}
   const sorted = [...weights].sort(
@@ -58,9 +69,10 @@ export function groupWeightsByPeriod(
       1,
       Math.round((last - first) / (1000 * 60 * 60 * 24)),
     )
-    const daysPerCandle = Math.max(1, Math.round(totalDays / 12))
+    const totalCandles = isMobile ? 6 : 12
+    const daysPerCandle = Math.max(1, Math.round(totalDays / totalCandles))
     const result: Record<string, Weight[]> = {}
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < totalCandles; i++) {
       const start = new Date(first + i * daysPerCandle * 24 * 60 * 60 * 1000)
       const end = new Date(
         first + (i + 1) * daysPerCandle * 24 * 60 * 60 * 1000,
@@ -73,27 +85,26 @@ export function groupWeightsByPeriod(
     return result
   }
 
-  const { days, count } = getCandlePeriod(type)
+  const { days, count } = getCandlePeriod(type, isMobile)
   const firstObj = sorted[0]
   if (!firstObj) return {}
-  const first = firstObj.target_timestamp
   const result: Record<string, Weight[]> = {}
 
   // Calculate periods forward from earliest date for stability
-  for (let i = 0; i < count; i++) {
+  for (let i = count - 1; i >= 0; i--) {
     let start: Date, end: Date
 
     if (days === 1) {
       // Daily periods: use calendar day boundaries
-      start = new Date(first)
-      start.setDate(start.getDate() + i)
+      start = new Date(Date.now())
+      start.setDate(start.getDate() - i)
       start.setHours(0, 0, 0, 0) // Start of day
       end = new Date(start)
       end.setDate(end.getDate() + 1)
     } else {
       // Weekly/monthly periods: use fixed day intervals
-      start = new Date(first)
-      start.setDate(start.getDate() + i * days)
+      start = new Date(Date.now())
+      start.setDate(start.getDate() - i * days)
       start.setHours(0, 0, 0, 0) // Start of day
       end = new Date(start)
       end.setDate(end.getDate() + days)
