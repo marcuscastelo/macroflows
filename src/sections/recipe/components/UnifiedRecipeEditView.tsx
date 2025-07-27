@@ -1,4 +1,4 @@
-import { type Accessor, type JSXElement, type Setter } from 'solid-js'
+import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
@@ -41,8 +41,8 @@ export type RecipeEditViewProps = {
 export function RecipeEditView(props: RecipeEditViewProps) {
   const clipboard = useClipboard()
 
-  const recipe = props.recipe
-  const setRecipe = props.setRecipe
+  const recipe = untrack(() => props.recipe)
+  const setRecipe = untrack(() => props.setRecipe)
 
   const acceptedClipboardSchema = z.union([
     unifiedItemSchema,

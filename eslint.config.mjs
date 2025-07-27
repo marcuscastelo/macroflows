@@ -131,6 +131,7 @@ export default [
       ],
 
       ...pluginSolid.configs.recommended.rules,
+      'solid/reactivity': 'error',
     },
     settings: {
       'import/parsers': {
