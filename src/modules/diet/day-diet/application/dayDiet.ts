@@ -98,6 +98,7 @@ export function acceptDayChange() {
   if (changeData) {
     setTargetDay(changeData.newDay)
     setDayChangeData(null)
+    bootstrap() // Refetch day diets to ensure current day is available
   }
 }
 
