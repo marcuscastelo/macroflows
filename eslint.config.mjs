@@ -62,6 +62,10 @@ export default [
               name: '~/shared/utils/supabase',
               message: "Direct import of '~/shared/utils/supabase' is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.",
             },
+            {
+              name: 'axios',
+              message: "Direct import of 'axios' is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.",
+            },
           ],
         },
       ],
@@ -132,6 +136,14 @@ export default [
           selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
           message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
         },
+        {
+          selector: "MemberExpression[object.name='localStorage']",
+          message: 'Direct localStorage usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
+        },
+        {
+          selector: "MemberExpression[object.name='navigator']",
+          message: 'Direct navigator API usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
+        },
       ],
 
       ...pluginSolid.configs.recommended.rules,
@@ -150,8 +162,17 @@ export default [
     },
   },
   {
-    // Allow supabase imports only in infrastructure layer
-    files: ['**/infrastructure/**/*.ts', '**/infrastructure/**/*.tsx', 'src/shared/utils/supabase.ts', 'vitest.setup.ts'],
+    // Allow external dependencies only in infrastructure layer
+    files: [
+      '**/infrastructure/**/*.ts', 
+      '**/infrastructure/**/*.tsx', 
+      'src/shared/utils/supabase.ts', 
+      'src/shared/console/**/*.ts', 
+      'src/shared/hooks/**/*.ts', 
+      'src/shared/utils/**/*.ts', 
+      'src/sections/**/*.tsx',
+      'vitest.setup.ts'
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -162,9 +183,17 @@ export default [
               name: 'zod',
               message: "Please use 'zod/v4' instead.",
             },
-            // Note: supabase restriction removed for infrastructure layer
+            // Note: supabase, axios restrictions removed for infrastructure layer
           ],
         },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
+          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
+        },
+        // Note: localStorage, navigator restrictions removed for infrastructure layer
       ],
     },
   },
