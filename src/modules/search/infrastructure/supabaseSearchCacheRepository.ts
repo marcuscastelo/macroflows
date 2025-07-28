@@ -1,6 +1,6 @@
 import { type CachedSearch } from '~/modules/search/application/cachedSearch'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import supabase from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 const TABLE = 'cached_searches'
 const errorHandler = createErrorHandler('infrastructure', 'SearchCache')

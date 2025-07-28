@@ -15,7 +15,7 @@ import {
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
 import { createDebug } from '~/shared/utils/createDebug'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Food')

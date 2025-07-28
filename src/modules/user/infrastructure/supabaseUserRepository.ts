@@ -8,8 +8,9 @@ import {
 } from '~/modules/user/infrastructure/userDAO'
 import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase, {
+import {
   registerSubapabaseRealtimeCallback,
+  supabase,
 } from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_USERS = 'users'

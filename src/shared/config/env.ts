@@ -6,6 +6,8 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
 const envSchema = z.object({
   VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   VITE_NEXT_PUBLIC_SUPABASE_URL: z.string().min(1),
+  VITE_GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  VITE_GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   VITE_EXTERNAL_API_FOOD_PARAMS: z.string().min(1),
   VITE_EXTERNAL_API_REFERER: z.string().min(1),
   VITE_EXTERNAL_API_HOST: z.string().min(1),

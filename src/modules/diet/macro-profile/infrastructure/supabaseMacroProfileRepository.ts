@@ -12,8 +12,9 @@ import {
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import supabase, {
+import {
   registerSubapabaseRealtimeCallback,
+  supabase,
 } from '~/shared/utils/supabase'
 
 /**

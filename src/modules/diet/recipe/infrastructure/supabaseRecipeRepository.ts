@@ -13,7 +13,7 @@ import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-import supabase from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 const TABLE = 'recipes'
 

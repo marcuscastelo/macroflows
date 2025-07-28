@@ -3,20 +3,23 @@ import { z } from 'zod/v4'
 
 import env from '~/shared/config/env'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
+
 const supabaseUrl = parseWithStack(
   z.string(),
   env.VITE_NEXT_PUBLIC_SUPABASE_URL,
 )
+
 const supabaseAnonKey = parseWithStack(
   z.string(),
   env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY,
 )
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   db: {
     schema: 'public',
   },
   auth: {
-    persistSession: false,
+    persistSession: true,
   },
 })
 
@@ -29,4 +32,3 @@ export function registerSubapabaseRealtimeCallback(
     .on('postgres_changes', { event: '*', schema: 'public', table }, callback)
     .subscribe()
 }
-export default supabase
