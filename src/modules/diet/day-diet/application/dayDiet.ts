@@ -20,7 +20,7 @@ const errorHandler = createErrorHandler('application', 'DayDiet')
 export const [targetDay, setTargetDay] =
   createSignal<string>(getTodayYYYYMMDD())
 
-export const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
+const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
 
 export const [currentDayDiet, setCurrentDayDiet] = createSignal<DayDiet | null>(
   null,

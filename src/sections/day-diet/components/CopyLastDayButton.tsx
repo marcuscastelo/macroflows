@@ -1,7 +1,7 @@
 import { type Accessor, createSignal } from 'solid-js'
 
 import {
-  dayDiets,
+  currentDayDiet,
   fetchPreviousDayDiets,
   insertDayDiet,
   updateDayDiet,
@@ -61,10 +61,10 @@ export function CopyLastDayButton(props: {
     }
   }
 
-  async function handleCopy(day: string) {
-    setCopyingDay(day)
+  async function handleCopy(fromDay: string) {
+    setCopyingDay(fromDay)
     setCopying(true)
-    const copyFrom = previousDays().find((d) => d.target_day === day)
+    const copyFrom = previousDays().find((d) => d.target_day === fromDay)
     if (!copyFrom) {
       setCopying(false)
       showError('No matching previous day found to copy.', {
@@ -72,8 +72,9 @@ export function CopyLastDayButton(props: {
       })
       return
     }
-    const allDays = dayDiets()
-    const existing = allDays.find((d) => d.target_day === props.selectedDay)
+    const existing = [...previousDays(), currentDayDiet()]
+      .filter((d) => d !== null)
+      .find((d) => d.target_day === props.selectedDay)
     const newDay = createNewDayDiet({
       target_day: props.selectedDay,
       owner: copyFrom.owner,

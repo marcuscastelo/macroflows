@@ -1,24 +1,18 @@
 import { type Resource } from 'solid-js'
 
-import { dayDiets } from '~/modules/diet/day-diet/application/dayDiet'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { userMacroProfiles } from '~/modules/diet/macro-profile/application/macroProfile'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight'
 import { type Weight } from '~/modules/weight/domain/weight'
-import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
 import {
   calcCalories,
   calcDayCalories,
   calcDayMacros,
 } from '~/shared/utils/macroMath'
-import {
-  getLatestMacroProfile,
-  inForceMacroProfile,
-} from '~/shared/utils/macroProfileUtils'
+import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
@@ -38,7 +32,7 @@ export function MacroEvolution() {
   )
 }
 
-function createChartData(
+function _createChartData(
   weights: readonly Weight[],
   days: readonly DayDiet[],
   macroProfiles: readonly MacroProfile[],
@@ -76,56 +70,56 @@ function createChartData(
   return data
 }
 
-function AllMacrosChart(props: {
+function AllMacrosChart(_props: {
   weights: Resource<readonly Weight[] | undefined>
 }) {
-  const macroProfile = getLatestMacroProfile(userMacroProfiles())
+  // const macroProfile = getLatestMacroProfile(userMacroProfiles())
 
-  const proteinDeviance = () =>
-    macroProfile !== null
-      ? dayDiets()
-          .map((day) => {
-            const currentWeight = inForceWeight(
-              props.weights() ?? [],
-              new Date(day.target_day),
-            )
-            const macroTargets = calculateMacroTarget(
-              currentWeight?.weight ?? 0,
-              macroProfile,
-            )
-            const dayMacros = calcDayMacros(day)
-            return dayMacros.protein - macroTargets.protein
-          })
-          .reduce((a, b) => a + b, 0)
-      : 0
+  // const proteinDeviance = () =>
+  //   macroProfile !== null
+  //     ? dayDiets()
+  //         .map((day) => {
+  //           const currentWeight = inForceWeight(
+  //             props.weights() ?? [],
+  //             new Date(day.target_day),
+  //           )
+  //           const macroTargets = calculateMacroTarget(
+  //             currentWeight?.weight ?? 0,
+  //             macroProfile,
+  //           )
+  //           const dayMacros = calcDayMacros(day)
+  //           return dayMacros.protein - macroTargets.protein
+  //         })
+  //         .reduce((a, b) => a + b, 0)
+  //     : 0
 
-  const fatDeviance = () =>
-    macroProfile !== null
-      ? dayDiets()
-          .map((day) => {
-            const currentWeight = inForceWeight(
-              props.weights() ?? [],
-              new Date(day.target_day),
-            )
-            const macroTargets = calculateMacroTarget(
-              currentWeight?.weight ?? 0,
-              macroProfile,
-            )
-            const dayMacros = calcDayMacros(day)
-            return dayMacros.fat - macroTargets.fat
-          })
-          .reduce((a, b) => a + b, 0)
-      : 0
+  // const fatDeviance = () =>
+  //   macroProfile !== null
+  //     ? dayDiets()
+  //         .map((day) => {
+  //           const currentWeight = inForceWeight(
+  //             props.weights() ?? [],
+  //             new Date(day.target_day),
+  //           )
+  //           const macroTargets = calculateMacroTarget(
+  //             currentWeight?.weight ?? 0,
+  //             macroProfile,
+  //           )
+  //           const dayMacros = calcDayMacros(day)
+  //           return dayMacros.fat - macroTargets.fat
+  //         })
+  //         .reduce((a, b) => a + b, 0)
+  //     : 0
 
-  const _data = () => {
-    const weights = props.weights()
-    if (!weights) return []
-    return createChartData(weights, dayDiets(), userMacroProfiles())
-  }
+  // const _data = () => {
+  //   const weights = props.weights()
+  //   if (!weights) return []
+  //   return createChartData(weights, dayDiets(), userMacroProfiles())
+  // }
 
   return (
     <div>
-      <div class="text-3xl text-center">Geral</div>
+      {/* <div class="text-3xl text-center">Geral</div>
       <Capsule
         leftContent={<h5 class={'ml-2 p-2 text-xl'}>Desvio de Proteína (g)</h5>}
         rightContent={
@@ -139,7 +133,7 @@ function AllMacrosChart(props: {
           <h5 class={'ml-2 p-2 text-xl'}>{fatDeviance().toFixed(0)}</h5>
         }
         class={'mb-2'}
-      />
+      /> */}
       {/* <ResponsiveContainer width="90%" height={400}>
         <ComposedChart width={0} height={400} data={data} syncId={1}>
           <CartesianGrid strokeDasharray="1 1" />
@@ -229,14 +223,14 @@ function AllMacrosChart(props: {
   )
 }
 
-function CaloriesChart(props: {
+function CaloriesChart(_props: {
   weights: Resource<readonly Weight[] | undefined>
 }) {
-  const _data = () => {
-    const weights = props.weights()
-    if (!weights) return []
-    return createChartData(weights, dayDiets(), userMacroProfiles())
-  }
+  // const _data = () => {
+  //   const weights = props.weights()
+  //   if (!weights) return []
+  //   return createChartData(weights, dayDiets(), userMacroProfiles())
+  // }
 
   return (
     <div>
@@ -280,14 +274,14 @@ function CaloriesChart(props: {
   )
 }
 
-function ProteinChart(props: {
+function ProteinChart(_props: {
   weights: Resource<readonly Weight[] | undefined>
 }) {
-  const _data = () => {
-    const weights = props.weights()
-    if (!weights) return []
-    return createChartData(weights, dayDiets(), userMacroProfiles())
-  }
+  // const _data = () => {
+  //   const weights = props.weights()
+  //   if (!weights) return []
+  //   return createChartData(weights, dayDiets(), userMacroProfiles())
+  // }
 
   return (
     <div>
@@ -330,12 +324,14 @@ function ProteinChart(props: {
   )
 }
 
-function FatChart(props: { weights: Resource<readonly Weight[] | undefined> }) {
-  const _data = () => {
-    const weights = props.weights()
-    if (!weights) return []
-    return createChartData(weights, dayDiets(), userMacroProfiles())
-  }
+function FatChart(_props: {
+  weights: Resource<readonly Weight[] | undefined>
+}) {
+  // const _data = () => {
+  //   const weights = props.weights()
+  //   if (!weights) return []
+  //   return createChartData(weights, dayDiets(), userMacroProfiles())
+  // }
 
   return (
     <div>
@@ -378,14 +374,14 @@ function FatChart(props: { weights: Resource<readonly Weight[] | undefined> }) {
   )
 }
 
-function CarbsChart(props: {
+function CarbsChart(_props: {
   weights: Resource<readonly Weight[] | undefined>
 }) {
-  const _data = () => {
-    const weights = props.weights()
-    if (!weights) return []
-    return createChartData(weights, dayDiets(), userMacroProfiles())
-  }
+  // const _data = () => {
+  //   const weights = props.weights()
+  //   if (!weights) return []
+  //   return createChartData(weights, dayDiets(), userMacroProfiles())
+  // }
 
   return (
     <div>
