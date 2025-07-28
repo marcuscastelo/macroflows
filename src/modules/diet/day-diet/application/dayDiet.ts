@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup } from 'solid-js'
+import { createEffect, createSignal, onCleanup, untrack } from 'solid-js'
 
 import {
   type DayDiet,
@@ -188,12 +188,76 @@ createEffect(() => {
 })
 
 /**
- * When realtime day diets change, invalidate cache for granular updates
+ * When realtime day diets change, apply granular cache updates
  */
-setupDayDietRealtimeSubscription(() => {
-  // Clear cache to force fresh lazy loading on next access
-  setDayDiets([])
-  // Keep current day diet to maintain UI state until user navigates
+setupDayDietRealtimeSubscription((event) => {
+  console.log(`[dayDiet] Real-time ${event.eventType}:`, event)
+
+  // Avoid reactive reads in non-tracked scope - get current state directly
+  const existingDays = untrack(() => dayDiets())
+
+  switch (event.eventType) {
+    case 'INSERT': {
+      if (event.new) {
+        // Add new day to cache (sorted insertion)
+        const existingIndex = existingDays.findIndex(
+          (day: DayDiet) => day.target_day === event.new!.target_day,
+        )
+        if (existingIndex < 0) {
+          const updatedDays = [...existingDays, event.new].sort((a, b) =>
+            a.target_day.localeCompare(b.target_day),
+          )
+          setDayDiets(updatedDays)
+        }
+
+        // Update current day diet if it matches target day
+        const currentTargetDay = untrack(() => targetDay())
+        if (event.new.target_day === currentTargetDay) {
+          setCurrentDayDiet(event.new)
+        }
+      }
+      break
+    }
+
+    case 'UPDATE': {
+      if (event.new) {
+        // Update existing day in cache
+        const existingIndex = existingDays.findIndex(
+          (day: DayDiet) => day.id === event.new!.id,
+        )
+        if (existingIndex >= 0) {
+          const updatedDays = [...existingDays]
+          updatedDays[existingIndex] = event.new
+          setDayDiets(updatedDays)
+
+          // Update current day diet if it matches target day
+          const currentTargetDay = untrack(() => targetDay())
+          if (event.new.target_day === currentTargetDay) {
+            setCurrentDayDiet(event.new)
+          }
+        }
+      }
+      break
+    }
+
+    case 'DELETE': {
+      if (event.old) {
+        // Remove deleted day from cache
+        const updatedDays = existingDays.filter(
+          (day: DayDiet) => day.id !== event.old!.id,
+        )
+        setDayDiets(updatedDays)
+
+        // Clear current day diet if it was the deleted day
+        const currentTargetDay = untrack(() => targetDay())
+        if (event.old.target_day === currentTargetDay) {
+          setCurrentDayDiet(null)
+          // Lazy loading effect will handle fetching if day still exists
+        }
+      }
+      break
+    }
+  }
 })
 
 /**
