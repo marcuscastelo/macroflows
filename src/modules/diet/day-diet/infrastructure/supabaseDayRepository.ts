@@ -26,8 +26,14 @@ const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
 export function createSupabaseDayRepository(): DayRepository {
   return {
-    // fetchAllUserDayIndexes: fetchUserDayIndexes,
+    // New optimized methods
+    fetchCurrentUserDayDiet,
+    fetchPreviousUserDayDiets,
+
+    // Legacy method - maintained for compatibility
     fetchAllUserDayDiets,
+
+    // Existing methods
     fetchDayDiet,
     insertDayDiet,
     updateDayDiet,
@@ -137,6 +143,105 @@ async function fetchAllUserDayDiets(
   setUserDays(days)
 
   return userDays
+}
+
+/**
+ * Optimized: Fetches only the current day diet for a user
+ * @param userId - User ID
+ * @param targetDay - Target day in YYYY-MM-DD format
+ * @returns The DayDiet for the target day or null if not found
+ */
+async function fetchCurrentUserDayDiet(
+  userId: User['id'],
+  targetDay: string,
+): Promise<DayDiet | null> {
+  console.debug(
+    `[supabaseDayRepository] fetchCurrentUserDayDiet(${userId}, ${targetDay})`,
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_DAYS)
+    .select()
+    .eq('owner', userId)
+    .eq('target_day', targetDay)
+    .single()
+
+  if (error !== null) {
+    if (error.code === 'PGRST116') {
+      // No rows returned - day doesn't exist
+      console.debug(`[supabaseDayRepository] No day found for ${targetDay}`)
+      return null
+    }
+    errorHandler.error(error)
+    throw error
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const dayData = data
+  const result = dayDietSchema.safeParse(dayData)
+  if (!result.success) {
+    errorHandler.validationError('Error parsing current day diet', {
+      component: 'supabaseDayRepository',
+      operation: 'fetchCurrentUserDayDiet',
+      additionalData: { parseError: result.error, targetDay },
+    })
+    throw wrapErrorWithStack(result.error)
+  }
+
+  console.debug(`[supabaseDayRepository] Successfully fetched day ${targetDay}`)
+  return result.data
+}
+
+/**
+ * Optimized: Fetches previous days for a user (for copy functionality)
+ * @param userId - User ID
+ * @param beforeDay - Only fetch days before this date (YYYY-MM-DD)
+ * @param limit - Maximum number of days to fetch (default: 30)
+ * @returns Array of previous DayDiets ordered by date descending
+ */
+async function fetchPreviousUserDayDiets(
+  userId: User['id'],
+  beforeDay: string,
+  limit: number = 30,
+): Promise<readonly DayDiet[]> {
+  console.debug(
+    `[supabaseDayRepository] fetchPreviousUserDayDiets(${userId}, ${beforeDay}, ${limit})`,
+  )
+
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_DAYS)
+    .select()
+    .eq('owner', userId)
+    .lt('target_day', beforeDay)
+    .order('target_day', { ascending: false })
+    .limit(limit)
+
+  if (error !== null) {
+    errorHandler.error(error)
+    throw error
+  }
+
+  const days = data
+    .map((day) => {
+      return dayDietSchema.safeParse(day)
+    })
+    .map((result) => {
+      if (result.success) {
+        return result.data
+      }
+      errorHandler.validationError('Error parsing previous day diet', {
+        component: 'supabaseDayRepository',
+        operation: 'fetchPreviousUserDayDiets',
+        additionalData: { parseError: result.error },
+      })
+      throw wrapErrorWithStack(result.error)
+    })
+
+  console.debug(
+    `[supabaseDayRepository] fetchPreviousUserDayDiets returned ${days.length} days`,
+  )
+  return days
 }
 
 // TODO:   Change upserts to inserts on the entire app

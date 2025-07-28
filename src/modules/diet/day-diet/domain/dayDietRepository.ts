@@ -7,12 +7,23 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type DayRepository = {
-  // fetchAllUserDayIndexes: (
-  //   userId: User['id'],
-  // ) => Promise<Accessor<readonly DayIndex[]>>
+  // New optimized methods for lazy loading
+  fetchCurrentUserDayDiet: (
+    userId: User['id'],
+    targetDay: string,
+  ) => Promise<DayDiet | null>
+  fetchPreviousUserDayDiets: (
+    userId: User['id'],
+    beforeDay: string,
+    limit?: number,
+  ) => Promise<readonly DayDiet[]>
+
+  // Legacy method - will be replaced gradually
   fetchAllUserDayDiets: (
     userId: User['id'],
   ) => Promise<Accessor<readonly DayDiet[]>>
+
+  // Existing methods
   fetchDayDiet: (dayId: DayDiet['id']) => Promise<DayDiet | null>
   insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO:   Remove nullability from insertDay
   updateDayDiet: (dayId: DayDiet['id'], newDay: NewDayDiet) => Promise<DayDiet>
