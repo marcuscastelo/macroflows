@@ -170,6 +170,27 @@ async function fetchCurrentDayDiet(
 }
 
 /**
+ * Optimized: Fetches previous days for copy functionality
+ * Only fetches when needed instead of requiring all days to be cached
+ */
+export async function fetchPreviousDayDiets(
+  userId: User['id'],
+  beforeDay: string,
+  limit: number = 30,
+): Promise<readonly DayDiet[]> {
+  try {
+    return await dayRepository.fetchPreviousUserDayDiets(
+      userId,
+      beforeDay,
+      limit,
+    )
+  } catch (error) {
+    errorHandler.error(error)
+    return []
+  }
+}
+
+/**
  * When user changes, fetch all day diets for the new user
  */
 createEffect(() => {
