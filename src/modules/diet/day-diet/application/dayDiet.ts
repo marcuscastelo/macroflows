@@ -102,6 +102,8 @@ export function acceptDayChange() {
 }
 
 function bootstrap() {
+  // For backward compatibility and non-reactive contexts, fetch all days
+  // This ensures realtime updates and user changes still work properly
   void showPromise(
     fetchAllUserDayDiets(currentUserId()),
     {
@@ -111,6 +113,60 @@ function bootstrap() {
     },
     { context: 'background' },
   )
+}
+
+/**
+ * Optimized: Fetches only the current target day
+ * Updates local cache intelligently without full refetch
+ */
+/**
+ * Optimized: Fetches only the current target day
+ * Updates local cache intelligently without full refetch
+ * @param userId - User ID
+ * @param targetDay - Target day to fetch
+ * @param existingDays - Current cached days (passed to avoid reactive reads in async context)
+ */
+async function fetchCurrentDayDiet(
+  userId: User['id'],
+  targetDay: string,
+  existingDays: readonly DayDiet[],
+): Promise<void> {
+  try {
+    const currentDayDiet = await dayRepository.fetchCurrentUserDayDiet(
+      userId,
+      targetDay,
+    )
+
+    if (currentDayDiet === null) {
+      // Day doesn't exist - create minimal cache entry
+      setCurrentDayDiet(null)
+      // Keep existing dayDiets cache, just ensure currentDayDiet is null
+      return
+    }
+
+    // Update cache efficiently
+    const existingDayIndex = existingDays.findIndex(
+      (day) => day.target_day === targetDay,
+    )
+
+    if (existingDayIndex >= 0) {
+      // Update existing day in cache
+      const updatedDays = [...existingDays]
+      updatedDays[existingDayIndex] = currentDayDiet
+      setDayDiets(updatedDays)
+    } else {
+      // Add new day to cache (sorted insertion)
+      const updatedDays = [...existingDays, currentDayDiet].sort((a, b) =>
+        a.target_day.localeCompare(b.target_day),
+      )
+      setDayDiets(updatedDays)
+    }
+
+    setCurrentDayDiet(currentDayDiet)
+  } catch (error) {
+    errorHandler.error(error)
+    setCurrentDayDiet(null)
+  }
 }
 
 /**
@@ -129,21 +185,33 @@ setupDayDietRealtimeSubscription(() => {
 
 /**
  * When target day changes, update current day diet
+ * Optimized: Fetches specific day if not in cache
  */
 createEffect(() => {
-  const dayDiet = dayDiets().find(
-    (dayDiet) => dayDiet.target_day === targetDay(),
+  const currentTarget = targetDay()
+  const existingDays = dayDiets()
+  const dayDiet = existingDays.find(
+    (dayDiet) => dayDiet.target_day === currentTarget,
   )
 
   if (dayDiet === undefined) {
-    console.warn(`[dayDiet] No day diet found for ${targetDay()}`)
+    console.warn(
+      `[dayDiet] No day diet found for ${currentTarget}, fetching...`,
+    )
     setCurrentDayDiet(null)
+
+    // Optimized: Fetch only the specific day we need
+    void fetchCurrentDayDiet(currentUserId(), currentTarget, existingDays)
     return
   }
 
   setCurrentDayDiet(dayDiet)
 })
 
+/**
+ * Legacy: Fetches all user days (used for special cases like copy modal)
+ * Most common usage should use fetchCurrentDayDiet() instead
+ */
 async function fetchAllUserDayDiets(userId: User['id']): Promise<void> {
   try {
     const newDayDiets = await dayRepository.fetchAllUserDayDiets(userId)
