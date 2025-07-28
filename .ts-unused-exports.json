@@ -1,0 +1,22 @@
+{
+  "searchDir": "./src",
+  "excludePathsFromReport": [
+    "node_modules",
+    "dist",
+    ".vinxi",
+    "*.test.ts",
+    "*.test.tsx",
+    "tests/"
+  ],
+  "ignoreProductionExports": true,
+  "ignoreFunctionExpressions": true,
+  "ignoreLocallyUsed": true,
+  "showLineNumber": true,
+  "excludeDeclarationFiles": true,
+  "entrypoints": [
+    "src/app.tsx",
+    "src/entry-server.tsx",
+    "src/routes/**/*.tsx",
+    "src/routes/**/*.ts"
+  ]
+}

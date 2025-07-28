@@ -182,6 +182,10 @@ const result = await supabase.rpc('search_foods_with_scoring', {
 - `pnpm lint` - ESLint checking (quiet mode)
 - `pnpm flint` - Fix then lint (fix + lint)
 
+**Code Quality Commands:**
+- `pnpm check-unused-exports` - Detect unused TypeScript exports (with warnings)
+- `pnpm check-unused-exports-strict` - Detect unused exports (fails on detection)
+
 **Script Utilities:**
 - `.scripts/semver.sh` - App version reporting
 
