@@ -4,8 +4,6 @@ import {
 } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { generateId } from '~/shared/utils/idUtils'
-
 export const DEFAULT_QUANTITY = 100
 
 /**
@@ -22,7 +20,7 @@ export function templateToUnifiedItem(
 ): TemplateItem {
   if (isTemplateFood(template)) {
     return createUnifiedItem({
-      id: generateId(),
+      id: Math.round(Math.random() * 1000000),
       name: template.name,
       quantity: desiredQuantity,
       reference: { type: 'food', id: template.id, macros: template.macros },
@@ -32,7 +30,7 @@ export function templateToUnifiedItem(
   // For recipes, we don't store macros directly in UnifiedItems
   // They will be calculated from children
   return createUnifiedItem({
-    id: generateId(),
+    id: Math.round(Math.random() * 1000000),
     name: template.name,
     quantity: desiredQuantity,
     reference: {

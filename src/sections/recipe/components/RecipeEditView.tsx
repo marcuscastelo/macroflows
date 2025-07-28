@@ -26,7 +26,6 @@ import { useFloatField } from '~/sections/common/hooks/useField'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
 import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { regenerateId } from '~/shared/utils/idUtils'
 import { calcRecipeCalories } from '~/shared/utils/macroMath'
 
 export type RecipeEditViewProps = {
@@ -78,7 +77,10 @@ export function RecipeEditHeader(props: {
         if (Array.isArray(data) && data.every(isUnifiedItem)) {
           const itemsToAdd = data
             .filter((item) => item.reference.type === 'food') // Only food items in recipes
-            .map((item) => regenerateId(item))
+            .map((item) => ({
+              ...item,
+              id: Math.round(Math.random() * 1000000),
+            }))
           const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
           props.onUpdateRecipe(newRecipe)
           return
@@ -88,7 +90,10 @@ export function RecipeEditHeader(props: {
         if (isUnifiedItem(data)) {
           if (data.reference.type === 'food') {
             const item = data
-            const regeneratedItem = regenerateId(item)
+            const regeneratedItem = {
+              ...item,
+              id: Math.round(Math.random() * 1000000),
+            }
             const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
             props.onUpdateRecipe(newRecipe)
           }

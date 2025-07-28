@@ -26,8 +26,6 @@ import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { createDebug } from '~/shared/utils/createDebug'
-import { generateId, regenerateId } from '~/shared/utils/idUtils'
-
 const debug = createDebug()
 
 export type GroupChildrenEditorProps = {
@@ -69,7 +67,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
         if (isFoodItem(updatedItem) && itemsToAdd.length > 0) {
           // Transform the food item into a group with the original food as the first child
           const originalAsChild = createUnifiedItem({
-            id: generateId(), // New ID for the child
+            id: Math.round(Math.random() * 1000000), // New ID for the child
             name: updatedItem.name,
             quantity: updatedItem.quantity,
             reference: updatedItem.reference, // Keep the food reference
@@ -91,7 +89,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
           // Regenerate ID to avoid conflicts
           const childWithNewId = {
             ...newChild,
-            id: regenerateId(newChild).id,
+            id: Math.round(Math.random() * 1000000),
           }
 
           // Validate hierarchy to prevent circular references

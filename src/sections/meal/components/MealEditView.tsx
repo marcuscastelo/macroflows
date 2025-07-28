@@ -26,7 +26,6 @@ import {
   openDeleteConfirmModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { createDebug } from '~/shared/utils/createDebug'
-import { regenerateId } from '~/shared/utils/idUtils'
 import { calcMealCalories } from '~/shared/utils/macroMath'
 
 const debug = createDebug()
@@ -104,7 +103,7 @@ export function MealEditViewHeader(props: {
             // Handle array of UnifiedItems - type is already validated by schema
             const unifiedItemsToAdd = data.map((item) => ({
               ...item,
-              id: regenerateId(item).id,
+              id: Math.round(Math.random() * 1000000),
             }))
 
             // Update the meal with all items at once
@@ -125,7 +124,7 @@ export function MealEditViewHeader(props: {
           debug('Pasting meal with items:', mealData.items.length)
           const unifiedItemsToAdd = mealData.items.map((item) => ({
             ...item,
-            id: regenerateId(item).id,
+            id: Math.round(Math.random() * 1000000),
           }))
           debug(
             'Items to add:',
@@ -146,7 +145,7 @@ export function MealEditViewHeader(props: {
           // Handle single UnifiedItem - type is already validated by schema
           const regeneratedItem = {
             ...data,
-            id: regenerateId(data).id,
+            id: Math.round(Math.random() * 1000000),
           }
 
           // Update the meal with the single item

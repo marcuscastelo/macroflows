@@ -5,8 +5,6 @@ import { createNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import { currentUser } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
-import { generateId } from '~/shared/utils/idUtils'
-
 // TODO:   Make meal names editable and persistent by user
 const DEFAULT_MEALS = [
   'Café da manhã',
@@ -15,7 +13,9 @@ const DEFAULT_MEALS = [
   'Janta',
   'Pós janta',
 ].map((name) =>
-  promoteMeal(createNewMeal({ name, items: [] }), { id: generateId() }),
+  promoteMeal(createNewMeal({ name, items: [] }), {
+    id: Math.round(Math.random() * 1000000),
+  }),
 )
 
 export function CreateBlankDayButton(props: { selectedDay: string }) {

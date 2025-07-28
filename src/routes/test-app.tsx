@@ -44,8 +44,6 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
-import { generateId } from '~/shared/utils/idUtils'
-
 function GoogleLoginButton() {
   const handleLogin = async () => {
     try {
@@ -94,7 +92,7 @@ export default function TestApp() {
 
   const [item] = createSignal<UnifiedItem>(
     createUnifiedItem({
-      id: generateId(),
+      id: Math.round(Math.random() * 1000000),
       name: 'Teste',
       quantity: 100,
       reference: {
@@ -111,7 +109,7 @@ export default function TestApp() {
 
   const [group, setGroup] = createSignal<UnifiedItem>(
     createUnifiedItem({
-      id: generateId(),
+      id: Math.round(Math.random() * 1000000),
       name: 'Teste',
       quantity: 100,
       reference: {

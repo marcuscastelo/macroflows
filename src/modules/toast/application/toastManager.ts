@@ -20,7 +20,6 @@ import {
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { isBackendOutageError } from '~/shared/error/errorHandler'
 import { createDebug } from '~/shared/utils/createDebug'
-import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { vibrate } from '~/shared/utils/vibrate'
 
 const debug = createDebug()
@@ -208,7 +207,10 @@ function handlePromiseLoading<T>(
   filteredMessages: ToastPromiseMessages<T>,
   providedOptions?: Partial<ToastOptions>,
 ): string | null {
-  if (isNonEmptyString(filteredMessages.loading)) {
+  if (
+    typeof filteredMessages.loading === 'string' &&
+    filteredMessages.loading.length > 0
+  ) {
     debug(`Promise loading toast: "${filteredMessages.loading}"`)
     return showLoading(filteredMessages.loading, providedOptions)
   } else {
@@ -223,7 +225,7 @@ function handlePromiseSuccess<T>(
   providedOptions?: Partial<ToastOptions>,
 ) {
   const successMsg = resolveValueOrFunction(filteredMessages.success, data)
-  if (isNonEmptyString(successMsg)) {
+  if (typeof successMsg === 'string' && successMsg.length > 0) {
     debug('Showing success toast', { successMsg })
     showSuccess(successMsg, providedOptions)
   } else {
@@ -237,7 +239,7 @@ function handlePromiseError<T>(
   providedOptions?: Partial<ToastOptions>,
 ) {
   const errorMsg = resolveValueOrFunction(filteredMessages.error, err)
-  if (isNonEmptyString(errorMsg)) {
+  if (typeof errorMsg === 'string' && errorMsg.length > 0) {
     debug('Showing error toast with custom message', { errorMsg, err })
     showError(err, providedOptions, errorMsg)
   } else {

@@ -43,8 +43,6 @@ import {
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { createDebug } from '~/shared/utils/createDebug'
-import { generateId } from '~/shared/utils/idUtils'
-
 const debug = createDebug()
 
 export type UnifiedItemEditModalProps = {
@@ -81,7 +79,7 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
       if (isFoodItem(currentItem)) {
         // Create a copy of the original item with a new ID for the child
         const originalAsChild = createUnifiedItem({
-          id: generateId(), // New ID for the child
+          id: Math.round(Math.random() * 1000000), // New ID for the child
           name: currentItem.name,
           quantity: currentItem.quantity,
           reference: currentItem.reference, // Keep the food reference
@@ -337,7 +335,7 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
                   if (isGroupItem(item())) {
                     const updatedItem = addChildToItem(item(), {
                       ...newUnifiedItem,
-                      id: generateId(),
+                      id: Math.round(Math.random() * 1000000),
                     })
                     setItem(updatedItem)
                   } else {
@@ -351,11 +349,11 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
                         children: [
                           createUnifiedItem({
                             ...currentItem,
-                            id: generateId(),
+                            id: Math.round(Math.random() * 1000000),
                           }),
                           {
                             ...newUnifiedItem,
-                            id: generateId(),
+                            id: Math.round(Math.random() * 1000000),
                           },
                         ],
                       },

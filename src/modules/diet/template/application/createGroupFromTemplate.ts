@@ -10,8 +10,6 @@ import {
   isRecipeItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { generateId } from '~/shared/utils/idUtils'
-
 /**
  * Creates a UnifiedItem from a Template and TemplateItem.
  * This is the new unified approach that directly creates UnifiedItems.
@@ -41,7 +39,7 @@ export function createUnifiedItemFromTemplate(
 
     // Create a UnifiedItem with recipe reference containing scaled items
     const unifiedItem = createUnifiedItem({
-      id: generateId(),
+      id: Math.round(Math.random() * 1000000),
       name: item.name,
       quantity: item.quantity,
       reference: {

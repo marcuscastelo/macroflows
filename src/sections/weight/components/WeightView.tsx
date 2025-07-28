@@ -12,8 +12,6 @@ import { type DateValueType } from '~/sections/datepicker/types'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { lazyImport } from '~/shared/solid/lazyImport'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
-import { normalizeDateToLocalMidnightPlusOne } from '~/shared/utils/date/normalizeDateToLocalMidnightPlusOne'
-
 const { Datepicker } = lazyImport(
   () => import('~/sections/datepicker/components/Datepicker'),
   ['Datepicker'],
@@ -80,7 +78,9 @@ export function WeightView(props: WeightViewProps) {
               showError('Data inválida: \n' + JSON.stringify(value))
               return
             }
-            const date = normalizeDateToLocalMidnightPlusOne(value.startDate)
+            const date = new Date(value.startDate)
+            date.setHours(0, 0, 0, 0)
+            date.setDate(date.getDate() + 1)
             dateField.setRawValue(dateToYYYYMMDD(date))
             handleSave({
               dateValue: date,

@@ -16,8 +16,6 @@ import { type DateValueType } from '~/sections/datepicker/types'
 import { formatError } from '~/shared/formatError'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { lazyImport } from '~/shared/solid/lazyImport'
-import { normalizeDateToLocalMidnightPlusOne } from '~/shared/utils/date/normalizeDateToLocalMidnightPlusOne'
-
 const { Datepicker } = lazyImport(
   () => import('~/sections/datepicker/components/Datepicker'),
   ['Datepicker'],
@@ -119,7 +117,9 @@ export function BodyMeasureView(props: {
                 showError(`Data inválida: ${JSON.stringify(value)}`)
                 return
               }
-              const date = normalizeDateToLocalMidnightPlusOne(value.startDate)
+              const date = new Date(value.startDate)
+              date.setHours(0, 0, 0, 0)
+              date.setDate(date.getDate() + 1)
               dateField.setRawValue(date.toISOString())
               handleSave({
                 date,

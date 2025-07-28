@@ -10,7 +10,6 @@ import {
   type ToastExpandableErrorData,
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
-import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
 /**
@@ -77,7 +76,10 @@ export function createExpandableErrorData(
 
   let cleanMessage = originalMessage
   // Clean up the message for display
-  if (isNonEmptyString(providedDisplayMessage)) {
+  if (
+    typeof providedDisplayMessage === 'string' &&
+    providedDisplayMessage.length > 0
+  ) {
     cleanMessage =
       providedDisplayMessage +
       ': ' +
