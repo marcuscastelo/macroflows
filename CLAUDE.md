@@ -183,8 +183,10 @@ const result = await supabase.rpc('search_foods_with_scoring', {
 - `pnpm flint` - Fix then lint (fix + lint)
 
 **Code Quality Commands:**
-- `pnpm check-unused-exports` - Detect unused TypeScript exports (with warnings)
-- `pnpm check-unused-exports-strict` - Detect unused exports (fails on detection)
+- `pnpm check-unused-exports` - Detect unused TypeScript exports with ts-unused-exports (with warnings)
+- `pnpm check-unused-exports-strict` - Detect unused exports with ts-unused-exports (fails on detection)
+- `pnpm check-unused-exports-prune` - Detect unused exports with ts-prune (with warnings)  
+- `pnpm check-unused-exports-prune-strict` - Detect unused exports with ts-prune (fails on detection)
 
 **Script Utilities:**
 - `.scripts/semver.sh` - App version reporting

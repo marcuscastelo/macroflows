@@ -15,6 +15,8 @@
     "flint": "npm run fix && npm run lint",
     "check-unused-exports": "ts-unused-exports .ts-unused-exports.json || echo 'Warning: Found unused exports. Consider removing them to improve code quality.'",
     "check-unused-exports-strict": "ts-unused-exports .ts-unused-exports.json",
+    "check-unused-exports-prune": "ts-prune || echo 'Warning: ts-prune found unused exports. Consider removing them to improve code quality.'",
+    "check-unused-exports-prune-strict": "ts-prune",
     "check": "run-p flint type-check test",
     "copilot:check": "npm run check 2>&1 && echo 'COPILOT: All checks passed!' || echo 'COPILOT: Some checks failed!'",
     "tw:build": "tailwindcss -c tailwind.config.cjs -i ./src/app.css -o ./src/tailwind-build-debug.css"
@@ -61,6 +63,7 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8",
+    "ts-prune": "^0.10.3",
     "ts-unused-exports": "^11.0.1",
     "typescript": "^5.3.0",
     "vite": "^6.3.5",
