@@ -1,7 +1,6 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
 import {
-  authState,
   getCurrentUser,
   isAuthenticated,
   signIn,
@@ -57,7 +56,7 @@ function GoogleLoginButton() {
   }
 
   return (
-    <button class="btn btn-primary" onClick={handleLogin}>
+    <button class="btn btn-primary" onClick={() => void handleLogin()}>
       Login with Google (Test) [{getCurrentUser()?.id ?? 'not logged in'}]
     </button>
   )
@@ -73,7 +72,7 @@ function LogoutButton() {
   }
 
   return (
-    <button class="btn btn-secondary" onClick={handleLogout}>
+    <button class="btn btn-secondary" onClick={() => void handleLogout()}>
       Logout
     </button>
   )
