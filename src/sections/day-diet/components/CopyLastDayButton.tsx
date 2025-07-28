@@ -2,7 +2,7 @@ import { type Accessor, createSignal } from 'solid-js'
 
 import {
   dayDiets,
-  getPreviousDayDiets,
+  fetchPreviousDayDiets,
   insertDayDiet,
   updateDayDiet,
 } from '~/modules/diet/day-diet/application/dayDiet'
@@ -14,6 +14,7 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
+import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
   closeModal,
@@ -30,9 +31,35 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  const previousDays = () => getPreviousDayDiets(dayDiets(), props.selectedDay)
+  // Optimized: Lazy load previous days only when modal opens
+  const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
+  const [loadingPreviousDays, setLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
   const [copying, setCopying] = createSignal(false)
+
+  // Load previous days on demand
+  async function loadPreviousDays() {
+    if (loadingPreviousDays()) return
+
+    setLoadingPreviousDays(true)
+    try {
+      const days = await fetchPreviousDayDiets(
+        currentUserId(),
+        props.selectedDay,
+        30,
+      )
+      setPreviousDays(days)
+    } catch (error) {
+      showError(
+        error,
+        { context: 'user-action' },
+        'Erro ao carregar dias anteriores',
+      )
+      setPreviousDays([])
+    } finally {
+      setLoadingPreviousDays(false)
+    }
+  }
 
   async function handleCopy(day: string) {
     setCopyingDay(day)
@@ -72,6 +99,9 @@ export function CopyLastDayButton(props: {
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
+          // Load previous days when modal opens (optimized)
+          void loadPreviousDays()
+
           openContentModal(
             (modalId) => (
               <CopyLastDayModal
