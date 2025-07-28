@@ -95,18 +95,12 @@ export function dismissDayChangeModal() {
 export function acceptDayChange() {
   const changeData = dayChangeData()
   if (changeData) {
+    setDayDiets([])
     setTargetDay(changeData.newDay)
     setDayChangeData(null)
-    // No need to refetch - lazy loading effect will handle target day change
   }
 }
 
-// Bootstrap removed - using pure lazy loading now
-
-/**
- * Optimized: Fetches only the current target day
- * Updates local cache intelligently without full refetch
- */
 /**
  * Optimized: Fetches only the current target day
  * Updates local cache intelligently without full refetch
@@ -304,8 +298,6 @@ createEffect(() => {
   setCurrentDayDiet(dayDiet)
 })
 
-// fetchAllUserDayDiets removed - using pure lazy loading now
-
 /**
  * Inserts a new day diet.
  * @param dayDiet - The new day diet data.
@@ -437,31 +429,4 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
     errorHandler.error(error)
     return false
   }
-}
-
-/**
- * Returns all previous DayDiet objects before the given target day, ordered by descending date.
- *
- * @param dayDiets - List of all DayDiet objects (should be sorted ascending by date)
- * @param selectedDay - The YYYY-MM-DD string to compare against
- * @returns Array of DayDiet objects before selectedDay, ordered by descending date
- */
-export function getPreviousDayDiets(
-  dayDiets: readonly DayDiet[],
-  selectedDay: string,
-): DayDiet[] {
-  const selectedDate = new Date(selectedDay)
-  selectedDate.setHours(0, 0, 0, 0) // Normalize to midnight to avoid time zone issues
-
-  return dayDiets
-    .filter((day) => {
-      const dayDate = new Date(day.target_day)
-      dayDate.setHours(0, 0, 0, 0) // Normalize to midnight
-      return dayDate.getTime() < selectedDate.getTime()
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.target_day)
-      const dateB = new Date(b.target_day)
-      return dateB.getTime() - dateA.getTime()
-    })
 }

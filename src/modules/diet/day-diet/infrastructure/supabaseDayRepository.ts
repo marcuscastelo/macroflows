@@ -1,5 +1,3 @@
-import { type Accessor, createSignal } from 'solid-js'
-
 import {
   type DayDiet,
   dayDietSchema,
@@ -26,14 +24,8 @@ const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
 export function createSupabaseDayRepository(): DayRepository {
   return {
-    // New optimized methods
     fetchCurrentUserDayDiet,
     fetchPreviousUserDayDiets,
-
-    // Legacy method - maintained for compatibility
-    fetchAllUserDayDiets,
-
-    // Existing methods
     fetchDayDiet,
     insertDayDiet,
     updateDayDiet,
@@ -86,13 +78,6 @@ export function setupDayDietRealtimeSubscription(
   )
 }
 
-/**
- * // TODO:   Replace userDays with userDayIndexes
- * @deprecated should be replaced by userDayIndexes
- */
-const [userDays, setUserDays] = createSignal<readonly DayDiet[]>([])
-// const [userDayIndexes, setUserDayIndexes] = createSignal<readonly DayIndex[]>([])
-
 // TODO:   better error handling
 /**
  * Fetches a DayDiet by its ID.
@@ -136,48 +121,6 @@ async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
     errorHandler.error(err)
     throw err
   }
-}
-
-// TODO:   better error handling
-async function fetchAllUserDayDiets(
-  userId: User['id'],
-): Promise<Accessor<readonly DayDiet[]>> {
-  console.debug(`[supabaseDayRepository] fetchUserDays(${userId})`)
-  const { data, error } = await supabase
-    .from(SUPABASE_TABLE_DAYS)
-    .select()
-    .eq('owner', userId)
-    .order('target_day', { ascending: true })
-
-  if (error !== null) {
-    errorHandler.error(error)
-    throw error
-  }
-
-  const days = data
-    .map((day) => {
-      return dayDietSchema.safeParse(day)
-    })
-    .map((result) => {
-      if (result.success) {
-        return result.data
-      }
-      errorHandler.validationError('Error while parsing day', {
-        component: 'supabaseDayRepository',
-        operation: 'fetchAllUserDayDiets',
-        additionalData: { parseError: result.error },
-      })
-      throw wrapErrorWithStack(result.error)
-    })
-
-  console.log('days', days)
-
-  console.debug(
-    `[supabaseDayRepository] fetchUserDays returned ${days.length} days`,
-  )
-  setUserDays(days)
-
-  return userDays
 }
 
 /**
@@ -336,12 +279,5 @@ const deleteDayDiet = async (id: DayDiet['id']): Promise<void> => {
 
   if (error !== null) {
     throw wrapErrorWithStack(error)
-  }
-
-  const userId = userDays().find((day) => day.id === id)?.owner
-  if (userId === undefined) {
-    throw new Error(
-      `Invalid state: userId not found for day ${id} on local cache`,
-    )
   }
 }

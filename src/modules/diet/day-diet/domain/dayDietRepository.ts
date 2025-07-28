@@ -1,5 +1,3 @@
-import { type Accessor } from 'solid-js'
-
 import {
   type DayDiet,
   type NewDayDiet,
@@ -7,7 +5,6 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type DayRepository = {
-  // New optimized methods for lazy loading
   fetchCurrentUserDayDiet: (
     userId: User['id'],
     targetDay: string,
@@ -17,13 +14,6 @@ export type DayRepository = {
     beforeDay: string,
     limit?: number,
   ) => Promise<readonly DayDiet[]>
-
-  // Legacy method - will be replaced gradually
-  fetchAllUserDayDiets: (
-    userId: User['id'],
-  ) => Promise<Accessor<readonly DayDiet[]>>
-
-  // Existing methods
   fetchDayDiet: (dayId: DayDiet['id']) => Promise<DayDiet | null>
   insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO:   Remove nullability from insertDay
   updateDayDiet: (dayId: DayDiet['id'], newDay: NewDayDiet) => Promise<DayDiet>
