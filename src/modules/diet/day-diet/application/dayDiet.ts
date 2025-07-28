@@ -179,12 +179,22 @@ export async function fetchPreviousDayDiets(
 }
 
 /**
- * When user changes, clear cache to force lazy loading for new user
+ * When user changes, clear cache and reset to today
  */
 createEffect(() => {
-  // Clear cache when user changes - lazy loading will handle refetch
-  setDayDiets([])
-  setCurrentDayDiet(null)
+  const userId = currentUserId() // Create reactive dependency on user changes
+
+  if (userId) {
+    // Clear cache when user changes - lazy loading will handle refetch
+    setDayDiets([])
+    setCurrentDayDiet(null)
+
+    // Reset target day to today for new user
+    const today = getTodayYYYYMMDD()
+    setTargetDay(today)
+
+    console.log(`[dayDiet] User changed to ${userId}, reset to today: ${today}`)
+  }
 })
 
 /**
@@ -265,20 +275,29 @@ setupDayDietRealtimeSubscription((event) => {
  * Optimized: Fetches specific day if not in cache
  */
 createEffect(() => {
+  const userId = currentUserId()
   const currentTarget = targetDay()
   const existingDays = dayDiets()
+
+  console.log(
+    `[dayDiet] Target day effect - user: ${userId}, target: ${currentTarget}, cache size: ${existingDays.length}`,
+  )
+
   const dayDiet = existingDays.find(
     (dayDiet) => dayDiet.target_day === currentTarget,
   )
 
   if (dayDiet === undefined) {
     console.warn(
-      `[dayDiet] No day diet found for ${currentTarget}, fetching...`,
+      `[dayDiet] No day diet found for user ${userId} on ${currentTarget}, fetching...`,
     )
     setCurrentDayDiet(null)
 
-    // Optimized: Fetch only the specific day we need
-    void fetchCurrentDayDiet(currentUserId(), currentTarget, existingDays)
+    // Only fetch if we have a valid user
+    if (userId) {
+      // Optimized: Fetch only the specific day we need
+      void fetchCurrentDayDiet(userId, currentTarget, existingDays)
+    }
     return
   }
 
