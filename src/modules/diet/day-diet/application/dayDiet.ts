@@ -97,23 +97,11 @@ export function acceptDayChange() {
   if (changeData) {
     setTargetDay(changeData.newDay)
     setDayChangeData(null)
-    bootstrap() // Refetch day diets to ensure current day is available
+    // No need to refetch - lazy loading effect will handle target day change
   }
 }
 
-function bootstrap() {
-  // For backward compatibility and non-reactive contexts, fetch all days
-  // This ensures realtime updates and user changes still work properly
-  void showPromise(
-    fetchAllUserDayDiets(currentUserId()),
-    {
-      loading: 'Carregando dietas do usuário...',
-      success: 'Dietas do usuário obtidas com sucesso',
-      error: 'Erro ao obter dietas do usuário',
-    },
-    { context: 'background' },
-  )
-}
+// Bootstrap removed - using pure lazy loading now
 
 /**
  * Optimized: Fetches only the current target day
@@ -191,17 +179,21 @@ export async function fetchPreviousDayDiets(
 }
 
 /**
- * When user changes, fetch all day diets for the new user
+ * When user changes, clear cache to force lazy loading for new user
  */
 createEffect(() => {
-  bootstrap()
+  // Clear cache when user changes - lazy loading will handle refetch
+  setDayDiets([])
+  setCurrentDayDiet(null)
 })
 
 /**
- * When realtime day diets change, update day diets for current user
+ * When realtime day diets change, invalidate cache for granular updates
  */
 setupDayDietRealtimeSubscription(() => {
-  bootstrap()
+  // Clear cache to force fresh lazy loading on next access
+  setDayDiets([])
+  // Keep current day diet to maintain UI state until user navigates
 })
 
 /**
@@ -229,19 +221,7 @@ createEffect(() => {
   setCurrentDayDiet(dayDiet)
 })
 
-/**
- * Legacy: Fetches all user days (used for special cases like copy modal)
- * Most common usage should use fetchCurrentDayDiet() instead
- */
-async function fetchAllUserDayDiets(userId: User['id']): Promise<void> {
-  try {
-    const newDayDiets = await dayRepository.fetchAllUserDayDiets(userId)
-    setDayDiets(newDayDiets)
-  } catch (error) {
-    errorHandler.error(error)
-    setDayDiets([])
-  }
-}
+// fetchAllUserDayDiets removed - using pure lazy loading now
 
 /**
  * Inserts a new day diet.
@@ -250,7 +230,7 @@ async function fetchAllUserDayDiets(userId: User['id']): Promise<void> {
  */
 export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
   try {
-    await showPromise(
+    const insertedDayDiet = await showPromise(
       dayRepository.insertDayDiet(dayDiet),
       {
         loading: 'Criando dia de dieta...',
@@ -259,7 +239,33 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
       },
       { context: 'user-action', audience: 'user' },
     )
-    await fetchAllUserDayDiets(dayDiet.owner)
+
+    // Optimistic cache update - add new day diet to cache
+    if (insertedDayDiet) {
+      const existingDays = dayDiets()
+      const existingIndex = existingDays.findIndex(
+        (day) => day.target_day === insertedDayDiet.target_day,
+      )
+
+      if (existingIndex >= 0) {
+        // Replace existing day
+        const updatedDays = [...existingDays]
+        updatedDays[existingIndex] = insertedDayDiet
+        setDayDiets(updatedDays)
+      } else {
+        // Add new day (sorted insertion)
+        const updatedDays = [...existingDays, insertedDayDiet].sort((a, b) =>
+          a.target_day.localeCompare(b.target_day),
+        )
+        setDayDiets(updatedDays)
+      }
+
+      // Update current day diet if it matches target day
+      if (insertedDayDiet.target_day === targetDay()) {
+        setCurrentDayDiet(insertedDayDiet)
+      }
+    }
+
     return true
   } catch (error) {
     errorHandler.error(error)
@@ -278,7 +284,7 @@ export async function updateDayDiet(
   dayDiet: NewDayDiet,
 ): Promise<boolean> {
   try {
-    await showPromise(
+    const updatedDayDiet = await showPromise(
       dayRepository.updateDayDiet(dayId, dayDiet),
       {
         loading: 'Atualizando dieta...',
@@ -287,7 +293,24 @@ export async function updateDayDiet(
       },
       { context: 'user-action', audience: 'user' },
     )
-    await fetchAllUserDayDiets(dayDiet.owner)
+
+    // Optimistic cache update - update existing day diet in cache
+    const existingDays = dayDiets()
+    const existingIndex = existingDays.findIndex((day) => day.id === dayId)
+
+    if (existingIndex >= 0) {
+      // Update existing day in cache
+      const updatedDays = [...existingDays]
+      updatedDays[existingIndex] = updatedDayDiet
+      setDayDiets(updatedDays)
+
+      // Update current day diet if it matches the updated day
+      if (updatedDayDiet.target_day === targetDay()) {
+        setCurrentDayDiet(updatedDayDiet)
+      }
+    }
+    // If day not in cache, lazy loading will handle it when needed
+
     return true
   } catch (error) {
     errorHandler.error(error)
@@ -302,6 +325,10 @@ export async function updateDayDiet(
  */
 export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
   try {
+    // Store target day for potential currentDayDiet cleanup before deletion
+    const existingDays = dayDiets()
+    const dayToDelete = existingDays.find((day) => day.id === dayId)
+
     await showPromise(
       dayRepository.deleteDayDiet(dayId),
       {
@@ -311,7 +338,17 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
       },
       { context: 'user-action', audience: 'user' },
     )
-    await fetchAllUserDayDiets(currentUserId())
+
+    // Optimistic cache update - remove deleted day from cache
+    const updatedDays = existingDays.filter((day) => day.id !== dayId)
+    setDayDiets(updatedDays)
+
+    // Clear current day diet if it was the deleted day
+    if (dayToDelete && dayToDelete.target_day === targetDay()) {
+      setCurrentDayDiet(null)
+      // Lazy loading effect will handle fetching if day still exists after deletion
+    }
+
     return true
   } catch (error) {
     errorHandler.error(error)

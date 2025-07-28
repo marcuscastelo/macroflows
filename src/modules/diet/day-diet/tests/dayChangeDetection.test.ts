@@ -4,16 +4,13 @@ import {
   acceptDayChange,
   dayChangeData,
   setDayChangeData,
+  targetDay,
 } from '~/modules/diet/day-diet/application/dayDiet'
-import * as toastManager from '~/modules/toast/application/toastManager'
-import * as user from '~/modules/user/application/user'
 import * as dateUtils from '~/shared/utils/date/dateUtils'
 
 describe('Day Change Detection', () => {
   it('should accept day change and navigate to new day', () => {
     vi.spyOn(dateUtils, 'getTodayYYYYMMDD').mockReturnValue('2024-01-16')
-    vi.spyOn(toastManager, 'showPromise').mockResolvedValue([])
-    vi.spyOn(user, 'currentUserId').mockReturnValue(1)
 
     setDayChangeData({
       previousDay: '2024-01-15',
@@ -22,7 +19,12 @@ describe('Day Change Detection', () => {
 
     acceptDayChange()
 
+    // Verify day change modal is dismissed
     expect(dayChangeData()).toBeNull()
-    expect(toastManager.showPromise).toHaveBeenCalled()
+
+    // Verify target day is updated to new day
+    expect(targetDay()).toBe('2024-01-16')
+
+    // Note: No showPromise call anymore - lazy loading effect handles data fetching
   })
 })
