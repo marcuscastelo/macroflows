@@ -60,10 +60,11 @@ export function EANReader(props: {
       useBarCodeDetectorIfSupported: true,
     }
 
+    let stopFn: (() => void) | null = null
     async function run() {
       const { Html5Qrcode } = await import('html5-qrcode')
-      const html5QrcodeScanner = new Html5Qrcode(props.id, config)
-      html5QrcodeScanner
+      const scanner = new Html5Qrcode(props.id, config)
+      scanner
         .start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: qrboxFunction },
@@ -84,11 +85,11 @@ export function EANReader(props: {
           return false
         })
 
-      // stopFn = () => {
-      //   scanner.stop().catch((err) => {
-      //     errorHandler.error(err, { operation: 'stopScanner' })
-      //   })
-      // }
+      stopFn = () => {
+        scanner.stop().catch((err) => {
+          errorHandler.error(err, { operation: 'stopScanner' })
+        })
+      }
     }
 
     run().catch((err) => {
@@ -97,7 +98,7 @@ export function EANReader(props: {
     })
     onCleanup(() => {
       console.debug('EANReader onCleanup()')
-      // stopFn?.()
+      stopFn?.()
     })
   })
   return (
