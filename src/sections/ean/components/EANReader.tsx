@@ -64,7 +64,7 @@ export function EANReader(props: {
     async function run() {
       const { Html5Qrcode } = await import('html5-qrcode')
       const scanner = new Html5Qrcode(props.id, config)
-      scanner
+      const didStart = scanner
         .start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: qrboxFunction },
@@ -86,9 +86,18 @@ export function EANReader(props: {
         })
 
       stopFn = () => {
-        scanner.stop().catch((err) => {
-          errorHandler.error(err, { operation: 'stopScanner' })
-        })
+        const action = () => {
+          scanner.stop().catch((err) => {
+            errorHandler.error(err, { operation: 'stopScanner' })
+          })
+        }
+        didStart
+          .then(() => action())
+          .catch((err) => {
+            errorHandler.error(err, {
+              operation: 'stopScanner - didStart.then',
+            })
+          })
       }
     }
 
