@@ -1,10 +1,9 @@
-import { createEffect, createSignal, Show, Suspense } from 'solid-js'
+import { createEffect, createSignal, Suspense } from 'solid-js'
 
 import { type Food } from '~/modules/diet/food/domain/food'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { EANReader } from '~/sections/ean/components/EANReader'
-import { modals } from '~/shared/modal/core/modalManager'
 import { lazyImport } from '~/shared/solid/lazyImport'
 
 const { EANSearch } = lazyImport(
@@ -23,8 +22,6 @@ let currentId = 1
 export const EANInsertModal = (props: EANInsertModalProps) => {
   const [EAN, setEAN] = createSignal<string>('')
   const [food, setFood] = createSignal<Food | null>(null)
-
-  const modalVisible = () => modals().find((m) => m.id === props.modalId)
 
   const handleSelect = (
     e?: MouseEvent & {
@@ -57,9 +54,7 @@ export const EANInsertModal = (props: EANInsertModalProps) => {
 
   return (
     <div class="ean-insert-modal-content">
-      <Show when={modalVisible()}>
-        <EANReader id={`EAN-reader-${currentId++}`} onScanned={setEAN} />
-      </Show>
+      <EANReader id={`EAN-reader-${currentId++}`} onScanned={setEAN} />
       <Suspense fallback={<LoadingRing />}>
         <EANSearch EAN={EAN} setEAN={setEAN} food={food} setFood={setFood} />
       </Suspense>
