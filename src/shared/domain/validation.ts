@@ -46,6 +46,7 @@ export const ENTITY_NAMES = {
   RecipeItem: 'do item de receita',
   Meal: 'da refeição',
   MacroNutrients: 'dos macronutrientes',
+  CachedSearch: 'da busca',
 } as const
 
 /**

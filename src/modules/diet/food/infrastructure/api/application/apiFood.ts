@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { markSearchAsCached } from '~/modules/search/application/searchCache'
+import { markSearchAsCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'

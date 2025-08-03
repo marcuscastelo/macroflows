@@ -12,7 +12,7 @@ import {
 import {
   fetchTemplatesByTabLogic,
   type FetchTemplatesDeps,
-} from '~/modules/search/application/searchLogic'
+} from '~/modules/template-search/application/templateSearchLogic'
 import { availableTabs } from '~/sections/search/components/TemplateSearchTabs'
 
 describe('fetchTemplatesByTabLogic', () => {

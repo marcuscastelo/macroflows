@@ -1,14 +1,16 @@
-import { createNormalizedSearch } from '~/modules/search/domain/cachedSearch'
-import type { SearchCacheRepository } from '~/modules/search/domain/searchCacheRepository'
+import {
+  createNewCachedSearch,
+  createNormalizedSearch,
+} from '~/modules/search/domain/cachedSearch'
+import { type CachedSearchGateway } from '~/modules/search/domain/searchGateway'
+import { supabaseCachedSearchMapper } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchMapper'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-
-import { supabaseSearchCacheMapper } from './supabaseSearchCacheMapper'
 
 const TABLE = 'cached_searches'
 const errorHandler = createErrorHandler('infrastructure', 'SearchCache')
 
-export function createSupabaseSearchCacheRepository(): SearchCacheRepository {
+export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
   return {
     async isSearchCached(searchQuery: string): Promise<boolean> {
       try {
@@ -46,9 +48,11 @@ export function createSupabaseSearchCacheRepository(): SearchCacheRepository {
           return
         }
 
-        const insertData = supabaseSearchCacheMapper.mapToSupabase({
-          search: normalizedSearch,
-        })
+        const insertData = supabaseCachedSearchMapper.toInsertDTO(
+          createNewCachedSearch({
+            search: normalizedSearch,
+          }),
+        )
 
         const { error } = await supabase.from(TABLE).upsert(insertData).select()
 
@@ -82,27 +86,6 @@ export function createSupabaseSearchCacheRepository(): SearchCacheRepository {
           component: 'SupabaseSearchCacheRepository',
           operation: 'unmarkSearchAsCached',
           additionalData: { searchQuery },
-        })
-        throw error
-      }
-    },
-
-    async getAllCachedSearches() {
-      try {
-        const { data, error } = await supabase
-          .from(TABLE)
-          .select('*')
-          .order('created_at', { ascending: false })
-
-        if (error !== null) {
-          throw new Error('Failed to get all cached searches', { cause: error })
-        }
-
-        return data.map(supabaseSearchCacheMapper.mapToDomain)
-      } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseSearchCacheRepository',
-          operation: 'getAllCachedSearches',
         })
         throw error
       }

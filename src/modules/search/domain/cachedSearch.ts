@@ -1,16 +1,21 @@
-import { z } from 'zod/v4'
+import { type z } from 'zod/v4'
 
-/**
- * Domain schema for cached search entries
- */
-export const cachedSearchSchema = z.object({
-  search: z.string().min(1),
+import { createZodEntity } from '~/shared/domain/validation'
+
+const ze = createZodEntity('CachedSearch')
+
+export const {
+  schema: cachedSearchSchema,
+  newSchema: newCachedSearchSchema,
+  createNew: createNewCachedSearch,
+  promote: promoteCachedSearch,
+  demote: demoteNewCachedSearch,
+} = ze.create({
+  search: ze.string().min(1),
 })
 
-/**
- * Domain type for cached search entries
- */
-export type CachedSearch = z.infer<typeof cachedSearchSchema>
+export type CachedSearch = Readonly<z.infer<typeof newCachedSearchSchema>>
+export type NewCachedSearch = Readonly<z.infer<typeof newCachedSearchSchema>>
 
 /**
  * Value object for search query normalization

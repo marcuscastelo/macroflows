@@ -5,7 +5,7 @@ import {
   importFoodsFromApiByName,
 } from '~/modules/diet/food/infrastructure/api/application/apiFood'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { isSearchCached } from '~/modules/search/application/searchCache'
+import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import {
