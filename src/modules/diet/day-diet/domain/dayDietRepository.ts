@@ -19,6 +19,6 @@ export type DayRepository = {
   updateDayDietById: (
     dayId: DayDiet['id'],
     newDay: NewDayDiet,
-  ) => Promise<DayDiet>
+  ) => Promise<DayDiet | null>
   deleteDayDietById: (id: DayDiet['id']) => Promise<void>
 }

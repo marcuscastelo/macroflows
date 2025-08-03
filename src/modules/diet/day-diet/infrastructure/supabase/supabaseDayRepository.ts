@@ -19,7 +19,7 @@ export const SUPABASE_TABLE_DAYS = 'days'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
-export function createSupabaseDayRepository(): DayRepository {
+export function createSupabaseDayGateway(): DayRepository {
   return {
     fetchDayDietByUserIdAndTargetDay,
     fetchDayDietsByUserIdBeforeDate,
