@@ -1,13 +1,29 @@
 import { createEffect, createRoot, onCleanup, onMount, untrack } from 'solid-js'
 
-import { fetchCurrentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { createCacheManagementService } from '~/modules/diet/day-diet/application/services/cacheManagement'
+import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
+import { createTargetDayResetService } from '~/modules/diet/day-diet/application/services/targetDayReset'
+import {
+  currentDayDiet,
+  targetDay,
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { currentUserId } from '~/modules/user/application/user'
 import { createDebug } from '~/shared/utils/createDebug'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
+
+const runTargetDayReset = createTargetDayResetService({
+  getTodayYYYYMMDD,
+  setTargetDay: dayStateStore.setTargetDay,
+})
+
+const runCacheManagement = createCacheManagementService({
+  getExistingDays: () => untrack(dayCacheStore.dayDiets),
+  getCurrentDayDiet: () => untrack(currentDayDiet),
+  clearCache: dayCacheStore.clearCache,
+})
 
 const debug = createDebug()
 
@@ -18,71 +34,28 @@ export function initializeDayEffects() {
   }
   initialized = true
   return createRoot(() => {
-    createEffect(() => {
-      debug(`Effect - Reset to today!`)
-      const userId = currentUserId() // Create reactive dependency on user changes
-      // Reset target day to today for new user
-      const today = getTodayYYYYMMDD()
-      dayStateStore.setTargetDay(today)
-      debug(`User changed to ${userId}, reset to today: ${today}`)
-    })
-
-    // Set up automatic day change detection
-    let dayCheckInterval: NodeJS.Timeout | null = null
     onMount(() => {
-      // Clear any existing interval
-      if (dayCheckInterval !== null) {
-        clearInterval(dayCheckInterval)
-      }
-      dayCheckInterval = setInterval(() => {
-        const newToday = getTodayYYYYMMDD()
-        const previousToday = untrack(dayChangeStore.currentToday)
-        const currentTarget = untrack(dayStateStore.targetDay)
-        if (newToday !== previousToday) {
-          debug(`Day changed from ${previousToday} to ${newToday}`)
-          dayChangeStore.setCurrentToday(newToday)
-          // Only show modal if user is not already viewing today
-          if (currentTarget !== newToday) {
-            dayChangeStore.setDayChangeData({
-              previousDay: previousToday,
-              newDay: newToday,
-            })
-          }
-        }
-      }, 6000)
-
-      onCleanup(() => {
-        if (dayCheckInterval !== null) {
-          clearInterval(dayCheckInterval)
-          dayCheckInterval = null
-        }
+      const cleanup = startDayChangeDetectionWorker({
+        getTodayYYYYMMDD,
+        getPreviousToday: () => untrack(dayChangeStore.currentToday),
+        getCurrentTargetDay: () => untrack(dayStateStore.targetDay),
+        setCurrentToday: dayChangeStore.setCurrentToday,
+        setDayChangeData: dayChangeStore.setDayChangeData,
       })
+
+      onCleanup(cleanup)
     })
 
     createEffect(() => {
-      debug(`Effect - Refetch/Manage cache`)
-      const currentTarget = dayStateStore.targetDay()
       const userId = currentUserId()
-      const existingDays = untrack(dayCacheStore.dayDiets)
-      const currentDayDiet_ = untrack(currentDayDiet)
+      debug(`User changed to ${userId}, resetting target day`)
+      runTargetDayReset()
+    })
 
-      // If any day is from other user, purge cache
-      if (existingDays.find((d) => d.owner !== userId) !== undefined) {
-        debug(`User changed! Purge cache`)
-        dayCacheStore.clearCache()
-        void fetchCurrentDayDiet(userId, currentTarget)
-        return
-      }
-
-      debug(
-        `Target day effect - user: ${userId}, target: ${currentTarget}, cache size: ${existingDays.length}`,
-      )
-      if (currentDayDiet_ === null) {
-        debug(
-          `No day diet found for user ${userId} on ${currentTarget}, fetching...`,
-        )
-        void fetchCurrentDayDiet(userId, currentTarget)
-      }
+    createEffect(() => {
+      const userId = currentUserId()
+      const currentTargetDay = targetDay()
+      runCacheManagement({ userId, currentTargetDay })
     })
   })
 }
