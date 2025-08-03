@@ -1,7 +1,3 @@
-import { z } from 'zod/v4'
-
-export const cachedSearchSchema = z.object({
-  search: z.string(),
-})
-
-export type CachedSearch = Readonly<z.infer<typeof cachedSearchSchema>>
+// Re-export domain types for backward compatibility
+export type { CachedSearch } from '~/modules/search/domain/cachedSearch'
+export { cachedSearchSchema } from '~/modules/search/domain/cachedSearch'
