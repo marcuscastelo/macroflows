@@ -4,7 +4,7 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type User } from '~/modules/user/domain/user'
 
-export type DayRepository = {
+export type DayGateway = {
   fetchDayDietByUserIdAndTargetDay: (
     userId: User['id'],
     targetDay: string,

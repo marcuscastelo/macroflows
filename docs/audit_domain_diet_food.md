@@ -15,7 +15,7 @@ This audit reviews the `food` submodule within the diet domain, focusing on DDD 
 - **Test Coverage:** There may be a test file for food operations, but coverage of invariants and edge cases should be reviewed.
 
 ## Urgency
-- **Medium:** Review and enforce strict contracts in the repository interface.
+- **Medium:** Migrate food module to day-diet architecture: implement Gateway layer (`createSupabaseFoodGateway()`), Repository layer with cache management, Store layer with reactive signals, and Service/UseCase layers following established patterns.
 - **Low:** Refactor transformation logic for clarity and add custom error classes for domain rules.
 
 ## Next Steps

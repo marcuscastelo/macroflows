@@ -1,11 +1,9 @@
-import { type Accessor, createSignal } from 'solid-js'
-
 import {
   type DayDiet,
   dayDietSchema,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import {
   createDayDietDAOFromNewDayDiet,
   daoToDayDiet,
@@ -15,52 +13,25 @@ import {
   createErrorHandler,
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
-import {
-  registerSubapabaseRealtimeCallback,
-  supabase,
-} from '~/shared/utils/supabase'
+import { supabase } from '~/shared/utils/supabase'
 
 export const SUPABASE_TABLE_DAYS = 'days'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
-export function createSupabaseDayRepository(): DayRepository {
+export function createSupabaseDayGateway(): DayGateway {
   return {
-    // fetchAllUserDayIndexes: fetchUserDayIndexes,
-    fetchAllUserDayDiets,
-    fetchDayDiet,
+    fetchDayDietByUserIdAndTargetDay,
+    fetchDayDietsByUserIdBeforeDate,
+    fetchDayDietById,
     insertDayDiet,
-    updateDayDiet,
-    deleteDayDiet,
+    updateDayDietById,
+    deleteDayDietById,
   }
 }
 
-/**
- * Sets up realtime subscription for day diet changes
- * @param onDayDietsChange - Callback function to call when data changes
- */
-export function setupDayDietRealtimeSubscription(
-  onDayDietsChange: () => void,
-): void {
-  registerSubapabaseRealtimeCallback(SUPABASE_TABLE_DAYS, onDayDietsChange)
-}
-
-/**
- * // TODO:   Replace userDays with userDayIndexes
- * @deprecated should be replaced by userDayIndexes
- */
-const [userDays, setUserDays] = createSignal<readonly DayDiet[]>([])
-// const [userDayIndexes, setUserDayIndexes] = createSignal<readonly DayIndex[]>([])
-
 // TODO:   better error handling
-/**
- * Fetches a DayDiet by its ID.
- * Throws on error or if not found.
- * @param dayId - The DayDiet ID
- * @returns The DayDiet
- * @throws Error if not found or on API/validation error
- */
-async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
+async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
   try {
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_DAYS)
@@ -97,16 +68,64 @@ async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
   }
 }
 
-// TODO:   better error handling
-async function fetchAllUserDayDiets(
+async function fetchDayDietByUserIdAndTargetDay(
   userId: User['id'],
-): Promise<Accessor<readonly DayDiet[]>> {
-  console.debug(`[supabaseDayRepository] fetchUserDays(${userId})`)
+  targetDay: string,
+): Promise<DayDiet | null> {
+  console.debug(
+    `[supabaseDayRepository] fetchCurrentUserDayDiet(${userId}, ${targetDay})`,
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .select()
     .eq('owner', userId)
-    .order('target_day', { ascending: true })
+    .eq('target_day', targetDay)
+    .single()
+
+  if (error !== null) {
+    if (error.code === 'PGRST116') {
+      // No rows returned - day doesn't exist
+      console.debug(`[supabaseDayRepository] No day found for ${targetDay}`)
+      return null
+    }
+    errorHandler.error(error)
+    throw error
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const dayData = data
+  const result = dayDietSchema.safeParse(dayData)
+  if (!result.success) {
+    errorHandler.validationError('Error parsing current day diet', {
+      component: 'supabaseDayRepository',
+      operation: 'fetchCurrentUserDayDiet',
+      additionalData: { parseError: result.error, targetDay },
+    })
+    throw wrapErrorWithStack(result.error)
+  }
+
+  console.debug(`[supabaseDayRepository] Successfully fetched day ${targetDay}`)
+  return result.data
+}
+
+async function fetchDayDietsByUserIdBeforeDate(
+  userId: User['id'],
+  beforeDay: string,
+  limit: number = 30,
+): Promise<readonly DayDiet[]> {
+  console.debug(
+    `[supabaseDayRepository] fetchPreviousUserDayDiets(${userId}, ${beforeDay}, ${limit})`,
+  )
+
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_DAYS)
+    .select()
+    .eq('owner', userId)
+    .lt('target_day', beforeDay)
+    .order('target_day', { ascending: false })
+    .limit(limit)
 
   if (error !== null) {
     errorHandler.error(error)
@@ -121,22 +140,18 @@ async function fetchAllUserDayDiets(
       if (result.success) {
         return result.data
       }
-      errorHandler.validationError('Error while parsing day', {
+      errorHandler.validationError('Error parsing previous day diet', {
         component: 'supabaseDayRepository',
-        operation: 'fetchAllUserDayDiets',
+        operation: 'fetchPreviousUserDayDiets',
         additionalData: { parseError: result.error },
       })
       throw wrapErrorWithStack(result.error)
     })
 
-  console.log('days', days)
-
   console.debug(
-    `[supabaseDayRepository] fetchUserDays returned ${days.length} days`,
+    `[supabaseDayRepository] fetchPreviousUserDayDiets returned ${days.length} days`,
   )
-  setUserDays(days)
-
-  return userDays
+  return days
 }
 
 // TODO:   Change upserts to inserts on the entire app
@@ -162,7 +177,7 @@ const insertDayDiet = async (newDay: NewDayDiet): Promise<DayDiet | null> => {
   return null
 }
 
-const updateDayDiet = async (
+const updateDayDietById = async (
   id: DayDiet['id'],
   newDay: NewDayDiet,
 ): Promise<DayDiet> => {
@@ -187,7 +202,7 @@ const updateDayDiet = async (
   return daoToDayDiet(dayDAO)
 }
 
-const deleteDayDiet = async (id: DayDiet['id']): Promise<void> => {
+const deleteDayDietById = async (id: DayDiet['id']): Promise<void> => {
   const { error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .delete()
@@ -196,12 +211,5 @@ const deleteDayDiet = async (id: DayDiet['id']): Promise<void> => {
 
   if (error !== null) {
     throw wrapErrorWithStack(error)
-  }
-
-  const userId = userDays().find((day) => day.id === id)?.owner
-  if (userId === undefined) {
-    throw new Error(
-      `Invalid state: userId not found for day ${id} on local cache`,
-    )
   }
 }

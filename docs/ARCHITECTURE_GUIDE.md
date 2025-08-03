@@ -11,12 +11,16 @@ All domains should be placed under `src/modules/<name>`, following this structur
 ```txt
 modules/
   └── <domain>/
-      ├── domain/          # Types, entities, and interfaces
-      ├── application/     # Resources and orchestration logic
-      ├── infrastructure/  # Specific implementations (e.g., Supabase)
-      ├── ui/              # UI components
-      ├── routes/          # Solid Router entrypoints
-      └── tests/           # Module-specific tests
+      ├── domain/              # Types, entities, and repository interfaces
+      ├── application/         # Orchestration logic
+      │   ├── usecases/       # CRUD operations with toast integration
+      │   └── services/       # Complex business logic services
+      ├── infrastructure/      # Implementations and data management
+      │   ├── supabase/       # Supabase gateway implementations  
+      │   └── signals/        # Reactive stores and state management
+      ├── ui/                  # Pure presentational components
+      ├── routes/              # Solid Router entrypoints
+      └── tests/               # Module-specific tests
 ```
 
 ---
@@ -57,44 +61,206 @@ export const createDayDiet = (data: DayDiet): DayDiet => {
 ### `domain/dayDietRepository.ts`
 
 ```ts
-export interface DayDietRepository {
-  getDayDietByDate(userId: string, date: string): Promise<DayDiet | null>;
+export type DayDietRepository = {
+  fetchDayDietByUserIdAndTargetDay: (
+    userId: User['id'],
+    targetDay: string,
+  ) => Promise<DayDiet | null>
+  fetchDayDietsByUserIdBeforeDate: (
+    userId: User['id'],
+    beforeDay: string,
+    limit?: number,
+  ) => Promise<readonly DayDiet[]>
+  fetchDayDietById: (dayId: DayDiet['id']) => Promise<DayDiet | null>
+  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null>
+  updateDayDietById: (
+    dayId: DayDiet['id'],
+    newDay: NewDayDiet,
+  ) => Promise<DayDiet | null>
+  deleteDayDietById: (id: DayDiet['id']) => Promise<void>
 }
 ```
 
-### `infrastructure/supabaseDayRepository.ts`
+### `infrastructure/supabase/supabaseDayGateway.ts`
 
 ```ts
-import { DayDietRepository } from "../domain/dayDietRepository";
-import { DayDiet } from "../domain/dayDiet";
-import { supabase } from "~/lib/supabase";
+import { DayDietRepository } from "../../domain/dayDietRepository";
+import { DayDiet } from "../../domain/dayDiet";
+import { supabase } from "~/shared/utils/supabase";
 
-export const supabaseDayDietRepository: DayDietRepository = {
-  async getDayDietByDate(userId, date) {
-    const { data, error } = await supabase
-      .from("day_diets")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("date", date)
-      .single();
-    if (error) return null;
-    return data as DayDiet;
+export function createSupabaseDayGateway(): DayDietRepository {
+  return {
+    fetchDayDietByUserIdAndTargetDay,
+    fetchDayDietsByUserIdBeforeDate,
+    fetchDayDietById,
+    insertDayDiet,
+    updateDayDietById,
+    deleteDayDietById,
   }
+}
+
+async function fetchDayDietByUserIdAndTargetDay(
+  userId: string, 
+  targetDay: string
+): Promise<DayDiet | null> {
+  const { data, error } = await supabase
+    .from("days")
+    .select()
+    .eq("owner", userId)
+    .eq("target_day", targetDay)
+    .single();
+    
+  if (error?.code === 'PGRST116') return null;
+  if (error) throw error;
+  
+  return dayDietSchema.parse(data);
+}
+```
+
+### `infrastructure/dayDietRepository.ts`
+
+```ts
+import { createSupabaseDayGateway } from './supabase/supabaseDayGateway';
+import { dayCacheStore } from './signals/dayCacheStore';
+import { createErrorHandler } from '~/shared/error/errorHandler';
+
+const supabaseGateway = createSupabaseDayGateway();
+const errorHandler = createErrorHandler('application', 'DayDiet');
+
+export function createDayDietRepository(): DayDietRepository {
+  return {
+    fetchDayDietById,
+    fetchDayDietByUserIdAndTargetDay,
+    fetchDayDietsByUserIdBeforeDate,
+    insertDayDiet,
+    updateDayDietById,
+    deleteDayDietById,
+  };
+}
+
+export async function fetchDayDietByUserIdAndTargetDay(
+  userId: string,
+  targetDay: string,
+): Promise<DayDiet | null> {
+  try {
+    const dayDiet = await supabaseGateway.fetchDayDietByUserIdAndTargetDay(userId, targetDay);
+    if (dayDiet) {
+      dayCacheStore.upsertToCache(dayDiet);
+    } else {
+      dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay });
+    }
+    return dayDiet;
+  } catch (error) {
+    errorHandler.error(error);
+    dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay });
+    return null;
+  }
+}
+```
+
+### `infrastructure/signals/dayCacheStore.ts`
+
+```ts
+import { createSignal, untrack } from 'solid-js';
+
+const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([]);
+
+function upsertToCache(dayDiet: DayDiet) {
+  const existingDayIndex = untrack(dayDiets).findIndex(
+    (d) => d.target_day === dayDiet.target_day,
+  );
+  setDayDiets((existingDays) => {
+    const days = [...existingDays];
+    if (existingDayIndex >= 0) {
+      days[existingDayIndex] = dayDiet;
+    } else {
+      days.push(dayDiet);
+      days.sort((a, b) => a.target_day.localeCompare(b.target_day));
+    }
+    return days;
+  });
+}
+
+function removeFromCache<T extends keyof DayDiet>(filter: {
+  by: T
+  value: DayDiet[T]
+}) {
+  setDayDiets((days) => days.filter((d) => d[filter.by] !== filter.value));
+}
+
+export const dayCacheStore = {
+  dayDiets,
+  setDayDiets,
+  clearCache: () => setDayDiets([]),
+  upsertToCache,
+  removeFromCache,
 };
 ```
 
-### `application/dayDiet.ts`
+### `infrastructure/signals/dayStateStore.ts`
 
 ```ts
-import { createResource } from "solid-js";
-import { supabaseDayDietRepository } from "../infrastructure/supabaseDayRepository";
+import { createSignal } from 'solid-js';
+import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils';
 
-export const createDayDietResource = (userId: string, date: string) => {
-  const [dayDiet] = createResource(() =>
-    supabaseDayDietRepository.getDayDietByDate(userId, date)
-  );
-  return dayDiet;
+const [targetDay, setTargetDay] = createSignal<string>(getTodayYYYYMMDD());
+
+export const dayStateStore = {
+  targetDay,
+  setTargetDay,
 };
+```
+
+### `application/services/cacheManagement.ts`
+
+```ts
+export function createCacheManagementService(deps: {
+  getExistingDays: () => readonly DayDiet[]
+  getCurrentDayDiet: () => DayDiet | null
+  clearCache: () => void
+}) {
+  return ({ currentTargetDay, userId }: {
+    currentTargetDay: string
+    userId: number
+  }) => {
+    const existingDays = untrack(deps.getExistingDays);
+    
+    // If any day is from other user, purge cache
+    if (existingDays.find((d) => d.owner !== userId)) {
+      deps.clearCache();
+      void fetchTargetDay(userId, currentTargetDay);
+      return;
+    }
+  };
+}
+```
+
+### `application/usecases/dayCrud.ts`
+
+```ts
+import { createDayDietRepository } from '../../infrastructure/dayDietRepository';
+import { showPromise } from '~/modules/toast/application/toastManager';
+
+const dayRepository = createDayDietRepository();
+
+export async function fetchTargetDay(
+  userId: User['id'],
+  targetDay: string,
+): Promise<void> {
+  await dayRepository.fetchDayDietByUserIdAndTargetDay(userId, targetDay);
+}
+
+export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
+  await showPromise(
+    dayRepository.insertDayDiet(dayDiet),
+    {
+      loading: 'Criando dia de dieta...',
+      success: 'Dia de dieta criado com sucesso',
+      error: 'Erro ao criar dia de dieta',
+    },
+    { context: 'user-action', audience: 'user' },
+  );
+}
 ```
 
 ### `ui/DayDietCard.tsx`
@@ -181,6 +347,166 @@ if (somethingWentWrong) {
   throw new Error('Something went wrong')
 }
 ```
+
+---
+
+## 🏗️ Modern Architecture Patterns (Day-Diet Standard)
+
+### Gateway + Repository + Store Pattern
+
+Following the day-diet module standard, all modules should implement a three-layer architecture:
+
+#### 1. Gateway Layer (`infrastructure/supabase/`)
+Direct Supabase interaction with data validation and error throwing.
+
+```typescript
+// createSupabase*Gateway() pattern
+export function createSupabaseDayGateway(): DayRepository {
+  return {
+    fetchDayDietByUserIdAndTargetDay,
+    fetchDayDietsByUserIdBeforeDate,
+    fetchDayDietById,
+    insertDayDiet,
+    updateDayDietById,
+    deleteDayDietById,
+  }
+}
+
+async function fetchDayDietByUserIdAndTargetDay(
+  userId: User['id'],
+  targetDay: string,
+): Promise<DayDiet | null> {
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_DAYS)
+    .select()
+    .eq('owner', userId)
+    .eq('target_day', targetDay)
+    .single()
+    
+  if (error?.code === 'PGRST116') return null
+  if (error) throw error
+  return dayDietSchema.parse(data)
+}
+```
+
+#### 2. Repository Layer (`infrastructure/`)
+Cache management, error handling, and orchestration between Gateway and Store.
+
+```typescript
+// create*Repository() pattern
+const supabaseGateway = createSupabaseDayGateway()
+const errorHandler = createErrorHandler('application', 'DayDiet')
+
+export function createDayDietRepository(): DayRepository {
+  return {
+    fetchDayDietById,
+    fetchDayDietByUserIdAndTargetDay,
+    // ... other methods
+  }
+}
+
+export async function fetchDayDietByUserIdAndTargetDay(
+  userId: User['id'],
+  targetDay: string,
+): Promise<DayDiet | null> {
+  try {
+    const dayDiet = await supabaseGateway.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+    if (dayDiet) {
+      dayCacheStore.upsertToCache(dayDiet)
+    } else {
+      dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
+    }
+    return dayDiet
+  } catch (error) {
+    errorHandler.error(error)
+    dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
+    return null
+  }
+}
+```
+
+#### 3. Store Layer (`infrastructure/signals/`)
+Reactive state management with SolidJS signals.
+
+```typescript
+// *Store pattern
+const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
+
+function upsertToCache(dayDiet: DayDiet) {
+  const existingDayIndex = untrack(dayDiets).findIndex(
+    (d) => d.target_day === dayDiet.target_day,
+  )
+  setDayDiets((existingDays) => {
+    const days = [...existingDays]
+    if (existingDayIndex >= 0) {
+      days[existingDayIndex] = dayDiet
+    } else {
+      days.push(dayDiet)
+      days.sort((a, b) => a.target_day.localeCompare(b.target_day))
+    }
+    return days
+  })
+}
+
+export const dayCacheStore = {
+  dayDiets,
+  setDayDiets,
+  clearCache: () => setDayDiets([]),
+  upsertToCache,
+  removeFromCache,
+}
+```
+
+#### 4. Service Layer (`application/services/`)
+Complex business logic with dependency injection.
+
+```typescript
+export function createCacheManagementService(deps: {
+  getExistingDays: () => readonly DayDiet[]
+  getCurrentDayDiet: () => DayDiet | null
+  clearCache: () => void
+}) {
+  return ({ currentTargetDay, userId }: {
+    currentTargetDay: string
+    userId: number
+  }) => {
+    const existingDays = untrack(deps.getExistingDays)
+    
+    // Complex business logic here
+    if (existingDays.find((d) => d.owner !== userId)) {
+      deps.clearCache()
+      void fetchTargetDay(userId, currentTargetDay)
+    }
+  }
+}
+```
+
+#### 5. UseCase Layer (`application/usecases/`)
+User operations with toast integration.
+
+```typescript
+const dayRepository = createDayDietRepository()
+
+export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
+  await showPromise(
+    dayRepository.insertDayDiet(dayDiet),
+    {
+      loading: 'Criando dia de dieta...',
+      success: 'Dia de dieta criado com sucesso',
+      error: 'Erro ao criar dia de dieta',
+    },
+    { context: 'user-action', audience: 'user' },
+  )
+}
+```
+
+### Naming Conventions
+
+- **Gateway Functions**: `createSupabase*Gateway()`
+- **Repository Functions**: `create*Repository()`
+- **Store Objects**: `*Store` (e.g., `dayCacheStore`, `dayStateStore`)
+- **Service Functions**: `create*Service()`
+- **Fetch Methods**: `fetch*By*` (e.g., `fetchDayDietByUserIdAndTargetDay`)
 
 ---
 

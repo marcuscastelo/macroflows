@@ -9,7 +9,7 @@ const { PreviousDayCard } = lazyImport(
 )
 
 type CopyLastDayModalProps = {
-  previousDays: DayDiet[]
+  previousDays: readonly DayDiet[]
   copying: boolean
   copyingDay: string | null
   onCopy: (day: string) => void
