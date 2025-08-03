@@ -3,7 +3,7 @@ import {
   dayDietSchema,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import {
   createDayDietDAOFromNewDayDiet,
   daoToDayDiet,
@@ -19,7 +19,7 @@ export const SUPABASE_TABLE_DAYS = 'days'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
-export function createSupabaseDayGateway(): DayRepository {
+export function createSupabaseDayGateway(): DayGateway {
   return {
     fetchDayDietByUserIdAndTargetDay,
     fetchDayDietsByUserIdBeforeDate,

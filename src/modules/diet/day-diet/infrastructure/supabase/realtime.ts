@@ -2,7 +2,7 @@ import {
   type DayDiet,
   dayDietSchema,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
+import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
 
 /**
