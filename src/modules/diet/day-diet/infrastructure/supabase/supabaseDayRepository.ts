@@ -31,13 +31,6 @@ export function createSupabaseDayRepository(): DayRepository {
 }
 
 // TODO:   better error handling
-/**
- * Fetches a DayDiet by its ID.
- * Throws on error or if not found.
- * @param dayId - The DayDiet ID
- * @returns The DayDiet
- * @throws Error if not found or on API/validation error
- */
 async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
   try {
     const { data, error } = await supabase
@@ -75,12 +68,6 @@ async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
   }
 }
 
-/**
- * Optimized: Fetches only the current day diet for a user
- * @param userId - User ID
- * @param targetDay - Target day in YYYY-MM-DD format
- * @returns The DayDiet for the target day or null if not found
- */
 async function fetchCurrentUserDayDiet(
   userId: User['id'],
   targetDay: string,
@@ -123,13 +110,6 @@ async function fetchCurrentUserDayDiet(
   return result.data
 }
 
-/**
- * Optimized: Fetches previous days for a user (for copy functionality)
- * @param userId - User ID
- * @param beforeDay - Only fetch days before this date (YYYY-MM-DD)
- * @param limit - Maximum number of days to fetch (default: 30)
- * @returns Array of previous DayDiets ordered by date descending
- */
 async function fetchPreviousUserDayDiets(
   userId: User['id'],
   beforeDay: string,

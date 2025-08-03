@@ -1,3 +1,5 @@
+import { batch } from 'solid-js'
+
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
@@ -17,8 +19,10 @@ export function dismissDayChangeModal() {
 export function acceptDayChange() {
   const changeData = dayChangeStore.dayChangeData()
   if (changeData) {
-    dayCacheStore.clearCache()
-    dayStateStore.setTargetDay(changeData.newDay)
-    dayChangeStore.setDayChangeData(null)
+    batch(() => {
+      dayCacheStore.clearCache()
+      dayStateStore.setTargetDay(changeData.newDay)
+      dayChangeStore.setDayChangeData(null)
+    })
   }
 }

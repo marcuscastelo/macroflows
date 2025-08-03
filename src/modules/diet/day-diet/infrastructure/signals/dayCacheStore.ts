@@ -1,21 +1,20 @@
-import { createEffect, createSignal } from 'solid-js'
+import { createEffect, createSignal, untrack } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
 
 const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
-const currentDayDiet = () =>
-  dayDiets().find((d) => d.target_day === dayStateStore.targetDay()) ?? null
 
 function clearCache() {
+  debug(`Clearing cache`)
   setDayDiets([])
 }
 
 function upsertToCache(dayDiet: DayDiet) {
-  const existingDayIndex = dayDiets().findIndex(
+  debug(`Upserting day:`, dayDiet)
+  const existingDayIndex = untrack(dayDiets).findIndex(
     (d) => d.target_day === dayDiet.target_day,
   )
   setDayDiets((existingDays) => {
@@ -37,13 +36,23 @@ function removeFromCache<T extends keyof DayDiet>(filter: {
   setDayDiets((days) => days.filter((d) => d[filter.by] !== filter.value))
 }
 
+function createCacheItemSignal<T extends keyof DayDiet>(filter: {
+  by: T
+  value: DayDiet[T]
+}) {
+  debug(`findInCache filter=`, filter)
+  const result = dayDiets().find((d) => d[filter.by] === filter.value) ?? null
+  debug(`findInCache result=`, result)
+  return result
+}
+
 export const dayCacheStore = {
-  currentDayDiet,
   dayDiets,
   setDayDiets,
   clearCache,
   upsertToCache,
   removeFromCache,
+  createCacheItemSignal,
 }
 
 createEffect(() => {

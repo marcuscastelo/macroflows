@@ -31,7 +31,6 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  // Optimized: Lazy load previous days only when modal opens
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [loadingPreviousDays, setLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
@@ -100,7 +99,6 @@ export function CopyLastDayButton(props: {
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
-          // Load previous days when modal opens (optimized)
           void loadPreviousDays()
 
           openContentModal(

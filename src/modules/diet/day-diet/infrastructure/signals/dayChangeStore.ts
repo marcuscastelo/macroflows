@@ -1,6 +1,9 @@
-import { createSignal } from 'solid-js'
+import { createEffect, createSignal } from 'solid-js'
 
+import { createDebug } from '~/shared/utils/createDebug'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
+
+const debug = createDebug()
 
 /**
  * Signal that tracks when the day has changed and a confirmation modal should be shown.
@@ -19,3 +22,7 @@ export const dayChangeStore = {
   currentToday,
   setCurrentToday,
 }
+
+createEffect(() => {
+  debug(`Today has changed: `, currentToday())
+})
