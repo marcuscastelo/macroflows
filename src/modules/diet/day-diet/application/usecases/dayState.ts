@@ -1,7 +1,9 @@
-import { dayDietStore } from '~/modules/diet/day-diet/infrastructure/signals/dayDietStore'
+import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
+import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
+import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 
-export const targetDay = dayDietStore.targetDay
-export const setTargetDay = dayDietStore.setTargetDay
+export const targetDay = dayStateStore.targetDay
+export const setTargetDay = dayStateStore.setTargetDay
 
-export const currentToday = dayDietStore.currentToday
-export const currentDayDiet = dayDietStore.currentDayDiet
+export const currentToday = dayChangeStore.currentToday
+export const currentDayDiet = dayCacheStore.currentDayDiet

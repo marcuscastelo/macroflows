@@ -2,7 +2,7 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { dayDietStore } from '~/modules/diet/day-diet/infrastructure/signals/dayDietStore'
+import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { createSupabaseDayRepository } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
@@ -21,7 +21,6 @@ const errorHandler = createErrorHandler('application', 'DayDiet')
 export async function fetchCurrentDayDiet(
   userId: User['id'],
   targetDay: string,
-  existingDays: readonly DayDiet[],
 ): Promise<void> {
   try {
     const currentDayDiet = await dayRepository.fetchCurrentUserDayDiet(
@@ -30,34 +29,13 @@ export async function fetchCurrentDayDiet(
     )
 
     if (currentDayDiet === null) {
-      // Day doesn't exist - create minimal cache entry
-      dayDietStore.setCurrentDayDiet(null)
-      // Keep existing dayDiets cache, just ensure currentDayDiet is null
+      dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
       return
     }
-
-    // Update cache efficiently
-    const existingDayIndex = existingDays.findIndex(
-      (day) => day.target_day === targetDay,
-    )
-
-    if (existingDayIndex >= 0) {
-      // Update existing day in cache
-      const updatedDays = [...existingDays]
-      updatedDays[existingDayIndex] = currentDayDiet
-      dayDietStore.setDayDiets(updatedDays)
-    } else {
-      // Add new day to cache (sorted insertion)
-      const updatedDays = [...existingDays, currentDayDiet].sort((a, b) =>
-        a.target_day.localeCompare(b.target_day),
-      )
-      dayDietStore.setDayDiets(updatedDays)
-    }
-
-    dayDietStore.setCurrentDayDiet(currentDayDiet)
+    dayCacheStore.upsertToCache(currentDayDiet)
   } catch (error) {
     errorHandler.error(error)
-    dayDietStore.setCurrentDayDiet(null)
+    dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
   }
 }
 
@@ -99,30 +77,8 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
       { context: 'user-action', audience: 'user' },
     )
 
-    // Optimistic cache update - add new day diet to cache
-    if (insertedDayDiet) {
-      const existingDays = dayDietStore.dayDiets()
-      const existingIndex = existingDays.findIndex(
-        (day) => day.target_day === insertedDayDiet.target_day,
-      )
-
-      if (existingIndex >= 0) {
-        // Replace existing day
-        const updatedDays = [...existingDays]
-        updatedDays[existingIndex] = insertedDayDiet
-        dayDietStore.setDayDiets(updatedDays)
-      } else {
-        // Add new day (sorted insertion)
-        const updatedDays = [...existingDays, insertedDayDiet].sort((a, b) =>
-          a.target_day.localeCompare(b.target_day),
-        )
-        dayDietStore.setDayDiets(updatedDays)
-      }
-
-      // Update current day diet if it matches target day
-      if (insertedDayDiet.target_day === dayDietStore.targetDay()) {
-        dayDietStore.setCurrentDayDiet(insertedDayDiet)
-      }
+    if (insertedDayDiet !== null) {
+      dayCacheStore.upsertToCache(insertedDayDiet)
     }
 
     return true
@@ -153,23 +109,7 @@ export async function updateDayDiet(
       { context: 'user-action', audience: 'user' },
     )
 
-    // Optimistic cache update - update existing day diet in cache
-    const existingDays = dayDietStore.dayDiets()
-    const existingIndex = existingDays.findIndex((day) => day.id === dayId)
-
-    if (existingIndex >= 0) {
-      // Update existing day in cache
-      const updatedDays = [...existingDays]
-      updatedDays[existingIndex] = updatedDayDiet
-      dayDietStore.setDayDiets(updatedDays)
-
-      // Update current day diet if it matches the updated day
-      if (updatedDayDiet.target_day === dayDietStore.targetDay()) {
-        dayDietStore.setCurrentDayDiet(updatedDayDiet)
-      }
-    }
-    // If day not in cache, lazy loading will handle it when needed
-
+    dayCacheStore.upsertToCache(updatedDayDiet)
     return true
   } catch (error) {
     errorHandler.error(error)
@@ -185,9 +125,6 @@ export async function updateDayDiet(
 export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
   try {
     // Store target day for potential currentDayDiet cleanup before deletion
-    const existingDays = dayDietStore.dayDiets()
-    const dayToDelete = existingDays.find((day) => day.id === dayId)
-
     await showPromise(
       dayRepository.deleteDayDiet(dayId),
       {
@@ -198,15 +135,7 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
       { context: 'user-action', audience: 'user' },
     )
 
-    // Optimistic cache update - remove deleted day from cache
-    const updatedDays = existingDays.filter((day) => day.id !== dayId)
-    dayDietStore.setDayDiets(updatedDays)
-
-    // Clear current day diet if it was the deleted day
-    if (dayToDelete && dayToDelete.target_day === dayDietStore.targetDay()) {
-      dayDietStore.setCurrentDayDiet(null)
-      // Lazy loading effect will handle fetching if day still exists after deletion
-    }
+    dayCacheStore.removeFromCache({ by: 'id', value: dayId })
 
     return true
   } catch (error) {
