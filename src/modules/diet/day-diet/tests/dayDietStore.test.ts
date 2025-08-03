@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { acceptDayChange } from '~/modules/diet/day-diet/application/dayDiet'
+import { acceptDayChange } from '~/modules/diet/day-diet/application/dayDietUseCases'
 import {
   dayChangeData,
   setDayChangeData,

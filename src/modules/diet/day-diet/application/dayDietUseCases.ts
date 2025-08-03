@@ -16,7 +16,7 @@ import {
 import {
   createSupabaseDayRepository,
   setupDayDietRealtimeSubscription,
-} from '~/modules/diet/day-diet/infrastructure/supabaseDayRepository'
+} from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'

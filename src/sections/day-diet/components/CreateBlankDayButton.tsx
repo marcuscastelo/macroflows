@@ -1,6 +1,6 @@
 import { Show } from 'solid-js'
 
-import { insertDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { insertDayDiet } from '~/modules/diet/day-diet/application/dayDietUseCases'
 import { createNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import { currentUser } from '~/modules/user/application/user'

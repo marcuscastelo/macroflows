@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { deleteDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { deleteDayDiet } from '~/modules/diet/day-diet/application/dayDietUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'

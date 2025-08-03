@@ -3,7 +3,7 @@ import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 import {
   acceptDayChange,
   dismissDayChangeModal,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/dayDietUseCases'
 import {
   currentDayDiet,
   currentToday,
