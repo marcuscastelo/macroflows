@@ -1,5 +1,14 @@
-import { createEffect, createSignal, onCleanup, untrack } from 'solid-js'
+import { untrack } from 'solid-js'
 
+import {
+  dayChangeData,
+  dayDiets,
+  setCurrentDayDiet,
+  setDayChangeData,
+  setDayDiets,
+  setTargetDay,
+  targetDay,
+} from '~/modules/diet/day-diet/application/dayDietStore'
 import {
   type DayDiet,
   type NewDayDiet,
@@ -9,78 +18,11 @@ import {
   setupDayDietRealtimeSubscription,
 } from '~/modules/diet/day-diet/infrastructure/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 
 const dayRepository = createSupabaseDayRepository()
 const errorHandler = createErrorHandler('application', 'DayDiet')
-
-export const [targetDay, setTargetDay] =
-  createSignal<string>(getTodayYYYYMMDD())
-
-const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
-
-export const [currentDayDiet, setCurrentDayDiet] = createSignal<DayDiet | null>(
-  null,
-)
-
-/**
- * Reactive signal that tracks the current day and automatically updates when the day changes.
- * This is used for day lock functionality to ensure proper edit mode restrictions.
- */
-export const [currentToday, setCurrentToday] =
-  createSignal<string>(getTodayYYYYMMDD())
-
-/**
- * Signal that tracks when the day has changed and a confirmation modal should be shown.
- * Contains the previous day that the user was viewing when the day changed.
- */
-export const [dayChangeData, setDayChangeData] = createSignal<{
-  previousDay: string
-  newDay: string
-} | null>(null)
-
-// Set up automatic day change detection
-let dayCheckInterval: NodeJS.Timeout | null = null
-
-function startDayChangeDetection() {
-  // Clear any existing interval
-  if (dayCheckInterval !== null) {
-    clearInterval(dayCheckInterval)
-  }
-
-  dayCheckInterval = setInterval(() => {
-    const newToday = getTodayYYYYMMDD()
-    const previousToday = currentToday()
-
-    if (newToday !== previousToday) {
-      console.log(`[dayDiet] Day changed from ${previousToday} to ${newToday}`)
-      setCurrentToday(newToday)
-
-      // Only show modal if user is not already viewing today
-      if (targetDay() !== newToday) {
-        setDayChangeData({
-          previousDay: previousToday,
-          newDay: newToday,
-        })
-      }
-    }
-  }, 6000)
-}
-
-createEffect(() => {
-  // Start day change detection immediately
-  startDayChangeDetection()
-  // Cleanup interval on module cleanup
-  onCleanup(() => {
-    if (dayCheckInterval !== null) {
-      clearInterval(dayCheckInterval)
-      dayCheckInterval = null
-    }
-  })
-})
 
 /**
  * Dismisses the day change confirmation modal
@@ -102,13 +44,13 @@ export function acceptDayChange() {
 }
 
 /**
- * Optimized: Fetches only the current target day
+ * Fetches only the current target day
  * Updates local cache intelligently without full refetch
  * @param userId - User ID
  * @param targetDay - Target day to fetch
  * @param existingDays - Current cached days (passed to avoid reactive reads in async context)
  */
-async function fetchCurrentDayDiet(
+export async function fetchCurrentDayDiet(
   userId: User['id'],
   targetDay: string,
   existingDays: readonly DayDiet[],
@@ -152,7 +94,7 @@ async function fetchCurrentDayDiet(
 }
 
 /**
- * Optimized: Fetches previous days for copy functionality
+ * Fetches previous days for copy functionality
  * Only fetches when needed instead of requiring all days to be cached
  */
 export async function fetchPreviousDayDiets(
@@ -171,25 +113,6 @@ export async function fetchPreviousDayDiets(
     return []
   }
 }
-
-/**
- * When user changes, clear cache and reset to today
- */
-createEffect(() => {
-  const userId = currentUserId() // Create reactive dependency on user changes
-
-  if (userId) {
-    // Clear cache when user changes - lazy loading will handle refetch
-    setDayDiets([])
-    setCurrentDayDiet(null)
-
-    // Reset target day to today for new user
-    const today = getTodayYYYYMMDD()
-    setTargetDay(today)
-
-    console.log(`[dayDiet] User changed to ${userId}, reset to today: ${today}`)
-  }
-})
 
 /**
  * When realtime day diets change, apply granular cache updates
@@ -262,40 +185,6 @@ setupDayDietRealtimeSubscription((event) => {
       break
     }
   }
-})
-
-/**
- * When target day changes, update current day diet
- * Optimized: Fetches specific day if not in cache
- */
-createEffect(() => {
-  const userId = currentUserId()
-  const currentTarget = targetDay()
-  const existingDays = dayDiets()
-
-  console.log(
-    `[dayDiet] Target day effect - user: ${userId}, target: ${currentTarget}, cache size: ${existingDays.length}`,
-  )
-
-  const dayDiet = existingDays.find(
-    (dayDiet) => dayDiet.target_day === currentTarget,
-  )
-
-  if (dayDiet === undefined) {
-    console.warn(
-      `[dayDiet] No day diet found for user ${userId} on ${currentTarget}, fetching...`,
-    )
-    setCurrentDayDiet(null)
-
-    // Only fetch if we have a valid user
-    if (userId) {
-      // Optimized: Fetch only the specific day we need
-      void fetchCurrentDayDiet(userId, currentTarget, existingDays)
-    }
-    return
-  }
-
-  setCurrentDayDiet(dayDiet)
 })
 
 /**

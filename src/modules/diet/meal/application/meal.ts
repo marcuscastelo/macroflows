@@ -1,7 +1,5 @@
-import {
-  currentDayDiet,
-  updateDayDiet,
-} from '~/modules/diet/day-diet/application/dayDiet'
+import { updateDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietStore'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
 import { type Meal } from '~/modules/diet/meal/domain/meal'

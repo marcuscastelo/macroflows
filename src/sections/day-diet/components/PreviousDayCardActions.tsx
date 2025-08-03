@@ -1,4 +1,4 @@
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietStore'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'

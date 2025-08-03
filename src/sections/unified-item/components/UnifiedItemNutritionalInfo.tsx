@@ -1,6 +1,6 @@
 import { type Accessor, createMemo } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietStore'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'

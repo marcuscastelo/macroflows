@@ -1,11 +1,11 @@
 import { type Accessor, createSignal } from 'solid-js'
 
 import {
-  currentDayDiet,
   fetchPreviousDayDiets,
   insertDayDiet,
   updateDayDiet,
 } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietStore'
 import {
   createNewDayDiet,
   type DayDiet,

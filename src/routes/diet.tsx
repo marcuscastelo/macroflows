@@ -2,12 +2,14 @@ import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
 import {
   acceptDayChange,
+  dismissDayChangeModal,
+} from '~/modules/diet/day-diet/application/dayDiet'
+import {
   currentDayDiet,
   currentToday,
   dayChangeData,
-  dismissDayChangeModal,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/dayDietStore'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { PageLoading } from '~/sections/common/components/PageLoading'

@@ -3,7 +3,7 @@ import { Suspense } from 'solid-js'
 import {
   setTargetDay,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/dayDietStore'
 import { type DateValueType } from '~/sections/datepicker/types'
 import { lazyImport } from '~/shared/solid/lazyImport'
 import { getTodayYYYYMMDD, stringToDate } from '~/shared/utils/date/dateUtils'

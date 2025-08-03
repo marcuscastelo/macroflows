@@ -669,6 +669,8 @@ type(scope): description
 ## Memory Bank
 
 - **NEVER destucture `props`! This breaks reactivity**
+- **When "fix tests" is mentioned, NEVER modify production code - only adjust test structure, imports, and organization**
+- **"Fix tests after staged changes" means the code structure changed and tests need to be moved/reorganized to match the new structure**
 
 # Serena MCP for efficient editting
 
