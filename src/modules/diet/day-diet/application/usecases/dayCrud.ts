@@ -49,11 +49,15 @@ export async function fetchPreviousDayDiets(
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
   try {
-    return await dayRepository.fetchPreviousUserDayDiets(
+    const previousDays = await dayRepository.fetchPreviousUserDayDiets(
       userId,
       beforeDay,
       limit,
     )
+    for (const day of previousDays) {
+      dayCacheStore.upsertToCache(day)
+    }
+    return previousDays
   } catch (error) {
     errorHandler.error(error)
     return []

@@ -1,9 +1,10 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { fetchCurrentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
-import { currentUserId } from '~/modules/user/application/user'
+import { createDebug } from '~/shared/utils/createDebug'
+
+const debug = createDebug()
 
 const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
 const currentDayDiet = () =>
@@ -45,24 +46,6 @@ export const dayCacheStore = {
   removeFromCache,
 }
 
-/**
- * When target day changes, update current day diet
- * Optimized: Fetches specific day if not in cache
- */
 createEffect(() => {
-  const userId = currentUserId()
-  const currentTarget = dayStateStore.targetDay()
-  const existingDays = dayDiets()
-
-  console.log(
-    `[dayDiet] Target day effect - user: ${userId}, target: ${currentTarget}, cache size: ${existingDays.length}`,
-  )
-
-  if (currentDayDiet() === null) {
-    console.warn(
-      `[dayDiet] No day diet found for user ${userId} on ${currentTarget}, fetching...`,
-    )
-
-    void fetchCurrentDayDiet(userId, currentTarget)
-  }
+  debug(`Cache size: `, dayDiets().length)
 })
