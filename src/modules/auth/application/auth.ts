@@ -7,7 +7,7 @@ import type {
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import type { AuthRepository } from '~/modules/auth/domain/authRepository'
-import { createSupabaseAuthRepository } from '~/modules/auth/infrastructure/supabaseAuthRepository'
+import { createSupabaseAuthRepository } from '~/modules/auth/infrastructure/supabase/supabaseAuthRepository'
 import { logError } from '~/shared/error/errorHandler'
 import { createDebug } from '~/shared/utils/createDebug'
 

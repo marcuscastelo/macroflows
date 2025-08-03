@@ -8,16 +8,19 @@ vi.mock('~/shared/error/errorHandler', () => ({
 }))
 
 // Mock the Supabase auth repository
-vi.mock('~/modules/auth/infrastructure/supabaseAuthRepository', () => ({
-  createSupabaseAuthRepository: () => ({
-    getSession: vi.fn().mockResolvedValue(null),
-    getUser: vi.fn().mockResolvedValue(null),
-    signIn: vi.fn().mockResolvedValue({ url: 'https://example.com' }),
-    signOut: vi.fn().mockResolvedValue({}),
-    refreshSession: vi.fn().mockResolvedValue(null),
-    onAuthStateChange: vi.fn().mockReturnValue(() => {}),
+vi.mock(
+  '~/modules/auth/infrastructure/supabase/supabaseAuthRepository',
+  () => ({
+    createSupabaseAuthRepository: () => ({
+      getSession: vi.fn().mockResolvedValue(null),
+      getUser: vi.fn().mockResolvedValue(null),
+      signIn: vi.fn().mockResolvedValue({ url: 'https://example.com' }),
+      signOut: vi.fn().mockResolvedValue({}),
+      refreshSession: vi.fn().mockResolvedValue(null),
+      onAuthStateChange: vi.fn().mockReturnValue(() => {}),
+    }),
   }),
-}))
+)
 
 describe('Auth Module', () => {
   it('should initialize with loading state', () => {
