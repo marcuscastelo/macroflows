@@ -11,36 +11,6 @@ import { createErrorHandler } from '~/shared/error/errorHandler'
 const dayRepository = createSupabaseDayRepository()
 const errorHandler = createErrorHandler('application', 'DayDiet')
 
-export const dayDiets = dayDietStore.dayDiets
-export const setDayDiets = dayDietStore.setDayDiets
-export const targetDay = dayDietStore.targetDay
-export const setTargetDay = dayDietStore.setTargetDay
-export const currentDayDiet = dayDietStore.currentDayDiet
-export const setCurrentDayDiet = dayDietStore.setCurrentDayDiet
-export const currentToday = dayDietStore.currentToday
-export const setCurrentToday = dayDietStore.setCurrentToday
-export const dayChangeData = dayDietStore.dayChangeData
-export const setDayChangeData = dayDietStore.setDayChangeData
-
-/**
- * Dismisses the day change confirmation modal
- */
-export function dismissDayChangeModal() {
-  dayDietStore.setDayChangeData(null)
-}
-
-/**
- * Accepts the day change and navigates to the new day
- */
-export function acceptDayChange() {
-  const changeData = dayDietStore.dayChangeData()
-  if (changeData) {
-    dayDietStore.setDayDiets([])
-    dayDietStore.setTargetDay(changeData.newDay)
-    dayDietStore.setDayChangeData(null)
-  }
-}
-
 /**
  * Fetches only the current target day
  * Updates local cache intelligently without full refetch

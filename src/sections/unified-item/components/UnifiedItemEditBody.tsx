@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietUseCases'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import {
   asFoodItem,

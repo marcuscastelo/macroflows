@@ -1,6 +1,6 @@
 import { createEffect, createSignal, onCleanup } from 'solid-js'
 
-import { fetchCurrentDayDiet } from '~/modules/diet/day-diet/application/dayDietUseCases'
+import { fetchCurrentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
