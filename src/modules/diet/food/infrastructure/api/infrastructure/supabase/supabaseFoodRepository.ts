@@ -3,19 +3,14 @@ import {
   type FoodRepository,
   type FoodSearchParams,
 } from '~/modules/diet/food/domain/foodRepository'
-import {
-  createFoodFromDAO,
-  createInsertFoodDAOFromNewFood,
-  foodDAOSchema,
-} from '~/modules/diet/food/infrastructure/foodDAO'
+import { supabaseFoodMapper } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodMapper'
 import {
   createErrorHandler,
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
+import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
 import { createDebug } from '~/shared/utils/createDebug'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
-import { supabase } from '~/shared/utils/supabase'
 
 const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Food')
@@ -71,7 +66,7 @@ async function fetchFoodById(
  * @throws Error if not found or on API/validation error
  */
 async function fetchFoodByEan(
-  ean: Required<Food>['ean'],
+  ean: NonNullable<Required<Food>['ean']>,
   params: Omit<FoodSearchParams, 'limit'> = {},
 ): Promise<Food> {
   try {
@@ -98,11 +93,13 @@ async function fetchFoodByEan(
  * @throws Error if not created or on API/validation error
  */
 async function insertFood(newFood: NewFood): Promise<Food> {
-  const createDAO = createInsertFoodDAOFromNewFood(newFood)
+  const insertDTO = supabaseFoodMapper.toInsertDTO(newFood)
   const { data, error } = await supabase
     .from(TABLE)
-    .insert(createDAO)
-    .select('*')
+    .insert(insertDTO)
+    .select()
+    .single()
+
   if (error !== null) {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
@@ -110,13 +107,8 @@ async function insertFood(newFood: NewFood): Promise<Food> {
     errorHandler.error(error)
     throw wrapErrorWithStack(error)
   }
-  const foodDAOs = parseWithStack(foodDAOSchema.array(), data)
-  const foods = foodDAOs.map(createFoodFromDAO)
-  if (foods.length === 0 || foods[0] === undefined) {
-    errorHandler.error(new Error('Food not created'))
-    throw new Error('Food not created')
-  }
-  return foods[0]
+
+  return supabaseFoodMapper.toDomain(data)
 }
 
 /**
@@ -127,11 +119,13 @@ async function insertFood(newFood: NewFood): Promise<Food> {
  * @throws Error if not created or on API/validation error
  */
 async function upsertFood(newFood: NewFood): Promise<Food> {
-  const createDAO = createInsertFoodDAOFromNewFood(newFood)
-  const { data, error } = await supabase
+  const createDAO = supabaseFoodMapper.toInsertDTO(newFood)
+  const { data: food, error } = await supabase
     .from(TABLE)
     .upsert(createDAO)
-    .select('*')
+    .select()
+    .single()
+
   if (error !== null) {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
@@ -139,13 +133,8 @@ async function upsertFood(newFood: NewFood): Promise<Food> {
     errorHandler.error(error)
     throw wrapErrorWithStack(error)
   }
-  const foodDAOs = parseWithStack(foodDAOSchema.array(), data)
-  const foods = foodDAOs.map(createFoodFromDAO)
-  if (foods.length === 0 || foods[0] === undefined) {
-    errorHandler.error(new Error('Food not created'))
-    throw new Error('Food not created')
-  }
-  return foods[0]
+
+  return supabaseFoodMapper.toDomain(food)
 }
 
 async function fetchFoodsByName(
@@ -177,11 +166,6 @@ async function fetchFoodsByName(
       throw wrapErrorWithStack(result.error)
     }
 
-    if (result.data === null || result.data === undefined) {
-      debug('No data returned from enhanced search')
-      return []
-    }
-
     const searchType =
       isFavoritesSearch === true && userId !== undefined
         ? 'favorites search'
@@ -189,8 +173,7 @@ async function fetchFoodsByName(
     debug(
       `Found ${Array.isArray(result.data) ? result.data.length : 0} foods using ${searchType}`,
     )
-    const foodDAOs = parseWithStack(foodDAOSchema.array(), result.data)
-    return foodDAOs.map(createFoodFromDAO)
+    return result.data.map(supabaseFoodMapper.toDomain)
   } catch (err) {
     errorHandler.error(err)
     throw err
@@ -209,7 +192,7 @@ async function internalCachedSearchFoods(
   }:
     | {
         field: 'ean' | 'id' | 'name'
-        value: Food['ean' | 'id' | 'name']
+        value: NonNullable<Food['ean' | 'id' | 'name']>
         operator?: 'eq' | 'ilike'
       }
     | {
@@ -244,7 +227,7 @@ async function internalCachedSearchFoods(
         query = query.ilike(field, `%${normalizedValue}%`)
         break
       default:
-        ;((_: never) => _)(operator) // TODO:   Create a better function for exhaustive checks
+        operator satisfies never
     }
   }
 
@@ -258,15 +241,14 @@ async function internalCachedSearchFoods(
     query = query.limit(limit)
   }
 
-  const { data, error } = await query
+  const { data: foods, error } = await query
   if (error !== null) {
     errorHandler.error(error)
     throw wrapErrorWithStack(error)
   }
 
-  debug(`Found ${data.length} foods`)
-  const foodDAOs = parseWithStack(foodDAOSchema.array(), data)
-  return foodDAOs.map(createFoodFromDAO)
+  debug(`Found ${foods.length} foods`)
+  return foods.map(supabaseFoodMapper.toDomain)
 }
 
 /**
@@ -276,11 +258,15 @@ async function internalCachedSearchFoods(
  */
 async function fetchFoodsByIds(ids: Food['id'][]): Promise<readonly Food[]> {
   if (!Array.isArray(ids) || ids.length === 0) return []
-  const { data, error } = await supabase.from(TABLE).select('*').in('id', ids)
+  const { data: foods, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .in('id', ids)
+
   if (error !== null) {
     errorHandler.error(error)
     throw wrapErrorWithStack(error)
   }
-  const foodDAOs = parseWithStack(foodDAOSchema.array(), data)
-  return foodDAOs.map(createFoodFromDAO)
+
+  return foods.map(supabaseFoodMapper.toDomain)
 }

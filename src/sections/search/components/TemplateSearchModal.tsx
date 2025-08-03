@@ -21,11 +21,11 @@ import {
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import {
-  createRecentFoodInput,
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
   updateRecentFood,
 } from '~/modules/recent-food/application/recentFood'
+import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
 import {
   debouncedSearch,
   refetchTemplates,
@@ -150,11 +150,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         )
       }
 
-      const recentFoodInput = createRecentFoodInput({
-        ...(recentFood ?? {}),
+      const recentFoodInput = createNewRecentFood({
         user_id: currentUserId(),
         type,
         reference_id: originalAddedItem.reference.id,
+        last_used: new Date(),
+        times_used: (recentFood?.times_used ?? 0) + 1,
       })
 
       if (recentFood !== null) {

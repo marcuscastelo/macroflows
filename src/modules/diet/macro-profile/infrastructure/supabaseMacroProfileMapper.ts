@@ -5,6 +5,7 @@ import {
   macroProfileSchema,
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 // DAO schemas for database operations
@@ -20,29 +21,22 @@ export const macroProfileDAOSchema = createMacroProfileDAOSchema.extend({
   id: z.number(),
 })
 
-export type CreateMacroProfileDAO = z.infer<typeof createMacroProfileDAOSchema>
+export type InsertMacroProfileDTO =
+  Database['public']['Tables']['macro_profiles']['Insert']
 export type MacroProfileDAO = z.infer<typeof macroProfileDAOSchema>
 
 // Conversion functions
-export function createInsertMacroProfileDAOFromNewMacroProfile(
-  newMacroProfile: NewMacroProfile,
-): CreateMacroProfileDAO {
+function toInsertDTO(newMacroProfile: NewMacroProfile): InsertMacroProfileDTO {
   return {
     owner: newMacroProfile.owner,
-    target_day: newMacroProfile.target_day,
+    target_day: newMacroProfile.target_day.toISOString(),
     gramsPerKgCarbs: newMacroProfile.gramsPerKgCarbs,
     gramsPerKgProtein: newMacroProfile.gramsPerKgProtein,
     gramsPerKgFat: newMacroProfile.gramsPerKgFat,
   }
 }
 
-export function createUpdateMacroProfileDAOFromNewMacroProfile(
-  newMacroProfile: NewMacroProfile,
-): CreateMacroProfileDAO {
-  return createInsertMacroProfileDAOFromNewMacroProfile(newMacroProfile)
-}
-
-export function createMacroProfileFromDAO(dao: MacroProfileDAO): MacroProfile {
+function toDomain(dao: MacroProfileDAO): MacroProfile {
   return parseWithStack(macroProfileSchema, {
     id: dao.id,
     owner: dao.owner,
@@ -51,4 +45,9 @@ export function createMacroProfileFromDAO(dao: MacroProfileDAO): MacroProfile {
     gramsPerKgProtein: dao.gramsPerKgProtein,
     gramsPerKgFat: dao.gramsPerKgFat,
   })
+}
+
+export const supabaseMacroProfileMapper = {
+  toInsertDTO,
+  toDomain,
 }

@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorageRepository'
+import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
 
 /**
  * Chart type options for weight evolution visualization

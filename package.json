@@ -15,7 +15,8 @@
     "flint": "npm run fix && npm run lint",
     "check": "run-p flint type-check test",
     "copilot:check": "npm run check 2>&1 && echo 'COPILOT: All checks passed!' || echo 'COPILOT: Some checks failed!'",
-    "tw:build": "tailwindcss -c tailwind.config.cjs -i ./src/app.css -o ./src/tailwind-build-debug.css"
+    "tw:build": "tailwindcss -c tailwind.config.cjs -i ./src/app.css -o ./src/tailwind-build-debug.css",
+    "supabase:gen-types": "echo '/* eslint-disable @typescript-eslint/no-redundant-type-constituents */' > src/shared/supabase/database.types.ts && npx supabase gen types typescript --project-id vdkyfygjuqcxqyzzkfjo >> src/shared/supabase/database.types.ts && npm run fix"
   },
   "dependencies": {
     "@solidjs/router": "^0.15.0",

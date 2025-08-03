@@ -1,17 +1,14 @@
 // Application layer for recent food operations - pure business logic
 import type { Template } from '~/modules/diet/template/domain/template'
 import {
-  createRecentFoodInput,
-  type RecentFoodCreationParams,
-  type RecentFoodInput,
-  type RecentFoodRecord,
-  type RecentFoodRepository,
-  type RecentFoodType,
+  type NewRecentFood,
+  type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
+import { type RecentFoodRepository } from '~/modules/recent-food/domain/recentFoodRepository'
 import {
   supabaseRecentFoodRepository,
   transformRowToTemplate,
-} from '~/modules/recent-food/infrastructure/supabaseRecentFoodRepository'
+} from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import env from '~/shared/config/env'
 import { createErrorHandler } from '~/shared/error/errorHandler'
@@ -30,9 +27,9 @@ const errorHandler = createErrorHandler('application', 'RecentFood')
 
 export async function fetchRecentFoodByUserTypeAndReferenceId(
   userId: number,
-  type: RecentFoodType,
+  type: RecentFood['type'],
   referenceId: number,
-): Promise<RecentFoodRecord | null> {
+): Promise<RecentFood | null> {
   return recentFoodRepository.fetchByUserTypeAndReferenceId(
     userId,
     type,
@@ -76,8 +73,8 @@ export async function fetchUserRecentFoods(
  * @returns The inserted recent food record or null on error.
  */
 export async function insertRecentFood(
-  recentFoodInput: RecentFoodInput,
-): Promise<RecentFoodRecord | null> {
+  recentFoodInput: NewRecentFood,
+): Promise<RecentFood | null> {
   try {
     return await showPromise(
       recentFoodRepository.insert(recentFoodInput),
@@ -102,8 +99,8 @@ export async function insertRecentFood(
  */
 export async function updateRecentFood(
   recentFoodId: number,
-  recentFoodInput: RecentFoodInput,
-): Promise<RecentFoodRecord | null> {
+  recentFoodInput: NewRecentFood,
+): Promise<RecentFood | null> {
   try {
     return await showPromise(
       recentFoodRepository.update(recentFoodId, recentFoodInput),
@@ -129,7 +126,7 @@ export async function updateRecentFood(
  */
 export async function deleteRecentFoodByReference(
   userId: number,
-  type: RecentFoodType,
+  type: RecentFood['type'],
   referenceId: number,
 ): Promise<boolean> {
   try {
@@ -146,13 +143,4 @@ export async function deleteRecentFoodByReference(
     errorHandler.error(error)
     return false
   }
-}
-
-// Re-export domain functions for convenience
-export { createRecentFoodInput }
-export type {
-  RecentFoodCreationParams,
-  RecentFoodInput,
-  RecentFoodRecord,
-  RecentFoodType,
 }

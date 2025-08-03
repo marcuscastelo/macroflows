@@ -4,18 +4,16 @@ import {
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
 import {
-  createInsertMacroProfileDAOFromNewMacroProfile,
-  createMacroProfileFromDAO,
-  createUpdateMacroProfileDAOFromNewMacroProfile,
   macroProfileDAOSchema,
-} from '~/modules/diet/macro-profile/infrastructure/macroProfileDAO'
+  supabaseMacroProfileMapper,
+} from '~/modules/diet/macro-profile/infrastructure/supabaseMacroProfileMapper'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
 import {
   registerSubapabaseRealtimeCallback,
   supabase,
-} from '~/shared/utils/supabase'
+} from '~/shared/supabase/supabase'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 /**
  * Supabase table name for macro profiles.
@@ -77,7 +75,7 @@ async function fetchUserMacroProfiles(
     errorHandler.error(validationError)
     throw validationError
   }
-  return macroProfileDAOs.map(createMacroProfileFromDAO)
+  return macroProfileDAOs.map(supabaseMacroProfileMapper.toDomain)
 }
 
 /**
@@ -89,8 +87,7 @@ async function fetchUserMacroProfiles(
 async function insertMacroProfile(
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile> {
-  const createDAO =
-    createInsertMacroProfileDAOFromNewMacroProfile(newMacroProfile)
+  const createDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .insert(createDAO)
@@ -115,7 +112,7 @@ async function insertMacroProfile(
     errorHandler.error(notFoundError)
     throw notFoundError
   }
-  return createMacroProfileFromDAO(macroProfileDAOs[0])
+  return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
 }
 
 /**
@@ -129,8 +126,7 @@ async function updateMacroProfile(
   profileId: MacroProfile['id'],
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile> {
-  const updateDAO =
-    createUpdateMacroProfileDAOFromNewMacroProfile(newMacroProfile)
+  const updateDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .update(updateDAO)
@@ -156,7 +152,7 @@ async function updateMacroProfile(
     errorHandler.error(notFoundError)
     throw notFoundError
   }
-  return createMacroProfileFromDAO(macroProfileDAOs[0])
+  return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
 }
 
 /**

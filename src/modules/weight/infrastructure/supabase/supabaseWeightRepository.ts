@@ -1,19 +1,11 @@
 import { type User } from '~/modules/user/domain/user'
-import {
-  type NewWeight,
-  type Weight,
-  weightSchema,
-} from '~/modules/weight/domain/weight'
+import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
 import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
-import {
-  createInsertWeightDAOFromWeight,
-  createUpdateWeightDAOFromWeight,
-} from '~/modules/weight/infrastructure/weightDAO'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
+import { supabaseWeightMapper } from '~/modules/weight/infrastructure/supabase/supabaseWeightMapper'
 import {
   registerSubapabaseRealtimeCallback,
   supabase,
-} from '~/shared/utils/supabase'
+} from '~/shared/supabase/supabase'
 
 export const SUPABASE_TABLE_WEIGHTS = 'weights'
 
@@ -37,7 +29,7 @@ export function setupWeightRealtimeSubscription(
 }
 
 async function fetchUserWeights(userId: User['id']) {
-  const { data, error } = await supabase
+  const { data: weights, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
     .select('*')
     .eq('owner', userId)
@@ -47,36 +39,38 @@ async function fetchUserWeights(userId: User['id']) {
     throw error
   }
 
-  return parseWithStack(weightSchema.array(), data)
+  return weights.map(supabaseWeightMapper.toDomain)
 }
 
 async function insertWeight(newWeight: NewWeight) {
-  const weightDAO = createInsertWeightDAOFromWeight(newWeight)
-  const { data, error } = await supabase
+  const weightDAO = supabaseWeightMapper.toInsertDTO(newWeight)
+  const { data: weight, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
     .insert(weightDAO)
     .select()
+    .single()
 
   if (error !== null) {
     throw error
   }
 
-  return parseWithStack(weightSchema, data[0])
+  return supabaseWeightMapper.toDomain(weight)
 }
 
-async function updateWeight(weightId: Weight['id'], weight: Weight) {
-  const weightDAO = createUpdateWeightDAOFromWeight(weight)
-  const { data, error } = await supabase
+async function updateWeight(weightId: Weight['id'], weightUpdate: Weight) {
+  const weightDAO = supabaseWeightMapper.toUpdateDTO(weightUpdate)
+  const { data: weight, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
     .update(weightDAO)
     .eq('id', weightId)
     .select()
+    .single()
 
   if (error !== null) {
     throw error
   }
 
-  return parseWithStack(weightSchema, data[0])
+  return supabaseWeightMapper.toDomain(weight)
 }
 
 async function deleteWeight(id: Weight['id']) {

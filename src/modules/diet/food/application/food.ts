@@ -4,7 +4,7 @@ import {
   importFoodFromApiByEan,
   importFoodsFromApiByName,
 } from '~/modules/diet/food/infrastructure/api/application/apiFood'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/supabaseFoodRepository'
+import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { isSearchCached } from '~/modules/search/application/searchCache'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
@@ -103,7 +103,7 @@ export async function fetchFoodsByName(
  * @returns Food or null on error.
  */
 export async function fetchFoodByEan(
-  ean: Food['ean'],
+  ean: NonNullable<Food['ean']>,
   params: FoodSearchParams = {},
 ): Promise<Food | null> {
   try {
@@ -141,7 +141,7 @@ export async function fetchFoodByEan(
  * @returns True if cached, false otherwise.
  */
 export async function isEanCached(
-  ean: Required<Food>['ean'],
+  ean: NonNullable<Required<Food>['ean']>,
 ): Promise<boolean> {
   try {
     const cached = (await foodRepository.fetchFoodByEan(ean, {})) !== null

@@ -3,28 +3,18 @@ import { z } from 'zod/v4'
 
 import { foodSchema } from '~/modules/diet/food/domain/food'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import type {
-  RecentFoodInput,
-  RecentFoodRecord,
-  RecentFoodRepository,
-  RecentFoodType,
+import {
+  type NewRecentFood,
+  type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
+import { type RecentFoodRepository } from '~/modules/recent-food/domain/recentFoodRepository'
+import { supabaseRecentFoodMapper } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodMapper'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-import { supabase } from '~/shared/utils/supabase'
 
 const TABLE = 'recent_foods'
-
-// Database record schema for validation
-const recentFoodRecordSchema = z.object({
-  id: z.number(),
-  user_id: z.number(),
-  type: z.enum(['food', 'recipe']),
-  reference_id: z.number(),
-  last_used: z.coerce.date(),
-  times_used: z.number(),
-})
 
 // Schema for the enhanced database function response
 const enhancedRecentFoodRowSchema = z
@@ -66,9 +56,9 @@ function getRecipeFields(row: z.infer<typeof enhancedRecentFoodRowSchema>) {
 export const supabaseRecentFoodRepository: RecentFoodRepository = {
   async fetchByUserTypeAndReferenceId(
     userId: number,
-    type: RecentFoodType,
+    type: RecentFood['type'],
     referenceId: number,
-  ): Promise<RecentFoodRecord | null> {
+  ): Promise<RecentFood | null> {
     try {
       const { data, error } = await supabase
         .from(TABLE)
@@ -76,10 +66,11 @@ export const supabaseRecentFoodRepository: RecentFoodRepository = {
         .eq('user_id', userId)
         .eq('type', type)
         .eq('reference_id', referenceId)
+        .single()
+
       if (error !== null) throw error
 
-      const records = parseWithStack(recentFoodRecordSchema.array(), data)
-      return records.at(0) ?? null
+      return supabaseRecentFoodMapper.toDomain(data)
     } catch (error) {
       errorHandler.error(error)
       return null
@@ -98,7 +89,7 @@ export const supabaseRecentFoodRepository: RecentFoodRepository = {
 
       const response = await supabase.rpc('search_recent_foods_with_names', {
         p_user_id: userId,
-        p_search_term: normalizedSearch ?? null,
+        p_search_term: normalizedSearch ?? undefined,
         p_limit: limit,
       })
       if (response.error !== null) throw response.error
@@ -111,46 +102,33 @@ export const supabaseRecentFoodRepository: RecentFoodRepository = {
     }
   },
 
-  async insert(input: RecentFoodInput): Promise<RecentFoodRecord | null> {
+  async insert(input: NewRecentFood): Promise<RecentFood | null> {
     try {
-      const insertData = {
-        user_id: input.user_id,
-        type: input.type,
-        reference_id: input.reference_id,
-        last_used: input.last_used ?? new Date(),
-        times_used: input.times_used ?? 1,
-      }
+      const insertData = supabaseRecentFoodMapper.toInsertDTO(input)
       const { data, error } = await supabase
         .from(TABLE)
         .insert(insertData)
         .select()
+        .single()
       if (error !== null) throw error
-      return parseWithStack(recentFoodRecordSchema, data[0])
+      return supabaseRecentFoodMapper.toDomain(data)
     } catch (error) {
       errorHandler.error(error)
       return null
     }
   },
 
-  async update(
-    id: number,
-    input: RecentFoodInput,
-  ): Promise<RecentFoodRecord | null> {
+  async update(id: number, input: NewRecentFood): Promise<RecentFood | null> {
     try {
-      const updateData = {
-        user_id: input.user_id,
-        type: input.type,
-        reference_id: input.reference_id,
-        last_used: input.last_used ?? new Date(),
-        times_used: input.times_used ?? 1,
-      }
+      const updateData = supabaseRecentFoodMapper.toUpdateDTO(input)
       const { data, error } = await supabase
         .from(TABLE)
         .update(updateData)
         .eq('id', id)
         .select()
+        .single()
       if (error !== null) throw error
-      return parseWithStack(recentFoodRecordSchema, data[0])
+      return supabaseRecentFoodMapper.toDomain(data)
     } catch (error) {
       errorHandler.error(error)
       return null
@@ -159,7 +137,7 @@ export const supabaseRecentFoodRepository: RecentFoodRepository = {
 
   async deleteByReference(
     userId: number,
-    type: RecentFoodType,
+    type: RecentFood['type'],
     referenceId: number,
   ): Promise<boolean> {
     try {

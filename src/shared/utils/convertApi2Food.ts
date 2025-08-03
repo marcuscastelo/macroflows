@@ -1,5 +1,5 @@
 import { createNewFood, type NewFood } from '~/modules/diet/food/domain/food'
-import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiFoodModel'
+import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 /**

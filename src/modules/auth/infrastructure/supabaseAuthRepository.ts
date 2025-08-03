@@ -7,8 +7,8 @@ import type {
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import type { AuthRepository } from '~/modules/auth/domain/authRepository'
+import { supabase } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
-import { supabase } from '~/shared/utils/supabase'
 
 const debug = createDebug()
 

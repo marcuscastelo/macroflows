@@ -4,13 +4,13 @@ import {
   type BodyMeasure,
   type NewBodyMeasure,
 } from '~/modules/measure/domain/measure'
-import { createSupabaseBodyMeasureRepository } from '~/modules/measure/infrastructure/measures'
+import { createSupabaseBodyMeasureGateway } from '~/modules/measure/infrastructure/supabase/supabaseBodyMeasureGateway'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
-const bodyMeasureRepository = createSupabaseBodyMeasureRepository()
+const bodyMeasureRepository = createSupabaseBodyMeasureGateway()
 
 export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
   currentUserId,

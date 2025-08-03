@@ -7,11 +7,11 @@ import {
   type Weight,
   weightSchema,
 } from '~/modules/weight/domain/weight'
-import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorageRepository'
+import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
 import {
   createSupabaseWeightRepository,
   setupWeightRealtimeSubscription,
-} from '~/modules/weight/infrastructure/supabaseWeightRepository'
+} from '~/modules/weight/infrastructure/supabase/supabaseWeightRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

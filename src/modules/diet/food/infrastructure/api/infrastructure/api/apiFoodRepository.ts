@@ -10,11 +10,11 @@ import {
   EXTERNAL_API_HOST,
   EXTERNAL_API_REFERER,
 } from '~/modules/diet/api/constants/apiSecrets'
+import { type ApiFoodRepository } from '~/modules/diet/food/infrastructure/api/domain/apiFoodRepository'
 import {
   type ApiFood,
   apiFoodSchema,
-} from '~/modules/diet/food/infrastructure/api/domain/apiFoodModel'
-import { type ApiFoodRepository } from '~/modules/diet/food/infrastructure/api/domain/apiFoodRepository'
+} from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
 import {
   createErrorHandler,
   wrapErrorWithStack,

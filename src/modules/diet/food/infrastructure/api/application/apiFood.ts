@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import { type Food } from '~/modules/diet/food/domain/food'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/supabaseFoodRepository'
+import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { markSearchAsCached } from '~/modules/search/application/searchCache'
 import { showError } from '~/modules/toast/application/toastManager'
 import { createErrorHandler } from '~/shared/error/errorHandler'

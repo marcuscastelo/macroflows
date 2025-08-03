@@ -1,17 +1,11 @@
 import { type NewUser, type User } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
-import {
-  createInsertUserDAOFromNewUser,
-  createUpdateUserDAOFromNewUser,
-  createUserFromDAO,
-  userDAOSchema,
-} from '~/modules/user/infrastructure/userDAO'
+import { subapaseUserMapper } from '~/modules/user/infrastructure/supabase/supabaseUserMapper'
 import { wrapErrorWithStack } from '~/shared/error/errorHandler'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
 import {
   registerSubapabaseRealtimeCallback,
   supabase,
-} from '~/shared/utils/supabase'
+} from '~/shared/supabase/supabase'
 
 export const SUPABASE_TABLE_USERS = 'users'
 
@@ -34,14 +28,15 @@ export function setupUserRealtimeSubscription(onUsersChange: () => void): void {
 }
 
 const fetchUsers = async (): Promise<User[]> => {
-  const { data, error } = await supabase.from(SUPABASE_TABLE_USERS).select()
+  const { data: users, error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .select()
 
   if (error !== null) {
     throw wrapErrorWithStack(error)
   }
 
-  const userDAOs = parseWithStack(userDAOSchema.array(), data)
-  return userDAOs.map(createUserFromDAO)
+  return users.map(subapaseUserMapper.toDomain)
 }
 
 const fetchUser = async (id: User['id']): Promise<User | null> => {
@@ -54,14 +49,13 @@ const fetchUser = async (id: User['id']): Promise<User | null> => {
     throw wrapErrorWithStack(error)
   }
 
-  const userDAOs = parseWithStack(userDAOSchema.array(), data)
-  const users = userDAOs.map(createUserFromDAO)
+  const users = data.map(subapaseUserMapper.toDomain)
 
   return users[0] ?? null
 }
 
 const insertUser = async (newUser: NewUser): Promise<User | null> => {
-  const createDAO = createInsertUserDAOFromNewUser(newUser)
+  const createDAO = subapaseUserMapper.toInsertDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
@@ -72,8 +66,7 @@ const insertUser = async (newUser: NewUser): Promise<User | null> => {
     throw wrapErrorWithStack(error)
   }
 
-  const userDAOs = parseWithStack(userDAOSchema.array(), data)
-  const users = userDAOs.map(createUserFromDAO)
+  const users = data.map(subapaseUserMapper.toDomain)
 
   return users[0] ?? null
 }
@@ -82,7 +75,7 @@ const updateUser = async (
   id: User['id'],
   newUser: NewUser,
 ): Promise<User | null> => {
-  const updateDAO = createUpdateUserDAOFromNewUser(newUser)
+  const updateDAO = subapaseUserMapper.toUpdateDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
@@ -94,8 +87,7 @@ const updateUser = async (
     throw wrapErrorWithStack(error)
   }
 
-  const userDAOs = parseWithStack(userDAOSchema.array(), data)
-  const users = userDAOs.map(createUserFromDAO)
+  const users = data.map(subapaseUserMapper.toDomain)
 
   return users[0] ?? null
 }

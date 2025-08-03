@@ -3,17 +3,11 @@ import {
   type Recipe,
 } from '~/modules/diet/recipe/domain/recipe'
 import { type RecipeRepository } from '~/modules/diet/recipe/domain/recipeRepository'
-import {
-  createInsertRecipeDAOFromNewRecipe,
-  createRecipeFromDAO,
-  createUpdateRecipeDAOFromRecipe,
-  recipeDAOSchema,
-} from '~/modules/diet/recipe/infrastructure/recipeDAO'
+import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supabaseRecipeMapper'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
+import { supabase } from '~/shared/supabase/supabase'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-import { supabase } from '~/shared/utils/supabase'
 
 const TABLE = 'recipes'
 
@@ -47,17 +41,7 @@ const fetchUserRecipes = async (userId: User['id']): Promise<Recipe[]> => {
       errorHandler.error(error)
       throw error
     }
-    let recipeDAOs
-    try {
-      recipeDAOs = parseWithStack(recipeDAOSchema.array(), data)
-    } catch (validationError) {
-      errorHandler.validationError(validationError, {
-        component: 'supabaseRecipeRepository',
-        additionalData: { userId },
-      })
-      throw validationError
-    }
-    return recipeDAOs.map(createRecipeFromDAO)
+    return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
     errorHandler.error(err)
     throw err
@@ -73,30 +57,18 @@ const fetchUserRecipes = async (userId: User['id']): Promise<Recipe[]> => {
  */
 const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe> => {
   try {
-    const { data, error } = await supabase.from(TABLE).select().eq('id', id)
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select()
+      .eq('id', id)
+      .single()
+
     if (error !== null) {
       errorHandler.error(error)
       throw error
     }
-    let recipeDAOs
-    try {
-      recipeDAOs = parseWithStack(recipeDAOSchema.array(), data)
-    } catch (validationError) {
-      errorHandler.validationError(validationError, {
-        component: 'supabaseRecipeRepository',
-        operation: 'fetchRecipeById',
-        additionalData: { id },
-      })
-      throw validationError
-    }
-    const recipes = recipeDAOs.map(createRecipeFromDAO)
-    if (!recipes[0]) {
-      errorHandler.error(new Error('Recipe not found'), {
-        operation: 'getRecipeById',
-      })
-      throw new Error(`Recipe with id ${id} not found`)
-    }
-    return recipes[0]
+
+    return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
     throw err
@@ -127,18 +99,8 @@ const fetchUserRecipeByName = async (
       errorHandler.error(error)
       throw error
     }
-    let recipeDAOs
-    try {
-      recipeDAOs = parseWithStack(recipeDAOSchema.array(), data)
-    } catch (validationError) {
-      errorHandler.validationError(validationError, {
-        component: 'supabaseRecipeRepository',
-        operation: 'fetchUserRecipeByName',
-        additionalData: { userId, name },
-      })
-      throw validationError
-    }
-    return recipeDAOs.map(createRecipeFromDAO)
+
+    return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
     errorHandler.error(err)
     throw err
@@ -154,34 +116,19 @@ const fetchUserRecipeByName = async (
  */
 const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe> => {
   try {
-    const createDAO = createInsertRecipeDAOFromNewRecipe(newRecipe)
+    const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
     const { data, error } = await supabase
       .from(TABLE)
       .insert(createDAO)
       .select()
+      .single()
+
     if (error !== null) {
       errorHandler.error(error)
       throw error
     }
-    let recipeDAOs
-    try {
-      recipeDAOs = parseWithStack(recipeDAOSchema.array(), data)
-    } catch (validationError) {
-      errorHandler.validationError(validationError, {
-        component: 'supabaseRecipeRepository',
-        operation: 'insertRecipe',
-        additionalData: { recipe: newRecipe },
-      })
-      throw validationError
-    }
-    const recipes = recipeDAOs.map(createRecipeFromDAO)
-    if (!recipes[0]) {
-      errorHandler.error(new Error('Recipe not created'), {
-        operation: 'insertRecipe',
-      })
-      throw new Error('Recipe not created')
-    }
-    return recipes[0]
+
+    return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
     throw err
@@ -201,33 +148,20 @@ const updateRecipe = async (
   newRecipe: Recipe,
 ): Promise<Recipe> => {
   try {
-    const updateDAO = createUpdateRecipeDAOFromRecipe(newRecipe)
+    const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
+
     const { data, error } = await supabase
       .from(TABLE)
       .update(updateDAO)
       .eq('id', recipeId)
       .select()
+      .single()
     if (error !== null) {
       errorHandler.error(error)
       throw error
     }
-    let recipeDAOs
-    try {
-      recipeDAOs = parseWithStack(recipeDAOSchema.array(), data)
-    } catch (validationError) {
-      errorHandler.validationError(validationError, {
-        component: 'supabaseRecipeRepository',
-        operation: 'updateRecipe',
-        additionalData: { id: recipeId, recipe: newRecipe },
-      })
-      throw validationError
-    }
-    const recipes = recipeDAOs.map(createRecipeFromDAO)
-    if (!recipes[0]) {
-      errorHandler.error(new Error('Recipe not found after update'))
-      throw new Error(`Recipe with id ${recipeId} not found after update`)
-    }
-    return recipes[0]
+
+    return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
     throw err

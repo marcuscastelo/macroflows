@@ -9,11 +9,11 @@ import {
 import {
   loadUserIdFromLocalStorage,
   saveUserIdToLocalStorage,
-} from '~/modules/user/infrastructure/localStorageUserRepository'
+} from '~/modules/user/infrastructure/localStorage/localStorageUserRepository'
 import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
-} from '~/modules/user/infrastructure/supabaseUserRepository'
+} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
 const userRepository = createSupabaseUserRepository()
