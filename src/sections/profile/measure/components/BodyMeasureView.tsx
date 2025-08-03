@@ -1,7 +1,7 @@
 import {
   deleteBodyMeasure,
   updateBodyMeasure,
-} from '~/modules/measure/application/measure'
+} from '~/modules/measure/application/usecases/measureCrud'
 import {
   type BodyMeasure,
   createNewBodyMeasure,

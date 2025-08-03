@@ -1,16 +1,26 @@
 import { createResource } from 'solid-js'
 
+import { initializeMeasureRealtime } from '~/modules/measure/application/realtime'
 import {
   type BodyMeasure,
   type NewBodyMeasure,
 } from '~/modules/measure/domain/measure'
-import { createSupabaseBodyMeasureGateway } from '~/modules/measure/infrastructure/supabase/supabaseBodyMeasureGateway'
+import {
+  createMeasureRepository,
+  deleteBodyMeasure as deleteBodyMeasureRepo,
+  insertBodyMeasure as insertBodyMeasureRepo,
+  updateBodyMeasure as updateBodyMeasureRepo,
+} from '~/modules/measure/infrastructure/measureRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
-const bodyMeasureRepository = createSupabaseBodyMeasureGateway()
+const measureRepository = createMeasureRepository()
+const errorHandler = createErrorHandler('application', 'Measure')
+
+// Initialize realtime subscription
+initializeMeasureRealtime()
 
 export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
   currentUserId,
@@ -23,13 +33,11 @@ export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
  * @param userId - The user ID.
  * @returns Array of body measures or empty array on error.
  */
-const errorHandler = createErrorHandler('application', 'Measure')
-
 export async function fetchUserBodyMeasures(
   userId: User['id'],
 ): Promise<readonly BodyMeasure[]> {
   try {
-    return await bodyMeasureRepository.fetchUserBodyMeasures(userId)
+    return await measureRepository.fetchUserBodyMeasures(userId)
   } catch (error) {
     errorHandler.error(error)
     return []
@@ -45,8 +53,8 @@ export async function insertBodyMeasure(
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
   try {
-    return await showPromise(
-      bodyMeasureRepository.insertBodyMeasure(newBodyMeasure),
+    const result = await showPromise(
+      insertBodyMeasureRepo(newBodyMeasure),
       {
         loading: 'Inserindo medidas...',
         success: 'Medidas inseridas com sucesso',
@@ -54,6 +62,12 @@ export async function insertBodyMeasure(
       },
       { context: 'user-action', audience: 'user' },
     )
+
+    if (result) {
+      void refetchBodyMeasures()
+    }
+
+    return result
   } catch (error) {
     errorHandler.error(error)
     return null
@@ -71,8 +85,8 @@ export async function updateBodyMeasure(
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
   try {
-    return await showPromise(
-      bodyMeasureRepository.updateBodyMeasure(bodyMeasureId, newBodyMeasure),
+    const result = await showPromise(
+      updateBodyMeasureRepo(bodyMeasureId, newBodyMeasure),
       {
         loading: 'Atualizando medidas...',
         success: 'Medidas atualizadas com sucesso',
@@ -80,6 +94,12 @@ export async function updateBodyMeasure(
       },
       { context: 'user-action', audience: 'user' },
     )
+
+    if (result) {
+      void refetchBodyMeasures()
+    }
+
+    return result
   } catch (error) {
     errorHandler.error(error)
     return null
@@ -96,7 +116,7 @@ export async function deleteBodyMeasure(
 ): Promise<boolean> {
   try {
     await showPromise(
-      bodyMeasureRepository.deleteBodyMeasure(bodyMeasureId),
+      deleteBodyMeasureRepo(bodyMeasureId),
       {
         loading: 'Deletando medidas...',
         success: 'Medidas deletadas com sucesso',
@@ -104,6 +124,8 @@ export async function deleteBodyMeasure(
       },
       { context: 'user-action', audience: 'user' },
     )
+
+    void refetchBodyMeasures()
     return true
   } catch (error) {
     errorHandler.error(error)
