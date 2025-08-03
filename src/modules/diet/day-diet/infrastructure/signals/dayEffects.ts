@@ -18,9 +18,6 @@ export function initializeDayEffects() {
   }
   initialized = true
   return createRoot(() => {
-    // /**
-    //  * When user changes, clear cache and reset to today
-    //  */
     createEffect(() => {
       debug(`Effect - Reset to today!`)
       const userId = currentUserId() // Create reactive dependency on user changes
