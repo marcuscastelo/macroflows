@@ -1,7 +1,7 @@
 import { untrack } from 'solid-js'
 
-import { dayDietStore } from '~/modules/diet/day-diet/application/dayDietStore'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { dayDietStore } from '~/modules/diet/day-diet/infrastructure/signals/dayDietStore'
 import { setupDayDietRealtimeSubscription } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 
 /**

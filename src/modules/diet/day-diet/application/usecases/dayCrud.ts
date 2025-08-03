@@ -1,8 +1,8 @@
-import { dayDietStore } from '~/modules/diet/day-diet/application/dayDietStore'
 import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { dayDietStore } from '~/modules/diet/day-diet/infrastructure/signals/dayDietStore'
 import { createSupabaseDayRepository } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
