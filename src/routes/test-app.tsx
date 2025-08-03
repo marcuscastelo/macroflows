@@ -9,7 +9,7 @@ import {
 import {
   setTargetDay,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDietStore'
+} from '~/modules/diet/day-diet/application/dayDietUseCases'
 import {
   createNewDayDiet,
   type DayDiet,

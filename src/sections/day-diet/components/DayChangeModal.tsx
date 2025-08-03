@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { targetDay } from '~/modules/diet/day-diet/application/dayDietStore'
+import { targetDay } from '~/modules/diet/day-diet/application/dayDietUseCases'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'

@@ -1,6 +1,6 @@
 import { createMemo, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietStore'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDietUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import {
   createMacroNutrients,

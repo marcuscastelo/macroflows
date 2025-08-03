@@ -1,22 +1,9 @@
-import { untrack } from 'solid-js'
-
-import {
-  dayChangeData,
-  dayDiets,
-  setCurrentDayDiet,
-  setDayChangeData,
-  setDayDiets,
-  setTargetDay,
-  targetDay,
-} from '~/modules/diet/day-diet/application/dayDietStore'
+import { dayDietStore } from '~/modules/diet/day-diet/application/dayDietStore'
 import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import {
-  createSupabaseDayRepository,
-  setupDayDietRealtimeSubscription,
-} from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
+import { createSupabaseDayRepository } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
@@ -24,22 +11,33 @@ import { createErrorHandler } from '~/shared/error/errorHandler'
 const dayRepository = createSupabaseDayRepository()
 const errorHandler = createErrorHandler('application', 'DayDiet')
 
+export const dayDiets = dayDietStore.dayDiets
+export const setDayDiets = dayDietStore.setDayDiets
+export const targetDay = dayDietStore.targetDay
+export const setTargetDay = dayDietStore.setTargetDay
+export const currentDayDiet = dayDietStore.currentDayDiet
+export const setCurrentDayDiet = dayDietStore.setCurrentDayDiet
+export const currentToday = dayDietStore.currentToday
+export const setCurrentToday = dayDietStore.setCurrentToday
+export const dayChangeData = dayDietStore.dayChangeData
+export const setDayChangeData = dayDietStore.setDayChangeData
+
 /**
  * Dismisses the day change confirmation modal
  */
 export function dismissDayChangeModal() {
-  setDayChangeData(null)
+  dayDietStore.setDayChangeData(null)
 }
 
 /**
  * Accepts the day change and navigates to the new day
  */
 export function acceptDayChange() {
-  const changeData = dayChangeData()
+  const changeData = dayDietStore.dayChangeData()
   if (changeData) {
-    setDayDiets([])
-    setTargetDay(changeData.newDay)
-    setDayChangeData(null)
+    dayDietStore.setDayDiets([])
+    dayDietStore.setTargetDay(changeData.newDay)
+    dayDietStore.setDayChangeData(null)
   }
 }
 
@@ -63,7 +61,7 @@ export async function fetchCurrentDayDiet(
 
     if (currentDayDiet === null) {
       // Day doesn't exist - create minimal cache entry
-      setCurrentDayDiet(null)
+      dayDietStore.setCurrentDayDiet(null)
       // Keep existing dayDiets cache, just ensure currentDayDiet is null
       return
     }
@@ -77,19 +75,19 @@ export async function fetchCurrentDayDiet(
       // Update existing day in cache
       const updatedDays = [...existingDays]
       updatedDays[existingDayIndex] = currentDayDiet
-      setDayDiets(updatedDays)
+      dayDietStore.setDayDiets(updatedDays)
     } else {
       // Add new day to cache (sorted insertion)
       const updatedDays = [...existingDays, currentDayDiet].sort((a, b) =>
         a.target_day.localeCompare(b.target_day),
       )
-      setDayDiets(updatedDays)
+      dayDietStore.setDayDiets(updatedDays)
     }
 
-    setCurrentDayDiet(currentDayDiet)
+    dayDietStore.setCurrentDayDiet(currentDayDiet)
   } catch (error) {
     errorHandler.error(error)
-    setCurrentDayDiet(null)
+    dayDietStore.setCurrentDayDiet(null)
   }
 }
 
@@ -115,79 +113,6 @@ export async function fetchPreviousDayDiets(
 }
 
 /**
- * When realtime day diets change, apply granular cache updates
- */
-setupDayDietRealtimeSubscription((event) => {
-  console.log(`[dayDiet] Real-time ${event.eventType}:`, event)
-
-  // Avoid reactive reads in non-tracked scope - get current state directly
-  const existingDays = untrack(() => dayDiets())
-
-  switch (event.eventType) {
-    case 'INSERT': {
-      if (event.new) {
-        // Add new day to cache (sorted insertion)
-        const existingIndex = existingDays.findIndex(
-          (day: DayDiet) => day.target_day === event.new!.target_day,
-        )
-        if (existingIndex < 0) {
-          const updatedDays = [...existingDays, event.new].sort((a, b) =>
-            a.target_day.localeCompare(b.target_day),
-          )
-          setDayDiets(updatedDays)
-        }
-
-        // Update current day diet if it matches target day
-        const currentTargetDay = untrack(() => targetDay())
-        if (event.new.target_day === currentTargetDay) {
-          setCurrentDayDiet(event.new)
-        }
-      }
-      break
-    }
-
-    case 'UPDATE': {
-      if (event.new) {
-        // Update existing day in cache
-        const existingIndex = existingDays.findIndex(
-          (day: DayDiet) => day.id === event.new!.id,
-        )
-        if (existingIndex >= 0) {
-          const updatedDays = [...existingDays]
-          updatedDays[existingIndex] = event.new
-          setDayDiets(updatedDays)
-
-          // Update current day diet if it matches target day
-          const currentTargetDay = untrack(() => targetDay())
-          if (event.new.target_day === currentTargetDay) {
-            setCurrentDayDiet(event.new)
-          }
-        }
-      }
-      break
-    }
-
-    case 'DELETE': {
-      if (event.old) {
-        // Remove deleted day from cache
-        const updatedDays = existingDays.filter(
-          (day: DayDiet) => day.id !== event.old!.id,
-        )
-        setDayDiets(updatedDays)
-
-        // Clear current day diet if it was the deleted day
-        const currentTargetDay = untrack(() => targetDay())
-        if (event.old.target_day === currentTargetDay) {
-          setCurrentDayDiet(null)
-          // Lazy loading effect will handle fetching if day still exists
-        }
-      }
-      break
-    }
-  }
-})
-
-/**
  * Inserts a new day diet.
  * @param dayDiet - The new day diet data.
  * @returns True if inserted, false otherwise.
@@ -206,7 +131,7 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
 
     // Optimistic cache update - add new day diet to cache
     if (insertedDayDiet) {
-      const existingDays = dayDiets()
+      const existingDays = dayDietStore.dayDiets()
       const existingIndex = existingDays.findIndex(
         (day) => day.target_day === insertedDayDiet.target_day,
       )
@@ -215,18 +140,18 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
         // Replace existing day
         const updatedDays = [...existingDays]
         updatedDays[existingIndex] = insertedDayDiet
-        setDayDiets(updatedDays)
+        dayDietStore.setDayDiets(updatedDays)
       } else {
         // Add new day (sorted insertion)
         const updatedDays = [...existingDays, insertedDayDiet].sort((a, b) =>
           a.target_day.localeCompare(b.target_day),
         )
-        setDayDiets(updatedDays)
+        dayDietStore.setDayDiets(updatedDays)
       }
 
       // Update current day diet if it matches target day
-      if (insertedDayDiet.target_day === targetDay()) {
-        setCurrentDayDiet(insertedDayDiet)
+      if (insertedDayDiet.target_day === dayDietStore.targetDay()) {
+        dayDietStore.setCurrentDayDiet(insertedDayDiet)
       }
     }
 
@@ -259,18 +184,18 @@ export async function updateDayDiet(
     )
 
     // Optimistic cache update - update existing day diet in cache
-    const existingDays = dayDiets()
+    const existingDays = dayDietStore.dayDiets()
     const existingIndex = existingDays.findIndex((day) => day.id === dayId)
 
     if (existingIndex >= 0) {
       // Update existing day in cache
       const updatedDays = [...existingDays]
       updatedDays[existingIndex] = updatedDayDiet
-      setDayDiets(updatedDays)
+      dayDietStore.setDayDiets(updatedDays)
 
       // Update current day diet if it matches the updated day
-      if (updatedDayDiet.target_day === targetDay()) {
-        setCurrentDayDiet(updatedDayDiet)
+      if (updatedDayDiet.target_day === dayDietStore.targetDay()) {
+        dayDietStore.setCurrentDayDiet(updatedDayDiet)
       }
     }
     // If day not in cache, lazy loading will handle it when needed
@@ -290,7 +215,7 @@ export async function updateDayDiet(
 export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
   try {
     // Store target day for potential currentDayDiet cleanup before deletion
-    const existingDays = dayDiets()
+    const existingDays = dayDietStore.dayDiets()
     const dayToDelete = existingDays.find((day) => day.id === dayId)
 
     await showPromise(
@@ -305,11 +230,11 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
 
     // Optimistic cache update - remove deleted day from cache
     const updatedDays = existingDays.filter((day) => day.id !== dayId)
-    setDayDiets(updatedDays)
+    dayDietStore.setDayDiets(updatedDays)
 
     // Clear current day diet if it was the deleted day
-    if (dayToDelete && dayToDelete.target_day === targetDay()) {
-      setCurrentDayDiet(null)
+    if (dayToDelete && dayToDelete.target_day === dayDietStore.targetDay()) {
+      dayDietStore.setCurrentDayDiet(null)
       // Lazy loading effect will handle fetching if day still exists after deletion
     }
 

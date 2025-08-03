@@ -5,29 +5,38 @@ import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 
-export const [targetDay, setTargetDay] =
-  createSignal<string>(getTodayYYYYMMDD())
+const [targetDay, setTargetDay] = createSignal<string>(getTodayYYYYMMDD())
 
-export const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
-export const [currentDayDiet, setCurrentDayDiet] = createSignal<DayDiet | null>(
-  null,
-)
+const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
+const [currentDayDiet, setCurrentDayDiet] = createSignal<DayDiet | null>(null)
 
 /**
  * Reactive signal that tracks the current day and automatically updates when the day changes.
  * This is used for day lock functionality to ensure proper edit mode restrictions.
  */
-export const [currentToday, setCurrentToday] =
-  createSignal<string>(getTodayYYYYMMDD())
+const [currentToday, setCurrentToday] = createSignal<string>(getTodayYYYYMMDD())
 
 /**
  * Signal that tracks when the day has changed and a confirmation modal should be shown.
  * Contains the previous day that the user was viewing when the day changed.
  */
-export const [dayChangeData, setDayChangeData] = createSignal<{
+const [dayChangeData, setDayChangeData] = createSignal<{
   previousDay: string
   newDay: string
 } | null>(null)
+
+export const dayDietStore = {
+  dayDiets,
+  setDayDiets,
+  targetDay,
+  setTargetDay,
+  currentDayDiet,
+  setCurrentDayDiet,
+  currentToday,
+  setCurrentToday,
+  dayChangeData,
+  setDayChangeData,
+}
 
 // Set up automatic day change detection
 let dayCheckInterval: NodeJS.Timeout | null = null
