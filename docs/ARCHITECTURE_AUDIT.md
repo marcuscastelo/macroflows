@@ -53,7 +53,7 @@ A comprehensive migration to the Unified Item System has been completed for new 
 
 ### 1. Domain Layer
 - [ ] Refactor all ID generation and legacy utility usage out of domain code (see diet submodules, especially meal, item, item-group).
-- [ ] Standardize and document repository interfaces and error types across all modules. Avoid nullable returns where possible.
+- [ ] Implement Gateway + Repository + Cache pattern across all modules following day-diet standard. Use `createSupabase*Gateway()` for data layer, `create*Repository()` for cache/error handling, and `*Store` for reactive state management.
 - [ ] Expand use of value objects for identity-less concepts (e.g., measurements, macro targets).
 - [ ] Clarify and document bounded contexts; split large modules if needed.
 - [ ] Introduce or strengthen domain layers in modules where missing (e.g., profile).

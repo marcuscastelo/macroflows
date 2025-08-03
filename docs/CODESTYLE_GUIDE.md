@@ -35,6 +35,88 @@ Editor, Service, Manager
 
 ---
 
+## **Modern Architecture Patterns - Day-Diet Standard**
+
+### ✅ Gateway + Repository + Store Pattern
+Following the day-diet module, all modules should implement:
+
+```typescript
+// 1. Gateway Layer (infrastructure/supabase/)
+export function createSupabaseFoodGateway(): FoodRepository {
+  return {
+    fetchFoodsByName,
+    fetchFoodById,
+    insertFood,
+    updateFoodById,
+    deleteFoodById,
+  }
+}
+
+// 2. Repository Layer (infrastructure/)
+const supabaseGateway = createSupabaseFoodGateway()
+const errorHandler = createErrorHandler('application', 'Food')
+
+export function createFoodRepository(): FoodRepository {
+  return { fetchFoodsByName, fetchFoodById, /* ... */ }
+}
+
+export async function fetchFoodsByName(name: string): Promise<Food[]> {
+  try {
+    const foods = await supabaseGateway.fetchFoodsByName(name)
+    foodCacheStore.upsertToCache(foods)
+    return foods
+  } catch (error) {
+    errorHandler.error(error)
+    return []
+  }
+}
+
+// 3. Store Layer (infrastructure/signals/)
+const [foods, setFoods] = createSignal<readonly Food[]>([])
+
+export const foodCacheStore = {
+  foods,
+  setFoods,
+  clearCache: () => setFoods([]),
+  upsertToCache: (foods: Food[]) => { /* logic */ },
+  removeFromCache: (filter) => { /* logic */ },
+}
+
+// 4. Service Layer (application/services/)
+export function createFoodSearchService(deps: {
+  getFoods: () => readonly Food[]
+  clearCache: () => void
+}) {
+  return (searchTerm: string) => {
+    // Complex business logic with injected dependencies
+  }
+}
+
+// 5. UseCase Layer (application/usecases/)
+const foodRepository = createFoodRepository()
+
+export async function createFood(food: NewFood): Promise<void> {
+  await showPromise(
+    foodRepository.insertFood(food),
+    {
+      loading: 'Criando alimento...',
+      success: 'Alimento criado com sucesso',
+      error: 'Erro ao criar alimento',
+    },
+    { context: 'user-action', audience: 'user' },
+  )
+}
+```
+
+### Naming Standards
+- **Gateway**: `createSupabase*Gateway()`
+- **Repository**: `create*Repository()`
+- **Store**: `*Store` objects (e.g., `foodCacheStore`)
+- **Service**: `create*Service()`
+- **Methods**: `fetch*By*` pattern
+
+---
+
 ## **Clean Architecture - Concrete Structure**
 
 ### Domain Layer (`~/modules/*/domain/`)

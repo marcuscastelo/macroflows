@@ -158,7 +158,7 @@ This implementation addresses real-world deployment challenges:
 - Data integrity preservation during transitions
 
 ## Technical Decisions
-- Migration happens at the repository layer for clean separation
+- Migration happens at the Gateway layer for clean separation, with Repository layer handling cache management and error handling
 - Type-safe conversion with comprehensive error handling
 - Performance optimized with format detection logic
 ```

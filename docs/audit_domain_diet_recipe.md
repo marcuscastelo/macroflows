@@ -14,7 +14,7 @@ This audit reviews the `recipe` submodule within the diet domain, focusing on DD
 
 ## Urgency
 - **High:** Remove any ID generation and legacy utility usage from domain code.
-- **Medium:** Review and enforce strict contracts in the repository interface.
+- **Medium:** Migrate recipe module to day-diet architecture: implement Gateway layer (`createSupabaseRecipeGateway()`), Repository layer with cache management, Store layer with reactive signals, and Service/UseCase layers following established patterns.
 - **Low:** Refactor transformation logic for clarity and add custom error classes for domain rules.
 
 ## Next Steps

@@ -8,14 +8,14 @@ The codebase demonstrates a strong commitment to modularity and DDD-inspired org
 ### What Works Well
 - **Modular Structure:** Each business area is a separate module, making the codebase easier to navigate and reason about.
 - **Consistent Use of Schemas:** Zod schemas are used throughout for validation and type safety.
-- **Repository Abstractions:** Most modules define repository interfaces, supporting testability and separation of concerns.
+- **Gateway + Repository Pattern:** Following day-diet standard, modules should implement three-layer architecture: Gateway (Supabase interaction), Repository (cache + error handling), and Store (reactive state).
 - **Avoidance of Side Effects in Domain:** Domain code generally avoids direct side effects and technical dependencies.
 - **Application Layer Orchestration:** Application code is responsible for error handling and orchestration, following clean architecture principles.
 
 ### Areas for Improvement
 - **Domain Layer Granularity:** Some modules (e.g., profile) lack a true domain layer, mixing business rules with application logic. Introduce domain layers where missing.
 - **ID Generation in Domain:** Several submodules (notably in diet) still generate IDs in domain code, breaking DDD purity. Move all ID generation to infrastructure or application.
-- **Repository Interface Consistency:** Some modules lack repository interfaces or have inconsistent contracts (e.g., nullable returns). Standardize and document these interfaces.
+- **Repository Pattern Modernization:** Migrate all modules to follow day-diet architecture: `createSupabase*Gateway()` functions, `create*Repository()` with cache management, `*Store` objects for reactive state, and `fetch*By*` naming conventions.
 - **Custom Error Types:** Most domain layers lack custom error classes for business invariants, making error handling less expressive.
 - **Test Coverage:** Domain logic tests exist but should be expanded to cover invariants and edge cases.
 - **Value Objects vs Entities:** Some models treat all objects as entities with IDs, even when identity is not essential. Use value objects where appropriate.
@@ -39,7 +39,7 @@ The codebase demonstrates a strong commitment to modularity and DDD-inspired org
 ## Next Steps
 - [ ] Refactor modules with missing or weak domain layers (e.g., profile).
 - [ ] Move all ID generation and technical concerns out of domain code.
-- [ ] Standardize repository interfaces and error types across modules.
+- [ ] Implement day-diet architecture standard: Gateway layer (`infrastructure/supabase/`), Repository layer with cache management (`infrastructure/`), Store layer with reactive signals (`infrastructure/signals/`), Service layer (`application/services/`), and UseCase layer (`application/usecases/`).
 - [ ] Expand use of value objects and clarify bounded contexts.
 - [ ] Review and improve domain test coverage.
 - [ ] Involve domain experts for ongoing model refinement.
