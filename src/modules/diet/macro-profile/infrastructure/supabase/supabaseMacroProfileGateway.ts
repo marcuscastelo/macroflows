@@ -2,31 +2,20 @@ import {
   type MacroProfile,
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
+import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
 import {
   macroProfileDAOSchema,
   supabaseMacroProfileMapper,
-} from '~/modules/diet/macro-profile/infrastructure/supabaseMacroProfileMapper'
+} from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileMapper'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import {
-  registerSubapabaseRealtimeCallback,
-  supabase,
-} from '~/shared/supabase/supabase'
+import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
-/**
- * Supabase table name for macro profiles.
- */
-export const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+const errorHandler = createErrorHandler('infrastructure', 'MacroProfileGateway')
 
-/**
- * Creates a MacroProfileRepository implementation using Supabase as backend.
- * @returns {MacroProfileRepository} The repository instance.
- */
-const errorHandler = createErrorHandler('infrastructure', 'MacroProfile')
-
-export function createSupabaseMacroProfileRepository(): MacroProfileRepository {
+export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
   return {
     fetchUserMacroProfiles,
     insertMacroProfile,
@@ -35,25 +24,6 @@ export function createSupabaseMacroProfileRepository(): MacroProfileRepository {
   }
 }
 
-/**
- * Sets up realtime subscription for macro profile changes
- * @param onMacroProfilesChange - Callback function to call when data changes
- */
-export function setupMacroProfileRealtimeSubscription(
-  onMacroProfilesChange: () => void,
-): void {
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_MACRO_PROFILES,
-    onMacroProfilesChange,
-  )
-}
-
-/**
- * Fetches all macro profiles for a user.
- * @param {User['id']} userId - The user ID.
- * @returns {Promise<readonly MacroProfile[]>} Array of macro profiles. Throws on error.
- * @throws {Error} On API or validation error.
- */
 async function fetchUserMacroProfiles(
   userId: User['id'],
 ): Promise<readonly MacroProfile[]> {
@@ -75,18 +45,13 @@ async function fetchUserMacroProfiles(
     errorHandler.error(validationError)
     throw validationError
   }
+
   return macroProfileDAOs.map(supabaseMacroProfileMapper.toDomain)
 }
 
-/**
- * Inserts a new macro profile.
- * @param {NewMacroProfile} newMacroProfile - The macro profile to insert.
- * @returns {Promise<MacroProfile>} The inserted macro profile. Throws on error.
- * @throws {Error} On API or validation error.
- */
 async function insertMacroProfile(
   newMacroProfile: NewMacroProfile,
-): Promise<MacroProfile> {
+): Promise<MacroProfile | null> {
   const createDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
@@ -105,6 +70,7 @@ async function insertMacroProfile(
     errorHandler.error(validationError)
     throw validationError
   }
+
   if (!macroProfileDAOs[0]) {
     const notFoundError = new Error(
       'Inserted macro profile not found in response',
@@ -112,20 +78,14 @@ async function insertMacroProfile(
     errorHandler.error(notFoundError)
     throw notFoundError
   }
+
   return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
 }
 
-/**
- * Updates an existing macro profile.
- * @param {MacroProfile['id']} profileId - The macro profile ID.
- * @param {NewMacroProfile} newMacroProfile - The new macro profile data.
- * @returns {Promise<MacroProfile>} The updated macro profile. Throws on error.
- * @throws {Error} On API or validation error.
- */
 async function updateMacroProfile(
   profileId: MacroProfile['id'],
   newMacroProfile: NewMacroProfile,
-): Promise<MacroProfile> {
+): Promise<MacroProfile | null> {
   const updateDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
@@ -145,6 +105,7 @@ async function updateMacroProfile(
     errorHandler.error(validationError)
     throw validationError
   }
+
   if (!macroProfileDAOs[0]) {
     const notFoundError = new Error(
       'Updated macro profile not found in response',
@@ -152,15 +113,10 @@ async function updateMacroProfile(
     errorHandler.error(notFoundError)
     throw notFoundError
   }
+
   return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
 }
 
-/**
- * Deletes a macro profile by ID.
- * @param {MacroProfile['id']} id - The macro profile ID.
- * @returns {Promise<void>} Resolves on success. Throws on error.
- * @throws {Error} On API error.
- */
 async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {
   const { error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)

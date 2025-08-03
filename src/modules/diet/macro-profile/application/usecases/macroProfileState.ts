@@ -1,0 +1,35 @@
+import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/application/realtime'
+import { getLatestMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
+import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
+import { initializeMacroProfileEffects } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileEffects'
+import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileStateStore'
+import { currentUserId } from '~/modules/user/application/user'
+
+// Re-export CRUD operations
+export {
+  deleteMacroProfile,
+  fetchUserMacroProfiles,
+  insertMacroProfile,
+  updateMacroProfile,
+} from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+
+export const selectedUserId = macroProfileStateStore.selectedUserId
+export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
+
+export const userMacroProfiles = () => {
+  const userId = currentUserId()
+  return macroProfileCacheStore.getProfilesByUserId(userId)
+}
+
+export const latestMacroProfile = () => {
+  const profiles = userMacroProfiles()
+  return getLatestMacroProfile(profiles)
+}
+
+export const previousMacroProfile = () => {
+  const profiles = userMacroProfiles()
+  return getLatestMacroProfile(profiles, 1)
+}
+
+initializeMacroProfileEffects()
+initializeMacroProfileRealtime()

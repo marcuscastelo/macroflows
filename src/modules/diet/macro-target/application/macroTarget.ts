@@ -2,12 +2,12 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { userMacroProfiles } from '~/modules/diet/macro-profile/application/macroProfile'
+import { userMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { inForceMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { userWeights } from '~/modules/weight/application/weight'
-import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export const calculateMacroTarget = (

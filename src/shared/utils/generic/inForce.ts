@@ -6,7 +6,7 @@ export function inForceGeneric<TObj extends object, TKey extends keyof TObj>(
   array: ReadonlyArray<TObj & InForce<TObj, TKey>>,
   key: TKey,
   date: Date,
-) {
+): (TObj & InForce<TObj, TKey>) | null {
   const firstItemAfterDate = [...array]
     .reverse()
     .find((item) => item[key].getTime() <= date.getTime())

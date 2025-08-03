@@ -11,7 +11,7 @@ import {
 import {
   insertMacroProfile,
   updateMacroProfile,
-} from '~/modules/diet/macro-profile/application/macroProfile'
+} from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import {
   createNewMacroProfile,
   type MacroProfile,

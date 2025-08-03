@@ -3,7 +3,7 @@
  * These functions encapsulate the most frequent modal usage patterns to reduce code duplication.
  */
 
-import { deleteMacroProfile } from '~/modules/diet/macro-profile/application/macroProfile'
+import { deleteMacroProfile } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   showError,

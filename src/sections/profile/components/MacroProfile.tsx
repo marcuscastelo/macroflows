@@ -3,7 +3,7 @@ import { Show } from 'solid-js'
 import {
   latestMacroProfile,
   previousMacroProfile,
-} from '~/modules/diet/macro-profile/application/macroProfile'
+} from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import { latestWeight } from '~/shared/utils/weightUtils'
