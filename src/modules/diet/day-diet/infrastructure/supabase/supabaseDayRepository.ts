@@ -21,17 +21,17 @@ const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
 export function createSupabaseDayRepository(): DayRepository {
   return {
-    fetchCurrentUserDayDiet,
-    fetchPreviousUserDayDiets,
-    fetchDayDiet,
+    fetchDayDietByUserIdAndTargetDay,
+    fetchDayDietsByUserIdBeforeDate,
+    fetchDayDietById,
     insertDayDiet,
-    updateDayDiet,
-    deleteDayDiet,
+    updateDayDietById,
+    deleteDayDietById,
   }
 }
 
 // TODO:   better error handling
-async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
+async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
   try {
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_DAYS)
@@ -68,7 +68,7 @@ async function fetchDayDiet(dayId: DayDiet['id']): Promise<DayDiet> {
   }
 }
 
-async function fetchCurrentUserDayDiet(
+async function fetchDayDietByUserIdAndTargetDay(
   userId: User['id'],
   targetDay: string,
 ): Promise<DayDiet | null> {
@@ -110,7 +110,7 @@ async function fetchCurrentUserDayDiet(
   return result.data
 }
 
-async function fetchPreviousUserDayDiets(
+async function fetchDayDietsByUserIdBeforeDate(
   userId: User['id'],
   beforeDay: string,
   limit: number = 30,
@@ -177,7 +177,7 @@ const insertDayDiet = async (newDay: NewDayDiet): Promise<DayDiet | null> => {
   return null
 }
 
-const updateDayDiet = async (
+const updateDayDietById = async (
   id: DayDiet['id'],
   newDay: NewDayDiet,
 ): Promise<DayDiet> => {
@@ -202,7 +202,7 @@ const updateDayDiet = async (
   return daoToDayDiet(dayDAO)
 }
 
-const deleteDayDiet = async (id: DayDiet['id']): Promise<void> => {
+const deleteDayDietById = async (id: DayDiet['id']): Promise<void> => {
   const { error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .delete()

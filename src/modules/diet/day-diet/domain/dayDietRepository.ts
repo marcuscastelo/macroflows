@@ -5,17 +5,20 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type DayRepository = {
-  fetchCurrentUserDayDiet: (
+  fetchDayDietByUserIdAndTargetDay: (
     userId: User['id'],
     targetDay: string,
   ) => Promise<DayDiet | null>
-  fetchPreviousUserDayDiets: (
+  fetchDayDietsByUserIdBeforeDate: (
     userId: User['id'],
     beforeDay: string,
     limit?: number,
   ) => Promise<readonly DayDiet[]>
-  fetchDayDiet: (dayId: DayDiet['id']) => Promise<DayDiet | null>
+  fetchDayDietById: (dayId: DayDiet['id']) => Promise<DayDiet | null>
   insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO:   Remove nullability from insertDay
-  updateDayDiet: (dayId: DayDiet['id'], newDay: NewDayDiet) => Promise<DayDiet>
-  deleteDayDiet: (id: DayDiet['id']) => Promise<void>
+  updateDayDietById: (
+    dayId: DayDiet['id'],
+    newDay: NewDayDiet,
+  ) => Promise<DayDiet>
+  deleteDayDietById: (id: DayDiet['id']) => Promise<void>
 }

@@ -23,7 +23,7 @@ export async function fetchCurrentDayDiet(
   targetDay: string,
 ): Promise<void> {
   try {
-    const currentDayDiet = await dayRepository.fetchCurrentUserDayDiet(
+    const currentDayDiet = await dayRepository.fetchDayDietByUserIdAndTargetDay(
       userId,
       targetDay,
     )
@@ -49,7 +49,7 @@ export async function fetchPreviousDayDiets(
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
   try {
-    const previousDays = await dayRepository.fetchPreviousUserDayDiets(
+    const previousDays = await dayRepository.fetchDayDietsByUserIdBeforeDate(
       userId,
       beforeDay,
       limit,
@@ -104,7 +104,7 @@ export async function updateDayDiet(
 ): Promise<boolean> {
   try {
     const updatedDayDiet = await showPromise(
-      dayRepository.updateDayDiet(dayId, dayDiet),
+      dayRepository.updateDayDietById(dayId, dayDiet),
       {
         loading: 'Atualizando dieta...',
         success: 'Dieta atualizada com sucesso',
@@ -130,7 +130,7 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
   try {
     // Store target day for potential currentDayDiet cleanup before deletion
     await showPromise(
-      dayRepository.deleteDayDiet(dayId),
+      dayRepository.deleteDayDietById(dayId),
       {
         loading: 'Deletando dieta...',
         success: 'Dieta deletada com sucesso',
