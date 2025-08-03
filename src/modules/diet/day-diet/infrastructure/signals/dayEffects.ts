@@ -3,6 +3,7 @@ import { createEffect, createRoot, onCleanup, onMount, untrack } from 'solid-js'
 import { createCacheManagementService } from '~/modules/diet/day-diet/application/services/cacheManagement'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createTargetDayResetService } from '~/modules/diet/day-diet/application/services/targetDayReset'
+import { fetchTargetDay } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import {
   currentDayDiet,
   targetDay,
@@ -23,6 +24,7 @@ const runCacheManagement = createCacheManagementService({
   getExistingDays: () => untrack(dayCacheStore.dayDiets),
   getCurrentDayDiet: () => untrack(currentDayDiet),
   clearCache: dayCacheStore.clearCache,
+  fetchTargetDay: (userId, targetDay) => void fetchTargetDay(userId, targetDay),
 })
 
 const debug = createDebug()

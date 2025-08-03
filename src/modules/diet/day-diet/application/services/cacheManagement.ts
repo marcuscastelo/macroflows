@@ -1,6 +1,5 @@
 import { untrack } from 'solid-js'
 
-import { fetchTargetDay } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDebug } from '~/shared/utils/createDebug'
 
@@ -10,6 +9,7 @@ export function createCacheManagementService(deps: {
   getExistingDays: () => readonly DayDiet[]
   getCurrentDayDiet: () => DayDiet | null
   clearCache: () => void
+  fetchTargetDay: (userId: number, targetDay: string) => void
 }) {
   return ({
     currentTargetDay,
@@ -26,7 +26,7 @@ export function createCacheManagementService(deps: {
     if (existingDays.find((d) => d.owner !== userId) !== undefined) {
       debug(`User changed! Purge cache`)
       deps.clearCache()
-      void fetchTargetDay(userId, currentTargetDay)
+      void deps.fetchTargetDay(userId, currentTargetDay)
       return
     }
 
@@ -37,7 +37,7 @@ export function createCacheManagementService(deps: {
       debug(
         `No day diet found for user ${userId} on ${currentTargetDay}, fetching...`,
       )
-      void fetchTargetDay(userId, currentTargetDay)
+      void deps.fetchTargetDay(userId, currentTargetDay)
     }
   }
 }
