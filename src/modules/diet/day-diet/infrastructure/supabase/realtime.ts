@@ -4,6 +4,9 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { createDebug } from '~/shared/utils/createDebug'
+
+const debug = createDebug()
 
 /**
  * Sets up granular realtime subscription for day diet changes
@@ -19,6 +22,7 @@ export function setupDayDietRealtimeSubscription(
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_DAYS,
     (payload: unknown) => {
+      debug(`SUPABASE_TABLE_DAYS table event: `, payload)
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const payloadData = payload as {
         eventType?: string
