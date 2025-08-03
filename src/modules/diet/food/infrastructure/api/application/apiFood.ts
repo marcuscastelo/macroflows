@@ -1,11 +1,18 @@
 import axios from 'axios'
 
 import { type Food } from '~/modules/diet/food/domain/food'
+import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { markSearchAsCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import {
+  createErrorHandler,
+  ORIGINAL_ERROR_SYMBOL,
+} from '~/shared/error/errorHandler'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
+import { createDebug } from '~/shared/utils/createDebug'
+
+const debug = createDebug()
 
 const foodRepository = createSupabaseFoodRepository()
 const errorHandler = createErrorHandler('infrastructure', 'Food')
@@ -41,27 +48,24 @@ export async function importFoodFromApiByEan(
 }
 
 export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
-  console.debug(`[ApiFood] Importing foods with name "${name}"`)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const apiFoods = (await axios.get(`/api/food/name/${name}`)).data
+  debug(`Importing foods with name "${name}"`)
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const apiFoods = (await axios.get<ApiFood[]>(`/api/food/name/${name}`)).data
+
   if (apiFoods.length === 0) {
     showError(`Nenhum alimento encontrado para "${name}"`)
     return []
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  console.debug(`[ApiFood] Found ${apiFoods.length} foods`)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  debug(`Found ${apiFoods.length} foods`)
+
   const foodsToupsert = apiFoods.map(convertApi2Food)
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const upsertPromises = foodsToupsert.map(foodRepository.upsertFood)
 
   const upsertionResults = await Promise.allSettled(upsertPromises)
-  console.debug(
-    `[ApiFood] upserted ${upsertionResults.length} foods. ${
+  debug(
+    `upserted ${upsertionResults.length} foods. ${
       upsertionResults.filter((result) => result.status === 'fulfilled').length
     } succeeded, ${
       upsertionResults.filter((result) => result.status === 'rejected').length
@@ -69,30 +73,32 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
   )
 
   if (upsertionResults.some((result) => result.status === 'rejected')) {
+    debug(`Erros de upsert: `, upsertionResults)
     const allRejected = upsertionResults.filter(
-      (result): result is PromiseRejectedResult => result.status === 'rejected',
+      (result) => result.status === 'rejected',
     )
 
-    type _Reason = { code: string }
     const reasons = allRejected.map((result) => {
-      const reason: unknown = result.reason
-      if (typeof reason === 'object' && reason !== null && 'code' in reason) {
-        return reason
-      }
-      return { code: 'unknown' }
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const reason: Error = result.reason as unknown as Error
+      return reason
     })
-    const errors = reasons.map((reason) => reason.code)
+    const errors = reasons.map(
+      // eslint-disable-next-line
+      (reason) => (reason as any)[ORIGINAL_ERROR_SYMBOL].code as string,
+    )
+    debug(`Readable errors:`, errors)
 
     const ignoredErrors = [
       '23505', // Unique violation: food already exists, ignore
     ]
 
     const relevantErrors = errors.filter(
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      (error) => !ignoredErrors.includes(error as string),
+      (error) => !ignoredErrors.includes(error),
     )
 
     if (relevantErrors.length > 0) {
+      debug(`Relevant errors:`, relevantErrors)
       errorHandler.error(
         new Error(`Failed to upsert ${relevantErrors.length} foods`),
         {
@@ -108,11 +114,14 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
 
       showError(
         `Erro ao importar alguns alimentos: ${relevantErrors.length} falhas. Verifique o console para mais detalhes.`,
-        { context: 'background' },
+        { context: 'user-action' },
       )
+    } else {
+      debug('No RELEVANT failed upsertions, marking search as cached')
+      await markSearchAsCached(name)
     }
   } else {
-    console.debug('[ApiFood] No failed upsertions, marking search as cached')
+    debug('No failed upsertions, marking search as cached')
     await markSearchAsCached(name)
   }
 
@@ -123,10 +132,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
     )
     .map((result) => result.value)
 
-  console.debug(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    `[ApiFood] Returning ${upsertedFoods.length}/${apiFoods.length} foods`,
-  )
+  debug(` Returning ${upsertedFoods.length}/${apiFoods.length} foods`)
 
   return upsertedFoods.filter((food): food is Food => food !== null)
 }
