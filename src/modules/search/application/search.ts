@@ -7,7 +7,7 @@ import {
 import {
   fetchUserRecipeByName,
   fetchUserRecipes,
-} from '~/modules/diet/recipe/application/recipe'
+} from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { fetchUserRecentFoods } from '~/modules/recent-food/application/recentFood'
 import { fetchTemplatesByTabLogic } from '~/modules/search/application/searchLogic'
 import { currentUser, currentUserId } from '~/modules/user/application/user'

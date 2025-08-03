@@ -13,7 +13,7 @@ import {
   deleteRecipe,
   fetchRecipeById,
   updateRecipe,
-} from '~/modules/diet/recipe/application/recipe'
+} from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addChildToItem,

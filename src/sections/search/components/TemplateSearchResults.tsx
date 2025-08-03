@@ -1,6 +1,6 @@
 import { For, Show } from 'solid-js'
 
-import { deleteRecipe } from '~/modules/diet/recipe/application/recipe'
+import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
 import {

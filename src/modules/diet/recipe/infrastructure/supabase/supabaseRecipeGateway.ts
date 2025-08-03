@@ -2,8 +2,8 @@ import {
   type NewRecipe,
   type Recipe,
 } from '~/modules/diet/recipe/domain/recipe'
-import { type RecipeRepository } from '~/modules/diet/recipe/domain/recipeRepository'
-import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supabaseRecipeMapper'
+import { type RecipeGateway } from '~/modules/diet/recipe/domain/recipeGateway'
+import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supabase/supabaseRecipeMapper'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
@@ -13,7 +13,7 @@ const TABLE = 'recipes'
 
 const errorHandler = createErrorHandler('infrastructure', 'Recipe')
 
-export function createSupabaseRecipeRepository(): RecipeRepository {
+export function createSupabaseRecipeGateway(): RecipeGateway {
   return {
     fetchUserRecipes,
     fetchRecipeById,
@@ -26,12 +26,12 @@ export function createSupabaseRecipeRepository(): RecipeRepository {
 
 /**
  * Fetches all recipes for a user.
- * Throws on error.
  * @param userId - The user ID
- * @returns Array of recipes
- * @throws Error on API/validation error
+ * @returns Array of recipes or empty array on error
  */
-const fetchUserRecipes = async (userId: User['id']): Promise<Recipe[]> => {
+const fetchUserRecipes = async (
+  userId: User['id'],
+): Promise<readonly Recipe[]> => {
   try {
     const { data, error } = await supabase
       .from(TABLE)
@@ -39,23 +39,21 @@ const fetchUserRecipes = async (userId: User['id']): Promise<Recipe[]> => {
       .eq('owner', userId)
     if (error !== null) {
       errorHandler.error(error)
-      throw error
+      return []
     }
     return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
     errorHandler.error(err)
-    throw err
+    return []
   }
 }
 
 /**
  * Fetches a recipe by its ID.
- * Throws on error or if not found.
  * @param id - The recipe ID
- * @returns The recipe
- * @throws Error if not found or on API/validation error
+ * @returns The recipe or null if not found/error
  */
-const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe> => {
+const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe | null> => {
   try {
     const { data, error } = await supabase
       .from(TABLE)
@@ -65,28 +63,26 @@ const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe> => {
 
     if (error !== null) {
       errorHandler.error(error)
-      throw error
+      return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
-    throw err
+    return null
   }
 }
 
 /**
  * Fetches a user's recipe by name (partial, case-insensitive, diacritic-insensitive).
- * Throws on error.
  * @param userId - The user ID
  * @param name - The recipe name (partial or full)
- * @returns Array of recipes
- * @throws Error on API/validation error
+ * @returns Array of recipes or empty array on error
  */
 const fetchUserRecipeByName = async (
   userId: User['id'],
   name: Recipe['name'],
-): Promise<Recipe[]> => {
+): Promise<readonly Recipe[]> => {
   try {
     // Normalize diacritics for search
     const normalizedName = removeDiacritics(name)
@@ -97,24 +93,22 @@ const fetchUserRecipeByName = async (
       .ilike('name', `%${normalizedName}%`)
     if (error !== null) {
       errorHandler.error(error)
-      throw error
+      return []
     }
 
     return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
     errorHandler.error(err)
-    throw err
+    return []
   }
 }
 
 /**
  * Inserts a new recipe.
- * Throws on error or if not created.
  * @param newRecipe - The new recipe
- * @returns The created recipe
- * @throws Error if not created or on API/validation error
+ * @returns The created recipe or null on error
  */
-const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe> => {
+const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe | null> => {
   try {
     const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
     const { data, error } = await supabase
@@ -125,28 +119,26 @@ const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe> => {
 
     if (error !== null) {
       errorHandler.error(error)
-      throw error
+      return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
-    throw err
+    return null
   }
 }
 
 /**
  * Updates a recipe.
- * Throws on error or if not found after update.
  * @param recipeId - The recipe ID
  * @param newRecipe - The new recipe data
- * @returns The updated recipe
- * @throws Error if not found or on API/validation error
+ * @returns The updated recipe or null on error
  */
 const updateRecipe = async (
   recipeId: Recipe['id'],
   newRecipe: Recipe,
-): Promise<Recipe> => {
+): Promise<Recipe | null> => {
   try {
     const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
 
@@ -158,31 +150,27 @@ const updateRecipe = async (
       .single()
     if (error !== null) {
       errorHandler.error(error)
-      throw error
+      return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
     errorHandler.error(err)
-    throw err
+    return null
   }
 }
 
 /**
  * Deletes a recipe by ID.
- * Throws on error.
  * @param id - The recipe ID
- * @throws Error on API error
  */
 const deleteRecipe = async (id: Recipe['id']): Promise<void> => {
   try {
     const { error } = await supabase.from(TABLE).delete().eq('id', id)
     if (error !== null) {
       errorHandler.error(error)
-      throw error
     }
   } catch (err) {
     errorHandler.error(err)
-    throw err
   }
 }
