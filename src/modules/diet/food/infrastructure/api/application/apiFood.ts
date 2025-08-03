@@ -7,9 +7,7 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
 
-// TODO:   Depency injection for repositories on all application files
 const foodRepository = createSupabaseFoodRepository()
-
 const errorHandler = createErrorHandler('infrastructure', 'Food')
 
 export async function importFoodFromApiByEan(

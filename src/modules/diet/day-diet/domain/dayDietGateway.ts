@@ -15,7 +15,7 @@ export type DayGateway = {
     limit?: number,
   ) => Promise<readonly DayDiet[]>
   fetchDayDietById: (dayId: DayDiet['id']) => Promise<DayDiet | null>
-  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO:   Remove nullability from insertDay
+  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null>
   updateDayDietById: (
     dayId: DayDiet['id'],
     newDay: NewDayDiet,

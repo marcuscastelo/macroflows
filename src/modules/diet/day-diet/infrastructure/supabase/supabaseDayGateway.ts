@@ -30,7 +30,6 @@ export function createSupabaseDayGateway(): DayGateway {
   }
 }
 
-// TODO:   better error handling
 async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
   try {
     const { data, error } = await supabase
@@ -154,7 +153,6 @@ async function fetchDayDietsByUserIdBeforeDate(
   return days
 }
 
-// TODO:   Change upserts to inserts on the entire app
 const insertDayDiet = async (newDay: NewDayDiet): Promise<DayDiet | null> => {
   // Use direct UnifiedItem persistence (no migration needed)
   const createDAO = createDayDietDAOFromNewDayDiet(newDay)
