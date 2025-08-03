@@ -20,5 +20,5 @@ export const {
   times_used: ze.number(),
 })
 
-export type RecentFood = z.infer<typeof recentFoodSchema>
-export type NewRecentFood = z.infer<typeof newRecentFoodSchema>
+export type RecentFood = Readonly<z.infer<typeof recentFoodSchema>>
+export type NewRecentFood = Readonly<z.infer<typeof newRecentFoodSchema>>

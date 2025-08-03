@@ -1,3 +1,4 @@
+import type { Template } from '~/modules/diet/template/domain/template'
 import {
   type NewRecentFood,
   type RecentFood,
@@ -10,11 +11,11 @@ export type RecentFoodRepository = {
     referenceId: number,
   ): Promise<RecentFood | null>
 
-  fetchUserRecentFoodsRaw(
+  fetchUserRecentFoodsAsTemplates(
     userId: number,
     search: string,
     opts?: { limit?: number },
-  ): Promise<readonly unknown[]>
+  ): Promise<readonly Template[]>
 
   insert(input: NewRecentFood): Promise<RecentFood | null>
 

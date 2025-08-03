@@ -24,7 +24,7 @@ import {
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
   updateRecentFood,
-} from '~/modules/recent-food/application/recentFood'
+} from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
 import {
   debouncedSearch,

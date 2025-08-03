@@ -8,7 +8,7 @@ import {
   fetchUserRecipeByName,
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { fetchUserRecentFoods } from '~/modules/recent-food/application/recentFood'
+import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/search/application/searchLogic'
 import { currentUser, currentUserId } from '~/modules/user/application/user'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
