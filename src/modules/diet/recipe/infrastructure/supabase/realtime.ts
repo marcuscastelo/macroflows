@@ -19,6 +19,7 @@ export function setupRecipeRealtimeSubscription(
 ): void {
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_RECIPES,
+    recipeSchema,
     (payload: unknown) => {
       debug(`SUPABASE_TABLE_RECIPES table event: `, payload)
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

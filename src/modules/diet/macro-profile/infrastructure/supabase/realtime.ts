@@ -19,6 +19,7 @@ export function setupMacroProfileRealtimeSubscription(
 ): void {
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_MACRO_PROFILES,
+    macroProfileSchema,
     (payload: unknown) => {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const payloadData = payload as {

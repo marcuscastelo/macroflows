@@ -7,12 +7,11 @@ import {
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
+import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
 import { supabaseRecentFoodMapper } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodMapper'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-
-const TABLE = 'recent_foods'
 
 // Schema for the enhanced database function response
 const enhancedRecentFoodRowSchema = z
@@ -92,7 +91,7 @@ async function fetchByUserTypeAndReferenceId(
   referenceId: number,
 ): Promise<RecentFood | null> {
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_RECENT_FOODS)
     .select('*')
     .eq('user_id', userId)
     .eq('type', type)
@@ -131,7 +130,7 @@ async function fetchUserRecentFoodsAsTemplates(
 async function insert(input: NewRecentFood): Promise<RecentFood | null> {
   const insertData = supabaseRecentFoodMapper.toInsertDTO(input)
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_RECENT_FOODS)
     .insert(insertData)
     .select()
     .single()
@@ -145,7 +144,7 @@ async function update(
 ): Promise<RecentFood | null> {
   const updateData = supabaseRecentFoodMapper.toUpdateDTO(input)
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_RECENT_FOODS)
     .update(updateData)
     .eq('id', id)
     .select()
@@ -160,7 +159,7 @@ async function deleteByReference(
   referenceId: number,
 ): Promise<boolean> {
   const { error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_RECENT_FOODS)
     .delete()
     .eq('user_id', userId)
     .eq('type', type)

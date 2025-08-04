@@ -1,12 +1,12 @@
 import { createMemo, createSignal, onMount, Suspense } from 'solid-js'
 
-import { type userWeights } from '~/modules/weight/application/weight'
 import { type WeightChartType } from '~/modules/weight/application/weightChartSettings'
 import { buildChartData } from '~/modules/weight/application/weightChartUtils'
 import {
   calculateMovingAverage,
   groupWeightsByPeriod,
 } from '~/modules/weight/domain/weightEvolutionDomain'
+import { type userWeights } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
 import { Chart } from '~/sections/common/components/charts/Chart'
 import { buildWeightChartOptions } from '~/sections/weight/components/WeightChartOptions'
 import { buildWeightChartSeries } from '~/sections/weight/components/WeightChartSeries'

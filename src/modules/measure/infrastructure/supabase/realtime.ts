@@ -21,6 +21,7 @@ export function setupBodyMeasureRealtimeSubscription(
 ): void {
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_BODY_MEASURES,
+    bodyMeasureSchema,
     (payload: unknown) => {
       debug(`SUPABASE_TABLE_BODY_MEASURES table event: `, payload)
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

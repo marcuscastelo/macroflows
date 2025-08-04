@@ -1,56 +1,50 @@
-import {
-  type RecentFood,
-  recentFoodSchema,
-} from '~/modules/recent-food/domain/recentFood'
+import { recentFoodSchema } from '~/modules/recent-food/domain/recentFood'
+import { recentFoodCacheStore } from '~/modules/recent-food/infrastructure/signals/recentFoodCacheStore'
+import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
 
-const SUPABASE_TABLE_RECENT_FOODS = 'recent_foods'
+let initialized = false
+export function initializeRecentFoodRealtime() {
+  if (initialized) {
+    return
+  }
+  debug(`Recent food realtime initialized!`)
+  initialized = true
 
-/**
- * Sets up granular realtime subscription for recent food changes
- * @param onRecentFoodChange - Callback for granular updates with event details
- */
-export function setupRecentFoodRealtimeSubscription(
-  onRecentFoodChange: (event: {
-    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-    old?: RecentFood
-    new?: RecentFood
-  }) => void,
-): void {
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_RECENT_FOODS,
-    (payload: unknown) => {
-      debug(`SUPABASE_TABLE_RECENT_FOODS table event: `, payload)
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const payloadData = payload as {
-        eventType?: string
-        old?: unknown
-        new?: unknown
+    recentFoodSchema,
+    (event) => {
+      debug(`Recent food realtime event ${event.eventType}:`, event)
+
+      switch (event.eventType) {
+        case 'INSERT': {
+          if (event.new !== undefined) {
+            recentFoodCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'UPDATE': {
+          if (event.new) {
+            recentFoodCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'DELETE': {
+          if (event.old) {
+            recentFoodCacheStore.removeFromCache({
+              by: 'id',
+              value: event.old.id,
+            })
+          }
+          break
+        }
       }
-
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const eventType = payloadData.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-
-      // Parse old and new records if available
-      const oldRecord =
-        payloadData.old !== null
-          ? recentFoodSchema.safeParse(payloadData.old)
-          : null
-      const newRecord =
-        payloadData.new !== null
-          ? recentFoodSchema.safeParse(payloadData.new)
-          : null
-
-      onRecentFoodChange({
-        eventType,
-        old:
-          oldRecord !== null && oldRecord.success ? oldRecord.data : undefined,
-        new:
-          newRecord !== null && newRecord.success ? newRecord.data : undefined,
-      })
     },
   )
 }

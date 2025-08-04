@@ -1,8 +1,8 @@
 import { createMemo, createSignal, onMount, Show } from 'solid-js'
 
 import { showError } from '~/modules/toast/application/toastManager'
-import { deleteWeight, updateWeight } from '~/modules/weight/application/weight'
 import { type Weight } from '~/modules/weight/domain/weight'
+import { weightCrudService } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -51,7 +51,7 @@ export function WeightView(props: WeightViewProps) {
       showError('Digite uma data')
       return
     }
-    void updateWeight(props.weight.id, {
+    void weightCrudService.updateWeight(props.weight.id, {
       ...props.weight,
       weight: weightValue,
       target_timestamp: dateValue,
@@ -125,7 +125,7 @@ export function WeightView(props: WeightViewProps) {
                 itemName: `peso de ${props.weight.weight}kg`,
                 itemType: 'registro',
                 onConfirm: () => {
-                  void deleteWeight(props.weight.id)
+                  void weightCrudService.deleteWeight(props.weight.id)
                 },
               })
             }}

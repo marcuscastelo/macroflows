@@ -1,31 +1,17 @@
 import { type User } from '~/modules/user/domain/user'
 import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
-import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
+import { type WeightGateway } from '~/modules/weight/domain/weightGateway'
+import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/supabase/constants'
 import { supabaseWeightMapper } from '~/modules/weight/infrastructure/supabase/supabaseWeightMapper'
-import {
-  registerSubapabaseRealtimeCallback,
-  supabase,
-} from '~/shared/supabase/supabase'
+import { supabase } from '~/shared/supabase/supabase'
 
-export const SUPABASE_TABLE_WEIGHTS = 'weights'
-
-export function createSupabaseWeightRepository(): WeightRepository {
+export function createSupabaseWeightGateway(): WeightGateway {
   return {
     fetchUserWeights,
     insertWeight,
     updateWeight,
     deleteWeight,
   }
-}
-
-/**
- * Sets up realtime subscription for weight changes
- * @param onWeightsChange - Callback function to call when data changes
- */
-export function setupWeightRealtimeSubscription(
-  onWeightsChange: () => void,
-): void {
-  registerSubapabaseRealtimeCallback(SUPABASE_TABLE_WEIGHTS, onWeightsChange)
 }
 
 async function fetchUserWeights(userId: User['id']) {

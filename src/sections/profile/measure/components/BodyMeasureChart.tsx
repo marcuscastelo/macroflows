@@ -8,7 +8,7 @@ import {
 } from '~/modules/measure/application/measureUtils'
 import type { BodyMeasure } from '~/modules/measure/domain/measure'
 import { currentUser } from '~/modules/user/application/user'
-import { userWeights } from '~/modules/weight/application/weight'
+import { userWeights } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
 import { Chart } from '~/sections/common/components/charts/Chart'
 
 type DayAverage = {

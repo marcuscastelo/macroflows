@@ -1,4 +1,6 @@
+import { createNewCachedSearch } from '~/modules/search/domain/cachedSearch'
 import { type CachedSearchRepository } from '~/modules/search/domain/searchRepository'
+import { cachedSearchCacheStore } from '~/modules/search/infrastructure/signals/cachedSearchCacheStore'
 import { createSupabaseCachedSearchGateway } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchGateway'
 
 export function createCachedSearchRepository(): CachedSearchRepository {
@@ -6,13 +8,33 @@ export function createCachedSearchRepository(): CachedSearchRepository {
 
   return {
     isSearchCached: async (searchQuery) => {
-      return await gateway.isSearchCached(searchQuery)
+      const result = await gateway.isSearchCached(searchQuery)
+      if (result) {
+        cachedSearchCacheStore.upsertToCache(
+          createNewCachedSearch({ search: searchQuery }),
+        )
+      } else {
+        cachedSearchCacheStore.removeFromCache({
+          by: 'search',
+          value: searchQuery,
+        })
+      }
+      return result
     },
     markSearchAsCached: async (searchQuery) => {
-      return await gateway.markSearchAsCached(searchQuery)
+      await gateway.markSearchAsCached(searchQuery)
+      cachedSearchCacheStore.upsertToCache(
+        createNewCachedSearch({
+          search: searchQuery,
+        }),
+      )
     },
     unmarkSearchAsCached: async (searchQuery) => {
-      return await gateway.unmarkSearchAsCached(searchQuery)
+      await gateway.unmarkSearchAsCached(searchQuery)
+      cachedSearchCacheStore.removeFromCache({
+        by: 'search',
+        value: searchQuery,
+      })
     },
   }
 }
