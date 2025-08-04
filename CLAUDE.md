@@ -668,12 +668,14 @@ type(scope): description
 - Maintain quality standards without bureaucratic overhead
 - Replace peer review with systematic self-review processes
 - Preserve backup/rollback procedures without team communication
+- No need for code backward compatibility, only data bacwards compatibility is a concern (since we use canary version)
 
 ## Memory Bank
 
 - **NEVER destucture `props`! This breaks reactivity**
 - **When "fix tests" is mentioned, NEVER modify production code - only adjust test structure, imports, and organization**
 - **"Fix tests after staged changes" means the code structure changed and tests need to be moved/reorganized to match the new structure**
+- **NEVER leave files with "moved" comments - DELETE the original file completely after moving content**
 
 # Serena MCP for efficient editting
 

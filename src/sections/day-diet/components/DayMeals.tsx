@@ -1,13 +1,11 @@
 import { For } from 'solid-js'
 
-import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
-import { updateMeal } from '~/modules/diet/meal/application/meal'
-import { type Meal } from '~/modules/diet/meal/domain/meal'
 import {
-  addItemToMeal,
-  updateItemInMeal,
-} from '~/modules/diet/meal/domain/mealOperations'
+  createDayEditOrchestrator,
+  type EditMode,
+} from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
+import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
@@ -24,7 +22,6 @@ import {
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { createDebug } from '~/shared/utils/createDebug'
-import { stringToDate } from '~/shared/utils/date/dateUtils'
 
 const debug = createDebug()
 
@@ -38,50 +35,43 @@ const debug = createDebug()
 export default function DayMeals(props: {
   dayDiet: DayDiet
   selectedDay: string
-  mode: 'edit' | 'read-only' | 'summary'
+  mode: EditMode
   onRequestEditMode?: () => void
 }) {
+  const orchestrator = createDayEditOrchestrator()
   const handleEditUnifiedItem = (meal: Meal, item: UnifiedItem) => {
-    if (props.mode === 'summary') return
-    if (props.mode !== 'edit') {
-      openConfirmModal('O dia não pode ser editado', {
-        title: 'Dia não editável',
-        confirmText: 'Desbloquear',
-        cancelText: 'Cancelar',
-        onConfirm: () => {
-          props.onRequestEditMode?.()
-        },
-      })
+    const permission = orchestrator.checkEditPermission(props.mode)
 
+    if (!permission.canEdit) {
+      if (permission.confirmText && props.onRequestEditMode) {
+        openConfirmModal(permission.reason, {
+          title: permission.title,
+          confirmText: permission.confirmText,
+          cancelText: permission.cancelText,
+          onConfirm: () => {
+            props.onRequestEditMode?.()
+          },
+        })
+      }
       return
     }
 
-    const dayDate = stringToDate(props.dayDiet.target_day)
-    const macroTarget = getMacroTargetForDay(dayDate)
+    const macroOverflow = orchestrator.prepareMacroOverflowConfig(
+      props.dayDiet,
+      item,
+    )
+    debug('macroOverflow:', macroOverflow)
 
     openUnifiedItemEditModal({
       targetMealName: meal.name,
       item: () => item,
-      macroOverflow: () => {
-        let macroOverflow
-        if (!macroTarget) {
-          macroOverflow = {
-            enable: false,
-            originalItem: undefined,
-          }
-        } else {
-          macroOverflow = {
-            enable: true,
-            originalItem: item,
-          }
-        }
-
-        debug('macroOverflow:', macroOverflow)
-        return macroOverflow
-      },
+      macroOverflow: () => macroOverflow,
       onApply: (updatedItem) => {
-        const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
-        void handleUpdateMeal(updatedMeal)
+        orchestrator
+          .updateItemInMealOrchestrated(meal, item, updatedItem)
+          .catch((e) => {
+            showError(e, {}, 'Erro ao atualizar item')
+          })
       },
       targetName: meal.name,
       showAddItemButton: true,
@@ -89,33 +79,39 @@ export default function DayMeals(props: {
   }
 
   const handleUpdateMeal = async (meal: Meal) => {
-    if (props.mode === 'summary') return
-    if (props.mode !== 'edit') {
-      openConfirmModal('O dia não pode ser editado', {
-        title: 'Dia não editável',
-        confirmText: 'Desbloquear',
-        cancelText: 'Cancelar',
-        onConfirm: () => {
-          props.onRequestEditMode?.()
-        },
-      })
+    const permission = orchestrator.checkEditPermission(props.mode)
 
+    if (!permission.canEdit) {
+      if (permission.confirmText && props.onRequestEditMode) {
+        openConfirmModal(permission.reason, {
+          title: permission.title,
+          confirmText: permission.confirmText,
+          cancelText: permission.cancelText,
+          onConfirm: () => {
+            props.onRequestEditMode?.()
+          },
+        })
+      }
       return
     }
-    await updateMeal(meal.id, meal)
+
+    await orchestrator.updateMealOrchestrated(meal)
   }
 
   const handleNewItemButton = (meal: Meal) => {
-    if (props.mode === 'summary') return
-    if (props.mode !== 'edit') {
-      openConfirmModal('O dia não pode ser editado', {
-        title: 'Dia não editável',
-        confirmText: 'Desbloquear',
-        cancelText: 'Cancelar',
-        onConfirm: () => {
-          props.onRequestEditMode?.()
-        },
-      })
+    const permission = orchestrator.checkEditPermission(props.mode)
+
+    if (!permission.canEdit) {
+      if (permission.confirmText && props.onRequestEditMode) {
+        openConfirmModal(permission.reason, {
+          title: permission.title,
+          confirmText: permission.confirmText,
+          cancelText: permission.cancelText,
+          onConfirm: () => {
+            props.onRequestEditMode?.()
+          },
+        })
+      }
       return
     }
 
@@ -126,22 +122,25 @@ export default function DayMeals(props: {
   }
 
   const handleNewUnifiedItem = (meal: Meal, newItem: UnifiedItem) => {
-    if (props.mode === 'summary') return
-    if (props.mode !== 'edit') {
-      openConfirmModal('O dia não pode ser editado', {
-        title: 'Dia não editável',
-        confirmText: 'Desbloquear',
-        cancelText: 'Cancelar',
-        onConfirm: () => {
-          props.onRequestEditMode?.()
-        },
-      })
+    const permission = orchestrator.checkEditPermission(props.mode)
 
+    if (!permission.canEdit) {
+      if (permission.confirmText && props.onRequestEditMode) {
+        openConfirmModal(permission.reason, {
+          title: permission.title,
+          confirmText: permission.confirmText,
+          cancelText: permission.cancelText,
+          onConfirm: () => {
+            props.onRequestEditMode?.()
+          },
+        })
+      }
       return
     }
 
-    const updatedMeal = addItemToMeal(meal, newItem)
-    void handleUpdateMeal(updatedMeal)
+    orchestrator.addItemToMealOrchestrated(meal, newItem).catch((e) => {
+      showError(e, {}, 'Erro ao adicionar item')
+    })
   }
 
   return (
