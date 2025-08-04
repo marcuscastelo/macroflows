@@ -10,11 +10,14 @@ export const {
   createNew: createNewCachedSearch,
   promote: promoteCachedSearch,
   demote: demoteNewCachedSearch,
-} = ze.create({
-  search: ze.string().min(1),
-})
+} = ze.create(
+  {
+    search: ze.string().min(1),
+  },
+  {}, // No extra fields like id
+)
 
-export type CachedSearch = Readonly<z.infer<typeof newCachedSearchSchema>>
+export type CachedSearch = Readonly<z.infer<typeof cachedSearchSchema>>
 export type NewCachedSearch = Readonly<z.infer<typeof newCachedSearchSchema>>
 
 /**

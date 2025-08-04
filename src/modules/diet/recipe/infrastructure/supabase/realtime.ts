@@ -1,10 +1,13 @@
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { recipeCacheStore } from '~/modules/diet/recipe/infrastructure/signals/recipeCacheStore'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
 
 const SUPABASE_TABLE_RECIPES = 'recipes'
+
+let initialized = false
 
 /**
  * Sets up granular realtime subscription for recipe changes
@@ -20,35 +23,44 @@ export function setupRecipeRealtimeSubscription(
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_RECIPES,
     recipeSchema,
-    (payload: unknown) => {
-      debug(`SUPABASE_TABLE_RECIPES table event: `, payload)
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const payloadData = payload as {
-        eventType?: string
-        old?: unknown
-        new?: unknown
+    onRecipeChange,
+  )
+}
+
+export function initializeRecipeRealtime(): void {
+  if (initialized) {
+    return
+  }
+  debug(`Recipe realtime initialized!`)
+  initialized = true
+  registerSubapabaseRealtimeCallback(
+    SUPABASE_TABLE_RECIPES,
+    recipeSchema,
+    (event) => {
+      debug(`Event:`, event)
+
+      switch (event.eventType) {
+        case 'INSERT': {
+          if (event.new !== undefined) {
+            recipeCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'UPDATE': {
+          if (event.new) {
+            recipeCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'DELETE': {
+          if (event.old) {
+            recipeCacheStore.removeFromCache({ by: 'id', value: event.old.id })
+          }
+          break
+        }
       }
-
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const eventType = payloadData.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-
-      // Parse old and new records if available
-      const oldRecord =
-        payloadData.old !== null
-          ? recipeSchema.safeParse(payloadData.old)
-          : null
-      const newRecord =
-        payloadData.new !== null
-          ? recipeSchema.safeParse(payloadData.new)
-          : null
-
-      onRecipeChange({
-        eventType,
-        old:
-          oldRecord !== null && oldRecord.success ? oldRecord.data : undefined,
-        new:
-          newRecord !== null && newRecord.success ? newRecord.data : undefined,
-      })
     },
   )
 }

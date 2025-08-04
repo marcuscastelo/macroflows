@@ -2,9 +2,14 @@ import {
   type MacroProfile,
   macroProfileSchema,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { createDebug } from '~/shared/utils/createDebug'
 
+const debug = createDebug()
 const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+
+let initialized = false
 
 /**
  * Sets up granular realtime subscription for macro profile changes
@@ -20,34 +25,47 @@ export function setupMacroProfileRealtimeSubscription(
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_MACRO_PROFILES,
     macroProfileSchema,
-    (payload: unknown) => {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const payloadData = payload as {
-        eventType?: string
-        old?: unknown
-        new?: unknown
+    onMacroProfileChange,
+  )
+}
+
+export function initializeMacroProfileRealtime(): void {
+  if (initialized) {
+    return
+  }
+  debug(`Macro profile realtime initialized!`)
+  initialized = true
+  registerSubapabaseRealtimeCallback(
+    SUPABASE_TABLE_MACRO_PROFILES,
+    macroProfileSchema,
+    (event) => {
+      debug(`Event:`, event)
+
+      switch (event.eventType) {
+        case 'INSERT': {
+          if (event.new) {
+            macroProfileCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'UPDATE': {
+          if (event.new) {
+            macroProfileCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'DELETE': {
+          if (event.old) {
+            macroProfileCacheStore.removeFromCache({
+              by: 'id',
+              value: event.old.id,
+            })
+          }
+          break
+        }
       }
-
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const eventType = payloadData.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-
-      // Parse old and new records if available
-      const oldRecord =
-        payloadData.old !== null
-          ? macroProfileSchema.safeParse(payloadData.old)
-          : null
-      const newRecord =
-        payloadData.new !== null
-          ? macroProfileSchema.safeParse(payloadData.new)
-          : null
-
-      onMacroProfileChange({
-        eventType,
-        old:
-          oldRecord !== null && oldRecord.success ? oldRecord.data : undefined,
-        new:
-          newRecord !== null && newRecord.success ? newRecord.data : undefined,
-      })
     },
   )
 }

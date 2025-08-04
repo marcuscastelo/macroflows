@@ -1,7 +1,8 @@
-import { createNewCachedSearch } from '~/modules/search/domain/cachedSearch'
+import { cachedSearchSchema } from '~/modules/search/domain/cachedSearch'
 import { type CachedSearchRepository } from '~/modules/search/domain/searchRepository'
 import { cachedSearchCacheStore } from '~/modules/search/infrastructure/signals/cachedSearchCacheStore'
 import { createSupabaseCachedSearchGateway } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchGateway'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export function createCachedSearchRepository(): CachedSearchRepository {
   const gateway = createSupabaseCachedSearchGateway()
@@ -11,7 +12,7 @@ export function createCachedSearchRepository(): CachedSearchRepository {
       const result = await gateway.isSearchCached(searchQuery)
       if (result) {
         cachedSearchCacheStore.upsertToCache(
-          createNewCachedSearch({ search: searchQuery }),
+          parseWithStack(cachedSearchSchema, { search: searchQuery }),
         )
       } else {
         cachedSearchCacheStore.removeFromCache({
@@ -24,7 +25,7 @@ export function createCachedSearchRepository(): CachedSearchRepository {
     markSearchAsCached: async (searchQuery) => {
       await gateway.markSearchAsCached(searchQuery)
       cachedSearchCacheStore.upsertToCache(
-        createNewCachedSearch({
+        parseWithStack(cachedSearchSchema, {
           search: searchQuery,
         }),
       )

@@ -1,9 +1,10 @@
 import {
   type CachedSearch,
-  createNewCachedSearch,
+  cachedSearchSchema,
   type NewCachedSearch,
 } from '~/modules/search/domain/cachedSearch'
 import { type Database } from '~/shared/supabase/database.types'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 type CachedSearchDTO = Database['public']['Tables']['cached_searches']['Row']
 type InsertCachedSearchDTO =
@@ -11,7 +12,7 @@ type InsertCachedSearchDTO =
 
 export const supabaseCachedSearchMapper = {
   toDomain: (supabaseData: CachedSearchDTO): CachedSearch => {
-    return createNewCachedSearch({
+    return parseWithStack(cachedSearchSchema, {
       search: supabaseData.search,
     })
   },
