@@ -5,14 +5,6 @@ import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastruct
 import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
 import { currentUserId } from '~/modules/user/application/user'
 
-// Re-export CRUD operations
-export {
-  deleteMacroProfile,
-  fetchUserMacroProfiles,
-  insertMacroProfile,
-  updateMacroProfile,
-} from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
-
 export const selectedUserId = macroProfileStateStore.selectedUserId
 export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 

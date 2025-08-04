@@ -1,4 +1,4 @@
-import { refetchBodyMeasures } from '~/modules/measure/application/usecases/measureCrud'
+import { refetchBodyMeasures } from '~/modules/measure/application/usecases/measureState'
 import {
   type BodyMeasure,
   bodyMeasureSchema,

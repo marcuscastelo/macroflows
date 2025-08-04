@@ -6,7 +6,7 @@ import {
   Show,
 } from 'solid-js'
 
-import { fetchFoodByEan } from '~/modules/diet/food/application/food'
+import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'

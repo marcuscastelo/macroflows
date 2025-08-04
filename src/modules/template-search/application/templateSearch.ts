@@ -3,7 +3,7 @@ import { createResource, createSignal } from 'solid-js'
 import {
   fetchFoods,
   fetchFoodsByName,
-} from '~/modules/diet/food/application/food'
+} from '~/modules/diet/food/application/usecases/foodCrud'
 import {
   fetchUserRecipeByName,
   fetchUserRecipes,

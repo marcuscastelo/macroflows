@@ -1,5 +1,3 @@
-import { createResource } from 'solid-js'
-
 import {
   type BodyMeasure,
   type NewBodyMeasure,
@@ -10,23 +8,12 @@ import {
   insertBodyMeasure as insertBodyMeasureRepo,
   updateBodyMeasure as updateBodyMeasureRepo,
 } from '~/modules/measure/infrastructure/measureRepository'
-import { initializeMeasureRealtime } from '~/modules/measure/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
 const measureRepository = createMeasureRepository()
 const errorHandler = createErrorHandler('application', 'Measure')
-
-// Initialize realtime subscription
-initializeMeasureRealtime()
-
-export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
-  currentUserId,
-  fetchUserBodyMeasures,
-  { initialValue: [], ssrLoadFrom: 'initial' },
-)
 
 /**
  * Fetches all body measures for a user.
@@ -63,10 +50,6 @@ export async function insertBodyMeasure(
       { context: 'user-action', audience: 'user' },
     )
 
-    if (result) {
-      void refetchBodyMeasures()
-    }
-
     return result
   } catch (error) {
     errorHandler.error(error)
@@ -95,10 +78,6 @@ export async function updateBodyMeasure(
       { context: 'user-action', audience: 'user' },
     )
 
-    if (result) {
-      void refetchBodyMeasures()
-    }
-
     return result
   } catch (error) {
     errorHandler.error(error)
@@ -125,7 +104,6 @@ export async function deleteBodyMeasure(
       { context: 'user-action', audience: 'user' },
     )
 
-    void refetchBodyMeasures()
     return true
   } catch (error) {
     errorHandler.error(error)
