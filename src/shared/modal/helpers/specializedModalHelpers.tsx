@@ -9,7 +9,7 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { userWeights } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
+import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   RecipeEditModal,

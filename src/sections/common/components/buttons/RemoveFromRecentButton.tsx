@@ -5,7 +5,7 @@ import {
   type Template,
 } from '~/modules/diet/template/domain/template'
 import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { debouncedTab } from '~/modules/template-search/application/templateSearch'
+import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'

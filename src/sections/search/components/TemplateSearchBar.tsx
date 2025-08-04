@@ -4,7 +4,7 @@ import {
   setTemplateSearch,
   templates,
   templateSearch,
-} from '~/modules/template-search/application/templateSearch'
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 export function TemplateSearchBar(props: { isDesktop: boolean }) {

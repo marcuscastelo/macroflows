@@ -1,5 +1,5 @@
+import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { type Weight } from '~/modules/weight/domain/weight'
-import { userWeights } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
 import { inForceGeneric } from '~/shared/utils/generic/inForce'
 
 function sortWeightsByDate(weights: readonly Weight[]): readonly Weight[] {

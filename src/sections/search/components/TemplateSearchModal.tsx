@@ -32,7 +32,7 @@ import {
   setTemplateSearchTab,
   templates,
   templateSearchTab,
-} from '~/modules/template-search/application/templateSearch'
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'

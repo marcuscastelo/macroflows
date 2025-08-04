@@ -7,17 +7,20 @@ const debug = createDebug()
 
 let initialized = false
 
-export function initializeRecentFoodRealtime(): void {
+export function initializeWeightRealtime(): void {
   if (initialized) {
     return
   }
-  debug(`Recent food realtime initialized!`)
+  debug(`Weight realtime initialized!`)
   initialized = true
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_WEIGHTS,
     weightSchema,
     (event) => {
       debug(`Event:`, event)
+
+      // TODO: Integrate with weight cache store for real-time updates
+      // Similar to day-diet pattern: upsert/remove from cache based on event
     },
   )
 }

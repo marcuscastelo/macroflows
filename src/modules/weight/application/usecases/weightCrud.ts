@@ -4,13 +4,10 @@ import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
 import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
 import { type createErrorHandler } from '~/shared/error/errorHandler'
 
-// TODO: move to usecases
 export function createWeightCrudService(deps: {
   weightRepository: WeightRepository
   storageRepository: WeightStorageRepository
   errorHandler: ReturnType<typeof createErrorHandler>
-  // TODO: remove temp callback (should be granular)
-  refetchUserWeights: () => void
 }) {
   async function fetchUserWeights(userId: number) {
     try {
@@ -25,12 +22,14 @@ export function createWeightCrudService(deps: {
 
   async function insertWeight(newWeight: NewWeight) {
     try {
-      const weight = await deps.weightRepository.insertWeight(newWeight)
-      await showPromise(Promise.resolve(deps.refetchUserWeights()), {
-        loading: 'Inserindo peso...',
-        success: 'Peso inserido com sucesso',
-        error: 'Falha ao inserir peso',
-      })
+      const weight = await showPromise(
+        deps.weightRepository.insertWeight(newWeight),
+        {
+          loading: 'Inserindo peso...',
+          success: 'Peso inserido com sucesso',
+          error: 'Falha ao inserir peso',
+        },
+      )
       return weight
     } catch (error) {
       deps.errorHandler.error(error)
@@ -48,7 +47,6 @@ export function createWeightCrudService(deps: {
           error: 'Falha ao atualizar peso',
         },
       )
-      void deps.refetchUserWeights()
       return weight
     } catch (error) {
       deps.errorHandler.error(error)
@@ -63,7 +61,6 @@ export function createWeightCrudService(deps: {
         success: 'Peso deletado com sucesso',
         error: 'Falha ao deletar peso',
       })
-      void deps.refetchUserWeights()
     } catch (error) {
       deps.errorHandler.error(error)
       throw error

@@ -21,9 +21,12 @@ vi.mock('~/modules/recent-food/application/usecases/recentFoodCrud', () => ({
   deleteRecentFoodByReference: vi.fn(),
 }))
 
-vi.mock('~/modules/template-search/application/templateSearch', () => ({
-  debouncedTab: vi.fn(),
-}))
+vi.mock(
+  '~/modules/template-search/application/usecases/templateSearchState',
+  () => ({
+    debouncedTab: vi.fn(),
+  }),
+)
 
 vi.mock('~/modules/toast/application/toastManager', () => ({
   showPromise: vi.fn(),
@@ -44,7 +47,7 @@ vi.mock('~/shared/error/errorHandler', () => ({
 
 // Import the mocked modules
 import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { debouncedTab } from '~/modules/template-search/application/templateSearch'
+import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'

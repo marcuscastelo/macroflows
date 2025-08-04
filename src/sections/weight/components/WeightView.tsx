@@ -1,8 +1,8 @@
 import { createMemo, createSignal, onMount, Show } from 'solid-js'
 
 import { showError } from '~/modules/toast/application/toastManager'
+import { weightCrudService } from '~/modules/weight/application/usecases/weightState'
 import { type Weight } from '~/modules/weight/domain/weight'
-import { weightCrudService } from '~/modules/weight/infrastructure/signals/weightsCacheStore'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
 import { FloatInput } from '~/sections/common/components/FloatInput'
