@@ -3,7 +3,7 @@ import {
   dayDietSchema,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
-import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
+import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 

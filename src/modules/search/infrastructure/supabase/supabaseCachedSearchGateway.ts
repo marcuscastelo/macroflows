@@ -3,11 +3,10 @@ import {
   createNormalizedSearch,
 } from '~/modules/search/domain/cachedSearch'
 import { type CachedSearchGateway } from '~/modules/search/domain/searchGateway'
+import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
 import { supabaseCachedSearchMapper } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchMapper'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-
-const TABLE = 'cached_searches'
 const errorHandler = createErrorHandler('infrastructure', 'SearchCache')
 
 export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
@@ -17,7 +16,7 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
         const normalizedSearch = createNormalizedSearch(searchQuery)
 
         const { data, error } = await supabase
-          .from(TABLE)
+          .from(SUPABASE_TABLE_CACHED_SEARCHES)
           .select('search')
           .eq('search', normalizedSearch)
           .limit(1)
@@ -54,7 +53,10 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
           }),
         )
 
-        const { error } = await supabase.from(TABLE).upsert(insertData).select()
+        const { error } = await supabase
+          .from(SUPABASE_TABLE_CACHED_SEARCHES)
+          .upsert(insertData)
+          .select()
 
         if (error !== null) {
           throw new Error('Failed to mark search as cached', { cause: error })
@@ -74,7 +76,7 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
         const normalizedSearch = createNormalizedSearch(searchQuery)
 
         const { error } = await supabase
-          .from(TABLE)
+          .from(SUPABASE_TABLE_CACHED_SEARCHES)
           .delete()
           .eq('search', normalizedSearch)
 

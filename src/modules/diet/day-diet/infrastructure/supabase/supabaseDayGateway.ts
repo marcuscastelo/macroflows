@@ -4,6 +4,7 @@ import {
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
+import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseMapper'
 import { type User } from '~/modules/user/domain/user'
 import {
@@ -11,8 +12,6 @@ import {
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-
-export const SUPABASE_TABLE_DAYS = 'days'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 

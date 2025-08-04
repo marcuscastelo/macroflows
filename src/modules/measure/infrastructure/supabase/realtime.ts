@@ -7,7 +7,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
-const SUPABASE_TABLE_BODY_MEASURES = 'body_measures'
+import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
 
 let initialized = false
 

@@ -1,13 +1,12 @@
 import { type NewUser, type User, userSchema } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
+import { SUPABASE_TABLE_USERS } from '~/modules/user/infrastructure/supabase/constants'
 import { subapaseUserMapper } from '~/modules/user/infrastructure/supabase/supabaseUserMapper'
 import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import {
   registerSubapabaseRealtimeCallback,
   supabase,
 } from '~/shared/supabase/supabase'
-
-export const SUPABASE_TABLE_USERS = 'users'
 
 export function createSupabaseUserRepository(): UserRepository {
   return {

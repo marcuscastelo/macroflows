@@ -5,7 +5,7 @@ import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
 
-const SUPABASE_TABLE_RECIPES = 'recipes'
+import { SUPABASE_TABLE_RECIPES } from '~/modules/diet/recipe/infrastructure/supabase/constants'
 
 let initialized = false
 

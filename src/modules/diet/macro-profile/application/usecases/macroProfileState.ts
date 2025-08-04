@@ -1,8 +1,8 @@
-import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/application/realtime'
 import { getLatestMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { initializeMacroProfileEffects } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileEffects'
 import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileStateStore'
+import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
 import { currentUserId } from '~/modules/user/application/user'
 
 // Re-export CRUD operations

@@ -1,6 +1,6 @@
 import { onCleanup } from 'solid-js'
 
-import { initializeCachedSearchRealtime } from '~/modules/search/application/realtime'
+import { initializeCachedSearchRealtime } from '~/modules/search/infrastructure/supabase/realtime'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()

@@ -3,6 +3,7 @@ import {
   type NewBodyMeasure,
 } from '~/modules/measure/domain/measure'
 import { type BodyMeasureGateway } from '~/modules/measure/domain/measureGateway'
+import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
 import { supabaseBodyMeasureMapper } from '~/modules/measure/infrastructure/supabase/supabaseMeasureMapper'
 import { type User } from '~/modules/user/domain/user'
 import {
@@ -10,8 +11,6 @@ import {
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-
-const TABLE = 'body_measures'
 
 const errorHandler = createErrorHandler('infrastructure', 'Measure')
 
@@ -26,7 +25,7 @@ export function createSupabaseBodyMeasureGateway(): BodyMeasureGateway {
 
 async function fetchUserBodyMeasures(userId: User['id']) {
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_BODY_MEASURES)
     .select('*')
     .eq('owner', userId)
     .order('target_timestamp', { ascending: true })
@@ -44,7 +43,7 @@ async function insertBodyMeasure(
 ): Promise<BodyMeasure | null> {
   const createDAO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_BODY_MEASURES)
     .insert(createDAO)
     .select()
     .single()
@@ -63,7 +62,7 @@ async function updateBodyMeasure(
 ): Promise<BodyMeasure | null> {
   const updateDAO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_BODY_MEASURES)
     .update(updateDAO)
     .eq('id', bodyMeasureId)
     .select()
@@ -78,7 +77,10 @@ async function updateBodyMeasure(
 }
 
 async function deleteBodyMeasure(id: BodyMeasure['id']) {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  const { error } = await supabase
+    .from(SUPABASE_TABLE_BODY_MEASURES)
+    .delete()
+    .eq('id', id)
 
   if (error !== null) {
     errorHandler.error(error)

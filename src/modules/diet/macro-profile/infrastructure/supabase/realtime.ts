@@ -7,7 +7,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
-const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
 
 let initialized = false
 

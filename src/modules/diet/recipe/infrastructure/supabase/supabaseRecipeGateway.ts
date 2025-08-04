@@ -3,13 +3,12 @@ import {
   type Recipe,
 } from '~/modules/diet/recipe/domain/recipe'
 import { type RecipeGateway } from '~/modules/diet/recipe/domain/recipeGateway'
+import { SUPABASE_TABLE_RECIPES } from '~/modules/diet/recipe/infrastructure/supabase/constants'
 import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supabase/supabaseRecipeMapper'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-
-const TABLE = 'recipes'
 
 const errorHandler = createErrorHandler('infrastructure', 'Recipe')
 
@@ -34,7 +33,7 @@ const fetchUserRecipes = async (
 ): Promise<readonly Recipe[]> => {
   try {
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(SUPABASE_TABLE_RECIPES)
       .select()
       .eq('owner', userId)
     if (error !== null) {
@@ -56,7 +55,7 @@ const fetchUserRecipes = async (
 const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe | null> => {
   try {
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(SUPABASE_TABLE_RECIPES)
       .select()
       .eq('id', id)
       .single()
@@ -87,7 +86,7 @@ const fetchUserRecipeByName = async (
     // Normalize diacritics for search
     const normalizedName = removeDiacritics(name)
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(SUPABASE_TABLE_RECIPES)
       .select()
       .eq('owner', userId)
       .ilike('name', `%${normalizedName}%`)
@@ -112,7 +111,7 @@ const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe | null> => {
   try {
     const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(SUPABASE_TABLE_RECIPES)
       .insert(createDAO)
       .select()
       .single()
@@ -143,7 +142,7 @@ const updateRecipe = async (
     const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
 
     const { data, error } = await supabase
-      .from(TABLE)
+      .from(SUPABASE_TABLE_RECIPES)
       .update(updateDAO)
       .eq('id', recipeId)
       .select()
@@ -166,7 +165,10 @@ const updateRecipe = async (
  */
 const deleteRecipe = async (id: Recipe['id']): Promise<void> => {
   try {
-    const { error } = await supabase.from(TABLE).delete().eq('id', id)
+    const { error } = await supabase
+      .from(SUPABASE_TABLE_RECIPES)
+      .delete()
+      .eq('id', id)
     if (error !== null) {
       errorHandler.error(error)
     }

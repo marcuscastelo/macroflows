@@ -1,6 +1,5 @@
 import { createResource } from 'solid-js'
 
-import { initializeMeasureRealtime } from '~/modules/measure/application/realtime'
 import {
   type BodyMeasure,
   type NewBodyMeasure,
@@ -11,6 +10,7 @@ import {
   insertBodyMeasure as insertBodyMeasureRepo,
   updateBodyMeasure as updateBodyMeasureRepo,
 } from '~/modules/measure/infrastructure/measureRepository'
+import { initializeMeasureRealtime } from '~/modules/measure/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'

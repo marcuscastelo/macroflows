@@ -15,7 +15,7 @@ import { createDebug } from '~/shared/utils/createDebug'
 const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Food')
 
-const TABLE = 'foods'
+import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
 
 export function createSupabaseFoodRepository(): FoodRepository {
   return {
@@ -95,7 +95,7 @@ async function fetchFoodByEan(
 async function insertFood(newFood: NewFood): Promise<Food> {
   const insertDTO = supabaseFoodMapper.toInsertDTO(newFood)
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_FOODS)
     .insert(insertDTO)
     .select()
     .single()
@@ -121,7 +121,7 @@ async function insertFood(newFood: NewFood): Promise<Food> {
 async function upsertFood(newFood: NewFood): Promise<Food> {
   const createDAO = supabaseFoodMapper.toInsertDTO(newFood)
   const { data: food, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_FOODS)
     .upsert(createDAO)
     .select()
     .single()
@@ -209,7 +209,7 @@ async function internalCachedSearchFoods(
   )
   const { limit, allowedFoods } = params ?? {}
   const base = supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_FOODS)
     .select('*')
     .not('name', 'eq', '')
     .not('name', 'eq', '.')
@@ -259,7 +259,7 @@ async function internalCachedSearchFoods(
 async function fetchFoodsByIds(ids: Food['id'][]): Promise<readonly Food[]> {
   if (!Array.isArray(ids) || ids.length === 0) return []
   const { data: foods, error } = await supabase
-    .from(TABLE)
+    .from(SUPABASE_TABLE_FOODS)
     .select('*')
     .in('id', ids)
 

@@ -7,7 +7,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
 
 const debug = createDebug()
-const SUPABASE_TABLE_CACHED_SEARCHES = 'cached_searches'
+import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
 
 let initialized = false
 

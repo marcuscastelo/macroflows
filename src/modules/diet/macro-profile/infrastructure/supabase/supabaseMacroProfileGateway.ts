@@ -3,6 +3,7 @@ import {
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
+import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
 import {
   macroProfileDAOSchema,
   supabaseMacroProfileMapper,
@@ -11,8 +12,6 @@ import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-
-const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
 const errorHandler = createErrorHandler('infrastructure', 'MacroProfileGateway')
 
 export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
