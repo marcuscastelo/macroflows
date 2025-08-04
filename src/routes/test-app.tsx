@@ -1,11 +1,13 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
 import {
-  getCurrentUser,
-  isAuthenticated,
   signIn,
   signOut,
-} from '~/modules/auth/application/auth'
+} from '~/modules/auth/application/usecases/authSession'
+import {
+  getCurrentUser,
+  isAuthenticated,
+} from '~/modules/auth/application/usecases/authState'
 import {
   setTargetDay,
   targetDay,

@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import * as authModule from '~/modules/auth/application/auth'
+import * as authModule1 from '~/modules/auth/application/usecases/authSession'
+import * as authModule2 from '~/modules/auth/application/usecases/authState'
+
+const authModule = {
+  ...authModule1,
+  ...authModule2,
+}
 
 // Mock the error handler
 vi.mock('~/shared/error/errorHandler', () => ({
