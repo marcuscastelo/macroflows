@@ -234,13 +234,13 @@ The codebase follows a strict 3-layer architecture pattern with clean separation
 - Pure business logic, types, and repository interfaces
 - Uses Zod schemas for validation and type inference
 - Entities have `__type` discriminators for type safety
-- **NEVER** import or use side-effect utilities (handleApiError, logging, toasts)
+- **NEVER** import or use side-effect utilities (errorHandler.apiError, logging, toasts)
 - Throw standard `Error()` with descriptive messages and context
 - **CRITICAL:** Domain layer must remain free of framework dependencies
 
 **Application Layer** (`modules/*/application/`):
 - SolidJS resources, signals, and orchestration logic
-- **Must always catch errors and call `handleApiError` with full context**
+- **Must always catch errors and call `errorHandler.apiError` with full context**
 - Manages global reactive state using `createSignal`/`createEffect`
 - Coordinates between UI and infrastructure layers
 - Handles all side effects and user feedback (toasts, notifications)
@@ -298,7 +298,7 @@ export type ModalConfig = {
 
 ## Error Handling Standards
 
-**Critical Rule:** All application code must use `handleApiError` with context - never log/throw errors without it.
+**Critical Rule:** All application code must use `errorHandler.apiError` with context - never log/throw errors without it.
 
 **Domain Layer:**
 ```typescript
@@ -313,18 +313,21 @@ if (!result.success) {
   throw new Error('Invalid data format', { cause: result.error })
 }
 
-// ❌ Bad: Never use handleApiError in domain
-import { handleApiError } from '~/shared/error/errorHandler'
-handleApiError(...) // Strictly forbidden in domain layer
+// ❌ Bad: Never use errorHandler in domain
+import { createErrorHandler } from '~/shared/error/errorHandler'
+const errorHandler = createErrorHandler('domain', 'Entity')
+errorHandler.apiError(...) // Strictly forbidden in domain layer
 ```
 
 **Application Layer:**
 ```typescript
 // ✅ Required pattern: Always catch and contextualize
+const errorHandler = createErrorHandler('application', 'ComponentName')
+
 try {
   domainOperation()
 } catch (e) {
-  handleApiError(e, {
+  errorHandler.apiError(e, {
     component: 'ComponentName',
     operation: 'operationName', 
     additionalData: { userId }
@@ -428,11 +431,11 @@ const hasAnyHandler = () =>
 **Absolute Import Requirement:**
 ```typescript
 // ✅ Required: Always use absolute imports with ~/ prefix
-import { handleApiError } from '~/shared/error/errorHandler'
+import { createErrorHandler } from '~/shared/error/errorHandler'
 import { DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 
 // ❌ Forbidden: Relative imports
-import { handleApiError } from '../../../shared/error/errorHandler'
+import { createErrorHandler } from '~/shared/error/errorHandler'
 import { DayDiet } from './domain/dayDiet'
 ```
 

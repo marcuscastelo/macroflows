@@ -8,9 +8,6 @@ import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
-const dayRepository = createDayDietRepository()
-const errorHandler = createErrorHandler('application', 'dayDiet')
-
 export type CopyDayState = {
   previousDays: readonly DayDiet[]
   isLoadingPreviousDays: boolean
@@ -34,10 +31,10 @@ export type CopyDayOperations = {
   resetState: () => void
 }
 
-/**
- * Creates copy day operations with encapsulated state management
- */
-export function createCopyDayOperations(): CopyDayOperations {
+function createCopyDayOperations(
+  repository = createDayDietRepository(),
+): CopyDayOperations {
+  const errorHandler = createErrorHandler('application', 'dayDiet')
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
@@ -59,7 +56,7 @@ export function createCopyDayOperations(): CopyDayOperations {
 
     setIsLoadingPreviousDays(true)
     try {
-      const days = await dayRepository.fetchDayDietsByUserIdBeforeDate(
+      const days = await repository.fetchDayDietsByUserIdBeforeDate(
         userId,
         beforeDay,
         limit,
@@ -107,9 +104,9 @@ export function createCopyDayOperations(): CopyDayOperations {
       })
 
       if (existingDay) {
-        await dayRepository.updateDayDietById(existingDay.id, newDay)
+        await repository.updateDayDietById(existingDay.id, newDay)
       } else {
-        await dayRepository.insertDayDiet(newDay)
+        await repository.insertDayDiet(newDay)
       }
     } catch (error) {
       errorHandler.apiError(error, {
@@ -138,3 +135,9 @@ export function createCopyDayOperations(): CopyDayOperations {
     resetState,
   }
 }
+
+const defaultOperations = createCopyDayOperations()
+
+export { createCopyDayOperations }
+export const { state, loadPreviousDays, copyDay, resetState } =
+  defaultOperations
