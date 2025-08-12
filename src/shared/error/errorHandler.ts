@@ -1,3 +1,7 @@
+import { trace } from '@opentelemetry/api'
+
+import { isTracingEnabled } from '~/shared/config/telemetry'
+
 /**
  * Centralized error handling utilities for the application layer.
  * Components should not directly use console.error, instead they should
@@ -70,6 +74,24 @@ export function logError(error: unknown, context?: ErrorContext): void {
   if (context?.additionalData !== undefined) {
     console.error('Additional context:', context.additionalData)
   }
+
+  // Record error in OpenTelemetry span if available
+  if (isTracingEnabled()) {
+    const activeSpan = trace.getActiveSpan()
+    if (activeSpan) {
+      activeSpan.recordException(
+        error instanceof Error ? error : new Error(String(error)),
+      )
+      activeSpan.setAttributes({
+        'error.component': componentStr,
+        'error.operation': context?.operation ?? 'unknown',
+        'error.type': 'application_error',
+      })
+      if (context?.userId !== undefined && context.userId !== '') {
+        activeSpan.setAttribute('user.id', context.userId)
+      }
+    }
+  }
 }
 
 /**
@@ -103,6 +125,32 @@ export function logEnhancedError(
 
   if (context.technicalContext) {
     console.error('Technical context:', context.technicalContext)
+  }
+
+  // Record error in OpenTelemetry span if available
+  if (isTracingEnabled()) {
+    const activeSpan = trace.getActiveSpan()
+    if (activeSpan) {
+      activeSpan.recordException(
+        error instanceof Error ? error : new Error(String(error)),
+      )
+      activeSpan.setAttributes({
+        'error.severity': severity,
+        'error.module': module,
+        'error.component': component,
+        'error.operation': operation,
+        'error.type': 'enhanced_error',
+      })
+      if (context.entityType !== undefined && context.entityId !== undefined) {
+        activeSpan.setAttributes({
+          'entity.type': context.entityType,
+          'entity.id': String(context.entityId),
+        })
+      }
+      if (context.userId !== undefined) {
+        activeSpan.setAttribute('user.id', String(context.userId))
+      }
+    }
   }
 }
 

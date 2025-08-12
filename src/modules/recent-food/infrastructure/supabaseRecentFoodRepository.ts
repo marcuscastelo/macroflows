@@ -13,6 +13,7 @@ import { createErrorHandler } from '~/shared/error/errorHandler'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
 import { supabase } from '~/shared/utils/supabase'
+import { withDatabaseSpan } from '~/shared/utils/tracing'
 
 const TABLE = 'recent_foods'
 
@@ -91,45 +92,80 @@ export const supabaseRecentFoodRepository: RecentFoodRepository = {
     search: string,
     opts?: { limit?: number },
   ): Promise<readonly unknown[]> {
-    try {
-      const limit = opts?.limit
-      const normalizedSearch =
-        search.trim() !== '' ? removeDiacritics(search.trim()) : undefined
+    return withDatabaseSpan(
+      'search_recent_foods',
+      'recent_foods',
+      async (span) => {
+        try {
+          const limit = opts?.limit
+          const normalizedSearch =
+            search.trim() !== '' ? removeDiacritics(search.trim()) : undefined
 
-      const response = await supabase.rpc('search_recent_foods_with_names', {
-        p_user_id: userId,
-        p_search_term: normalizedSearch ?? null,
-        p_limit: limit,
-      })
-      if (response.error !== null) throw response.error
+          span.setAttributes({
+            'user.id': userId,
+            'search.term': search,
+            'search.normalized': normalizedSearch ?? '',
+            'query.limit': limit ?? 0,
+          })
 
-      // Return raw validated data for application layer to transform
-      return parseWithStack(enhancedRecentFoodRowSchema.array(), response.data)
-    } catch (error) {
-      errorHandler.error(error)
-      return []
-    }
+          const response = await supabase.rpc(
+            'search_recent_foods_with_names',
+            {
+              p_user_id: userId,
+              p_search_term: normalizedSearch ?? null,
+              p_limit: limit,
+            },
+          )
+          if (response.error !== null) throw response.error
+
+          const result = parseWithStack(
+            enhancedRecentFoodRowSchema.array(),
+            response.data,
+          )
+          span.setAttribute('result.count', result.length)
+
+          // Return raw validated data for application layer to transform
+          return result
+        } catch (error) {
+          errorHandler.error(error)
+          return []
+        }
+      },
+    )
   },
 
   async insert(input: RecentFoodInput): Promise<RecentFoodRecord | null> {
-    try {
-      const insertData = {
-        user_id: input.user_id,
-        type: input.type,
-        reference_id: input.reference_id,
-        last_used: input.last_used ?? new Date(),
-        times_used: input.times_used ?? 1,
+    return withDatabaseSpan('insert', 'recent_foods', async (span) => {
+      try {
+        const insertData = {
+          user_id: input.user_id,
+          type: input.type,
+          reference_id: input.reference_id,
+          last_used: input.last_used ?? new Date(),
+          times_used: input.times_used ?? 1,
+        }
+
+        span.setAttributes({
+          'user.id': input.user_id,
+          'recent_food.type': input.type,
+          'recent_food.reference_id': input.reference_id,
+        })
+
+        const { data, error } = await supabase
+          .from(TABLE)
+          .insert(insertData)
+          .select()
+        if (error !== null) throw error
+
+        const result = parseWithStack(recentFoodRecordSchema, data[0])
+        span.setAttribute('recent_food.id', result.id)
+
+        return result
+      } catch (error) {
+        errorHandler.error(error)
+        return null
       }
-      const { data, error } = await supabase
-        .from(TABLE)
-        .insert(insertData)
-        .select()
-      if (error !== null) throw error
-      return parseWithStack(recentFoodRecordSchema, data[0])
-    } catch (error) {
-      errorHandler.error(error)
-      return null
-    }
+    })
   },
 
   async update(
