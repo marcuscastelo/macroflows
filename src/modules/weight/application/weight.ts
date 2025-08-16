@@ -22,10 +22,7 @@ const storageRepository = createLocalStorageWeightRepository()
  * Lazy-loading resource for user weights
  * Automatically fetches when accessed and currentUserId changes
  */
-export const [
-  userWeights,
-  { mutate: mutateUserWeights, refetch: refetchUserWeights },
-] = createResource(
+export const [userWeights, { refetch: refetchUserWeights }] = createResource(
   currentUserId, // Source signal - refetches when userId changes
   async (userId: number) => {
     try {

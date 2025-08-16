@@ -58,34 +58,10 @@ export function removeItemFromRecipe(
   }
 }
 
-export function setRecipeItems(recipe: Recipe, items: UnifiedItem[]): Recipe {
-  return {
-    ...recipe,
-    items,
-  }
-}
-
 export function clearRecipeItems(recipe: Recipe): Recipe {
   return {
     ...recipe,
     items: [],
-  }
-}
-
-export function findItemInRecipe(
-  recipe: Recipe,
-  itemId: UnifiedItem['id'],
-): UnifiedItem | undefined {
-  return recipe.items.find((item) => item.id === itemId)
-}
-
-export function replaceRecipe(
-  recipe: Recipe,
-  updates: Partial<Recipe>,
-): Recipe {
-  return {
-    ...recipe,
-    ...updates,
   }
 }
 
