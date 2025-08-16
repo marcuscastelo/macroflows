@@ -18,5 +18,11 @@
     "src/entry-server.tsx",
     "src/routes/**/*.tsx",
     "src/routes/**/*.ts"
-  ]
+  ],
+  "ignoreExportsUsedByFile": {
+    "src/routes/**/*.tsx": ["default"],
+    "src/routes/**/*.ts": ["default"],
+    "app.config.ts": ["default"],
+    "vitest.config.ts": ["default"]
+  }
 }
