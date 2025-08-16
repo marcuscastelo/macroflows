@@ -168,7 +168,7 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<boolean> {
         success: 'Dia de dieta criado com sucesso',
         error: 'Erro ao criar dia de dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchAllUserDayDiets(dayDiet.owner)
     return true
@@ -196,7 +196,7 @@ export async function updateDayDiet(
         success: 'Dieta atualizada com sucesso',
         error: 'Erro ao atualizar dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchAllUserDayDiets(dayDiet.owner)
     return true
@@ -220,7 +220,7 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<boolean> {
         success: 'Dieta deletada com sucesso',
         error: 'Erro ao deletar dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchAllUserDayDiets(currentUserId())
     return true

@@ -48,24 +48,3 @@ export const markSearchAsCached = async (
     return false
   }
 }
-
-/**
- * Unmarks a search as cached.
- * @param search - The search string.
- * @returns True if unmarked, false otherwise.
- */
-export const unmarkSearchAsCached = async (
-  search: CachedSearch['search'],
-): Promise<boolean> => {
-  try {
-    await supabase
-      .from(TABLE)
-      .delete()
-      .match({ search: search.toLowerCase() })
-      .select()
-    return true
-  } catch (error) {
-    errorHandler.error(error)
-    return false
-  }
-}

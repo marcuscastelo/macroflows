@@ -86,7 +86,7 @@ export async function insertRecentFood(
         success: 'Alimento recente salvo com sucesso',
         error: 'Erro ao salvar alimento recente',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error)
@@ -112,7 +112,7 @@ export async function updateRecentFood(
         success: 'Alimento recente atualizado com sucesso',
         error: 'Erro ao atualizar alimento recente',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error)
@@ -140,7 +140,7 @@ export async function deleteRecentFoodByReference(
         success: 'Alimento recente removido com sucesso',
         error: 'Erro ao remover alimento recente',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error)

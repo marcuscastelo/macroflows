@@ -28,16 +28,16 @@ const debug = createDebug()
 /**
  * Returns true if the toast should be skipped based on context, audience, and type.
  *
- * @param options - ToastOptions including context, audience, type, showSuccess, showLoading.
+ * @param options - ToastOptions including context, type, showSuccess, showLoading.
  * @returns True if the toast should be skipped, false otherwise.
  */
 function shouldSkipToast(options: ToastOptions): boolean {
-  const { context, audience, type, showSuccess, showLoading } = options
+  const { context, type, showSuccess, showLoading } = options
 
   // Always show error toasts
   if (type === 'error') return false
 
-  const isBackgroundOrSystem = context === 'background' || audience === 'system'
+  const isBackgroundOrSystem = context === 'background'
 
   if (type === 'success' && isBackgroundOrSystem && showSuccess !== true) {
     return true
@@ -137,7 +137,6 @@ export function showError(
           ...providedOptions,
           type: 'error',
           context: 'background',
-          audience: 'user',
         }),
         duration: 8000,
       },

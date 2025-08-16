@@ -30,10 +30,7 @@ export const [debouncedTab] = createDebouncedSignal(
 
 const getFavoriteFoods = () => currentUser()?.favorite_foods ?? []
 
-export const [
-  templates,
-  { refetch: refetchTemplates, mutate: mutateTemplates },
-] = createResource(
+export const [templates, { refetch: refetchTemplates }] = createResource(
   () => ({
     tab: debouncedTab(),
     search: debouncedSearch(),

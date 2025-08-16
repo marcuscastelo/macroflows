@@ -2,5 +2,4 @@
 export {
   isSearchCached,
   markSearchAsCached,
-  unmarkSearchAsCached,
 } from '~/modules/search/infrastructure/supabaseSearchCacheRepository'
