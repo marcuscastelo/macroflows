@@ -8,7 +8,6 @@ import {
 import { macroNutrientsSchema } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
-// Base schema (with ID)
 export const foodDAOSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -23,38 +22,10 @@ export const foodDAOSchema = z.object({
     .optional(),
 })
 
-// Schema for creation (without ID)
-export const createFoodDAOSchema = foodDAOSchema.omit({ id: true })
+const createFoodDAOSchema = foodDAOSchema.omit({ id: true })
 
-// Schema for update (optional fields, without ID)
-export const updateFoodDAOSchema = foodDAOSchema.omit({ id: true }).partial()
-
-// Types
 export type FoodDAO = z.infer<typeof foodDAOSchema>
-export type CreateFoodDAO = z.infer<typeof createFoodDAOSchema>
-export type UpdateFoodDAO = z.infer<typeof updateFoodDAOSchema>
-
-// Conversions
-export function createFoodDAO(food: Food): FoodDAO {
-  return parseWithStack(foodDAOSchema, {
-    id: food.id,
-    name: food.name,
-    ean: food.ean ?? null,
-    macros: food.macros,
-    source: food.source ?? null,
-  })
-}
-
-export function createInsertFoodDAO(
-  food: Omit<Food, 'id' | '__type'>,
-): CreateFoodDAO {
-  return parseWithStack(createFoodDAOSchema, {
-    name: food.name,
-    ean: food.ean ?? null,
-    macros: food.macros,
-    source: food.source ?? null,
-  })
-}
+type CreateFoodDAO = z.infer<typeof createFoodDAOSchema>
 
 export function createFoodFromDAO(dao: FoodDAO): Food {
   return parseWithStack(foodSchema, {
@@ -72,14 +43,5 @@ export function createInsertFoodDAOFromNewFood(
     ean: newFood.ean ?? null,
     macros: newFood.macros,
     source: newFood.source ?? null,
-  })
-}
-
-export function createUpdateFoodDAOFromFood(food: Food): UpdateFoodDAO {
-  return parseWithStack(updateFoodDAOSchema, {
-    name: food.name,
-    ean: food.ean ?? null,
-    macros: food.macros,
-    source: food.source ?? null,
   })
 }

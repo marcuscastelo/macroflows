@@ -20,7 +20,7 @@ import { modalManager } from '~/shared/modal/core/modalManager'
 /**
  * Props for ExpandableToast component.
  */
-export type ExpandableToastProps = {
+type ExpandableToastProps = {
   message: string
   isTruncated: boolean
   originalMessage: string
@@ -42,7 +42,7 @@ const FALLBACK_ERROR_DETAILS: ToastError = {
 /**
  * Props for ExpandableToastContent component.
  */
-export type ExpandableToastContentProps = {
+type ExpandableToastContentProps = {
   message: string
   isTruncated: boolean
   originalMessage: string

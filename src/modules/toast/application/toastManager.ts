@@ -303,7 +303,7 @@ function mergeToastOptions(
 }
 
 // ToastPromiseMessages type for promise-based toast messages
-export type ToastPromiseMessages<T> = {
+type ToastPromiseMessages<T> = {
   loading?: string
   success?: string | ((data: T) => string)
   error?: string | ((error: unknown) => string)

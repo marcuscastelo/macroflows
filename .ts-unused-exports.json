@@ -6,23 +6,16 @@
     ".vinxi",
     "*.test.ts",
     "*.test.tsx",
-    "tests/"
+    "tests/",
+    "src/routes/**/*",
+    "src/app.tsx",
+    "src/entry-server.tsx",
+    "app.config.ts",
+    "vitest.config.ts"
   ],
   "ignoreProductionExports": true,
   "ignoreFunctionExpressions": true,
   "ignoreLocallyUsed": true,
   "showLineNumber": true,
-  "excludeDeclarationFiles": true,
-  "entrypoints": [
-    "src/app.tsx",
-    "src/entry-server.tsx",
-    "src/routes/**/*.tsx",
-    "src/routes/**/*.ts"
-  ],
-  "ignoreExportsUsedByFile": {
-    "src/routes/**/*.tsx": ["default"],
-    "src/routes/**/*.ts": ["default"],
-    "app.config.ts": ["default"],
-    "vitest.config.ts": ["default"]
-  }
+  "excludeDeclarationFiles": true
 }
