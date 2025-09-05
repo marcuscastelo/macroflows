@@ -5,7 +5,7 @@ import { PasteIcon } from '~/sections/common/components/icons/PasteIcon'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { COPY_BUTTON_STYLES } from '~/sections/common/styles/buttonStyles'
 
-export type ClipboardActionButtonsProps = {
+type ClipboardActionButtonsProps = {
   canCopy: boolean
   canPaste: boolean
   canClear: boolean

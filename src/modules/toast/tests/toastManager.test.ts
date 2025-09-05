@@ -51,14 +51,13 @@ describe('toastManager (refactored)', () => {
       .mockImplementation((item) => item.id)
     const id = showSuccess('Operação concluída', {
       context: 'user-action',
-      audience: 'user',
     })
     expect(registerToast).toHaveBeenCalled()
     const toastArg = registerToast.mock.calls[0]?.[0]
     expect(toastArg).toBeDefined()
     expect(toastArg?.options.type).toBe('success')
     expect(toastArg?.options.context).toBe('user-action')
-    expect(toastArg?.options.audience).toBe('user')
+
     expect(id).toBe(toastArg?.id)
   })
 

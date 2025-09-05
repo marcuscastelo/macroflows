@@ -18,39 +18,15 @@ export const recipeDAOSchema = z.object({
 })
 
 // Schema for creation (without ID)
-export const createRecipeDAOSchema = recipeDAOSchema.omit({ id: true })
+const createRecipeDAOSchema = recipeDAOSchema.omit({ id: true })
 
 // Schema for update (optional fields, without ID)
-export const updateRecipeDAOSchema = recipeDAOSchema
-  .omit({ id: true })
-  .partial()
+const updateRecipeDAOSchema = recipeDAOSchema.omit({ id: true }).partial()
 
 // Types
 export type RecipeDAO = z.infer<typeof recipeDAOSchema>
-export type CreateRecipeDAO = z.infer<typeof createRecipeDAOSchema>
-export type UpdateRecipeDAO = z.infer<typeof updateRecipeDAOSchema>
-
-// Conversions
-export function createRecipeDAO(recipe: Recipe): RecipeDAO {
-  return parseWithStack(recipeDAOSchema, {
-    id: recipe.id,
-    name: recipe.name,
-    owner: recipe.owner,
-    items: [...recipe.items],
-    prepared_multiplier: recipe.prepared_multiplier,
-  })
-}
-
-export function createInsertRecipeDAO(
-  recipe: Omit<Recipe, 'id' | '__type'>,
-): CreateRecipeDAO {
-  return parseWithStack(createRecipeDAOSchema, {
-    name: recipe.name,
-    owner: recipe.owner,
-    items: [...recipe.items],
-    prepared_multiplier: recipe.prepared_multiplier,
-  })
-}
+type CreateRecipeDAO = z.infer<typeof createRecipeDAOSchema>
+type UpdateRecipeDAO = z.infer<typeof updateRecipeDAOSchema>
 
 export function createRecipeFromDAO(dao: RecipeDAO): Recipe {
   return parseWithStack(recipeSchema, {

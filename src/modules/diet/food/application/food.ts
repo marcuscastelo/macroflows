@@ -74,7 +74,7 @@ export async function fetchFoodsByName(
           success: 'Alimentos importados com sucesso',
           error: `Erro ao importar alimentos por nome: ${name}`,
         },
-        { context: 'background', audience: 'system' },
+        { context: 'background' },
       )
     }
     return await showPromise(
@@ -85,7 +85,7 @@ export async function fetchFoodsByName(
         error: (error: unknown) =>
           `Erro ao buscar alimentos por nome: ${formatError(error)}`,
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -114,7 +114,7 @@ export async function fetchFoodByEan(
         success: 'Alimento importado com sucesso',
         error: `Erro ao importar alimento por EAN: ${ean}`,
       },
-      { context: 'background', audience: 'system' },
+      { context: 'background' },
     )
     return await showPromise(
       foodRepository.fetchFoodByEan(ean, params),
@@ -124,7 +124,7 @@ export async function fetchFoodByEan(
         error: (error: unknown) =>
           `Erro ao buscar alimento por EAN: ${formatError(error)}`,
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -132,26 +132,6 @@ export async function fetchFoodByEan(
     })
     if (isBackendOutageError(error)) setBackendOutage(true)
     return null
-  }
-}
-
-/**
- * Checks if a food EAN is cached.
- * @param ean - Food EAN.
- * @returns True if cached, false otherwise.
- */
-export async function isEanCached(
-  ean: Required<Food>['ean'],
-): Promise<boolean> {
-  try {
-    const cached = (await foodRepository.fetchFoodByEan(ean, {})) !== null
-    return cached
-  } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ean },
-    })
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return false
   }
 }
 

@@ -9,16 +9,6 @@ import { type util } from 'zod/v4/core'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 /**
- * Generates required field error message in Portuguese.
- */
-export function createRequiredFieldMessage(
-  fieldName: string,
-  entityName: string,
-): string {
-  return `O campo '${fieldName}' ${entityName} é obrigatório.`
-}
-
-/**
  * Generates invalid type error message in Portuguese.
  */
 export function createInvalidTypeMessage(

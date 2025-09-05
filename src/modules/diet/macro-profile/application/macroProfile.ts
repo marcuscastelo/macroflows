@@ -75,7 +75,7 @@ export async function insertMacroProfile(
         success: 'Perfil de macro criado com sucesso',
         error: 'Falha ao criar perfil de macro',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     const userProfiles = userMacroProfiles()
     const hasResult = macroProfile !== null
@@ -117,7 +117,7 @@ export async function updateMacroProfile(
         success: 'Perfil de macro atualizado com sucesso',
         error: 'Falha ao atualizar perfil de macro',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     const firstUserMacroProfile = userMacroProfiles()[0]
     const hasResult = macroProfile !== null
@@ -152,7 +152,7 @@ export async function deleteMacroProfile(
         success: 'Perfil de macro deletado com sucesso',
         error: 'Falha ao deletar perfil de macro',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     const [first] = userMacroProfiles()
     if (first) {

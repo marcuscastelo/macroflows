@@ -35,7 +35,7 @@ export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
       success: 'Dia de dieta criado com sucesso',
       error: 'Erro ao criar dia de dieta',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -50,7 +50,7 @@ export async function updateDayDiet(
       success: 'Dieta atualizada com sucesso',
       error: 'Erro ao atualizar dieta',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -62,6 +62,6 @@ export async function deleteDayDiet(dayId: DayDiet['id']): Promise<void> {
       success: 'Dieta deletada com sucesso',
       error: 'Erro ao deletar dieta',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }

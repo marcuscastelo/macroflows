@@ -20,7 +20,7 @@ export async function fetchUserRecipes(userId: User['id']) {
         success: 'Receitas carregadas com sucesso',
         error: 'Falha ao carregar receitas',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -40,7 +40,7 @@ export async function fetchUserRecipeByName(userId: User['id'], name: string) {
         success: 'Receitas carregadas com sucesso',
         error: 'Falha ao carregar receitas',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -60,7 +60,7 @@ export async function fetchRecipeById(recipeId: Recipe['id']) {
         success: 'Receita carregada com sucesso',
         error: 'Falha ao carregar receita',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -80,7 +80,7 @@ export async function insertRecipe(newRecipe: NewRecipe) {
         success: (recipe) => `Receita '${recipe.name}' criada com sucesso`,
         error: 'Falha ao criar receita',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -102,7 +102,7 @@ export async function updateRecipe(recipeId: Recipe['id'], newRecipe: Recipe) {
         success: 'Receita atualizada com sucesso',
         error: 'Falha ao atualizar receita',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -126,7 +126,7 @@ export async function deleteRecipe(recipeId: Recipe['id']) {
         success: 'Receita deletada com sucesso',
         error: 'Falha ao deletar receita',
       },
-      { context: 'background', audience: 'user' },
+      { context: 'background' },
     )
   } catch (error) {
     errorHandler.error(error, {

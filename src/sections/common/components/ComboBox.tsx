@@ -1,11 +1,11 @@
 import { For, type JSX } from 'solid-js'
 
-export type ComboBoxOption<T extends string> = {
+type ComboBoxOption<T extends string> = {
   value: T
   label: string
 }
 
-export type ComboBoxProps<T extends string> = {
+type ComboBoxProps<T extends string> = {
   options: readonly ComboBoxOption<T>[]
   value: T
   onChange: (value: T) => void

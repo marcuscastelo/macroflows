@@ -52,7 +52,7 @@ export async function insertBodyMeasure(
         success: 'Medidas inseridas com sucesso',
         error: 'Falha ao inserir medidas',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error)
@@ -78,7 +78,7 @@ export async function updateBodyMeasure(
         success: 'Medidas atualizadas com sucesso',
         error: 'Falha ao atualizar medidas',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error)
@@ -102,7 +102,7 @@ export async function deleteBodyMeasure(
         success: 'Medidas deletadas com sucesso',
         error: 'Falha ao deletar medidas',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     return true
   } catch (error) {
