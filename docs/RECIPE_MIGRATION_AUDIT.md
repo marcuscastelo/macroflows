@@ -99,7 +99,7 @@ The Recipe entity now supports both legacy Item[] and new UnifiedItem[] operatio
    - Demonstrates complete end-to-end UnifiedRecipe workflow
 
 2. **UnifiedItemName**: Migrated to use UnifiedRecipe API
-   - Uses `fetchUnifiedRecipeById()` instead of legacy repository
+   - Uses `fetchUnifiedRecipeById()` from modernized Gateway layer instead of legacy repository pattern
    - Uses `convertUnifiedRecipeToRecipe()` for backward compatibility
    - Maintains all existing functionality (manual edit detection)
    - Shows pattern for gradual migration with conversion bridges

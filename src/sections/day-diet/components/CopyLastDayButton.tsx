@@ -1,11 +1,11 @@
 import { type Accessor, createSignal } from 'solid-js'
 
 import {
-  dayDiets,
-  getPreviousDayDiets,
+  fetchPreviousDayDiets,
   insertDayDiet,
   updateDayDiet,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/usecases/dayCrud'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -14,6 +14,7 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
+import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
   closeModal,
@@ -30,14 +31,39 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  const previousDays = () => getPreviousDayDiets(dayDiets(), props.selectedDay)
+  const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
+  const [loadingPreviousDays, setLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
   const [copying, setCopying] = createSignal(false)
 
-  async function handleCopy(day: string) {
-    setCopyingDay(day)
+  // Load previous days on demand
+  async function loadPreviousDays() {
+    if (loadingPreviousDays()) return
+
+    setLoadingPreviousDays(true)
+    try {
+      const days = await fetchPreviousDayDiets(
+        currentUserId(),
+        props.selectedDay,
+        30,
+      )
+      setPreviousDays(days)
+    } catch (error) {
+      showError(
+        error,
+        { context: 'user-action' },
+        'Erro ao carregar dias anteriores',
+      )
+      setPreviousDays([])
+    } finally {
+      setLoadingPreviousDays(false)
+    }
+  }
+
+  async function handleCopy(fromDay: string) {
+    setCopyingDay(fromDay)
     setCopying(true)
-    const copyFrom = previousDays().find((d) => d.target_day === day)
+    const copyFrom = previousDays().find((d) => d.target_day === fromDay)
     if (!copyFrom) {
       setCopying(false)
       showError('No matching previous day found to copy.', {
@@ -45,8 +71,9 @@ export function CopyLastDayButton(props: {
       })
       return
     }
-    const allDays = dayDiets()
-    const existing = allDays.find((d) => d.target_day === props.selectedDay)
+    const existing = [...previousDays(), currentDayDiet()]
+      .filter((d) => d !== null)
+      .find((d) => d.target_day === props.selectedDay)
     const newDay = createNewDayDiet({
       target_day: props.selectedDay,
       owner: copyFrom.owner,
@@ -72,6 +99,8 @@ export function CopyLastDayButton(props: {
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
+          void loadPreviousDays()
+
           openContentModal(
             (modalId) => (
               <CopyLastDayModal

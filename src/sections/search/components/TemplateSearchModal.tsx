@@ -3,7 +3,7 @@ import { createEffect, Suspense } from 'solid-js'
 import {
   currentDayDiet,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
