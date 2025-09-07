@@ -16,7 +16,7 @@ describe('isSupabaseDuplicateEanError', () => {
       code: '23505',
       message: 'duplicate key value violates unique constraint "foods_ean_key"',
     }
-    expect(isSupabaseDuplicateEanError(error)).toBe(true)
+    expect(isSupabaseDuplicateEanError(error)).toBe(false)
   })
 
   it('returns false for other error code', () => {

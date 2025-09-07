@@ -1,6 +1,6 @@
 import { type Accessor, createMemo, createResource, Show } from 'solid-js'
 
-import { fetchRecipeById } from '~/modules/diet/recipe/application/recipe'
+import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { compareUnifiedItemArrays } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   isRecipeItem,

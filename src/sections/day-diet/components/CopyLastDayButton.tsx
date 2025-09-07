@@ -1,19 +1,8 @@
-import { type Accessor, createSignal } from 'solid-js'
+import { type Accessor } from 'solid-js'
 
-import {
-  fetchPreviousDayDiets,
-  insertDayDiet,
-  updateDayDiet,
-} from '~/modules/diet/day-diet/application/usecases/dayCrud'
+import { createCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import {
-  createNewDayDiet,
-  type DayDiet,
-} from '~/modules/diet/day-diet/domain/dayDiet'
-import {
-  showError,
-  showSuccess,
-} from '~/modules/toast/application/toastManager'
+import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
@@ -31,89 +20,35 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
-  const [loadingPreviousDays, setLoadingPreviousDays] = createSignal(false)
-  const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
-  const [copying, setCopying] = createSignal(false)
-
-  // Load previous days on demand
-  async function loadPreviousDays() {
-    if (loadingPreviousDays()) return
-
-    setLoadingPreviousDays(true)
-    try {
-      const days = await fetchPreviousDayDiets(
-        currentUserId(),
-        props.selectedDay,
-        30,
-      )
-      setPreviousDays(days)
-    } catch (error) {
-      showError(
-        error,
-        { context: 'user-action' },
-        'Erro ao carregar dias anteriores',
-      )
-      setPreviousDays([])
-    } finally {
-      setLoadingPreviousDays(false)
-    }
-  }
-
-  async function handleCopy(fromDay: string) {
-    setCopyingDay(fromDay)
-    setCopying(true)
-    const copyFrom = previousDays().find((d) => d.target_day === fromDay)
-    if (!copyFrom) {
-      setCopying(false)
-      showError('No matching previous day found to copy.', {
-        context: 'user-action',
-      })
-      return
-    }
-    const existing = [...previousDays(), currentDayDiet()]
-      .filter((d) => d !== null)
-      .find((d) => d.target_day === props.selectedDay)
-    const newDay = createNewDayDiet({
-      target_day: props.selectedDay,
-      owner: copyFrom.owner,
-      meals: copyFrom.meals,
-    })
-    try {
-      if (existing) {
-        await updateDayDiet(existing.id, newDay)
-      } else {
-        await insertDayDiet(newDay)
-      }
-      showSuccess('Dia copiado com sucesso!', { context: 'user-action' })
-    } catch (e) {
-      showError(e, { context: 'user-action' }, 'Erro ao copiar dia')
-    } finally {
-      setCopying(false)
-      setCopyingDay(null)
-    }
-  }
+  const { state, copyDay, loadPreviousDays, resetState } =
+    createCopyDayOperations()
 
   return (
     <>
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
-          void loadPreviousDays()
+          void loadPreviousDays(currentUserId(), props.selectedDay)
 
           openContentModal(
             (modalId) => (
               <CopyLastDayModal
-                previousDays={previousDays()}
-                copying={copying()}
-                copyingDay={copyingDay()}
+                previousDays={state().previousDays}
+                copying={state().isCopying}
+                copyingDay={state().copyingDay}
                 onCopy={(day) => {
-                  void handleCopy(day)
+                  void copyDay({
+                    fromDay: day,
+                    toDay: props.selectedDay,
+                    previousDays: state().previousDays,
+                    existingDay: [...state().previousDays, currentDayDiet()]
+                      .filter((d) => d !== null)
+                      .find((d) => d.target_day === props.selectedDay),
+                  })
                 }}
                 onClose={() => {
+                  resetState()
                   closeModal(modalId)
-                  setCopyingDay(null)
-                  setCopying(false)
                 }}
               />
             ),

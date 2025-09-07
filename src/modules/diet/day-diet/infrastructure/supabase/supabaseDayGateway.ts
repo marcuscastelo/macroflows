@@ -4,18 +4,14 @@ import {
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
-import {
-  createDayDietDAOFromNewDayDiet,
-  daoToDayDiet,
-} from '~/modules/diet/day-diet/infrastructure/dayDietDAO'
+import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
+import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseMapper'
 import { type User } from '~/modules/user/domain/user'
 import {
   createErrorHandler,
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
-import { supabase } from '~/shared/utils/supabase'
-
-export const SUPABASE_TABLE_DAYS = 'days'
+import { supabase } from '~/shared/supabase/supabase'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
@@ -30,7 +26,6 @@ export function createSupabaseDayGateway(): DayGateway {
   }
 }
 
-// TODO:   better error handling
 async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
   try {
     const { data, error } = await supabase
@@ -76,7 +71,6 @@ async function fetchDayDietByUserIdAndTargetDay(
     `[supabaseDayRepository] fetchCurrentUserDayDiet(${userId}, ${targetDay})`,
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .select()
@@ -94,7 +88,6 @@ async function fetchDayDietByUserIdAndTargetDay(
     throw error
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const dayData = data
   const result = dayDietSchema.safeParse(dayData)
   if (!result.success) {
@@ -119,7 +112,7 @@ async function fetchDayDietsByUserIdBeforeDate(
     `[supabaseDayRepository] fetchPreviousUserDayDiets(${userId}, ${beforeDay}, ${limit})`,
   )
 
-  const { data, error } = await supabase
+  const { data: dayDTOs, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .select()
     .eq('owner', userId)
@@ -132,74 +125,43 @@ async function fetchDayDietsByUserIdBeforeDate(
     throw error
   }
 
-  const days = data
-    .map((day) => {
-      return dayDietSchema.safeParse(day)
-    })
-    .map((result) => {
-      if (result.success) {
-        return result.data
-      }
-      errorHandler.validationError('Error parsing previous day diet', {
-        component: 'supabaseDayRepository',
-        operation: 'fetchPreviousUserDayDiets',
-        additionalData: { parseError: result.error },
-      })
-      throw wrapErrorWithStack(result.error)
-    })
-
-  console.debug(
-    `[supabaseDayRepository] fetchPreviousUserDayDiets returned ${days.length} days`,
-  )
-  return days
+  return dayDTOs.map((dto) => supabaseDayMapper.toDomain(dto))
 }
 
-// TODO:   Change upserts to inserts on the entire app
-const insertDayDiet = async (newDay: NewDayDiet): Promise<DayDiet | null> => {
-  // Use direct UnifiedItem persistence (no migration needed)
-  const createDAO = createDayDietDAOFromNewDayDiet(newDay)
+async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet | null> {
+  const newDayDTO = supabaseDayMapper.toInsertDTO(newDay)
 
-  const { data: days, error } = await supabase
+  const { data: dayDTO, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
-    .insert(createDAO)
+    .insert(newDayDTO)
     .select()
+    .single()
   if (error !== null) {
     throw wrapErrorWithStack(error)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const dayDAO = days[0]
-  if (dayDAO !== undefined) {
-    // Data is already in unified format, no migration needed for new inserts
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return daoToDayDiet(dayDAO)
-  }
-  return null
+  return supabaseDayMapper.toDomain(dayDTO)
 }
 
-const updateDayDietById = async (
+async function updateDayDietById(
   id: DayDiet['id'],
   newDay: NewDayDiet,
-): Promise<DayDiet> => {
-  // Use direct UnifiedItem persistence (no migration needed)
-  const updateDAO = createDayDietDAOFromNewDayDiet(newDay)
+): Promise<DayDiet> {
+  const updateDTO = supabaseDayMapper.toInsertDTO(newDay)
 
-  const { data, error } = await supabase
+  const { data: dayDTO, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
-    .update(updateDAO)
+    .update(updateDTO)
     .eq('id', id)
     .select()
+    .single()
 
   if (error !== null) {
     errorHandler.error(error)
     throw error
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const dayDAO = data[0]
-  // Data is already in unified format, no migration needed for updates
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  return daoToDayDiet(dayDAO)
+  return supabaseDayMapper.toDomain(dayDTO)
 }
 
 const deleteDayDietById = async (id: DayDiet['id']): Promise<void> => {

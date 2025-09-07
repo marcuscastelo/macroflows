@@ -24,6 +24,7 @@ export function createInvalidTypeMessage(
  */
 export const ENTITY_NAMES = {
   Food: 'do alimento',
+  RecentFood: 'do alimento recente',
   Recipe: 'da receita',
   User: 'do usuário',
   Weight: 'do peso',
@@ -35,6 +36,7 @@ export const ENTITY_NAMES = {
   RecipeItem: 'do item de receita',
   Meal: 'da refeição',
   MacroNutrients: 'dos macronutrientes',
+  CachedSearch: 'da busca',
 } as const
 
 /**

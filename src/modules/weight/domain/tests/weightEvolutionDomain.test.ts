@@ -21,7 +21,7 @@ function createTestWeights(startDate: string, weights: number[]): Weight[] {
     const newWeight = createNewWeight({
       owner: 1,
       weight,
-      target_timestamp: date,
+      target_timestamp: date.toISOString(),
     })
     return promoteToWeight(newWeight, { id: index + 1 })
   })
