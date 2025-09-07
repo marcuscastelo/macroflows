@@ -24,7 +24,7 @@ export async function insertMacroProfile(
       success: 'Perfil de macro criado com sucesso',
       error: 'Erro ao criar perfil de macro',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -39,7 +39,7 @@ export async function updateMacroProfile(
       success: 'Perfil de macro atualizado com sucesso',
       error: 'Erro ao atualizar perfil de macro',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -53,6 +53,6 @@ export async function deleteMacroProfile(
       success: 'Perfil de macro deletado com sucesso',
       error: 'Erro ao deletar perfil de macro',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }

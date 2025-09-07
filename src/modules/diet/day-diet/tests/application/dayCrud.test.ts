@@ -157,7 +157,7 @@ describe('Day Diet CRUD Operations', () => {
           success: 'Dia de dieta criado com sucesso',
           error: 'Erro ao criar dia de dieta',
         },
-        { context: 'user-action', audience: 'user' },
+        { context: 'user-action' },
       )
     })
 
@@ -205,7 +205,7 @@ describe('Day Diet CRUD Operations', () => {
           success: 'Dieta atualizada com sucesso',
           error: 'Erro ao atualizar dieta',
         },
-        { context: 'user-action', audience: 'user' },
+        { context: 'user-action' },
       )
     })
 
@@ -245,7 +245,7 @@ describe('Day Diet CRUD Operations', () => {
           success: 'Dieta deletada com sucesso',
           error: 'Erro ao deletar dieta',
         },
-        { context: 'user-action', audience: 'user' },
+        { context: 'user-action' },
       )
     })
 

@@ -35,7 +35,7 @@ export async function insertRecipe(newRecipe: NewRecipe): Promise<void> {
       success: (recipe) => `Receita '${recipe?.name}' criada com sucesso`,
       error: 'Falha ao criar receita',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -47,7 +47,7 @@ export async function saveRecipe(newRecipe: NewRecipe): Promise<Recipe | null> {
       success: 'Receita salva com sucesso',
       error: 'Falha ao salvar receita',
     },
-    { context: 'background', audience: 'user' },
+    { context: 'background' },
   )
 }
 
@@ -62,7 +62,7 @@ export async function updateRecipe(
       success: 'Receita atualizada com sucesso',
       error: 'Falha ao atualizar receita',
     },
-    { context: 'user-action', audience: 'user' },
+    { context: 'user-action' },
   )
 }
 
@@ -75,7 +75,7 @@ export async function deleteRecipe(recipeId: Recipe['id']): Promise<boolean> {
         success: 'Receita deletada com sucesso',
         error: 'Falha ao deletar receita',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     return true
   } catch {

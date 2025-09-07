@@ -34,7 +34,7 @@ function createCrud(repository = createDayDietRepository()) {
         success: 'Dia de dieta criado com sucesso',
         error: 'Erro ao criar dia de dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   }
 
@@ -49,7 +49,7 @@ function createCrud(repository = createDayDietRepository()) {
         success: 'Dieta atualizada com sucesso',
         error: 'Erro ao atualizar dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   }
 
@@ -61,7 +61,7 @@ function createCrud(repository = createDayDietRepository()) {
         success: 'Dieta deletada com sucesso',
         error: 'Erro ao deletar dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   }
 
