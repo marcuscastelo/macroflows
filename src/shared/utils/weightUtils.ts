@@ -1,4 +1,4 @@
-import { userWeights } from '~/modules/weight/application/weight'
+import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { type Weight } from '~/modules/weight/domain/weight'
 import { inForceGeneric } from '~/shared/utils/generic/inForce'
 

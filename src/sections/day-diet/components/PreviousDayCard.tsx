@@ -53,5 +53,3 @@ export function PreviousDayCard(props: PreviousDayCardProps) {
     </div>
   )
 }
-
-export default PreviousDayCard

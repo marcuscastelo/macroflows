@@ -2,12 +2,12 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { userMacroProfiles } from '~/modules/diet/macro-profile/application/macroProfile'
+import { userMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { inForceMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
-import { userWeights } from '~/modules/weight/application/weight'
-import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
+import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export const calculateMacroTarget = (
@@ -85,16 +85,12 @@ export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
   const userId = currentUserId()
 
   if (targetDayWeight_ === null) {
-    showError(new WeightNotFoundForDayError(day, userId), {
-      audience: 'system',
-    })
+    showError(new WeightNotFoundForDayError(day, userId), {})
     return null
   }
 
   if (targetDayMacroProfile_ === null) {
-    showError(new MacroTargetNotFoundForDayError(day, userId), {
-      audience: 'system',
-    })
+    showError(new MacroTargetNotFoundForDayError(day, userId), {})
     return null
   }
 

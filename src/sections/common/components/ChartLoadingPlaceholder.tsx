@@ -3,7 +3,7 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 /**
  * Props for ChartLoadingPlaceholder component.
  */
-export type ChartLoadingPlaceholderProps = {
+type ChartLoadingPlaceholderProps = {
   height?: number
   message?: string
 }

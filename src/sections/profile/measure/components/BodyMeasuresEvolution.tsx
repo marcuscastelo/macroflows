@@ -1,10 +1,10 @@
 import { For, Show, Suspense } from 'solid-js'
 
+import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
 import {
   bodyMeasures,
-  insertBodyMeasure,
   refetchBodyMeasures,
-} from '~/modules/measure/application/measure'
+} from '~/modules/measure/application/usecases/measureState'
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'

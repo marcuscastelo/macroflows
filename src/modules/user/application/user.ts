@@ -9,11 +9,11 @@ import {
 import {
   loadUserIdFromLocalStorage,
   saveUserIdToLocalStorage,
-} from '~/modules/user/infrastructure/localStorageUserRepository'
+} from '~/modules/user/infrastructure/localStorage/localStorageUserRepository'
 import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
-} from '~/modules/user/infrastructure/supabaseUserRepository'
+} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { withUISpan } from '~/shared/utils/tracing'
 
@@ -114,7 +114,7 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
         success: 'Usuário inserido com sucesso',
         error: 'Falha ao inserir usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return true
@@ -142,7 +142,7 @@ export async function updateUser(
         success: 'Informações do usuário atualizadas com sucesso',
         error: 'Falha ao atualizar informações do usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return user
@@ -166,7 +166,7 @@ export async function deleteUser(userId: User['id']): Promise<boolean> {
         success: 'Usuário removido com sucesso',
         error: 'Falha ao remover usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return true

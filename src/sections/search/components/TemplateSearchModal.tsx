@@ -21,18 +21,18 @@ import {
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import {
-  createRecentFoodInput,
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
   updateRecentFood,
-} from '~/modules/recent-food/application/recentFood'
+} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
 import {
   debouncedSearch,
   refetchTemplates,
   setTemplateSearchTab,
   templates,
   templateSearchTab,
-} from '~/modules/search/application/search'
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
@@ -150,11 +150,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         )
       }
 
-      const recentFoodInput = createRecentFoodInput({
-        ...(recentFood ?? {}),
+      const recentFoodInput = createNewRecentFood({
         user_id: currentUserId(),
         type,
         reference_id: originalAddedItem.reference.id,
+        last_used: new Date(),
+        times_used: (recentFood?.times_used ?? 0) + 1,
       })
 
       if (recentFood !== null) {

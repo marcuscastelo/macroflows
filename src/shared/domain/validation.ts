@@ -9,16 +9,6 @@ import { type util } from 'zod/v4/core'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 /**
- * Generates required field error message in Portuguese.
- */
-export function createRequiredFieldMessage(
-  fieldName: string,
-  entityName: string,
-): string {
-  return `O campo '${fieldName}' ${entityName} é obrigatório.`
-}
-
-/**
  * Generates invalid type error message in Portuguese.
  */
 export function createInvalidTypeMessage(
@@ -34,6 +24,7 @@ export function createInvalidTypeMessage(
  */
 export const ENTITY_NAMES = {
   Food: 'do alimento',
+  RecentFood: 'do alimento recente',
   Recipe: 'da receita',
   User: 'do usuário',
   Weight: 'do peso',
@@ -45,6 +36,7 @@ export const ENTITY_NAMES = {
   RecipeItem: 'do item de receita',
   Meal: 'da refeição',
   MacroNutrients: 'dos macronutrientes',
+  CachedSearch: 'da busca',
 } as const
 
 /**

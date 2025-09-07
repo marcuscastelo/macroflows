@@ -1,6 +1,6 @@
 import { createMemo, createSignal, onMount, Suspense } from 'solid-js'
 
-import { type userWeights } from '~/modules/weight/application/weight'
+import { type userWeights } from '~/modules/weight/application/usecases/weightState'
 import { type WeightChartType } from '~/modules/weight/application/weightChartSettings'
 import { buildChartData } from '~/modules/weight/application/weightChartUtils'
 import {

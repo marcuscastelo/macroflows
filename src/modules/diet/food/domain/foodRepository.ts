@@ -19,7 +19,7 @@ export type FoodRepository = {
     params: FoodSearchParams,
   ) => Promise<readonly Food[]>
   fetchFoodByEan: (
-    ean: Required<Food>['ean'],
+    ean: NonNullable<Required<Food>['ean']>,
     params: Omit<FoodSearchParams, 'limit'>,
   ) => Promise<Food | null>
 

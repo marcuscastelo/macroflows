@@ -1,6 +1,6 @@
 import { For, Show } from 'solid-js'
 
-import { deleteRecipe } from '~/modules/diet/recipe/application/recipe'
+import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
 import {
@@ -8,7 +8,10 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { debouncedTab, templates } from '~/modules/search/application/search'
+import {
+  debouncedTab,
+  templates,
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'

@@ -219,7 +219,7 @@ export function logEnhancedError(
   }
 }
 
-const ORIGINAL_ERROR_SYMBOL = Symbol('originalError')
+export const ORIGINAL_ERROR_SYMBOL = Symbol('originalError')
 export function wrapErrorWithStack(error: unknown): Error {
   let message = 'Unknown error'
   if (typeof error === 'object' && error !== null) {
@@ -235,6 +235,9 @@ export function wrapErrorWithStack(error: unknown): Error {
     }
   }
   const wrapped: Error = new Error(message)
+  if (error instanceof Error) {
+    wrapped.stack = error.stack
+  }
   Object.defineProperty(wrapped, ORIGINAL_ERROR_SYMBOL, {
     value: error,
     enumerable: false,

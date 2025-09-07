@@ -3,7 +3,10 @@ import { For, Suspense } from 'solid-js'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUser, currentUserId } from '~/modules/user/application/user'
-import { insertWeight, userWeights } from '~/modules/weight/application/weight'
+import {
+  userWeights,
+  weightCrudService,
+} from '~/modules/weight/application/usecases/weightState'
 import {
   setWeightChartType,
   WEIGHT_CHART_OPTIONS,
@@ -109,13 +112,14 @@ export function WeightEvolution() {
               const afterInsert = () => {
                 weightField.setRawValue('')
               }
-              insertWeight(
-                createNewWeight({
-                  owner: userId,
-                  weight,
-                  target_timestamp: new Date(Date.now()),
-                }),
-              )
+              weightCrudService
+                .insertWeight(
+                  createNewWeight({
+                    owner: userId,
+                    weight,
+                    target_timestamp: new Date(Date.now()),
+                  }),
+                )
                 .then(afterInsert)
                 .catch(() => {})
             }}

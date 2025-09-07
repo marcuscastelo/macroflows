@@ -7,73 +7,83 @@ import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { withUISpan } from '~/shared/utils/tracing'
 
-const dayRepository = createDayDietRepository()
+function createCrud(repository = createDayDietRepository()) {
+  const fetchTargetDay = async (
+    userId: User['id'],
+    targetDay: string,
+  ): Promise<void> => {
+    await repository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+  }
 
-export async function fetchTargetDay(
-  userId: User['id'],
-  targetDay: string,
-): Promise<void> {
-  await dayRepository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
-}
+  const fetchPreviousDayDiets = async (
+    userId: User['id'],
+    beforeDay: string,
+    limit: number = 30,
+  ): Promise<readonly DayDiet[]> => {
+    return await repository.fetchDayDietsByUserIdBeforeDate(
+      userId,
+      beforeDay,
+      limit,
+    )
+  }
 
-export async function fetchPreviousDayDiets(
-  userId: User['id'],
-  beforeDay: string,
-  limit: number = 30,
-): Promise<readonly DayDiet[]> {
-  return await dayRepository.fetchDayDietsByUserIdBeforeDate(
-    userId,
-    beforeDay,
-    limit,
-  )
-}
-
-export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
-  return withUISpan('DayDiet', 'create', async (span) => {
-    span.setAttributes({
-      'day.date': dayDiet.target_day,
-      'day.user_id': dayDiet.owner,
-    })
-
+  const insertDayDiet = async (dayDiet: NewDayDiet): Promise<void> => {
     await showPromise(
-      dayRepository.insertDayDiet(dayDiet),
+      repository.insertDayDiet(dayDiet),
       {
         loading: 'Criando dia de dieta...',
         success: 'Dia de dieta criado com sucesso',
         error: 'Erro ao criar dia de dieta',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
+  }
 
-    span.addEvent('day_diet_created', {
-      'day.date': dayDiet.target_day,
-    })
-  })
+  const updateDayDiet = async (
+    dayId: DayDiet['id'],
+    dayDiet: NewDayDiet,
+  ): Promise<void> => {
+    await showPromise(
+      repository.updateDayDietById(dayId, dayDiet),
+      {
+        loading: 'Atualizando dieta...',
+        success: 'Dieta atualizada com sucesso',
+        error: 'Erro ao atualizar dieta',
+      },
+      { context: 'user-action' },
+    )
+  }
+
+  const deleteDayDiet = async (dayId: DayDiet['id']): Promise<void> => {
+    await showPromise(
+      repository.deleteDayDietById(dayId),
+      {
+        loading: 'Deletando dieta...',
+        success: 'Dieta deletada com sucesso',
+        error: 'Erro ao deletar dieta',
+      },
+      { context: 'user-action' },
+    )
+  }
+
+  return {
+    fetchTargetDay,
+    fetchPreviousDayDiets,
+    insertDayDiet,
+    updateDayDiet,
+    deleteDayDiet,
+  }
 }
 
-export async function updateDayDiet(
-  dayId: DayDiet['id'],
-  dayDiet: NewDayDiet,
-): Promise<void> {
-  await showPromise(
-    dayRepository.updateDayDietById(dayId, dayDiet),
-    {
-      loading: 'Atualizando dieta...',
-      success: 'Dieta atualizada com sucesso',
-      error: 'Erro ao atualizar dieta',
-    },
-    { context: 'user-action', audience: 'user' },
-  )
-}
+// Default instance for production use
+const defaultCrud = createCrud()
 
-export async function deleteDayDiet(dayId: DayDiet['id']): Promise<void> {
-  await showPromise(
-    dayRepository.deleteDayDietById(dayId),
-    {
-      loading: 'Deletando dieta...',
-      success: 'Dieta deletada com sucesso',
-      error: 'Erro ao deletar dieta',
-    },
-    { context: 'user-action', audience: 'user' },
-  )
-}
+export const {
+  fetchTargetDay,
+  fetchPreviousDayDiets,
+  insertDayDiet,
+  updateDayDiet,
+  deleteDayDiet,
+} = defaultCrud
+
+export { createCrud }

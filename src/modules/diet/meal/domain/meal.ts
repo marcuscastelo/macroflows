@@ -10,11 +10,9 @@ export const {
   newSchema: newMealSchema,
   createNew: createNewMeal,
   promote: promoteMeal,
-  demote: demoteMeal,
 } = ze.create({
   name: ze.string(),
   items: ze.array(unifiedItemSchema),
 })
 
-export type NewMeal = Readonly<z.infer<typeof newMealSchema>>
 export type Meal = Readonly<z.infer<typeof mealSchema>>

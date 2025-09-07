@@ -2,8 +2,14 @@ import {
   type DayDiet,
   dayDietSchema,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
+import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
+import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
+import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { createDebug } from '~/shared/utils/createDebug'
+
+const debug = createDebug()
+
+let initialized = false
 
 /**
  * Sets up granular realtime subscription for day diet changes
@@ -18,34 +24,45 @@ export function setupDayDietRealtimeSubscription(
 ): void {
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_DAYS,
-    (payload: unknown) => {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const payloadData = payload as {
-        eventType?: string
-        old?: unknown
-        new?: unknown
+    dayDietSchema,
+    onDayDietChange,
+  )
+}
+
+export function initializeDayDietRealtime(): void {
+  if (initialized) {
+    return
+  }
+  debug(`Day diet realtime initialized!`)
+  initialized = true
+  registerSubapabaseRealtimeCallback(
+    SUPABASE_TABLE_DAYS,
+    dayDietSchema,
+    (event) => {
+      debug(`Event:`, event)
+
+      switch (event.eventType) {
+        case 'INSERT': {
+          if (event.new !== undefined) {
+            dayCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'UPDATE': {
+          if (event.new) {
+            dayCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'DELETE': {
+          if (event.old) {
+            dayCacheStore.removeFromCache({ by: 'id', value: event.old.id })
+          }
+          break
+        }
       }
-
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const eventType = payloadData.eventType as 'INSERT' | 'UPDATE' | 'DELETE'
-
-      // Parse old and new records if available
-      const oldRecord =
-        payloadData.old !== null
-          ? dayDietSchema.safeParse(payloadData.old)
-          : null
-      const newRecord =
-        payloadData.new !== null
-          ? dayDietSchema.safeParse(payloadData.new)
-          : null
-
-      onDayDietChange({
-        eventType,
-        old:
-          oldRecord !== null && oldRecord.success ? oldRecord.data : undefined,
-        new:
-          newRecord !== null && newRecord.success ? newRecord.data : undefined,
-      })
     },
   )
 }

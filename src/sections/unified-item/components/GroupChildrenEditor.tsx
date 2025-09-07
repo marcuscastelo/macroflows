@@ -1,7 +1,7 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
-import { saveRecipe } from '~/modules/diet/recipe/application/unifiedRecipe'
+import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addChildToItem,
