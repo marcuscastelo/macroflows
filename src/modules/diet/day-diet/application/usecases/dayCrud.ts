@@ -5,7 +5,6 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { withUISpan } from '~/shared/utils/tracing'
 
 function createCrud(repository = createDayDietRepository()) {
   const fetchTargetDay = async (

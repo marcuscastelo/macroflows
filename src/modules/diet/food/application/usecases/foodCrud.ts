@@ -84,7 +84,7 @@ export async function fetchFoodsByName(
             success: 'Alimentos importados com sucesso',
             error: `Erro ao importar alimentos por nome: ${name}`,
           },
-          { context: 'background', audience: 'system' },
+          { context: 'background' },
         )
       }
 
