@@ -6,7 +6,7 @@ import type {
   SignInOptions,
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
-import type { AuthRepository } from '~/modules/auth/domain/authRepository'
+import type { AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { createDebug } from '~/shared/utils/createDebug'
@@ -16,7 +16,7 @@ import { supabaseAuthMapper } from './supabaseAuthMapper'
 const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Auth')
 
-export function createSupabaseAuthRepository(): AuthRepository {
+export function createSupabaseAuthGateway(): AuthGateway {
   return {
     async getSession(): Promise<AuthSession | null> {
       try {

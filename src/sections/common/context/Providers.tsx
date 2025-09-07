@@ -1,6 +1,6 @@
 import { createEffect, type JSXElement } from 'solid-js'
 
-import { initializeAuth } from '~/modules/auth/application/usecases/authSession'
+import { initializeAuth } from '~/modules/auth/application/services/authService'
 import { lazyImport } from '~/shared/solid/lazyImport'
 
 const { UnifiedModalContainer } = lazyImport(

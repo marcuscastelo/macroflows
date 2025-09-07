@@ -3,7 +3,7 @@ import { createEffect, createSignal, Show, untrack } from 'solid-js'
 import {
   signIn,
   signOut,
-} from '~/modules/auth/application/usecases/authSession'
+} from '~/modules/auth/application/services/authService'
 import {
   getCurrentUser,
   isAuthenticated,

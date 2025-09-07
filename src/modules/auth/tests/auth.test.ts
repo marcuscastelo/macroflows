@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import * as authModule1 from '~/modules/auth/application/usecases/authSession'
+import * as authModule1 from '~/modules/auth/application/services/authService'
 import * as authModule2 from '~/modules/auth/application/usecases/authState'
+import { createAuthGatewayMock } from '~/modules/auth/tests/utils/mockAuthGateway'
+import * as errorHandler from '~/shared/error/errorHandler'
 
 const authModule = {
   ...authModule1,
@@ -9,26 +11,11 @@ const authModule = {
 }
 
 // Mock the error handler
-vi.mock('~/shared/error/errorHandler', () => ({
-  logError: vi.fn(),
-}))
-
-// Mock the Supabase auth repository
-vi.mock(
-  '~/modules/auth/infrastructure/supabase/supabaseAuthRepository',
-  () => ({
-    createSupabaseAuthRepository: () => ({
-      getSession: vi.fn().mockResolvedValue(null),
-      getUser: vi.fn().mockResolvedValue(null),
-      signIn: vi.fn().mockResolvedValue({ url: 'https://example.com' }),
-      signOut: vi.fn().mockResolvedValue({}),
-      refreshSession: vi.fn().mockResolvedValue(null),
-      onAuthStateChange: vi.fn().mockReturnValue(() => {}),
-    }),
-  }),
-)
+vi.spyOn(errorHandler, 'logError').mockImplementation(vi.fn())
 
 describe('Auth Module', () => {
+  const authService = authModule1.createAuthService(createAuthGatewayMock())
+
   it('should initialize with loading state', () => {
     const initialState = authModule.getAuthState()
     expect(initialState.isLoading).toBe(true)
@@ -45,19 +32,19 @@ describe('Auth Module', () => {
 
   it('should handle sign in operation', async () => {
     await expect(
-      authModule.signIn({ provider: 'google' }),
+      authService.signIn({ provider: 'google' }),
     ).resolves.not.toThrow()
   })
 
   it('should handle sign out operation', async () => {
-    await expect(authModule.signOut()).resolves.not.toThrow()
+    await expect(authService.signOut()).resolves.not.toThrow()
   })
 
   it('should handle session refresh', async () => {
-    await expect(authModule.refreshSession()).resolves.not.toThrow()
+    await expect(authService.refreshSession()).resolves.not.toThrow()
   })
 
   it('should cleanup auth subscriptions', () => {
-    expect(() => authModule.cleanupAuth()).not.toThrow()
+    expect(() => authService.cleanupAuth()).not.toThrow()
   })
 })
