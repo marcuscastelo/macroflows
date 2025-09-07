@@ -174,3 +174,44 @@ export const addSpanEvent = (
     activeSpan.addEvent(name, attributes)
   }
 }
+
+/**
+ * Gets the current trace and span IDs for correlation with external systems (e.g., Sentry)
+ */
+export const getTraceContext = (): {
+  traceId?: string
+  spanId?: string
+} => {
+  if (!isTracingEnabled()) return {}
+
+  const activeSpan = trace.getActiveSpan()
+  if (!activeSpan) return {}
+
+  const spanContext = activeSpan.spanContext()
+  return {
+    traceId: spanContext.traceId,
+    spanId: spanContext.spanId,
+  }
+}
+
+/**
+ * Adds trace context to error objects for Sentry correlation
+ */
+export const addTraceContextToError = (error: Error): Error => {
+  const traceContext = getTraceContext()
+
+  if (
+    traceContext.traceId !== undefined &&
+    traceContext.traceId !== '' &&
+    traceContext.spanId !== undefined &&
+    traceContext.spanId !== ''
+  ) {
+    // Add trace context as error properties for Sentry
+    Object.assign(error, {
+      traceId: traceContext.traceId,
+      spanId: traceContext.spanId,
+    })
+  }
+
+  return error
+}

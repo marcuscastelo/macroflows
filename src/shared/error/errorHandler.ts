@@ -1,6 +1,12 @@
 import { trace } from '@opentelemetry/api'
 
+import { captureException, isSentryEnabled } from '~/shared/config/sentry'
 import { isTracingEnabled } from '~/shared/config/telemetry'
+import {
+  addSpanEvent,
+  addTraceContextToError,
+  getTraceContext,
+} from '~/shared/utils/tracing'
 
 /**
  * Centralized error handling utilities for the application layer.
@@ -69,7 +75,43 @@ export function logError(error: unknown, context?: ErrorContext): void {
       : ''
   const contextStr = `[${componentStr}${operationStr}]`
 
-  console.error(`${timestamp} ${contextStr} Error:`, error)
+  // Add trace context for Sentry correlation
+  let errorToLog = error
+  if (error instanceof Error) {
+    errorToLog = addTraceContextToError(error)
+    const traceContext = getTraceContext()
+    if (traceContext.traceId !== undefined && traceContext.traceId !== '') {
+      console.error(
+        `${timestamp} ${contextStr} Error (trace: ${traceContext.traceId}):`,
+        errorToLog,
+      )
+    } else {
+      console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+    }
+
+    // Send to Sentry with full context
+    if (isSentryEnabled() && errorToLog instanceof Error) {
+      captureException(errorToLog, {
+        component: componentStr,
+        operation: context?.operation ?? 'unknown',
+        additionalData: context?.additionalData,
+        traceContext,
+      })
+    }
+  } else {
+    console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+
+    // Convert non-Error to Error for Sentry
+    if (isSentryEnabled()) {
+      const sentryError = new Error(String(errorToLog))
+      captureException(sentryError, {
+        component: componentStr,
+        operation: context?.operation ?? 'unknown',
+        additionalData: context?.additionalData,
+        originalError: errorToLog,
+      })
+    }
+  }
 
   if (context?.additionalData !== undefined) {
     console.error('Additional context:', context.additionalData)
@@ -90,6 +132,12 @@ export function logError(error: unknown, context?: ErrorContext): void {
       if (context?.userId !== undefined && context.userId !== '') {
         activeSpan.setAttribute('user.id', context.userId)
       }
+
+      // Add event for better visibility in traces
+      addSpanEvent('error_occurred', {
+        'error.component': componentStr,
+        'error.operation': context?.operation ?? 'unknown',
+      })
     }
   }
 }
@@ -110,6 +158,23 @@ export function logEnhancedError(
   const contextStr = `[${severity.toUpperCase()}][${module}][${component}::${operation}]`
 
   console.error(`${timestamp} ${contextStr} Error:`, error)
+
+  // Send to Sentry with enhanced context
+  if (isSentryEnabled()) {
+    const errorToSend =
+      error instanceof Error ? error : new Error(String(error))
+    captureException(errorToSend, {
+      severity,
+      module,
+      component,
+      operation,
+      entityType: context.entityType,
+      entityId: context.entityId,
+      userId: context.userId,
+      businessContext: context.businessContext,
+      technicalContext: context.technicalContext,
+    })
+  }
 
   if (context.entityType !== undefined && context.entityId !== undefined) {
     console.error(`Entity: ${context.entityType}#${context.entityId}`)

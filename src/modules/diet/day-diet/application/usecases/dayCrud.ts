@@ -5,6 +5,7 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
+import { withUISpan } from '~/shared/utils/tracing'
 
 const dayRepository = createDayDietRepository()
 
@@ -28,15 +29,26 @@ export async function fetchPreviousDayDiets(
 }
 
 export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
-  await showPromise(
-    dayRepository.insertDayDiet(dayDiet),
-    {
-      loading: 'Criando dia de dieta...',
-      success: 'Dia de dieta criado com sucesso',
-      error: 'Erro ao criar dia de dieta',
-    },
-    { context: 'user-action', audience: 'user' },
-  )
+  return withUISpan('DayDiet', 'create', async (span) => {
+    span.setAttributes({
+      'day.date': dayDiet.target_day,
+      'day.user_id': dayDiet.owner,
+    })
+
+    await showPromise(
+      dayRepository.insertDayDiet(dayDiet),
+      {
+        loading: 'Criando dia de dieta...',
+        success: 'Dia de dieta criado com sucesso',
+        error: 'Erro ao criar dia de dieta',
+      },
+      { context: 'user-action', audience: 'user' },
+    )
+
+    span.addEvent('day_diet_created', {
+      'day.date': dayDiet.target_day,
+    })
+  })
 }
 
 export async function updateDayDiet(

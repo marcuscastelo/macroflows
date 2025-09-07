@@ -15,6 +15,7 @@ type TelemetryConfig = {
   enableOTLPExporter: boolean
   otlpEndpoint?: string
   sampleRate: number
+  sentryDsn?: string
 }
 
 const getTelemetryEnvironment = (): TelemetryEnvironment => {
@@ -37,6 +38,10 @@ const createTelemetryConfig = (): TelemetryConfig => {
         ? import.meta.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT
         : undefined,
     sampleRate: environment === 'development' ? 1.0 : 0.1,
+    sentryDsn:
+      typeof import.meta.env.VITE_SENTRY_DSN === 'string'
+        ? import.meta.env.VITE_SENTRY_DSN
+        : undefined,
   }
 }
 
@@ -45,6 +50,7 @@ function createTracerProvider(_config: TelemetryConfig): WebTracerProvider {
 
   // For now, we'll use the basic provider
   // The auto-instrumentations will handle most of the tracing
+  // Custom exporters and resources can be added later when needed
 
   return provider
 }
