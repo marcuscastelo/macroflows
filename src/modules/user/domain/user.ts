@@ -8,7 +8,6 @@ export const {
   schema: userSchema,
   newSchema: newUserSchema,
   createNew: createNewUser,
-  promote: promoteNewUserToUser,
   demote: demoteUserToNewUser,
 } = ze.create({
   name: ze.string(),

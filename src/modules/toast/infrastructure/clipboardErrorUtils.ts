@@ -12,7 +12,7 @@ import { createErrorHandler } from '~/shared/error/errorHandler'
  * @property component The component name.
  * @property operation The operation being performed.
  */
-export type ClipboardErrorContext = { component: string; operation: string }
+type ClipboardErrorContext = { component: string; operation: string }
 
 /**
  * Formats error details for copying to clipboard.

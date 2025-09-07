@@ -85,16 +85,12 @@ export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
   const userId = currentUserId()
 
   if (targetDayWeight_ === null) {
-    showError(new WeightNotFoundForDayError(day, userId), {
-      audience: 'system',
-    })
+    showError(new WeightNotFoundForDayError(day, userId), {})
     return null
   }
 
   if (targetDayMacroProfile_ === null) {
-    showError(new MacroTargetNotFoundForDayError(day, userId), {
-      audience: 'system',
-    })
+    showError(new MacroTargetNotFoundForDayError(day, userId), {})
     return null
   }
 

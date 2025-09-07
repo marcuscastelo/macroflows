@@ -74,7 +74,7 @@ export async function fetchFoodsByName(
           success: 'Alimentos importados com sucesso',
           error: `Erro ao importar alimentos por nome: ${name}`,
         },
-        { context: 'background', audience: 'system' },
+        { context: 'background' },
       )
     }
     return await showPromise(
@@ -85,7 +85,7 @@ export async function fetchFoodsByName(
         error: (error: unknown) =>
           `Erro ao buscar alimentos por nome: ${formatError(error)}`,
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error, {
@@ -114,7 +114,7 @@ export async function fetchFoodByEan(
         success: 'Alimento importado com sucesso',
         error: `Erro ao importar alimento por EAN: ${ean}`,
       },
-      { context: 'background', audience: 'system' },
+      { context: 'background' },
     )
     return await showPromise(
       foodRepository.fetchFoodByEan(ean, params),
@@ -124,7 +124,7 @@ export async function fetchFoodByEan(
         error: (error: unknown) =>
           `Erro ao buscar alimento por EAN: ${formatError(error)}`,
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
   } catch (error) {
     errorHandler.error(error, {

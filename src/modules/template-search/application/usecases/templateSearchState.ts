@@ -14,26 +14,15 @@ import { currentUser, currentUserId } from '~/modules/user/application/user'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
-export const DEFAULT_DEBOUNCE_MS = 500
-
 export const [templateSearch, setTemplateSearch] = createSignal<string>('')
-export const [debouncedSearch] = createDebouncedSignal(
-  templateSearch,
-  DEFAULT_DEBOUNCE_MS,
-)
+export const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)
 export const [templateSearchTab, setTemplateSearchTab] =
   createSignal<TemplateSearchTab>('hidden')
-export const [debouncedTab] = createDebouncedSignal(
-  templateSearchTab,
-  DEFAULT_DEBOUNCE_MS,
-)
+export const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
 
 const getFavoriteFoods = () => currentUser()?.favorite_foods ?? []
 
-export const [
-  templates,
-  { refetch: refetchTemplates, mutate: mutateTemplates },
-] = createResource(
+export const [templates, { refetch: refetchTemplates }] = createResource(
   () => ({
     tab: debouncedTab(),
     search: debouncedSearch(),
