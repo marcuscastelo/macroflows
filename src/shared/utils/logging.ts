@@ -6,7 +6,7 @@
 
 import { trace } from '@opentelemetry/api'
 
-import { captureException } from '~/shared/config/sentry'
+import { sentry } from '~/shared/config/sentry'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -119,7 +119,7 @@ export const logging = {
 
     // Send errors to Sentry for tracking
     if (error instanceof Error) {
-      captureException(error, {
+      sentry.captureException(error, {
         level: 'error',
         message,
         ...data,

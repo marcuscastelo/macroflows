@@ -1,6 +1,6 @@
 import { trace } from '@opentelemetry/api'
 
-import { captureException, isSentryEnabled } from '~/shared/config/sentry'
+import { sentry } from '~/shared/config/sentry'
 import { isTracingEnabled } from '~/shared/config/telemetry'
 import {
   addSpanEvent,
@@ -93,8 +93,8 @@ export function logError(error: unknown, context?: ErrorContext): void {
     }
 
     // Send to Sentry with full context
-    if (isSentryEnabled() && errorToLog instanceof Error) {
-      captureException(errorToLog, {
+    if (sentry.isSentryEnabled() && errorToLog instanceof Error) {
+      sentry.captureException(errorToLog, {
         component: componentStr,
         operation: context?.operation ?? 'unknown',
         additionalData: context?.additionalData,
@@ -108,9 +108,9 @@ export function logError(error: unknown, context?: ErrorContext): void {
     }
 
     // Convert non-Error to Error for Sentry
-    if (isSentryEnabled()) {
+    if (sentry.isSentryEnabled()) {
       const sentryError = new Error(String(errorToLog))
-      captureException(sentryError, {
+      sentry.captureException(sentryError, {
         component: componentStr,
         operation: context?.operation ?? 'unknown',
         additionalData: context?.additionalData,
@@ -170,10 +170,10 @@ export function logEnhancedError(
   }
 
   // Send to Sentry with enhanced context
-  if (isSentryEnabled()) {
+  if (sentry.isSentryEnabled()) {
     const errorToSend =
       error instanceof Error ? error : new Error(String(error))
-    captureException(errorToSend, {
+    sentry.captureException(errorToSend, {
       severity,
       module,
       component,

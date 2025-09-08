@@ -1,7 +1,7 @@
 import type { JSX } from 'solid-js'
 import { ErrorBoundary } from 'solid-js'
 
-import { captureException, isSentryEnabled } from '~/shared/config/sentry'
+import { sentry } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
 type SentryErrorBoundaryProps = {
@@ -58,8 +58,8 @@ export function SentryErrorBoundary(props: SentryErrorBoundaryProps) {
       })
 
       // Capture in Sentry with additional context
-      if (isSentryEnabled()) {
-        captureException(error, {
+      if (sentry.isSentryEnabled()) {
+        sentry.captureException(error, {
           errorBoundary: 'SentryErrorBoundary',
           url: window.location.href,
           timestamp: new Date().toISOString(),

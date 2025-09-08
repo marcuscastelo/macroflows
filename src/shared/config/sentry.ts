@@ -42,7 +42,7 @@ const createSentryConfig = (): SentryConfig => {
 
 let isInitialized = false
 
-export const initializeSentry = (): void => {
+const initializeSentry = (): void => {
   if (isInitialized) {
     console.warn('Sentry already initialized')
     return
@@ -169,14 +169,14 @@ export const initializeSentry = (): void => {
   }
 }
 
-export const isSentryEnabled = (): boolean => {
+const isSentryEnabled = (): boolean => {
   return isInitialized
 }
 
 /**
  * Manually capture an exception with additional context
  */
-export const captureException = (
+const captureException = (
   error: Error,
   context?: Record<string, unknown>,
 ): void => {
@@ -298,7 +298,7 @@ export const captureException = (
 /**
  * Set user context for error tracking
  */
-export const setUserContext = (user: {
+const setUserContext = (user: {
   id: string | number
   email?: string
   name?: string
@@ -315,7 +315,7 @@ export const setUserContext = (user: {
 /**
  * Add breadcrumb for user actions tracking
  */
-export const addBreadcrumb = (
+const addBreadcrumb = (
   message: string,
   category: string,
   data?: Record<string, unknown>,
@@ -335,7 +335,7 @@ export const addBreadcrumb = (
 /**
  * Convert console operations to breadcrumbs for better error context
  */
-export const logToBreadcrumb = (
+const logToBreadcrumb = (
   message: string,
   level: 'error' | 'warning' | 'info' = 'info',
   data?: Record<string, unknown>,
@@ -357,7 +357,7 @@ export const logToBreadcrumb = (
 /**
  * Start a new transaction for performance monitoring
  */
-export const startTransaction = (
+const startTransaction = (
   name: string,
   op: string,
   data?: Record<string, unknown>,
@@ -383,4 +383,14 @@ export const startTransaction = (
     },
     (span) => span,
   )
+}
+
+export const sentry = {
+  initializeSentry,
+  isSentryEnabled,
+  captureException,
+  setUserContext,
+  addBreadcrumb,
+  logToBreadcrumb,
+  startTransaction,
 }

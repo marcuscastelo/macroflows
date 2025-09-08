@@ -1,11 +1,7 @@
 import type { Component } from 'solid-js'
 import { createSignal, Show } from 'solid-js'
 
-import {
-  addBreadcrumb,
-  isSentryEnabled,
-  setUserContext,
-} from '~/shared/config/sentry'
+import { sentry } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
 import { withUISpan } from '~/shared/utils/tracing'
@@ -65,7 +61,7 @@ const TelemetryTestPage: Component = () => {
   }
 
   const testSentryBreadcrumbs = () => {
-    addBreadcrumb('User clicked breadcrumb test', 'user_action', {
+    sentry.addBreadcrumb('User clicked breadcrumb test', 'user_action', {
       component: 'TelemetryTestPage',
       action: 'testSentryBreadcrumbs',
     })
@@ -73,7 +69,7 @@ const TelemetryTestPage: Component = () => {
   }
 
   const testUserContext = () => {
-    setUserContext({
+    sentry.setUserContext({
       id: 'test-user-123',
       email: 'test@macroflows.app',
       name: 'Test User',
@@ -90,12 +86,12 @@ const TelemetryTestPage: Component = () => {
         })
 
         // Step 1: Add breadcrumb
-        addBreadcrumb('Complex flow started', 'flow', { step: 1 })
+        sentry.addBreadcrumb('Complex flow started', 'flow', { step: 1 })
         span.addEvent('step_1_completed')
 
         // Step 2: Simulate async operation
         await new Promise((resolve) => setTimeout(resolve, 200))
-        addBreadcrumb('Async operation completed', 'flow', { step: 2 })
+        sentry.addBreadcrumb('Async operation completed', 'flow', { step: 2 })
         span.addEvent('step_2_completed')
 
         // Step 3: Intentional error for testing correlation
@@ -128,9 +124,9 @@ const TelemetryTestPage: Component = () => {
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
                   <div
-                    class={`badge ${isSentryEnabled() ? 'badge-success' : 'badge-error'}`}
+                    class={`badge ${sentry.isSentryEnabled() ? 'badge-success' : 'badge-error'}`}
                   >
-                    {isSentryEnabled() ? '✓' : '✗'}
+                    {sentry.isSentryEnabled() ? '✓' : '✗'}
                   </div>
                   <span>Sentry Integration</span>
                 </div>
