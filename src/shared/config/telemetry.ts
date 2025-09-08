@@ -18,7 +18,7 @@ type TelemetryConfig = {
   sentryDsn?: string
 }
 
-const getTelemetryEnvironment = (): TelemetryEnvironment => {
+export const getTelemetryEnvironment = (): TelemetryEnvironment => {
   if (import.meta.env.PROD) return 'production'
   if (import.meta.env.MODE === 'staging') return 'staging'
   return 'development'

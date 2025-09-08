@@ -25,10 +25,8 @@ import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { createDebug } from '~/shared/utils/createDebug'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export type GroupChildrenEditorProps = {
   item: Accessor<UnifiedItem>
@@ -97,7 +95,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
           // Validate hierarchy to prevent circular references
           const tempItem = addChildToItem(updatedItem, childWithNewId)
           if (!validateItemHierarchy(tempItem)) {
-            console.warn(
+            logging.warn(
               `Skipping item ${childWithNewId.name} - would create circular reference`,
             )
             continue
@@ -111,7 +109,10 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
     })
 
   const updateChildQuantity = (childId: number, newQuantity: number) => {
-    debug('[GroupChildrenEditor] updateChildQuantity', { childId, newQuantity })
+    logging.debug('[GroupChildrenEditor] updateChildQuantity', {
+      childId,
+      newQuantity,
+    })
 
     const updatedItem = updateChildInItem(props.item(), childId, {
       quantity: newQuantity,
@@ -121,7 +122,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
   }
 
   const applyMultiplierToAll = (multiplier: number) => {
-    debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
+    logging.debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
 
     let updatedItem = props.item()
 

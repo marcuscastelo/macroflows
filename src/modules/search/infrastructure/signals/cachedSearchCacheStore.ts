@@ -1,9 +1,7 @@
 import { createSignal } from 'solid-js'
 
 import { type CachedSearch } from '~/modules/search/domain/cachedSearch'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 const [cachedSearches, setCachedSearches] = createSignal<
   readonly CachedSearch[]
@@ -22,11 +20,11 @@ export const cachedSearchCacheStore = {
       const updated = [...current]
       updated[existingIndex] = cachedSearch
       setCachedSearches(updated)
-      debug('Updated cached search in cache:', cachedSearch.search)
+      logging.debug('Updated cached search in cache:', cachedSearch.search)
     } else {
       // Add new
       setCachedSearches([cachedSearch, ...current])
-      debug('Added new cached search to cache:', cachedSearch.search)
+      logging.debug('Added new cached search to cache:', cachedSearch.search)
     }
   },
 
@@ -46,7 +44,7 @@ export const cachedSearchCacheStore = {
       )
       setCachedSearches(updated)
 
-      debug('Removed cached search from cache:', searchToRemove.search)
+      logging.debug('Removed cached search from cache:', searchToRemove.search)
     }
   },
 }

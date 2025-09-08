@@ -11,6 +11,7 @@ import {
   shareConsoleLogs,
 } from '~/shared/console/consoleInterceptor'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export function ConsoleDumpButton() {
   const [processing, setProcessing] = createSignal(false)
@@ -40,7 +41,7 @@ export function ConsoleDumpButton() {
           break
       }
     } catch (error) {
-      console.error(
+      logging.error(
         `Erro ao ${action === 'copy' ? 'copiar' : action === 'download' ? 'salvar' : 'compartilhar'} logs do console:`,
         error,
       )

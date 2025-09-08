@@ -3,7 +3,7 @@ import { type APIEvent } from '@solidjs/start/server'
 
 import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/api/apiFoodRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { devConsole } from '~/shared/utils/devConsole'
+import { logging } from '~/shared/utils/logging'
 
 const apiFoodRepository = createApiFoodRepository()
 
@@ -19,7 +19,7 @@ function getErrorStatus(error: unknown): number {
 }
 
 export async function GET({ params }: APIEvent) {
-  devConsole.debug('GET', params)
+  logging.debug('GET', params)
   if (params.name === undefined || params.name === '') {
     return json({ error: 'Name parameter is required' }, { status: 400 })
   }
@@ -27,7 +27,7 @@ export async function GET({ params }: APIEvent) {
     const apiFood = await apiFoodRepository.fetchApiFoodsByName(
       decodeURIComponent(params.name),
     )
-    devConsole.debug('apiFood', apiFood)
+    logging.debug('apiFood', apiFood)
     return json(apiFood)
   } catch (error) {
     errorHandler.error(error)

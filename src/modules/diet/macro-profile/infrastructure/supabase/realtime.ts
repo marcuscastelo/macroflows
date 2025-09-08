@@ -3,11 +3,9 @@ import {
   macroProfileSchema,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
-import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
 import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
+import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
@@ -33,13 +31,13 @@ export function initializeMacroProfileRealtime(): void {
   if (initialized) {
     return
   }
-  debug(`Macro profile realtime initialized!`)
+  logging.debug(`Macro profile realtime initialized!`)
   initialized = true
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_MACRO_PROFILES,
     macroProfileSchema,
     (event) => {
-      debug(`Event:`, event)
+      logging.debug(`Event:`, event)
 
       switch (event.eventType) {
         case 'INSERT': {

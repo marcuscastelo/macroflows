@@ -7,6 +7,7 @@
 
 import { createEffect, createSignal } from 'solid-js'
 
+import { isDevelopment } from '~/shared/config/env'
 import { logToBreadcrumb } from '~/shared/config/sentry'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
@@ -63,7 +64,7 @@ function loadSettings(): ToastSettings {
       return { ...DEFAULT_SETTINGS }
     }
   } catch (error) {
-    if (typeof import.meta !== 'undefined' && import.meta.env.DEV) {
+    if (isDevelopment()) {
       logToBreadcrumb('Failed to load toast settings', 'error', { error })
     }
   }
@@ -78,7 +79,7 @@ createEffect(() => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
   } catch (error) {
-    if (typeof import.meta !== 'undefined' && import.meta.env.DEV) {
+    if (isDevelopment()) {
       logToBreadcrumb('Failed to save toast settings', 'error', { error })
     }
   }

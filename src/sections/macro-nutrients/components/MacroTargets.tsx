@@ -22,6 +22,7 @@ import { type Weight } from '~/modules/weight/domain/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 import { calcCalories } from '~/shared/utils/macroMath'
 
 const CARBO_CALORIES = 4 as const
@@ -92,7 +93,7 @@ export type MacroTargetProps = {
 }
 
 const onSaveMacroProfile = (profile: MacroProfile) => {
-  console.log('[ProfilePage] Saving profile', profile)
+  logging.info('[ProfilePage] Saving profile', profile)
   if (profile.target_day.getTime() > new Date(getTodayYYYYMMDD()).getTime()) {
     showError('Data alvo não pode ser no futuro')
     return
@@ -100,7 +101,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
-    console.log('[ProfilePage] Updating profile', profile)
+    logging.info('[ProfilePage] Updating profile', profile)
 
     // Same day, update
     updateMacroProfile(
@@ -119,7 +120,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
-    console.log('[ProfilePage] Inserting profile', profile)
+    logging.info('[ProfilePage] Inserting profile', profile)
 
     // Past day, insert with new date
     void insertMacroProfile(

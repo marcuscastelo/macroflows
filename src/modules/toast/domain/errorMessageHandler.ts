@@ -10,9 +10,10 @@ import {
   type ToastExpandableErrorData,
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
-import { devConsole } from '~/shared/utils/devConsole'
+import { isDevelopment } from '~/shared/config/env'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Options for error processing in toasts.
@@ -114,8 +115,8 @@ function mapUnknownToToastError(
   includeStack: boolean,
 ): ToastError {
   // DEBUG: Log error and stack for investigation
-  if (import.meta.env.DEV) {
-    devConsole.debug('mapUnknownToToastError error:', error)
+  if (isDevelopment()) {
+    logging.debug('mapUnknownToToastError error:', error)
   }
   if (error instanceof Error) {
     // Only serialize cause if it's a primitive or stringifiable
@@ -128,12 +129,12 @@ function mapUnknownToToastError(
       }
     }
     if (typeof error.stack === 'string') {
-      if (import.meta.env.DEV) {
-        devConsole.debug('mapUnknownToToastError error.stack:', error.stack)
+      if (isDevelopment()) {
+        logging.debug('mapUnknownToToastError error.stack:', error.stack)
       }
     } else {
-      if (import.meta.env.DEV) {
-        devConsole.debug(
+      if (isDevelopment()) {
+        logging.debug(
           'mapUnknownToToastError error.stack is not a string:',
           error.stack,
         )

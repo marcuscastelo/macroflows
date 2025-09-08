@@ -24,6 +24,7 @@ import {
   openTemplateSearchModal,
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export type RecipeEditModalProps = {
   recipe: Accessor<Recipe>
@@ -44,7 +45,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
   })
 
   const handleNewUnifiedItem = (newItem: UnifiedItem) => {
-    console.debug('onNewUnifiedItem', newItem)
+    logging.debug('onNewUnifiedItem', newItem)
 
     // Convert UnifiedItem to Item for adding to recipe
     try {
@@ -69,7 +70,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       const item = newItem
       const updatedRecipe = addItemToRecipe(recipe(), item)
 
-      console.debug(
+      logging.debug(
         'handleNewUnifiedItem: applying',
         JSON.stringify(updatedRecipe, null, 2),
       )
@@ -102,7 +103,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       <div class="space-y-4">
         <RecipeEditHeader
           onUpdateRecipe={(newRecipe) => {
-            console.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
+            logging.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
             setRecipe(newRecipe)
           }}
         />

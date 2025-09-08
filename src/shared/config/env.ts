@@ -52,4 +52,11 @@ const getEnvVars = (): z.input<typeof envSchema> => {
 
 const env = parseWithStack(envSchema, getEnvVars())
 
+/**
+ * Check if running in development environment
+ */
+export const isDevelopment = (): boolean => {
+  return import.meta.env.DEV === true
+}
+
 export default env

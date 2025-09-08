@@ -3,11 +3,9 @@ import {
   cachedSearchSchema,
 } from '~/modules/search/domain/cachedSearch'
 import { cachedSearchCacheStore } from '~/modules/search/infrastructure/signals/cachedSearchCacheStore'
-import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
 import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
+import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
@@ -31,13 +29,13 @@ export function initializeCachedSearchRealtime(): void {
   if (initialized) {
     return
   }
-  debug(`Cached search realtime initialized!`)
+  logging.debug(`Cached search realtime initialized!`)
   initialized = true
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_CACHED_SEARCHES,
     cachedSearchSchema,
     (event) => {
-      debug(`Event:`, event)
+      logging.debug(`Event:`, event)
 
       switch (event.eventType) {
         case 'INSERT': {

@@ -5,9 +5,7 @@ import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/d
 import { initializeDayEffects } from '~/modules/diet/day-diet/infrastructure/signals/dayEffects'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export const targetDay = dayStateStore.targetDay
 export const setTargetDay = dayStateStore.setTargetDay
@@ -17,7 +15,7 @@ export const currentDayDiet = () =>
   dayCacheStore.createCacheItemSignal({ by: 'target_day', value: targetDay() })
 
 createEffect(() => {
-  debug(`CurrentDayDiet:`, currentDayDiet())
+  logging.debug(`CurrentDayDiet:`, currentDayDiet())
 })
 
 initializeDayEffects()

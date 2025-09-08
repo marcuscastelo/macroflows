@@ -16,7 +16,7 @@ import {
   dismissSolidToast,
   displaySolidToast,
 } from '~/modules/toast/ui/solidToast'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 
 // Global queue state
 const [paused, setPaused] = createSignal(true)
@@ -43,22 +43,20 @@ const removeFromVisibleToasts = (id: ToastItemWithDismiss['id']) =>
 const findInVisibleToasts = (id: ToastItemWithDismiss['id']) =>
   visibleToasts().find((toast) => toast.id === id) ?? null
 
-const debug = createDebug()
-
 createEffect(() => {
-  debug('Initialized')
+  logging.debug('Initialized')
   setTimeout(() => {
     resumeProcess()
   }, 100) // Initial delay to allow setup
 })
 
 createEffect(() => {
-  debug(paused() ? 'Paused' : 'Resumed')
+  logging.debug(paused() ? 'Paused' : 'Resumed')
 })
 
 createEffect(() => {
   const currentVisibleToasts = visibleToasts()
-  debug(`Current visibleToasts length: ${currentVisibleToasts.length}`)
+  logging.debug(`Current visibleToasts length: ${currentVisibleToasts.length}`)
 })
 
 // Auto-process queue when needed (immediate processing for new toasts)
@@ -67,9 +65,9 @@ createEffect(() => {
   if (paused()) {
     return
   }
-  debug(`Effect: Checking queue: ${currentQueue.length} items`)
+  logging.debug(`Effect: Checking queue: ${currentQueue.length} items`)
   if (currentQueue.length === 0) {
-    debug('Effect: No toasts to process')
+    logging.debug('Effect: No toasts to process')
     return
   }
 
@@ -80,7 +78,7 @@ createEffect(() => {
 
 async function processToastItem(toastItem: ToastItem) {
   // Actually display the toast and store solid-toast ID in the queue item
-  debug(`Display toast: "${toastItem.message}", ID: ${toastItem.id}`)
+  logging.debug(`Display toast: "${toastItem.message}", ID: ${toastItem.id}`)
   const solidToastId = displaySolidToast(toastItem)
 
   let timeoutId: NodeJS.Timeout | null = null
@@ -90,7 +88,7 @@ async function processToastItem(toastItem: ToastItem) {
       timeoutId = null
     }
 
-    debug(`Dismiss toast: "${toastItem.message}", ID: ${toastItem.id}`)
+    logging.debug(`Dismiss toast: "${toastItem.message}", ID: ${toastItem.id}`)
     dismissSolidToast(solidToastId)
     removeFromVisibleToasts(toastItem.id)
     resumeProcess()
@@ -116,14 +114,14 @@ async function processToastItem(toastItem: ToastItem) {
  */
 export function registerToast(toastItem: ToastItem): void {
   if (isDuplicateToast(toastItem)) {
-    debug(
+    logging.debug(
       `Duplicate toast detected: "${toastItem.message}", ID: ${toastItem.id}`,
       toastItem,
     )
     return
   }
   // TODO: Implement priority sorting if needed (avoid infinite loading toasts preventing others)
-  debug(
+  logging.debug(
     `Registering toast: "${toastItem.message}", ID: ${toastItem.id}\n\tDetails:`,
     toastItem,
   )
@@ -135,7 +133,7 @@ export function registerToast(toastItem: ToastItem): void {
  * @param id The ID of the toast to kill.
  */
 export function killToast(id: ToastItem['id']): void {
-  debug('Killing toast:', id)
+  logging.debug('Killing toast:', id)
   dequeue(id)
   const toastInVisibleToasts = findInVisibleToasts(id) // Check if it's visible
   if (toastInVisibleToasts) {
@@ -199,7 +197,7 @@ export function popAndDisplayToast(): void {
 // function removeCurrentToast(): void {
 //   const current = currentToast()
 //   if (current !== null) {
-//     console.debug('[ToastQueue] Removing current toast:', current.message)
+//     logging.debug('[ToastQueue] Removing current toast:', current.message)
 
 //     // Dismiss the actual solid-toast if it exists
 //     if (current.solidToastId !== undefined) {
@@ -224,7 +222,7 @@ export function popAndDisplayToast(): void {
 
 //   // Check if the toast to remove is currently displayed (first in queue)
 //   if (current !== null && current.id === toastId) {
-//     console.debug(
+//     logging.debug(
 //       '[ToastQueue] Dequeuing current toast by ID:',
 //       toastId,
 //       current.message,
@@ -246,7 +244,7 @@ export function popAndDisplayToast(): void {
 //     const newQueue = currentQueue.filter((toast) => toast.id !== toastId)
 //     setQueue(newQueue)
 
-//     console.debug(
+//     logging.debug(
 //       '[ToastQueue] Removed toast from queue by ID:',
 //       toastId,
 //       removedToast.message,
@@ -254,7 +252,7 @@ export function popAndDisplayToast(): void {
 //     return true
 //   }
 
-//   console.debug('[ToastQueue] Toast not found for dequeue by ID:', toastId)
+//   logging.debug('[ToastQueue] Toast not found for dequeue by ID:', toastId)
 //   return false
 // }
 
@@ -262,7 +260,7 @@ export function popAndDisplayToast(): void {
 //  * Clear all toasts
 //  */
 // export function clear(): void {
-//   console.debug('[ToastQueue] Clearing all toasts')
+//   logging.debug('[ToastQueue] Clearing all toasts')
 
 //   // Dismiss all solid-toasts
 //   queue().forEach((toastItem) => {

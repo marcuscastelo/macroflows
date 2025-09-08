@@ -47,6 +47,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
 
 function GoogleLoginButton() {
   const handleLogin = async () => {
@@ -215,7 +216,7 @@ export default function TestApp() {
                     <TemplateSearchModal
                       targetName="Teste"
                       onNewUnifiedItem={() => {
-                        console.debug('New unified item added')
+                        logging.debug('New unified item added')
                       }}
                       onFinish={() => {}}
                       onClose={() => {}}
@@ -264,7 +265,7 @@ export default function TestApp() {
                   setUnifiedItemEditModalVisible(true)
                 },
                 onCopy: (item) => {
-                  console.debug('Copy item:', item)
+                  logging.debug('Copy item:', item)
                 },
               }}
             />

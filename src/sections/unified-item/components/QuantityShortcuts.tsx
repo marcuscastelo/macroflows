@@ -1,8 +1,6 @@
 import { For } from 'solid-js'
 
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export type QuantityShortcutsProps = {
   onQuantitySelect: (quantity: number) => void
@@ -25,7 +23,7 @@ export function QuantityShortcuts(props: QuantityShortcutsProps) {
                 <div
                   class="btn-primary btn-sm btn cursor-pointer uppercase flex-1"
                   onClick={() => {
-                    debug(
+                    logging.debug(
                       '[QuantityShortcuts] shortcut quantity selected',
                       value,
                     )

@@ -1,11 +1,8 @@
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { recipeCacheStore } from '~/modules/diet/recipe/infrastructure/signals/recipeCacheStore'
-import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
-
 import { SUPABASE_TABLE_RECIPES } from '~/modules/diet/recipe/infrastructure/supabase/constants'
+import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
@@ -31,13 +28,13 @@ export function initializeRecipeRealtime(): void {
   if (initialized) {
     return
   }
-  debug(`Recipe realtime initialized!`)
+  logging.debug(`Recipe realtime initialized!`)
   initialized = true
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_RECIPES,
     recipeSchema,
     (event) => {
-      debug(`Event:`, event)
+      logging.debug(`Event:`, event)
 
       switch (event.eventType) {
         case 'INSERT': {

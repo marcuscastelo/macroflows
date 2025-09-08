@@ -18,10 +18,8 @@ import {
   MaxQuantityButton,
 } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 import { calcUnifiedItemMacros } from '~/shared/utils/macroMath'
-
-const debug = createDebug()
 
 export type QuantityControlsProps = {
   item: Accessor<UnifiedItem>
@@ -36,7 +34,7 @@ export function QuantityControls(props: QuantityControlsProps) {
     const newQuantity = props.quantityField.value() ?? 0.1
     const currentItem = untrack(props.item)
 
-    debug(
+    logging.debug(
       '[QuantityControls] Update unified item quantity from field',
       newQuantity,
     )
@@ -47,7 +45,7 @@ export function QuantityControls(props: QuantityControlsProps) {
         const scaledItem = scaleRecipeItemQuantity(currentItem, newQuantity)
         props.setItem({ ...scaledItem })
       } catch (error) {
-        debug('[QuantityControls] Error scaling recipe:', error)
+        logging.debug('[QuantityControls] Error scaling recipe:', error)
         // Fallback to simple quantity update if scaling fails
         props.setItem({
           ...currentItem,
@@ -64,21 +62,21 @@ export function QuantityControls(props: QuantityControlsProps) {
   })
 
   const increment = () => {
-    debug('[QuantityControls] increment')
+    logging.debug('[QuantityControls] increment')
     props.quantityField.setRawValue(
       ((props.quantityField.value() ?? 0) + 1).toString(),
     )
   }
 
   const decrement = () => {
-    debug('[QuantityControls] decrement')
+    logging.debug('[QuantityControls] decrement')
     props.quantityField.setRawValue(
       Math.max(0, (props.quantityField.value() ?? 0) - 1).toString(),
     )
   }
 
   const holdRepeatStart = (action: () => void) => {
-    debug('[QuantityControls] holdRepeatStart')
+    logging.debug('[QuantityControls] holdRepeatStart')
     const holdTimeout = setTimeout(() => {
       const holdInterval = setInterval(() => {
         action()
@@ -114,14 +112,14 @@ export function QuantityControls(props: QuantityControlsProps) {
           field={props.quantityField}
           style={{ width: '100%' }}
           onFieldCommit={(value) => {
-            debug('[QuantityControls] FloatInput onFieldCommit', value)
+            logging.debug('[QuantityControls] FloatInput onFieldCommit', value)
             if (value === undefined) {
               props.quantityField.setRawValue(props.item().quantity.toString())
             }
           }}
           tabIndex={-1}
           onFocus={(event) => {
-            debug('[QuantityControls] FloatInput onFocus')
+            logging.debug('[QuantityControls] FloatInput onFocus')
             event.target.select()
             if (props.quantityField.value() === 0) {
               props.quantityField.setRawValue('')
@@ -156,7 +154,7 @@ export function QuantityControls(props: QuantityControlsProps) {
               return { carbs: 0, protein: 0, fat: 0 }
             })()}
             onMaxSelected={(maxValue: number) => {
-              debug(
+              logging.debug(
                 '[QuantityControls] MaxQuantityButton onMaxSelected',
                 maxValue,
               )
@@ -171,11 +169,11 @@ export function QuantityControls(props: QuantityControlsProps) {
           class="btn-primary btn-xs btn cursor-pointer uppercase h-full w-10 px-6 text-4xl text-red-600"
           onClick={decrement}
           onMouseDown={() => {
-            debug('[QuantityControls] decrement mouse down')
+            logging.debug('[QuantityControls] decrement mouse down')
             holdRepeatStart(decrement)
           }}
           onTouchStart={() => {
-            debug('[QuantityControls] decrement touch start')
+            logging.debug('[QuantityControls] decrement touch start')
             holdRepeatStart(decrement)
           }}
         >
@@ -186,11 +184,11 @@ export function QuantityControls(props: QuantityControlsProps) {
           class="btn-primary btn-xs btn cursor-pointer uppercase ml-1 h-full w-10 px-6 text-4xl text-green-400"
           onClick={increment}
           onMouseDown={() => {
-            debug('[QuantityControls] increment mouse down')
+            logging.debug('[QuantityControls] increment mouse down')
             holdRepeatStart(increment)
           }}
           onTouchStart={() => {
-            debug('[QuantityControls] increment touch start')
+            logging.debug('[QuantityControls] increment touch start')
             holdRepeatStart(increment)
           }}
         >

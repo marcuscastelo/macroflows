@@ -8,6 +8,7 @@ import {
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { type ToastOptions } from '~/modules/toast/domain/toastTypes'
+import { logging } from '~/shared/utils/logging'
 
 const ToastTest: Component = () => {
   const [toastOptions, setToastOptions] = createSignal<Partial<ToastOptions>>({
@@ -30,7 +31,7 @@ const ToastTest: Component = () => {
       },
       toastOptions(),
     ).catch((err) => {
-      console.error('Error processing promise:', err)
+      logging.error('Error processing promise:', err)
     })
   }
 
@@ -49,7 +50,7 @@ const ToastTest: Component = () => {
       },
       toastOptions(),
     ).catch((err) => {
-      console.error('Error processing promise:', err)
+      logging.error('Error processing promise:', err)
     })
   }
 
@@ -66,13 +67,13 @@ const ToastTest: Component = () => {
       },
       toastOptions(),
     ).catch((err) => {
-      console.error('Error processing promise without success message:', err)
+      logging.error('Error processing promise without success message:', err)
     })
   }
 
   const testSmartToastPromise = async () => {
     try {
-      console.log('Starting showPromise test...')
+      logging.info('Starting showPromise test...')
       const result = await showPromise(
         new Promise<string>((resolve) => {
           setTimeout(() => resolve('Data loaded!'), 2000)
@@ -84,19 +85,19 @@ const ToastTest: Component = () => {
         },
         toastOptions(),
       )
-      console.log('showPromise result:', result)
+      logging.info('showPromise result:', result)
     } catch (error) {
-      console.error('showPromise error:', error)
+      logging.error('showPromise error:', error)
     }
   }
 
   const testSmartToastPromiseDetached = () => {
-    console.log('Starting showPromise test...')
+    logging.info('Starting showPromise test...')
 
     void showPromise(
       new Promise<string>((resolve) => {
         setTimeout(() => {
-          console.log('Detached operation completed!')
+          logging.info('Detached operation completed!')
           resolve('Detached data loaded!')
         }, 2000)
       }),
@@ -108,11 +109,11 @@ const ToastTest: Component = () => {
       toastOptions(),
     )
 
-    console.log('showPromise called - continuing immediately')
+    logging.info('showPromise called - continuing immediately')
   }
 
   const testMultipleDetachedOperations = () => {
-    console.log('Testing multiple detached operations...')
+    logging.info('Testing multiple detached operations...')
 
     void showPromise(
       new Promise((resolve) => setTimeout(() => resolve('User data'), 1000)),
@@ -144,7 +145,7 @@ const ToastTest: Component = () => {
       toastOptions(),
     )
 
-    console.log('All detached operations started')
+    logging.info('All detached operations started')
   }
 
   const testLongError = () => {
@@ -190,7 +191,7 @@ const ToastTest: Component = () => {
               },
               toastOptions(),
             ).catch((err) => {
-              console.error(
+              logging.error(
                 'Error processing promise without success message:',
                 err,
               )
@@ -260,7 +261,7 @@ const ToastTest: Component = () => {
                   toastOptions(),
                 )
               } catch (error) {
-                console.error('showPromise error:', error)
+                logging.error('showPromise error:', error)
               }
             })()
           }}

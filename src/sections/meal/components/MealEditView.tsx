@@ -25,11 +25,9 @@ import {
   openClearItemsConfirmModal,
   openDeleteConfirmModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
-import { createDebug } from '~/shared/utils/createDebug'
 import { regenerateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
 import { calcMealCalories } from '~/shared/utils/macroMath'
-
-const debug = createDebug()
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -122,12 +120,12 @@ export function MealEditViewHeader(props: {
           // Handle pasted Meal - extract its items and add them to current meal
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           const mealData = data as Meal
-          debug('Pasting meal with items:', mealData.items.length)
+          logging.debug('Pasting meal with items:', mealData.items.length)
           const unifiedItemsToAdd = mealData.items.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
-          debug(
+          logging.debug(
             'Items to add:',
             unifiedItemsToAdd.map((item) => ({ id: item.id, name: item.name })),
           )
@@ -159,7 +157,7 @@ export function MealEditViewHeader(props: {
         // Since schema validation passed, this should be a recipe
         // For now, we'll skip unsupported formats in paste
         // TODO: Add proper recipe-to-items conversion if needed
-        console.warn('Unsupported paste format:', data)
+        logging.warn('Unsupported paste format:', data)
       },
     })
 
@@ -210,10 +208,10 @@ export function MealEditViewContent(props: {
   const { meal } = useMealContext()
   const clipboard = useClipboard()
 
-  debug('meal.value:', meal())
+  logging.debug('meal.value:', meal())
 
   createEffect(() => {
-    debug('meal.value changed:', meal())
+    logging.debug('meal.value changed:', meal())
   })
 
   return (

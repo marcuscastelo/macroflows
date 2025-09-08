@@ -135,7 +135,7 @@ export default [
         'error',
         {
           selector: "CallExpression[callee.object.name='console']",
-          message: 'Direct console usage is forbidden. Use errorHandler.apiError, logToBreadcrumb, or createDebug utility functions instead.'
+          message: 'Direct console usage is forbidden. Use errorHandler.apiError or logging utility functions instead.'
         },
         {
           selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
@@ -174,8 +174,8 @@ export default [
       'src/shared/config/sentry.ts',
       'src/shared/config/telemetry.ts',
       'src/shared/console/**/*.ts',
-      'src/shared/utils/createDebug.ts',
-      'src/shared/utils/devConsole.ts',
+
+
       '**/*.test.ts',
       '**/*.test.tsx',
       'vitest.setup.ts'

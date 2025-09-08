@@ -7,6 +7,7 @@ import { createSignal, onCleanup, onMount, Show } from 'solid-js'
 import { showError } from '~/modules/toast/application/toastManager'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 // Html5QrcodeSupportedFormats.EAN_13
 const Html5QrcodeSupportedFormats_EAN_13 = 9
@@ -31,10 +32,10 @@ export function EANReader(props: {
         (decodedResult.result.format?.format as number) !==
         Html5QrcodeSupportedFormats_EAN_13
       ) {
-        console.warn(
+        logging.warn(
           `Atenção: Formato de código de barras não suportado: ${decodedResult.result.format?.format}`,
         )
-        console.warn(`Código de barras lido: ${decodedText}`)
+        logging.warn(`Código de barras lido: ${decodedText}`)
       }
 
       props.onScanned(decodedText)
@@ -106,7 +107,7 @@ export function EANReader(props: {
       setLoadingScanner(false)
     })
     onCleanup(() => {
-      console.debug('EANReader onCleanup()')
+      logging.debug('EANReader onCleanup()')
       stopFn?.()
     })
   })

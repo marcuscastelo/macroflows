@@ -3,6 +3,7 @@ import { createEffect, createSignal, Show } from 'solid-js'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { MacroEvolution } from '~/sections/profile/components/MacroEvolution'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Lazy loading wrapper for MacroEvolution component.
@@ -15,7 +16,7 @@ export function LazyMacroEvolution() {
   const { isVisible, setRef } = useIntersectionObserver()
 
   createEffect(() => {
-    console.debug('LazyMacroEvolution: Checking visibility:   ', isVisible())
+    logging.debug('LazyMacroEvolution: Checking visibility:   ', isVisible())
     if (isVisible()) {
       setShouldLoad(true)
     }

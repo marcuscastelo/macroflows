@@ -27,6 +27,7 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
 export function BottomNavigation() {
@@ -67,8 +68,8 @@ export function BottomNavigation() {
     resizeObserver?.disconnect()
   })
 
-  console.debug('[BottomNavigation] Rendering')
-  console.debug('[BottomNavigation] Current path:', pathname)
+  logging.debug('[BottomNavigation] Rendering')
+  logging.debug('[BottomNavigation] Current path:', pathname)
 
   return (
     <div class="">

@@ -1,8 +1,6 @@
 import { type Setter } from 'solid-js'
 
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 let dayCheckInterval: NodeJS.Timeout | null = null
 export function startDayChangeDetectionWorker(deps: {
@@ -24,7 +22,7 @@ export function startDayChangeDetectionWorker(deps: {
     const previousToday = deps.getPreviousToday()
     const currentTarget = deps.getCurrentTargetDay()
     if (newToday !== previousToday) {
-      debug(`Day changed from ${previousToday} to ${newToday}`)
+      logging.debug(`Day changed from ${previousToday} to ${newToday}`)
       deps.setCurrentToday(newToday)
       // Only show modal if user is not already viewing today
       if (currentTarget !== newToday) {

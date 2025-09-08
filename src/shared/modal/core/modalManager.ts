@@ -7,9 +7,7 @@ import type {
   ModalManager,
   ModalState,
 } from '~/shared/modal/types/modalTypes'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export const [modals, setModals] = createSignal<ModalState[]>([])
 
@@ -20,7 +18,7 @@ function generateModalId(): ModalId {
 }
 
 function performClose(id: ModalId, modal: ModalState): void {
-  debug(`Performing close for modal: ${id}`)
+  logging.debug(`Performing close for modal: ${id}`)
   setModals((prev) => prev.filter((m) => m.id !== id))
   modal.onClose?.()
 }

@@ -14,6 +14,7 @@ import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedI
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export type EANSearchProps = {
   EAN: Accessor<string>
@@ -41,7 +42,7 @@ export function EANSearch(props: EANSearchProps) {
     setLoading(true)
 
     const afterFetch = (food: Food | null) => {
-      console.log('afterFetch food', food)
+      logging.info('afterFetch food', food)
       if (food === null) {
         openConfirmModal(`Alimento de EAN ${props.EAN()} não encontrado`, {
           title: 'Não encontrado',
@@ -54,7 +55,7 @@ export function EANSearch(props: EANSearchProps) {
     }
 
     const catchFetch = (err: unknown) => {
-      console.log('catchFetch err', err)
+      logging.info('catchFetch err', err)
       errorHandler.error(err, { operation: 'userAction' })
       openConfirmModal('Erro ao buscar alimento', {
         title: `Erro ao buscar alimento de EAN ${props.EAN()}`,
@@ -65,7 +66,7 @@ export function EANSearch(props: EANSearchProps) {
     }
 
     const finallyFetch = () => {
-      console.log('finallyFetch')
+      logging.info('finallyFetch')
       setLoading(false)
       props.setEAN('')
     }

@@ -6,9 +6,7 @@ import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { logError } from '~/shared/error/errorHandler'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
   authGateway: AuthGateway = createSupabaseAuthGateway(),
@@ -132,7 +130,7 @@ export function createAuthService(
   async function loadInitialSession(): Promise<void> {
     try {
       const session = await authGateway.getSession()
-      debug(`loadInitialSession session:`, session)
+      logging.debug(`loadInitialSession session:`, session)
       setAuthState((prev) => ({
         ...prev,
         session,

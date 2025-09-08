@@ -10,9 +10,8 @@ import {
 } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 
-const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Food')
 
 import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
@@ -170,7 +169,7 @@ async function fetchFoodsByName(
       isFavoritesSearch === true && userId !== undefined
         ? 'favorites search'
         : 'enhanced search'
-    debug(
+    logging.debug(
       `Found ${Array.isArray(result.data) ? result.data.length : 0} foods using ${searchType}`,
     )
     return result.data.map(supabaseFoodMapper.toDomain)
@@ -202,7 +201,7 @@ async function internalCachedSearchFoods(
       },
   params?: FoodSearchParams,
 ): Promise<readonly Food[]> {
-  debug(
+  logging.debug(
     `Searching for foods with ${field} = ${value} (limit: ${
       params?.limit ?? 'none'
     })`,
@@ -232,12 +231,12 @@ async function internalCachedSearchFoods(
   }
 
   if (allowedFoods !== undefined) {
-    debug('Limiting search to allowed foods')
+    logging.debug('Limiting search to allowed foods')
     query = query.in('id', allowedFoods)
   }
 
   if (limit !== undefined) {
-    debug(`Limiting search to ${limit} results`)
+    logging.debug(`Limiting search to ${limit} results`)
     query = query.limit(limit)
   }
 
@@ -247,7 +246,7 @@ async function internalCachedSearchFoods(
     throw wrapErrorWithStack(error)
   }
 
-  debug(`Found ${foods.length} foods`)
+  logging.debug(`Found ${foods.length} foods`)
   return foods.map(supabaseFoodMapper.toDomain)
 }
 

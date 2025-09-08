@@ -4,8 +4,8 @@ import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/day
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
-import { createDebug } from '~/shared/utils/createDebug'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 import {
   calcUnifiedItemCalories,
   calcUnifiedItemMacros,
@@ -14,8 +14,6 @@ import {
   createMacroOverflowChecker,
   type MacroOverflowContext,
 } from '~/shared/utils/macroOverflow'
-
-const debug = createDebug()
 
 export type UnifiedItemNutritionalInfoProps = {
   item: Accessor<UnifiedItem>
@@ -46,7 +44,7 @@ export function UnifiedItemNutritionalInfo(
   const isMacroOverflowing = createMemo(() => {
     const overflow = props.macroOverflow?.()
     if (!overflow || !overflow.enable) {
-      debug('Macro overflow is not enabled')
+      logging.debug('Macro overflow is not enabled')
       return {
         carbs: () => false,
         protein: () => false,
@@ -74,8 +72,8 @@ export function UnifiedItemNutritionalInfo(
       },
     }
 
-    debug('currentDayDiet_=', currentDayDiet_)
-    debug('macroTarget=', macroTarget)
+    logging.debug('currentDayDiet_=', currentDayDiet_)
+    logging.debug('macroTarget=', macroTarget)
 
     // If we don't have the context, return false for all
     if (currentDayDiet_ === null || macroTarget === null) {
@@ -86,7 +84,7 @@ export function UnifiedItemNutritionalInfo(
       }
     }
 
-    debug('Creating macro overflow checker for item:', templateItem)
+    logging.debug('Creating macro overflow checker for item:', templateItem)
     return createMacroOverflowChecker(templateItem, context)
   })
 

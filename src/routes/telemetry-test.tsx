@@ -7,6 +7,7 @@ import {
   setUserContext,
 } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 import { withUISpan } from '~/shared/utils/tracing'
 
 const TelemetryTestPage: Component = () => {
@@ -15,10 +16,10 @@ const TelemetryTestPage: Component = () => {
 
   const testSentryError = () => {
     try {
-      console.log('🧪 Testing Sentry error...')
+      logging.info('🧪 Testing Sentry error...')
       throw new Error('Test error for Sentry integration')
     } catch (error) {
-      console.log('📤 Sending error via errorHandler...')
+      logging.info('📤 Sending error via errorHandler...')
       errorHandler.error(error, {
         operation: 'testSentryError',
         additionalData: {
@@ -31,14 +32,14 @@ const TelemetryTestPage: Component = () => {
   }
 
   const testDirectSentry = () => {
-    console.log('🎯 Testing direct Sentry call...')
+    logging.info('🎯 Testing direct Sentry call...')
     void import('@sentry/solidstart').then((Sentry) => {
       Sentry.captureException(new Error('Direct Sentry test error'), {
         tags: { source: 'direct_test' },
         extra: { timestamp: new Date().toISOString() },
       })
       setLastAction('Direct Sentry error sent')
-      console.log('✅ Direct error sent to Sentry')
+      logging.info('✅ Direct error sent to Sentry')
     })
   }
 

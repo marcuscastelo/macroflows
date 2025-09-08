@@ -7,6 +7,7 @@ import {
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { getItemTypeDisplay } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
+import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemNameProps = {
   item: Accessor<UnifiedItem>
@@ -24,7 +25,7 @@ export function UnifiedItemName(props: UnifiedItemNameProps) {
       try {
         return await fetchRecipeById(recipeId)
       } catch (error) {
-        console.warn('Failed to fetch recipe for comparison:', error)
+        logging.warn('Failed to fetch recipe for comparison:', error)
         return null
       }
     },
