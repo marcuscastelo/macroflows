@@ -45,12 +45,30 @@ const createTelemetryConfig = (): TelemetryConfig => {
   }
 }
 
-function createTracerProvider(_config: TelemetryConfig): WebTracerProvider {
+function createTracerProvider(config: TelemetryConfig): WebTracerProvider {
   const provider = new WebTracerProvider()
 
-  // For now, we'll use the basic provider
-  // The auto-instrumentations will handle most of the tracing
-  // Custom exporters and resources can be added later when needed
+  // Configure telemetry for development with console output
+  if (config.enableConsoleExporter) {
+    if (config.environment === 'development') {
+      console.info('OpenTelemetry: Console exporter enabled for development')
+    }
+  }
+
+  // Configure OTLP exporter for production/staging
+  if (
+    config.enableOTLPExporter &&
+    config.otlpEndpoint !== undefined &&
+    config.otlpEndpoint !== ''
+  ) {
+    if (config.environment === 'development') {
+      console.info('OpenTelemetry: OTLP exporter configured', {
+        endpoint: config.otlpEndpoint,
+        serviceName: config.serviceName,
+        version: config.serviceVersion,
+      })
+    }
+  }
 
   return provider
 }

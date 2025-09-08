@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api'
 import * as Sentry from '@sentry/solidstart'
 
 import { APP_VERSION } from '~/app-version'
@@ -126,26 +127,48 @@ const initializeSentry = (): void => {
         }
 
         // Add OpenTelemetry trace context if available
-        const error = hint.originalException
-        if (
-          error !== undefined &&
-          error !== null &&
-          typeof error === 'object' &&
-          'traceId' in error &&
-          'spanId' in error
-        ) {
-          event.tags = {
-            ...event.tags,
-            'otel.trace_id': String(error.traceId),
-            'otel.span_id': String(error.spanId),
-          }
+        // First try to get trace context from active span (most accurate)
+        const activeSpan = trace.getActiveSpan()
+        if (activeSpan) {
+          const spanContext = activeSpan.spanContext()
+          if (spanContext.traceId && spanContext.spanId) {
+            event.tags = {
+              ...event.tags,
+              'otel.trace_id': spanContext.traceId,
+              'otel.span_id': spanContext.spanId,
+            }
 
-          event.contexts = {
-            ...event.contexts,
-            trace: {
-              trace_id: String(error.traceId),
-              span_id: String(error.spanId),
-            },
+            event.contexts = {
+              ...event.contexts,
+              trace: {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              },
+            }
+          }
+        } else {
+          // Fallback: check if error object has trace context
+          const error = hint.originalException
+          if (
+            error !== undefined &&
+            error !== null &&
+            typeof error === 'object' &&
+            'traceId' in error &&
+            'spanId' in error
+          ) {
+            event.tags = {
+              ...event.tags,
+              'otel.trace_id': String(error.traceId),
+              'otel.span_id': String(error.spanId),
+            }
+
+            event.contexts = {
+              ...event.contexts,
+              trace: {
+                trace_id: String(error.traceId),
+                span_id: String(error.spanId),
+              },
+            }
           }
         }
 
