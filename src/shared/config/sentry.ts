@@ -22,6 +22,13 @@ const getSentryEnvironment = (): SentryEnvironment => {
 const createSentryConfig = (): SentryConfig => {
   const environment = getSentryEnvironment()
 
+  // Use build-time release from environment, fallback to app version
+  const release =
+    typeof import.meta.env.VITE_SENTRY_RELEASE === 'string' &&
+    import.meta.env.VITE_SENTRY_RELEASE !== ''
+      ? import.meta.env.VITE_SENTRY_RELEASE
+      : `macroflows@${APP_VERSION}`
+
   return {
     dsn:
       typeof import.meta.env.VITE_SENTRY_DSN === 'string'
@@ -29,7 +36,7 @@ const createSentryConfig = (): SentryConfig => {
         : undefined,
     environment,
     tracesSampleRate: environment === 'development' ? 1.0 : 0.1,
-    release: `macroflows@${APP_VERSION}`,
+    release,
     enableProfiling: environment !== 'development',
   }
 }
