@@ -130,8 +130,13 @@ export default [
       'jsx-a11y/role-has-required-aria-props': 'warn',
       'jsx-a11y/role-supports-aria-props': 'warn',
 
+      'no-console': 'error', // Ban all console usage by default
       'no-restricted-syntax': [
         'error',
+        {
+          selector: "CallExpression[callee.object.name='console']",
+          message: 'Direct console usage is forbidden. Use errorHandler.apiError, logToBreadcrumb, or createDebug utility functions instead.'
+        },
         {
           selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
           message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
@@ -159,6 +164,32 @@ export default [
           project: ['./tsconfig.json'],
         },
       },
+    },
+  },
+  {
+    // Allow console usage in error handling, telemetry, and testing infrastructure
+    files: [
+      'src/shared/error/**/*.ts',
+      'src/shared/error/**/*.tsx', 
+      'src/shared/config/sentry.ts',
+      'src/shared/config/telemetry.ts',
+      'src/shared/console/**/*.ts',
+      'src/shared/utils/createDebug.ts',
+      'src/shared/utils/devConsole.ts',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      'vitest.setup.ts'
+    ],
+    rules: {
+      'no-console': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
+          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
+        },
+        // Note: Console usage allowed in error handling infrastructure
+      ],
     },
   },
   {

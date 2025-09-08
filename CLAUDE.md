@@ -666,6 +666,53 @@ type(scope): description
 
 **Critical Rule:** Never remove TODO comments from codebase, regardless of context. TODOs serve as important markers for future improvements and technical debt.
 
+### Console Usage Ban - CRITICAL
+
+**🚨 CRITICAL RULE: Direct console.* usage is BANNED throughout the codebase**
+
+**Forbidden:**
+```typescript
+console.log('Debug info')     // ❌ BANNED
+console.error('Error msg')    // ❌ BANNED  
+console.debug('Debug data')   // ❌ BANNED
+console.warn('Warning')       // ❌ BANNED
+```
+
+**Required Alternatives:**
+
+**For Development Debugging:**
+```typescript
+import { devConsole } from '~/shared/utils/devConsole'
+
+devConsole.debug('Debug information', data)   // ✅ Development only
+devConsole.warn('Warning message', context)   // ✅ Development only  
+devConsole.log('Info message', details)       // ✅ Development only
+```
+
+**For Error Handling:**
+```typescript
+import { createErrorHandler } from '~/shared/error/errorHandler'
+
+const errorHandler = createErrorHandler('application', 'ComponentName')
+errorHandler.apiError(error, { operation: 'operationName' })  // ✅ Proper error handling
+```
+
+**For Breadcrumbs/Telemetry:**
+```typescript
+import { logToBreadcrumb } from '~/shared/config/sentry'
+
+logToBreadcrumb('User action', 'info', { data })  // ✅ Telemetry tracking
+```
+
+**Exceptions:**
+- Only `src/shared/error/**/*` can use direct console.* for error infrastructure
+- Only `src/shared/config/sentry.ts` and `src/shared/config/telemetry.ts` for configuration
+- Only test files (`*.test.ts`) for testing utilities
+
+**ESLint Enforcement:**
+- `no-console: 'error'` - Bans ALL direct console usage
+- `no-restricted-syntax` - Provides helpful error messages pointing to alternatives
+
 ### Solo Project Adaptations
 
 **Since this is a solo project:**

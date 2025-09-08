@@ -3,6 +3,7 @@ import { type APIEvent } from '@solidjs/start/server'
 
 import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/api/apiFoodRepository'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { devConsole } from '~/shared/utils/devConsole'
 
 const apiFoodRepository = createApiFoodRepository()
 
@@ -18,13 +19,13 @@ function getErrorStatus(error: unknown): number {
 }
 
 export async function GET({ params }: APIEvent) {
-  console.debug('GET', params)
+  devConsole.debug('GET', params)
   if (params.ean === undefined || params.ean === '') {
     return json({ error: 'EAN parameter is required' }, { status: 400 })
   }
   try {
     const apiFood = await apiFoodRepository.fetchApiFoodByEan(params.ean)
-    console.debug('apiFood', apiFood)
+    devConsole.debug('apiFood', apiFood)
 
     return json(apiFood)
   } catch (error) {

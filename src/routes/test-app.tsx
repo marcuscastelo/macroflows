@@ -53,7 +53,15 @@ function GoogleLoginButton() {
     try {
       await signIn({ provider: 'google' })
     } catch (error) {
-      console.error('Login failed:', error)
+      // Use proper error handling instead of console
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler('user', 'TestApp')
+          errorHandler.apiError(error, { operation: 'login' })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
     }
   }
 
@@ -69,7 +77,15 @@ function LogoutButton() {
     try {
       await signOut()
     } catch (error) {
-      console.error('Logout failed:', error)
+      // Use proper error handling instead of console
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler('user', 'TestApp')
+          errorHandler.apiError(error, { operation: 'logout' })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
     }
   }
 

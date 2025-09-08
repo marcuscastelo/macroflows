@@ -12,6 +12,7 @@ import {
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
+import { devConsole } from '~/shared/utils/devConsole'
 
 const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
@@ -67,7 +68,7 @@ async function fetchDayDietByUserIdAndTargetDay(
   userId: User['id'],
   targetDay: string,
 ): Promise<DayDiet | null> {
-  console.debug(
+  devConsole.debug(
     `[supabaseDayRepository] fetchCurrentUserDayDiet(${userId}, ${targetDay})`,
   )
 
@@ -81,7 +82,7 @@ async function fetchDayDietByUserIdAndTargetDay(
   if (error !== null) {
     if (error.code === 'PGRST116') {
       // No rows returned - day doesn't exist
-      console.debug(`[supabaseDayRepository] No day found for ${targetDay}`)
+      devConsole.debug(`[supabaseDayRepository] No day found for ${targetDay}`)
       return null
     }
     errorHandler.error(error)
@@ -99,7 +100,9 @@ async function fetchDayDietByUserIdAndTargetDay(
     throw wrapErrorWithStack(result.error)
   }
 
-  console.debug(`[supabaseDayRepository] Successfully fetched day ${targetDay}`)
+  devConsole.debug(
+    `[supabaseDayRepository] Successfully fetched day ${targetDay}`,
+  )
   return result.data
 }
 
@@ -108,7 +111,7 @@ async function fetchDayDietsByUserIdBeforeDate(
   beforeDay: string,
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
-  console.debug(
+  devConsole.debug(
     `[supabaseDayRepository] fetchPreviousUserDayDiets(${userId}, ${beforeDay}, ${limit})`,
   )
 

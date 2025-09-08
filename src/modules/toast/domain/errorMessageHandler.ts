@@ -10,6 +10,7 @@ import {
   type ToastExpandableErrorData,
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
+import { devConsole } from '~/shared/utils/devConsole'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
@@ -113,7 +114,10 @@ function mapUnknownToToastError(
   includeStack: boolean,
 ): ToastError {
   // DEBUG: Log error and stack for investigation
-  console.debug('[mapUnknownToToastError] error:', error)
+  // Use debug utility instead of console
+  if (import.meta.env.DEV) {
+    devConsole.debug('mapUnknownToToastError error:', error)
+  }
   if (error instanceof Error) {
     // Only serialize cause if it's a primitive or stringifiable
     let cause: unknown = error.cause
@@ -125,12 +129,18 @@ function mapUnknownToToastError(
       }
     }
     if (typeof error.stack === 'string') {
-      console.debug('[mapUnknownToToastError] error.stack:', error.stack)
+      // Use debug utility instead of console
+      if (import.meta.env.DEV) {
+        devConsole.debug('mapUnknownToToastError error.stack:', error.stack)
+      }
     } else {
-      console.debug(
-        '[mapUnknownToToastError] error.stack is not a string:',
-        error.stack,
-      )
+      // Use debug utility instead of console
+      if (import.meta.env.DEV) {
+        devConsole.debug(
+          'mapUnknownToToastError error.stack is not a string:',
+          error.stack,
+        )
+      }
     }
     // Copia todas as propriedades próprias do erro customizado
     const customProps: Record<string, unknown> = {}

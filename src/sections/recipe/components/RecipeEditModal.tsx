@@ -76,7 +76,20 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      console.error('Error converting UnifiedItem to Item:', error)
+      // Use proper error handling instead of console
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler(
+            'validation',
+            'RecipeEditModal',
+          )
+          errorHandler.apiError(error, {
+            operation: 'convert UnifiedItem to Item',
+          })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
       showError('Erro ao adicionar item à receita.')
     }
   }
