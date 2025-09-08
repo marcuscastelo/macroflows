@@ -77,6 +77,7 @@ export const initializeSentry = (): void => {
         'localhost',
         /^https:\/\/.*\.supabase\.co/,
         /^https:\/\/.*\.macroflows\.app/,
+        /^https:\/\/.*\.macroflows.*\.app/,
       ],
 
       integrations: [
