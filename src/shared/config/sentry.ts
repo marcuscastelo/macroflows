@@ -34,7 +34,7 @@ const createSentryConfig = (): SentryConfig => {
         ? import.meta.env.VITE_SENTRY_DSN
         : undefined,
     environment,
-    tracesSampleRate: environment === 'development' ? 1.0 : 0.1,
+    tracesSampleRate: environment === 'development' ? 1.0 : 1.0,
     release,
     enableProfiling: environment !== 'development',
   }
