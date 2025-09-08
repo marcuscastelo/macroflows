@@ -7,6 +7,7 @@ import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/da
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { withDatabaseSpan } from '~/shared/utils/tracing'
 
 const supabaseGateway = createSupabaseDayGateway()
 const errorHandler = createErrorHandler('application', 'DayDiet')
@@ -25,19 +26,33 @@ export function createDayDietRepository(): DayRepository {
 export async function fetchDayDietById(
   dayId: DayDiet['id'],
 ): Promise<DayDiet | null> {
-  try {
-    const dayDiet = await supabaseGateway.fetchDayDietById(dayId)
-    if (dayDiet === null) {
+  return await withDatabaseSpan('SELECT', 'day_diet', async (span) => {
+    span.setAttributes({
+      'day_diet.id': dayId,
+      'operation.type': 'fetch_by_id',
+    })
+
+    try {
+      const dayDiet = await supabaseGateway.fetchDayDietById(dayId)
+      if (dayDiet === null) {
+        span.addEvent('day_diet_not_found', { dayId })
+        dayCacheStore.removeFromCache({ by: 'id', value: dayId })
+        return null
+      }
+
+      span.addEvent('day_diet_found', {
+        dayId,
+        hasMeals: dayDiet.meals.length > 0,
+      })
+      dayCacheStore.upsertToCache(dayDiet)
+      return dayDiet
+    } catch (error) {
+      span.addEvent('day_diet_fetch_error', { dayId, error: String(error) })
+      errorHandler.error(error)
       dayCacheStore.removeFromCache({ by: 'id', value: dayId })
       return null
     }
-    dayCacheStore.upsertToCache(dayDiet)
-    return dayDiet
-  } catch (error) {
-    errorHandler.error(error)
-    dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-    return null
-  }
+  })
 }
 
 export async function fetchDayDietByUserIdAndTargetDay(
@@ -85,36 +100,67 @@ export async function fetchDayDietsByUserIdBeforeDate(
 export async function insertDayDiet(
   dayDiet: NewDayDiet,
 ): Promise<DayDiet | null> {
-  try {
-    const insertedDayDiet = await supabaseGateway.insertDayDiet(dayDiet)
-    if (insertedDayDiet !== null) {
-      dayCacheStore.upsertToCache(insertedDayDiet)
+  return await withDatabaseSpan('INSERT', 'day_diet', async (span) => {
+    span.setAttributes({
+      'day_diet.user_id': dayDiet.owner,
+      'day_diet.target_day': dayDiet.target_day,
+      'operation.type': 'insert_new',
+    })
+
+    try {
+      const insertedDayDiet = await supabaseGateway.insertDayDiet(dayDiet)
+      if (insertedDayDiet !== null) {
+        span.addEvent('day_diet_inserted', {
+          dayId: insertedDayDiet.id,
+          mealsCount: insertedDayDiet.meals.length,
+        })
+        dayCacheStore.upsertToCache(insertedDayDiet)
+      } else {
+        span.addEvent('day_diet_insert_failed')
+      }
+      return insertedDayDiet
+    } catch (error) {
+      span.addEvent('day_diet_insert_error', { error: String(error) })
+      errorHandler.error(error)
+      return null
     }
-    return insertedDayDiet
-  } catch (error) {
-    errorHandler.error(error)
-    return null
-  }
+  })
 }
 
 export async function updateDayDietById(
   dayId: DayDiet['id'],
   dayDiet: NewDayDiet,
 ): Promise<DayDiet | null> {
-  try {
-    const updatedDayDiet = await supabaseGateway.updateDayDietById(
-      dayId,
-      dayDiet,
-    )
+  return await withDatabaseSpan('UPDATE', 'day_diet', async (span) => {
+    span.setAttributes({
+      'day_diet.id': dayId,
+      'day_diet.user_id': dayDiet.owner,
+      'day_diet.target_day': dayDiet.target_day,
+      'operation.type': 'update_by_id',
+    })
 
-    if (updatedDayDiet !== null) {
-      dayCacheStore.upsertToCache(updatedDayDiet)
+    try {
+      const updatedDayDiet = await supabaseGateway.updateDayDietById(
+        dayId,
+        dayDiet,
+      )
+
+      if (updatedDayDiet !== null) {
+        span.addEvent('day_diet_updated', {
+          dayId: updatedDayDiet.id,
+          mealsCount: updatedDayDiet.meals.length,
+        })
+        dayCacheStore.upsertToCache(updatedDayDiet)
+      } else {
+        span.addEvent('day_diet_update_failed', { dayId })
+      }
+      return updatedDayDiet
+    } catch (error) {
+      span.addEvent('day_diet_update_error', { dayId, error: String(error) })
+      errorHandler.error(error)
+      return null
     }
-    return updatedDayDiet
-  } catch (error) {
-    errorHandler.error(error)
-    return null
-  }
+  })
 }
 
 export async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {

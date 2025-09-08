@@ -5,13 +5,23 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
+import { withSpan } from '~/shared/utils/tracing'
 
 function createCrud(repository = createDayDietRepository()) {
   const fetchTargetDay = async (
     userId: User['id'],
     targetDay: string,
   ): Promise<void> => {
-    await repository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+    await withSpan('day_diet.fetch_target', async (span) => {
+      span.setAttributes({
+        'user.id': userId,
+        'day_diet.target_day': targetDay,
+        'operation.type': 'fetch_target_day',
+      })
+
+      await repository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+      span.addEvent('target_day_fetched', { userId, targetDay })
+    })
   }
 
   const fetchPreviousDayDiets = async (
@@ -27,15 +37,28 @@ function createCrud(repository = createDayDietRepository()) {
   }
 
   const insertDayDiet = async (dayDiet: NewDayDiet): Promise<void> => {
-    await showPromise(
-      repository.insertDayDiet(dayDiet),
-      {
-        loading: 'Criando dia de dieta...',
-        success: 'Dia de dieta criado com sucesso',
-        error: 'Erro ao criar dia de dieta',
-      },
-      { context: 'user-action' },
-    )
+    await withSpan('day_diet.insert', async (span) => {
+      span.setAttributes({
+        'user.id': dayDiet.owner,
+        'day_diet.target_day': dayDiet.target_day,
+        'operation.type': 'insert_day_diet',
+      })
+
+      await showPromise(
+        repository.insertDayDiet(dayDiet),
+        {
+          loading: 'Criando dia de dieta...',
+          success: 'Dia de dieta criado com sucesso',
+          error: 'Erro ao criar dia de dieta',
+        },
+        { context: 'user-action' },
+      )
+
+      span.addEvent('day_diet_insert_completed', {
+        userId: dayDiet.owner,
+        targetDay: dayDiet.target_day,
+      })
+    })
   }
 
   const updateDayDiet = async (
