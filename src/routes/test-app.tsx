@@ -54,6 +54,7 @@ function GoogleLoginButton() {
       await signIn({ provider: 'google' })
     } catch (error) {
       // TODO: ban inline imports
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
       import('~/shared/error/errorHandler')
         .then(({ createErrorHandler }) => {
           const errorHandler = createErrorHandler('user', 'TestApp')
