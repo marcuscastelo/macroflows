@@ -86,11 +86,11 @@ export const initializeSentry = (): void => {
 
       // Session Replay configuration
       replaysSessionSampleRate:
-        config.environment === 'development' ? 1.0 : 0.1,
+        config.environment === 'development' ? 1.0 : 1.0,
       replaysOnErrorSampleRate: 1.0,
 
       // Set sample rate for profiling
-      profilesSampleRate: config.enableProfiling ? 0.1 : 0,
+      profilesSampleRate: config.enableProfiling ? 1.0 : 0,
 
       // Enhanced error context and filtering
       beforeSend: (event, hint) => {
