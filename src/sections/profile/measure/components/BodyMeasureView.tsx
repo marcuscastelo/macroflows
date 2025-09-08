@@ -79,7 +79,14 @@ export function BodyMeasureView(props: {
     )
       .then(afterUpdate)
       .catch((error) => {
-        console.error(error)
+        import('~/shared/error/errorHandler')
+          .then(({ createErrorHandler }) => {
+            const errorHandler = createErrorHandler('user', 'BodyMeasureView')
+            errorHandler.apiError(error, { operation: 'measure update' })
+          })
+          .catch(() => {
+            // Fallback if import fails
+          })
         showError(`Erro ao atualizar medida: ${formatError(error)}`)
       })
   }

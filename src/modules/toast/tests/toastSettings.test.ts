@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('~/shared/config/env', () => ({
+  isDevelopment: vi.fn(() => false),
+}))
+
+vi.mock('~/shared/config/sentry', () => ({
+  logToBreadcrumb: vi.fn(),
+}))
+
 import {
   getToastSettings,
   resetToastSettings,

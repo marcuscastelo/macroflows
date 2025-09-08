@@ -1,7 +1,7 @@
 import type { JSX } from 'solid-js'
 import { ErrorBoundary } from 'solid-js'
 
-import { captureException, isSentryEnabled } from '~/shared/config/sentry'
+import { sentry } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 
 type SentryErrorBoundaryProps = {
@@ -58,8 +58,8 @@ export function SentryErrorBoundary(props: SentryErrorBoundaryProps) {
       })
 
       // Capture in Sentry with additional context
-      if (isSentryEnabled()) {
-        captureException(error, {
+      if (sentry.isSentryEnabled()) {
+        sentry.captureException(error, {
           errorBoundary: 'SentryErrorBoundary',
           url: window.location.href,
           timestamp: new Date().toISOString(),
@@ -67,11 +67,14 @@ export function SentryErrorBoundary(props: SentryErrorBoundaryProps) {
       }
     } catch (handlingError) {
       // Fallback if error handling itself fails
-      console.error(
-        'Failed to handle error in SentryErrorBoundary:',
-        handlingError,
-      )
-      console.error('Original error:', error)
+      // Only log to console in development mode for fallback errors
+      if (import.meta.env.DEV) {
+        console.error(
+          'Failed to handle error in SentryErrorBoundary:',
+          handlingError,
+        )
+        console.error('Original error:', error)
+      }
     }
 
     return props.fallback ? props.fallback(error) : defaultFallback(error)

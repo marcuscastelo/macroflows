@@ -1,19 +1,17 @@
 import { createEffect, createSignal, untrack } from 'solid-js'
 
 import { type RecentFood } from '~/modules/recent-food/domain/recentFood'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 const [recentFoods, setRecentFoods] = createSignal<readonly RecentFood[]>([])
 
 function clearCache() {
-  debug(`Clearing cache`)
+  logging.debug(`Clearing cache`)
   setRecentFoods([])
 }
 
 function upsertToCache(recentFood: RecentFood) {
-  debug(`Upserting recent food:`, recentFood)
+  logging.debug(`Upserting recent food:`, recentFood)
   const existingIndex = untrack(recentFoods).findIndex(
     (rf) => rf.id === recentFood.id,
   )
@@ -43,10 +41,10 @@ function createCacheItemSignal<T extends keyof RecentFood>(filter: {
   by: T
   value: RecentFood[T]
 }) {
-  debug(`findInCache filter=`, filter)
+  logging.debug(`findInCache filter=`, filter)
   const result =
     recentFoods().find((rf) => rf[filter.by] === filter.value) ?? null
-  debug(`findInCache result=`, result)
+  logging.debug(`findInCache result=`, { result })
   return result
 }
 
@@ -60,5 +58,5 @@ export const recentFoodCacheStore = {
 }
 
 createEffect(() => {
-  debug(`Recent foods cache size: `, recentFoods().length)
+  logging.debug(`Recent foods cache size: `, { length: recentFoods().length })
 })

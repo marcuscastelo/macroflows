@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('~/shared/utils/logging', () => ({
+  logging: {
+    debug: vi.fn(),
+  },
+}))
+
 import { createCacheManagementService } from '~/modules/diet/day-diet/application/services/cacheManagement'
 import {
   createNewDayDiet,

@@ -24,6 +24,7 @@ import {
   openTemplateSearchModal,
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export type RecipeEditModalProps = {
   recipe: Accessor<Recipe>
@@ -44,7 +45,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
   })
 
   const handleNewUnifiedItem = (newItem: UnifiedItem) => {
-    console.debug('onNewUnifiedItem', newItem)
+    logging.debug('onNewUnifiedItem', newItem)
 
     // Convert UnifiedItem to Item for adding to recipe
     try {
@@ -69,14 +70,23 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       const item = newItem
       const updatedRecipe = addItemToRecipe(recipe(), item)
 
-      console.debug(
-        'handleNewUnifiedItem: applying',
-        JSON.stringify(updatedRecipe, null, 2),
-      )
+      logging.debug('handleNewUnifiedItem: applying', { updatedRecipe })
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      console.error('Error converting UnifiedItem to Item:', error)
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler(
+            'validation',
+            'RecipeEditModal',
+          )
+          errorHandler.apiError(error, {
+            operation: 'convert UnifiedItem to Item',
+          })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
       showError('Erro ao adicionar item à receita.')
     }
   }
@@ -90,7 +100,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       <div class="space-y-4">
         <RecipeEditHeader
           onUpdateRecipe={(newRecipe) => {
-            console.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
+            logging.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
             setRecipe(newRecipe)
           }}
         />

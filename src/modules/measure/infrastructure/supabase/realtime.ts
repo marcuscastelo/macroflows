@@ -3,11 +3,9 @@ import {
   type BodyMeasure,
   bodyMeasureSchema,
 } from '~/modules/measure/domain/measure'
-import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
 import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
+import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
@@ -33,13 +31,13 @@ export function initializeMeasureRealtime(): void {
   if (initialized) {
     return
   }
-  debug(`Measure realtime initialized!`)
+  logging.debug(`Measure realtime initialized!`)
   initialized = true
   registerSubapabaseRealtimeCallback(
     SUPABASE_TABLE_BODY_MEASURES,
     bodyMeasureSchema,
     (event) => {
-      debug(`Event:`, event)
+      logging.debug(`Event:`, event)
 
       switch (event.eventType) {
         case 'INSERT':

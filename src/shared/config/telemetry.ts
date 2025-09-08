@@ -18,7 +18,7 @@ type TelemetryConfig = {
   sentryDsn?: string
 }
 
-const getTelemetryEnvironment = (): TelemetryEnvironment => {
+export const getTelemetryEnvironment = (): TelemetryEnvironment => {
   if (import.meta.env.PROD) return 'production'
   if (import.meta.env.MODE === 'staging') return 'staging'
   return 'development'
@@ -29,7 +29,7 @@ const createTelemetryConfig = (): TelemetryConfig => {
 
   return {
     serviceName: 'macroflows-web',
-    serviceVersion: APP_VERSION,
+    serviceVersion: String(APP_VERSION),
     environment,
     enableConsoleExporter: environment === 'development',
     enableOTLPExporter: environment !== 'development',
@@ -110,7 +110,7 @@ export const initializeTelemetry = (): void => {
     if (config.environment === 'development') {
       console.info('OpenTelemetry initialization complete')
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to initialize OpenTelemetry:', error)
     // Don't throw - telemetry should not break the application
   }

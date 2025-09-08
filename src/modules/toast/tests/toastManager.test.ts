@@ -6,6 +6,16 @@
 
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('~/shared/utils/logging', () => ({
+  logging: {
+    debug: vi.fn(),
+  },
+}))
+
+vi.mock('~/shared/config/env', () => ({
+  isDevelopment: vi.fn(() => false),
+}))
+
 import {
   showError,
   showInfo,

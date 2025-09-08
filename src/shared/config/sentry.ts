@@ -34,7 +34,7 @@ const createSentryConfig = (): SentryConfig => {
         ? import.meta.env.VITE_SENTRY_DSN
         : undefined,
     environment,
-    tracesSampleRate: environment === 'development' ? 1.0 : 0.1,
+    tracesSampleRate: environment === 'development' ? 1.0 : 1.0,
     release,
     enableProfiling: environment !== 'development',
   }
@@ -42,7 +42,7 @@ const createSentryConfig = (): SentryConfig => {
 
 let isInitialized = false
 
-export const initializeSentry = (): void => {
+const initializeSentry = (): void => {
   if (isInitialized) {
     console.warn('Sentry already initialized')
     return
@@ -77,6 +77,7 @@ export const initializeSentry = (): void => {
         'localhost',
         /^https:\/\/.*\.supabase\.co/,
         /^https:\/\/.*\.macroflows\.app/,
+        /^https:\/\/.*\.macroflows.*\.app/,
       ],
 
       integrations: [
@@ -86,14 +87,44 @@ export const initializeSentry = (): void => {
 
       // Session Replay configuration
       replaysSessionSampleRate:
-        config.environment === 'development' ? 1.0 : 0.1,
+        config.environment === 'development' ? 1.0 : 1.0,
       replaysOnErrorSampleRate: 1.0,
 
       // Set sample rate for profiling
-      profilesSampleRate: config.enableProfiling ? 0.1 : 0,
+      profilesSampleRate: config.enableProfiling ? 1.0 : 0,
 
-      // Enhanced error context
+      // Enhanced error context and filtering
       beforeSend: (event, hint) => {
+        // Filter out development-only errors in production
+        if (config.environment === 'production') {
+          // Filter out network outage errors that create noise
+          const error = hint.originalException
+          if (
+            error !== null &&
+            typeof error === 'object' &&
+            'message' in error
+          ) {
+            const message = String(error.message).toLowerCase()
+            if (
+              message.includes('failed to fetch') ||
+              message.includes('networkerror') ||
+              message.includes('cors') ||
+              message.includes('net::err')
+            ) {
+              // Only sample network errors to reduce noise
+              if (Math.random() > 0.1) return null
+            }
+          }
+
+          // Filter out specific development patterns
+          if (
+            (event.message?.includes('ref is not defined') ?? false) ||
+            (event.message?.includes('Error processing promise') ?? false)
+          ) {
+            return null
+          }
+        }
+
         // Add OpenTelemetry trace context if available
         const error = hint.originalException
         if (
@@ -138,14 +169,14 @@ export const initializeSentry = (): void => {
   }
 }
 
-export const isSentryEnabled = (): boolean => {
+const isSentryEnabled = (): boolean => {
   return isInitialized
 }
 
 /**
  * Manually capture an exception with additional context
  */
-export const captureException = (
+const captureException = (
   error: Error,
   context?: Record<string, unknown>,
 ): void => {
@@ -153,10 +184,113 @@ export const captureException = (
 
   Sentry.withScope((scope) => {
     if (context) {
+      // Set tags for better grouping and filtering
+      const tags: Record<string, string> = {}
+      const contexts: Record<string, Record<string, unknown>> = {}
+
       Object.entries(context).forEach(([key, value]) => {
-        scope.setContext(key, { [key]: value })
+        // Convert key values to tags for better filtering
+        if (
+          [
+            'severity',
+            'module',
+            'component',
+            'operation',
+            'entityType',
+          ].includes(key) &&
+          (typeof value === 'string' || typeof value === 'number')
+        ) {
+          tags[key] = String(value)
+        } else if (
+          key === 'traceContext' &&
+          typeof value === 'object' &&
+          value !== null &&
+          'traceId' in value &&
+          'spanId' in value
+        ) {
+          // Handle trace context specially
+          if (
+            'traceId' in value &&
+            typeof value.traceId === 'string' &&
+            value.traceId !== '' &&
+            'spanId' in value &&
+            typeof value.spanId === 'string' &&
+            value.spanId !== ''
+          ) {
+            const traceId = value.traceId
+            const spanId = value.spanId
+            tags['otel.trace_id'] = traceId
+            tags['otel.span_id'] = spanId
+            contexts.trace = {
+              trace_id: traceId,
+              span_id: spanId,
+            }
+          }
+        } else {
+          // Set as context for detailed information
+          if (typeof value === 'object' && value !== null) {
+            // Safely cast object to record
+            const record: Record<string, unknown> = {}
+            Object.entries(value).forEach(([k, v]) => {
+              record[k] = v
+            })
+            contexts[key] = record
+          } else {
+            contexts[key] = { [key]: value }
+          }
+        }
       })
+
+      // Apply tags and contexts
+      Object.entries(tags).forEach(([key, value]) => {
+        scope.setTag(key, value)
+      })
+
+      Object.entries(contexts).forEach(([key, value]) => {
+        scope.setContext(key, value)
+      })
+
+      // Custom fingerprinting for better error grouping
+      const fingerprint = ['{{ default }}']
+      if ((tags.component ?? '') !== '' && (tags.operation ?? '') !== '') {
+        fingerprint.push(`${tags.component}::${tags.operation}`)
+      } else if ((tags.component ?? '') !== '') {
+        const component = tags.component
+        if (component !== undefined) {
+          fingerprint.push(component)
+        }
+      }
+      if ((tags.module ?? '') !== '') {
+        const module = tags.module
+        if (module !== undefined) {
+          fingerprint.push(module)
+        }
+      }
+      scope.setFingerprint(fingerprint)
+
+      // Set error level based on severity
+      const level = tags.severity ?? 'error'
+      const validLevels = [
+        'fatal',
+        'error',
+        'warning',
+        'info',
+        'debug',
+      ] as const
+      type ValidLevel = (typeof validLevels)[number]
+
+      const isValidLevel = (l: string): l is ValidLevel => {
+        const levels: readonly string[] = validLevels
+        return levels.includes(l)
+      }
+
+      if (isValidLevel(level)) {
+        scope.setLevel(level)
+      } else {
+        scope.setLevel('error')
+      }
     }
+
     Sentry.captureException(error)
   })
 }
@@ -164,7 +298,7 @@ export const captureException = (
 /**
  * Set user context for error tracking
  */
-export const setUserContext = (user: {
+const setUserContext = (user: {
   id: string | number
   email?: string
   name?: string
@@ -181,10 +315,11 @@ export const setUserContext = (user: {
 /**
  * Add breadcrumb for user actions tracking
  */
-export const addBreadcrumb = (
+const addBreadcrumb = (
   message: string,
   category: string,
   data?: Record<string, unknown>,
+  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
 ): void => {
   if (!isInitialized) return
 
@@ -192,15 +327,37 @@ export const addBreadcrumb = (
     message,
     category,
     data,
-    level: 'info',
+    level,
     timestamp: Date.now() / 1000,
   })
 }
 
 /**
+ * Convert console operations to breadcrumbs for better error context
+ */
+const logToBreadcrumb = (
+  message: string,
+  level: 'error' | 'warning' | 'info' = 'info',
+  data?: Record<string, unknown>,
+): void => {
+  addBreadcrumb(message, 'console', data, level)
+
+  // Still log to console in development
+  if (import.meta.env.DEV) {
+    if (level === 'error') {
+      console.error(message, data)
+    } else if (level === 'warning') {
+      console.warn(message, data)
+    } else {
+      console.info(message, data)
+    }
+  }
+}
+
+/**
  * Start a new transaction for performance monitoring
  */
-export const startTransaction = (
+const startTransaction = (
   name: string,
   op: string,
   data?: Record<string, unknown>,
@@ -226,4 +383,14 @@ export const startTransaction = (
     },
     (span) => span,
   )
+}
+
+export const sentry = {
+  initializeSentry,
+  isSentryEnabled,
+  captureException,
+  setUserContext,
+  addBreadcrumb,
+  logToBreadcrumb,
+  startTransaction,
 }

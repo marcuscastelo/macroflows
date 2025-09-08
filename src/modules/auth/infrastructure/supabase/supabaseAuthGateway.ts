@@ -9,11 +9,10 @@ import type {
 import type { AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 
 import { supabaseAuthMapper } from './supabaseAuthMapper'
 
-const debug = createDebug()
 const errorHandler = createErrorHandler('infrastructure', 'Auth')
 
 export function createSupabaseAuthGateway(): AuthGateway {
@@ -21,7 +20,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
     async getSession(): Promise<AuthSession | null> {
       try {
         const { data, error } = await supabase.auth.getSession()
-        debug(`getSession: data:`, data, `error:`, error)
+        logging.debug(`getSession: data:`, { data, error })
 
         if (error !== null) {
           throw new Error('Failed to get session', { cause: error })

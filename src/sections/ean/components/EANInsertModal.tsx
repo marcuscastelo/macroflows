@@ -5,6 +5,7 @@ import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { EANReader } from '~/sections/ean/components/EANReader'
 import { lazyImport } from '~/shared/solid/lazyImport'
+import { logging } from '~/shared/utils/logging'
 
 const { EANSearch } = lazyImport(
   () => import('~/sections/ean/components/EANSearch'),
@@ -33,7 +34,7 @@ export const EANInsertModal = (props: EANInsertModalProps) => {
 
     const food_ = food()
     if (food_ === null) {
-      console.warn('Ignoring submit because food is null')
+      logging.warn('Ignoring submit because food is null')
       return
     }
 
@@ -47,7 +48,7 @@ export const EANInsertModal = (props: EANInsertModalProps) => {
   // Auto-select food when it is set to avoid user clicking twice
   createEffect(() => {
     if (food() !== null) {
-      console.debug('Auto-selecting food and triggering onSelect')
+      logging.debug('Auto-selecting food and triggering onSelect')
       handleSelect()
     }
   })

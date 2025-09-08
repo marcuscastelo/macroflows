@@ -1,6 +1,7 @@
 import { Show } from 'solid-js'
 
 import { Progress } from '~/sections/common/components/Progress'
+import { logging } from '~/shared/utils/logging'
 import { type calculateWeightProgress } from '~/shared/utils/weightUtils'
 
 /**
@@ -40,7 +41,7 @@ export function WeightProgress(props: {
                   return 0
                 }
                 // Fallback: log warning for unhandled type
-                console.warn('Unhandled weightProgress type:', weightProgress_)
+                logging.warn('Unhandled weightProgress type:', weightProgress_)
                 return 0
               })()}
               color="blue"

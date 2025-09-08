@@ -2,19 +2,17 @@ import {
   isFoodFavorite,
   setFoodAsFavorite,
 } from '~/modules/user/application/user'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemFavoriteProps = {
   foodId: number
 }
 
 export function UnifiedItemFavorite(props: UnifiedItemFavoriteProps) {
-  debug('UnifiedItemFavorite called', { props })
+  logging.debug('UnifiedItemFavorite called', { props })
 
   const toggleFavorite = (e: MouseEvent) => {
-    debug('toggleFavorite', {
+    logging.debug('toggleFavorite', {
       foodId: props.foodId,
       isFavorite: isFoodFavorite(props.foodId),
     })

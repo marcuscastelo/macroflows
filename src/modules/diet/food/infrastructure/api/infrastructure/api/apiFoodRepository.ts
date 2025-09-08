@@ -20,6 +20,7 @@ import {
   wrapErrorWithStack,
 } from '~/shared/error/errorHandler'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
+import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const API = rateLimit(axios.create(), {
@@ -76,7 +77,7 @@ async function fetchApiFoodsByName(
     },
   }
 
-  console.debug(`[ApiFood] Fetching foods with name from url ${url}`, config)
+  logging.debug(`[ApiFood] Fetching foods with name from url ${url}`, config)
   let response
   try {
     response = await API.get(url, config)
@@ -85,7 +86,7 @@ async function fetchApiFoodsByName(
     throw wrapErrorWithStack(error)
   }
 
-  console.debug(`[ApiFood] Response from url ${url}`, response.data)
+  logging.debug(`[ApiFood] Response from url ${url}`, { response })
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const data = response.data
@@ -116,7 +117,7 @@ async function fetchApiFoodByEan(
       'user-agent': 'okhttp/4.9.2',
     },
   })
-  console.log(response.data)
-  console.dir(response.data)
+
+  logging.debug('response=', { response })
   return parseWithStack(apiFoodSchema, response.data)
 }

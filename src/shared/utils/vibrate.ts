@@ -5,6 +5,8 @@
  * handling environments where the Vibration API is not available.
  */
 
+import { logging } from '~/shared/utils/logging'
+
 /**
  * Safely triggers device vibration with the specified pattern.
  *
@@ -36,7 +38,7 @@ export function vibrate(pattern: number | number[]): boolean {
     return true
   } catch (error) {
     // Silently handle any errors (e.g., security restrictions, API changes)
-    console.debug('Vibration API error:', error)
+    logging.error('Vibration API error:', error)
     return false
   }
 }

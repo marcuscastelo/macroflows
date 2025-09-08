@@ -27,6 +27,7 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
 export function BottomNavigation() {
@@ -67,8 +68,8 @@ export function BottomNavigation() {
     resizeObserver?.disconnect()
   })
 
-  console.debug('[BottomNavigation] Rendering')
-  console.debug('[BottomNavigation] Current path:', pathname)
+  logging.debug('[BottomNavigation] Rendering')
+  logging.debug('[BottomNavigation] Current path:', { pathname: pathname() })
 
   return (
     <div class="">
@@ -307,7 +308,17 @@ const UserSelectorDropdown = (props: { modalId: string }) => {
   createEffect(() => {
     const modalId = props.modalId
     fetchUsers().catch((error) => {
-      console.error('[UserSelectorDropdown] Error fetching users:', error)
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler(
+            'user',
+            'UserSelectorDropdown',
+          )
+          errorHandler.apiError(error, { operation: 'fetch users' })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
       showError('Erro ao buscar usuários', { context: 'background' })
       closeModal(modalId)
     })

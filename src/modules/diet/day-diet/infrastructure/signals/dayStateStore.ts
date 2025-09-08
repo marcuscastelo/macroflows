@@ -1,9 +1,7 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { createDebug } from '~/shared/utils/createDebug'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 const [targetDay, setTargetDay] = createSignal<string>(getTodayYYYYMMDD())
 
@@ -13,5 +11,5 @@ export const dayStateStore = {
 }
 
 createEffect(() => {
-  debug(`TargetDay =`, targetDay())
+  logging.debug(`TargetDay =`, { targetDay: targetDay() })
 })

@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createExpandableErrorData } from '~/modules/toast/domain/errorMessageHandler'
+
+vi.mock('~/shared/config/env', () => ({
+  isDevelopment: vi.fn(() => false),
+}))
+
+vi.mock('~/shared/utils/logging', () => ({
+  logging: {
+    debug: vi.fn(),
+  },
+}))
 
 describe('createExpandableErrorData', () => {
   it('truncates long messages and sets isTruncated', () => {

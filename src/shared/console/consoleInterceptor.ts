@@ -1,3 +1,4 @@
+// TODO(#1006): Remove consoleInterceptor
 import { createSignal } from 'solid-js'
 
 export type ConsoleLog = {

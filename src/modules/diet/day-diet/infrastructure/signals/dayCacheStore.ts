@@ -1,19 +1,17 @@
 import { createEffect, createSignal, untrack } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 const [dayDiets, setDayDiets] = createSignal<readonly DayDiet[]>([])
 
 function clearCache() {
-  debug(`Clearing cache`)
+  logging.debug(`Clearing cache`)
   setDayDiets([])
 }
 
 function upsertToCache(dayDiet: DayDiet) {
-  debug(`Upserting day:`, dayDiet)
+  logging.debug(`Upserting day:`, dayDiet)
   const existingDayIndex = untrack(dayDiets).findIndex(
     (d) => d.target_day === dayDiet.target_day,
   )
@@ -40,9 +38,9 @@ function createCacheItemSignal<T extends keyof DayDiet>(filter: {
   by: T
   value: DayDiet[T]
 }) {
-  debug(`findInCache filter=`, filter)
+  logging.debug(`findInCache filter=`, filter)
   const result = dayDiets().find((d) => d[filter.by] === filter.value) ?? null
-  debug(`findInCache result=`, result)
+  logging.debug(`findInCache result=`, { result })
   return result
 }
 
@@ -56,5 +54,5 @@ export const dayCacheStore = {
 }
 
 createEffect(() => {
-  debug(`Cache size: `, dayDiets().length)
+  logging.debug(`Cache size: `, { length: dayDiets().length })
 })

@@ -14,10 +14,8 @@ import { QuantityControls } from '~/sections/unified-item/components/QuantityCon
 import { QuantityShortcuts } from '~/sections/unified-item/components/QuantityShortcuts'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 import { calcDayMacros, calcUnifiedItemMacros } from '~/shared/utils/macroMath'
-
-const debug = createDebug()
 
 export type UnifiedItemEditBodyProps = {
   canApply: boolean
@@ -41,7 +39,7 @@ export type UnifiedItemEditBodyProps = {
 
 export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
   function getAvailableMacros(): MacroValues {
-    debug('getAvailableMacros')
+    logging.debug('getAvailableMacros')
     const dayDiet = currentDayDiet()
     const macroTarget = dayDiet
       ? getMacroTargetForDay(new Date(dayDiet.target_day))
@@ -62,7 +60,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
   }
 
   const handleQuantitySelect = (quantity: number) => {
-    debug('[UnifiedItemEditBody] shortcut quantity', quantity)
+    logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
   }
 

@@ -10,9 +10,7 @@ import {
   ORIGINAL_ERROR_SYMBOL,
 } from '~/shared/error/errorHandler'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()
 const errorHandler = createErrorHandler('infrastructure', 'Food')
@@ -48,7 +46,7 @@ export async function importFoodFromApiByEan(
 }
 
 export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
-  debug(`Importing foods with name "${name}"`)
+  logging.debug(`Importing foods with name "${name}"`)
 
   const apiFoods = (await axios.get<ApiFood[]>(`/api/food/name/${name}`)).data
 
@@ -57,14 +55,14 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
     return []
   }
 
-  debug(`Found ${apiFoods.length} foods`)
+  logging.debug(`Found ${apiFoods.length} foods`)
 
   const foodsToupsert = apiFoods.map(convertApi2Food)
 
   const upsertPromises = foodsToupsert.map(foodRepository.upsertFood)
 
   const upsertionResults = await Promise.allSettled(upsertPromises)
-  debug(
+  logging.debug(
     `upserted ${upsertionResults.length} foods. ${
       upsertionResults.filter((result) => result.status === 'fulfilled').length
     } succeeded, ${
@@ -73,7 +71,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
   )
 
   if (upsertionResults.some((result) => result.status === 'rejected')) {
-    debug(`Erros de upsert: `, upsertionResults)
+    logging.debug(`Erros de upsert: `, { upsertionResults })
     const allRejected = upsertionResults.filter(
       (result) => result.status === 'rejected',
     )
@@ -87,7 +85,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
       // eslint-disable-next-line
       (reason) => (reason as any)[ORIGINAL_ERROR_SYMBOL].code as string,
     )
-    debug(`Readable errors:`, errors)
+    logging.debug(`Readable errors:`, { errors })
 
     const ignoredErrors = [
       '23505', // Unique violation: food already exists, ignore
@@ -98,7 +96,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
     )
 
     if (relevantErrors.length > 0) {
-      debug(`Relevant errors:`, relevantErrors)
+      logging.debug(`Relevant errors:`, { relevantErrors })
       errorHandler.error(
         new Error(`Failed to upsert ${relevantErrors.length} foods`),
         {
@@ -117,11 +115,11 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
         { context: 'user-action' },
       )
     } else {
-      debug('No RELEVANT failed upsertions, marking search as cached')
+      logging.debug('No RELEVANT failed upsertions, marking search as cached')
       await markSearchAsCached(name)
     }
   } else {
-    debug('No failed upsertions, marking search as cached')
+    logging.debug('No failed upsertions, marking search as cached')
     await markSearchAsCached(name)
   }
 
@@ -132,7 +130,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
     )
     .map((result) => result.value)
 
-  debug(` Returning ${upsertedFoods.length}/${apiFoods.length} foods`)
+  logging.debug(` Returning ${upsertedFoods.length}/${apiFoods.length} foods`)
 
   return upsertedFoods.filter((food): food is Food => food !== null)
 }

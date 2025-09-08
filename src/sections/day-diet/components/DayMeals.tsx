@@ -21,9 +21,7 @@ import {
   openTemplateSearchModal,
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Displays and manages the meals for a given day.
@@ -60,7 +58,7 @@ export default function DayMeals(props: {
       props.dayDiet,
       item,
     )
-    debug('macroOverflow:', macroOverflow)
+    logging.debug('macroOverflow:', macroOverflow)
 
     openUnifiedItemEditModal({
       targetMealName: meal.name,

@@ -47,13 +47,23 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
 
 function GoogleLoginButton() {
   const handleLogin = async () => {
     try {
       await signIn({ provider: 'google' })
     } catch (error) {
-      console.error('Login failed:', error)
+      // TODO: ban inline imports
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler('user', 'TestApp')
+          errorHandler.apiError(error, { operation: 'login' })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
     }
   }
 
@@ -69,7 +79,14 @@ function LogoutButton() {
     try {
       await signOut()
     } catch (error) {
-      console.error('Logout failed:', error)
+      import('~/shared/error/errorHandler')
+        .then(({ createErrorHandler }) => {
+          const errorHandler = createErrorHandler('user', 'TestApp')
+          errorHandler.apiError(error, { operation: 'logout' })
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
     }
   }
 
@@ -199,7 +216,7 @@ export default function TestApp() {
                     <TemplateSearchModal
                       targetName="Teste"
                       onNewUnifiedItem={() => {
-                        console.debug('New unified item added')
+                        logging.debug('New unified item added')
                       }}
                       onFinish={() => {}}
                       onClose={() => {}}
@@ -248,7 +265,7 @@ export default function TestApp() {
                   setUnifiedItemEditModalVisible(true)
                 },
                 onCopy: (item) => {
-                  console.debug('Copy item:', item)
+                  logging.debug('Copy item:', item)
                 },
               }}
             />

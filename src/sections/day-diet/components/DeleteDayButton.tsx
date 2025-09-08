@@ -16,7 +16,17 @@ export function DeleteDayButton(props: { day: Accessor<DayDiet> }) {
           cancelText: 'Cancelar',
           onConfirm: () => {
             deleteDayDiet(props.day().id).catch((error) => {
-              console.error('Error deleting day', error)
+              import('~/shared/error/errorHandler')
+                .then(({ createErrorHandler }) => {
+                  const errorHandler = createErrorHandler(
+                    'user',
+                    'DeleteDayButton',
+                  )
+                  errorHandler.apiError(error, { operation: 'delete day' })
+                })
+                .catch(() => {
+                  // Fallback if import fails
+                })
               throw error
             })
           },

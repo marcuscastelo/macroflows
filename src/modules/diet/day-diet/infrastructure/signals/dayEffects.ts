@@ -12,8 +12,8 @@ import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/da
 import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { currentUserId } from '~/modules/user/application/user'
-import { createDebug } from '~/shared/utils/createDebug'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 
 const runTargetDayReset = createTargetDayResetService({
   getTodayYYYYMMDD,
@@ -26,8 +26,6 @@ const runCacheManagement = createCacheManagementService({
   clearCache: dayCacheStore.clearCache,
   fetchTargetDay: (userId, targetDay) => void fetchTargetDay(userId, targetDay),
 })
-
-const debug = createDebug()
 
 let initialized = false
 export function initializeDayEffects() {
@@ -50,7 +48,7 @@ export function initializeDayEffects() {
 
     createEffect(() => {
       const userId = currentUserId()
-      debug(`User changed to ${userId}, resetting target day`)
+      logging.debug(`User changed to ${userId}, resetting target day`)
       runTargetDayReset()
     })
 

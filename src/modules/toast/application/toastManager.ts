@@ -19,11 +19,9 @@ import {
 } from '~/modules/toast/domain/toastTypes'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { isBackendOutageError } from '~/shared/error/errorHandler'
-import { createDebug } from '~/shared/utils/createDebug'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
+import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
-
-const debug = createDebug()
 
 /**
  * Returns true if the toast should be skipped based on context, audience, and type.
@@ -208,10 +206,10 @@ function handlePromiseLoading<T>(
   providedOptions?: Partial<ToastOptions>,
 ): string | null {
   if (isNonEmptyString(filteredMessages.loading)) {
-    debug(`Promise loading toast: "${filteredMessages.loading}"`)
+    logging.debug(`Promise loading toast: "${filteredMessages.loading}"`)
     return showLoading(filteredMessages.loading, providedOptions)
   } else {
-    debug('No loading toast message provided, skipping loading toast')
+    logging.debug('No loading toast message provided, skipping loading toast')
   }
   return null
 }
@@ -223,10 +221,10 @@ function handlePromiseSuccess<T>(
 ) {
   const successMsg = resolveValueOrFunction(filteredMessages.success, data)
   if (isNonEmptyString(successMsg)) {
-    debug('Showing success toast', { successMsg })
+    logging.debug('Showing success toast', { successMsg })
     showSuccess(successMsg, providedOptions)
   } else {
-    debug('No success toast message provided, skipping success toast')
+    logging.debug('No success toast message provided, skipping success toast')
   }
 }
 
@@ -237,16 +235,16 @@ function handlePromiseError<T>(
 ) {
   const errorMsg = resolveValueOrFunction(filteredMessages.error, err)
   if (isNonEmptyString(errorMsg)) {
-    debug('Showing error toast with custom message', { errorMsg, err })
+    logging.debug('Showing error toast with custom message', { errorMsg, err })
     showError(err, providedOptions, errorMsg)
   } else {
-    debug('Showing error toast with message from error', { err })
+    logging.debug('Showing error toast with message from error', { err })
     showError(err, providedOptions)
   }
 }
 
 function handleLoadingToastRemoval(loadingToastId: string | null) {
-  debug('Removing loading toast', { loadingToastId })
+  logging.debug('Removing loading toast', { loadingToastId })
   if (typeof loadingToastId === 'string' && loadingToastId.length > 0) {
     killToast(loadingToastId)
   }

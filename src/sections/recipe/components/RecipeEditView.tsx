@@ -27,6 +27,7 @@ import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContex
 import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
 import { calcRecipeCalories } from '~/shared/utils/macroMath'
 
 export type RecipeEditViewProps = {
@@ -96,7 +97,7 @@ export function RecipeEditHeader(props: {
         }
 
         // Handle other supported clipboard formats
-        console.warn('Unsupported paste format:', data)
+        logging.warn('Unsupported paste format:', data)
       },
     })
 
