@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/solidstart'
-import { solidRouterBrowserTracingIntegration } from '@sentry/solidstart/solidrouter'
 
 import { APP_VERSION } from '~/app-version'
 
@@ -81,7 +80,7 @@ export const initializeSentry = (): void => {
       ],
 
       integrations: [
-        solidRouterBrowserTracingIntegration(),
+        Sentry.browserTracingIntegration(),
         Sentry.replayIntegration(),
       ],
 
