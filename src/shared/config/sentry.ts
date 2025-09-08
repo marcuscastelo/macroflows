@@ -92,8 +92,38 @@ export const initializeSentry = (): void => {
       // Set sample rate for profiling
       profilesSampleRate: config.enableProfiling ? 0.1 : 0,
 
-      // Enhanced error context
+      // Enhanced error context and filtering
       beforeSend: (event, hint) => {
+        // Filter out development-only errors in production
+        if (config.environment === 'production') {
+          // Filter out network outage errors that create noise
+          const error = hint.originalException
+          if (
+            error !== null &&
+            typeof error === 'object' &&
+            'message' in error
+          ) {
+            const message = String(error.message).toLowerCase()
+            if (
+              message.includes('failed to fetch') ||
+              message.includes('networkerror') ||
+              message.includes('cors') ||
+              message.includes('net::err')
+            ) {
+              // Only sample network errors to reduce noise
+              if (Math.random() > 0.1) return null
+            }
+          }
+
+          // Filter out specific development patterns
+          if (
+            (event.message?.includes('ref is not defined') ?? false) ||
+            (event.message?.includes('Error processing promise') ?? false)
+          ) {
+            return null
+          }
+        }
+
         // Add OpenTelemetry trace context if available
         const error = hint.originalException
         if (
@@ -153,10 +183,113 @@ export const captureException = (
 
   Sentry.withScope((scope) => {
     if (context) {
+      // Set tags for better grouping and filtering
+      const tags: Record<string, string> = {}
+      const contexts: Record<string, Record<string, unknown>> = {}
+
       Object.entries(context).forEach(([key, value]) => {
-        scope.setContext(key, { [key]: value })
+        // Convert key values to tags for better filtering
+        if (
+          [
+            'severity',
+            'module',
+            'component',
+            'operation',
+            'entityType',
+          ].includes(key) &&
+          (typeof value === 'string' || typeof value === 'number')
+        ) {
+          tags[key] = String(value)
+        } else if (
+          key === 'traceContext' &&
+          typeof value === 'object' &&
+          value !== null &&
+          'traceId' in value &&
+          'spanId' in value
+        ) {
+          // Handle trace context specially
+          if (
+            'traceId' in value &&
+            typeof value.traceId === 'string' &&
+            value.traceId !== '' &&
+            'spanId' in value &&
+            typeof value.spanId === 'string' &&
+            value.spanId !== ''
+          ) {
+            const traceId = value.traceId
+            const spanId = value.spanId
+            tags['otel.trace_id'] = traceId
+            tags['otel.span_id'] = spanId
+            contexts.trace = {
+              trace_id: traceId,
+              span_id: spanId,
+            }
+          }
+        } else {
+          // Set as context for detailed information
+          if (typeof value === 'object' && value !== null) {
+            // Safely cast object to record
+            const record: Record<string, unknown> = {}
+            Object.entries(value).forEach(([k, v]) => {
+              record[k] = v
+            })
+            contexts[key] = record
+          } else {
+            contexts[key] = { [key]: value }
+          }
+        }
       })
+
+      // Apply tags and contexts
+      Object.entries(tags).forEach(([key, value]) => {
+        scope.setTag(key, value)
+      })
+
+      Object.entries(contexts).forEach(([key, value]) => {
+        scope.setContext(key, value)
+      })
+
+      // Custom fingerprinting for better error grouping
+      const fingerprint = ['{{ default }}']
+      if ((tags.component ?? '') !== '' && (tags.operation ?? '') !== '') {
+        fingerprint.push(`${tags.component}::${tags.operation}`)
+      } else if ((tags.component ?? '') !== '') {
+        const component = tags.component
+        if (component !== undefined) {
+          fingerprint.push(component)
+        }
+      }
+      if ((tags.module ?? '') !== '') {
+        const module = tags.module
+        if (module !== undefined) {
+          fingerprint.push(module)
+        }
+      }
+      scope.setFingerprint(fingerprint)
+
+      // Set error level based on severity
+      const level = tags.severity ?? 'error'
+      const validLevels = [
+        'fatal',
+        'error',
+        'warning',
+        'info',
+        'debug',
+      ] as const
+      type ValidLevel = (typeof validLevels)[number]
+
+      const isValidLevel = (l: string): l is ValidLevel => {
+        const levels: readonly string[] = validLevels
+        return levels.includes(l)
+      }
+
+      if (isValidLevel(level)) {
+        scope.setLevel(level)
+      } else {
+        scope.setLevel('error')
+      }
     }
+
     Sentry.captureException(error)
   })
 }
@@ -185,6 +318,7 @@ export const addBreadcrumb = (
   message: string,
   category: string,
   data?: Record<string, unknown>,
+  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
 ): void => {
   if (!isInitialized) return
 
@@ -192,9 +326,31 @@ export const addBreadcrumb = (
     message,
     category,
     data,
-    level: 'info',
+    level,
     timestamp: Date.now() / 1000,
   })
+}
+
+/**
+ * Convert console operations to breadcrumbs for better error context
+ */
+export const logToBreadcrumb = (
+  message: string,
+  level: 'error' | 'warning' | 'info' = 'info',
+  data?: Record<string, unknown>,
+): void => {
+  addBreadcrumb(message, 'console', data, level)
+
+  // Still log to console in development
+  if (import.meta.env.DEV) {
+    if (level === 'error') {
+      console.error(message, data)
+    } else if (level === 'warning') {
+      console.warn(message, data)
+    } else {
+      console.info(message, data)
+    }
+  }
 }
 
 /**

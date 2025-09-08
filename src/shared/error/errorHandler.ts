@@ -80,13 +80,16 @@ export function logError(error: unknown, context?: ErrorContext): void {
   if (error instanceof Error) {
     errorToLog = addTraceContextToError(error)
     const traceContext = getTraceContext()
-    if (traceContext.traceId !== undefined && traceContext.traceId !== '') {
-      console.error(
-        `${timestamp} ${contextStr} Error (trace: ${traceContext.traceId}):`,
-        errorToLog,
-      )
-    } else {
-      console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+    // Only log to console in development mode
+    if (import.meta.env.DEV) {
+      if (traceContext.traceId !== undefined && traceContext.traceId !== '') {
+        console.error(
+          `${timestamp} ${contextStr} Error (trace: ${traceContext.traceId}):`,
+          errorToLog,
+        )
+      } else {
+        console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+      }
     }
 
     // Send to Sentry with full context
@@ -99,7 +102,10 @@ export function logError(error: unknown, context?: ErrorContext): void {
       })
     }
   } else {
-    console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+    // Only log to console in development mode
+    if (import.meta.env.DEV) {
+      console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
+    }
 
     // Convert non-Error to Error for Sentry
     if (isSentryEnabled()) {
@@ -113,7 +119,8 @@ export function logError(error: unknown, context?: ErrorContext): void {
     }
   }
 
-  if (context?.additionalData !== undefined) {
+  // Only log additional context in development mode
+  if (import.meta.env.DEV && context?.additionalData !== undefined) {
     console.error('Additional context:', context.additionalData)
   }
 
@@ -157,7 +164,10 @@ export function logEnhancedError(
 
   const contextStr = `[${severity.toUpperCase()}][${module}][${component}::${operation}]`
 
-  console.error(`${timestamp} ${contextStr} Error:`, error)
+  // Only log to console in development mode
+  if (import.meta.env.DEV) {
+    console.error(`${timestamp} ${contextStr} Error:`, error)
+  }
 
   // Send to Sentry with enhanced context
   if (isSentryEnabled()) {
@@ -176,20 +186,23 @@ export function logEnhancedError(
     })
   }
 
-  if (context.entityType !== undefined && context.entityId !== undefined) {
-    console.error(`Entity: ${context.entityType}#${context.entityId}`)
-  }
+  // Only log context details in development mode
+  if (import.meta.env.DEV) {
+    if (context.entityType !== undefined && context.entityId !== undefined) {
+      console.error(`Entity: ${context.entityType}#${context.entityId}`)
+    }
 
-  if (context.userId !== undefined) {
-    console.error(`User: ${context.userId}`)
-  }
+    if (context.userId !== undefined) {
+      console.error(`User: ${context.userId}`)
+    }
 
-  if (context.businessContext) {
-    console.error('Business context:', context.businessContext)
-  }
+    if (context.businessContext) {
+      console.error('Business context:', context.businessContext)
+    }
 
-  if (context.technicalContext) {
-    console.error('Technical context:', context.technicalContext)
+    if (context.technicalContext) {
+      console.error('Technical context:', context.technicalContext)
+    }
   }
 
   // Record error in OpenTelemetry span if available

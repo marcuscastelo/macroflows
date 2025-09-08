@@ -67,11 +67,14 @@ export function SentryErrorBoundary(props: SentryErrorBoundaryProps) {
       }
     } catch (handlingError) {
       // Fallback if error handling itself fails
-      console.error(
-        'Failed to handle error in SentryErrorBoundary:',
-        handlingError,
-      )
-      console.error('Original error:', error)
+      // Only log to console in development mode for fallback errors
+      if (import.meta.env.DEV) {
+        console.error(
+          'Failed to handle error in SentryErrorBoundary:',
+          handlingError,
+        )
+        console.error('Original error:', error)
+      }
     }
 
     return props.fallback ? props.fallback(error) : defaultFallback(error)
