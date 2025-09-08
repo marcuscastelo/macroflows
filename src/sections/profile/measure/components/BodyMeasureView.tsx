@@ -79,7 +79,6 @@ export function BodyMeasureView(props: {
     )
       .then(afterUpdate)
       .catch((error) => {
-        // Use proper error handling instead of console
         import('~/shared/error/errorHandler')
           .then(({ createErrorHandler }) => {
             const errorHandler = createErrorHandler('user', 'BodyMeasureView')

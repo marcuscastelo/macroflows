@@ -76,7 +76,6 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      // Use proper error handling instead of console
       import('~/shared/error/errorHandler')
         .then(({ createErrorHandler }) => {
           const errorHandler = createErrorHandler(

@@ -114,7 +114,6 @@ function mapUnknownToToastError(
   includeStack: boolean,
 ): ToastError {
   // DEBUG: Log error and stack for investigation
-  // Use debug utility instead of console
   if (import.meta.env.DEV) {
     devConsole.debug('mapUnknownToToastError error:', error)
   }
@@ -129,12 +128,10 @@ function mapUnknownToToastError(
       }
     }
     if (typeof error.stack === 'string') {
-      // Use debug utility instead of console
       if (import.meta.env.DEV) {
         devConsole.debug('mapUnknownToToastError error.stack:', error.stack)
       }
     } else {
-      // Use debug utility instead of console
       if (import.meta.env.DEV) {
         devConsole.debug(
           'mapUnknownToToastError error.stack is not a string:',

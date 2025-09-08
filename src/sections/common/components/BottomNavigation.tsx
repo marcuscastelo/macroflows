@@ -307,7 +307,6 @@ const UserSelectorDropdown = (props: { modalId: string }) => {
   createEffect(() => {
     const modalId = props.modalId
     fetchUsers().catch((error) => {
-      // Use proper error handling instead of console
       import('~/shared/error/errorHandler')
         .then(({ createErrorHandler }) => {
           const errorHandler = createErrorHandler(

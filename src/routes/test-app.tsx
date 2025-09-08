@@ -53,7 +53,7 @@ function GoogleLoginButton() {
     try {
       await signIn({ provider: 'google' })
     } catch (error) {
-      // Use proper error handling instead of console
+      // TODO: ban inline imports
       import('~/shared/error/errorHandler')
         .then(({ createErrorHandler }) => {
           const errorHandler = createErrorHandler('user', 'TestApp')
@@ -77,7 +77,6 @@ function LogoutButton() {
     try {
       await signOut()
     } catch (error) {
-      // Use proper error handling instead of console
       import('~/shared/error/errorHandler')
         .then(({ createErrorHandler }) => {
           const errorHandler = createErrorHandler('user', 'TestApp')

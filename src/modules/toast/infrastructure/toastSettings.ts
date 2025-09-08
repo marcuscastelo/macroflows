@@ -63,7 +63,6 @@ function loadSettings(): ToastSettings {
       return { ...DEFAULT_SETTINGS }
     }
   } catch (error) {
-    // Use proper error handling instead of console
     if (typeof import.meta !== 'undefined' && import.meta.env.DEV) {
       logToBreadcrumb('Failed to load toast settings', 'error', { error })
     }
@@ -79,7 +78,6 @@ createEffect(() => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
   } catch (error) {
-    // Use proper error handling instead of console
     if (typeof import.meta !== 'undefined' && import.meta.env.DEV) {
       logToBreadcrumb('Failed to save toast settings', 'error', { error })
     }
