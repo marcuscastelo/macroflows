@@ -69,7 +69,7 @@ export function BottomNavigation() {
   })
 
   logging.debug('[BottomNavigation] Rendering')
-  logging.debug('[BottomNavigation] Current path:', pathname)
+  logging.debug('[BottomNavigation] Current path:', { pathname: pathname() })
 
   return (
     <div class="">

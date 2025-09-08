@@ -60,7 +60,7 @@ export function TemplateSearchResults(props: {
                   const recipe = template
                   logging.debug('recipe', recipe)
                   const preparedQuantity = getRecipePreparedQuantity(recipe)
-                  logging.debug('recipe.preparedQuantity', preparedQuantity)
+                  logging.debug('recipe.preparedQuantity', { preparedQuantity })
                   return preparedQuantity
                 }
               }

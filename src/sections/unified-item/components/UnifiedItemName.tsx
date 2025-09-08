@@ -25,7 +25,7 @@ export function UnifiedItemName(props: UnifiedItemNameProps) {
       try {
         return await fetchRecipeById(recipeId)
       } catch (error) {
-        logging.warn('Failed to fetch recipe for comparison:', error)
+        logging.warn('Failed to fetch recipe for comparison:', { error })
         return null
       }
     },

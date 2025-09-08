@@ -11,5 +11,5 @@ export const dayStateStore = {
 }
 
 createEffect(() => {
-  logging.debug(`TargetDay =`, targetDay())
+  logging.debug(`TargetDay =`, { targetDay: targetDay() })
 })

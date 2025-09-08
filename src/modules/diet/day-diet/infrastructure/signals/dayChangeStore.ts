@@ -22,5 +22,5 @@ export const dayChangeStore = {
 }
 
 createEffect(() => {
-  logging.debug(`Today has changed: `, currentToday())
+  logging.debug(`Today has changed: `, { currentToday: currentToday() })
 })

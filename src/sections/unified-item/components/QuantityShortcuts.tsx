@@ -25,7 +25,7 @@ export function QuantityShortcuts(props: QuantityShortcutsProps) {
                   onClick={() => {
                     logging.debug(
                       '[QuantityShortcuts] shortcut quantity selected',
-                      value,
+                      { value },
                     )
                     props.onQuantitySelect(value)
                   }}

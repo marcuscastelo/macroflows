@@ -20,11 +20,11 @@ export const cachedSearchCacheStore = {
       const updated = [...current]
       updated[existingIndex] = cachedSearch
       setCachedSearches(updated)
-      logging.debug('Updated cached search in cache:', cachedSearch.search)
+      logging.debug('Updated cached search in cache:', { cachedSearch })
     } else {
       // Add new
       setCachedSearches([cachedSearch, ...current])
-      logging.debug('Added new cached search to cache:', cachedSearch.search)
+      logging.debug('Added new cached search to cache:', { cachedSearch })
     }
   },
 
@@ -44,7 +44,7 @@ export const cachedSearchCacheStore = {
       )
       setCachedSearches(updated)
 
-      logging.debug('Removed cached search from cache:', searchToRemove.search)
+      logging.debug('Removed cached search from cache:', { searchToRemove })
     }
   },
 }

@@ -27,7 +27,7 @@ export async function GET({ params }: APIEvent) {
     const apiFood = await apiFoodRepository.fetchApiFoodsByName(
       decodeURIComponent(params.name),
     )
-    logging.debug('apiFood', apiFood)
+    logging.debug('apiFood', { apiFood })
     return json(apiFood)
   } catch (error) {
     errorHandler.error(error)

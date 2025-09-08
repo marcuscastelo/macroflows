@@ -120,15 +120,12 @@ export function MealEditViewHeader(props: {
           // Handle pasted Meal - extract its items and add them to current meal
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           const mealData = data as Meal
-          logging.debug('Pasting meal with items:', mealData.items.length)
+          logging.debug('Pasting meal with items:', { mealData })
           const unifiedItemsToAdd = mealData.items.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
-          logging.debug(
-            'Items to add:',
-            unifiedItemsToAdd.map((item) => ({ id: item.id, name: item.name })),
-          )
+          logging.debug('Items to add:', { unifiedItemsToAdd })
 
           // Update the meal with all items at once
           const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
@@ -157,7 +154,7 @@ export function MealEditViewHeader(props: {
         // Since schema validation passed, this should be a recipe
         // For now, we'll skip unsupported formats in paste
         // TODO: Add proper recipe-to-items conversion if needed
-        logging.warn('Unsupported paste format:', data)
+        logging.warn('Unsupported paste format:', { data })
       },
     })
 

@@ -35,11 +35,11 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
 
     const userWeightKg = latestWeight()?.weight
     if (typeof userWeightKg !== 'number' || userWeightKg <= 0) {
-      logging.debug('Invalid user weight:', userWeightKg)
+      logging.debug('Invalid user weight:', { userWeightKg })
       return 0
     }
 
-    logging.debug('User weight (kg):', userWeightKg)
+    logging.debug('User weight (kg):', { userWeightKg })
     const macroKeys: (keyof MacroValues)[] = ['carbs', 'protein', 'fat']
     for (const macro of macroKeys) {
       const per100g = props.itemMacros[macro]
@@ -80,10 +80,10 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
       }
     }
 
-    logging.debug('Final max:', max)
+    logging.debug('Final max:', { max })
     const result = max === Infinity ? 0 : max * 0.96
 
-    logging.debug('Returning:', result)
+    logging.debug('Returning:', { result })
     return result
   }
 

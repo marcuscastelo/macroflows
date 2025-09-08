@@ -37,7 +37,7 @@ export function registerSubapabaseRealtimeCallback<T>(
   callback: (payload: RealtimeEvent<T>) => void,
 ): void {
   const handleCallback = (payload: unknown) => {
-    logging.debug(`SUPABASE_REALTIME - ${table} -> payload=`, payload)
+    logging.debug(`SUPABASE_REALTIME - ${table} -> payload=`, { payload })
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const payloadData = payload as {
       eventType: 'INSERT' | 'UPDATE' | 'DELETE'

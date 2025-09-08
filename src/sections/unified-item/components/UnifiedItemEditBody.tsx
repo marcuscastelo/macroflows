@@ -60,7 +60,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
   }
 
   const handleQuantitySelect = (quantity: number) => {
-    logging.debug('[UnifiedItemEditBody] shortcut quantity', quantity)
+    logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
   }
 

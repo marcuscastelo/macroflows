@@ -116,7 +116,7 @@ function mapUnknownToToastError(
 ): ToastError {
   // DEBUG: Log error and stack for investigation
   if (isDevelopment()) {
-    logging.debug('mapUnknownToToastError error:', error)
+    logging.debug('mapUnknownToToastError error:', { error })
   }
   if (error instanceof Error) {
     // Only serialize cause if it's a primitive or stringifiable
@@ -130,7 +130,7 @@ function mapUnknownToToastError(
     }
     if (typeof error.stack === 'string') {
       if (isDevelopment()) {
-        logging.debug('mapUnknownToToastError error.stack:', error.stack)
+        logging.debug('mapUnknownToToastError error.stack:', { error })
       }
     } else {
       if (isDevelopment()) {

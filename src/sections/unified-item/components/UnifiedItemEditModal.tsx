@@ -159,7 +159,9 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
   })
 
   const canApply = () => {
-    logging.debug('[UnifiedItemEditModal] canApply', item().quantity)
+    logging.debug('[UnifiedItemEditModal] canApply', {
+      quantity: item().quantity,
+    })
     return item().quantity > 0
   }
 

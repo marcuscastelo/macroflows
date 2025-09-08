@@ -85,7 +85,7 @@ const ToastTest: Component = () => {
         },
         toastOptions(),
       )
-      logging.info('showPromise result:', result)
+      logging.info('showPromise result:', { result })
     } catch (error) {
       logging.error('showPromise error:', error)
     }

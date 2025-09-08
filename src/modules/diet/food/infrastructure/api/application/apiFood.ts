@@ -71,7 +71,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
   )
 
   if (upsertionResults.some((result) => result.status === 'rejected')) {
-    logging.debug(`Erros de upsert: `, upsertionResults)
+    logging.debug(`Erros de upsert: `, { upsertionResults })
     const allRejected = upsertionResults.filter(
       (result) => result.status === 'rejected',
     )
@@ -85,7 +85,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
       // eslint-disable-next-line
       (reason) => (reason as any)[ORIGINAL_ERROR_SYMBOL].code as string,
     )
-    logging.debug(`Readable errors:`, errors)
+    logging.debug(`Readable errors:`, { errors })
 
     const ignoredErrors = [
       '23505', // Unique violation: food already exists, ignore
@@ -96,7 +96,7 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
     )
 
     if (relevantErrors.length > 0) {
-      logging.debug(`Relevant errors:`, relevantErrors)
+      logging.debug(`Relevant errors:`, { relevantErrors })
       errorHandler.error(
         new Error(`Failed to upsert ${relevantErrors.length} foods`),
         {

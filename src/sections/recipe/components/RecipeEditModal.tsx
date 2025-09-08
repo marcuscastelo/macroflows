@@ -70,10 +70,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       const item = newItem
       const updatedRecipe = addItemToRecipe(recipe(), item)
 
-      logging.debug(
-        'handleNewUnifiedItem: applying',
-        JSON.stringify(updatedRecipe, null, 2),
-      )
+      logging.debug('handleNewUnifiedItem: applying', { updatedRecipe })
 
       setRecipe(updatedRecipe)
     } catch (error) {

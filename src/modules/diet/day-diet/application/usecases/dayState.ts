@@ -15,7 +15,7 @@ export const currentDayDiet = () =>
   dayCacheStore.createCacheItemSignal({ by: 'target_day', value: targetDay() })
 
 createEffect(() => {
-  logging.debug(`CurrentDayDiet:`, currentDayDiet())
+  logging.debug(`CurrentDayDiet:`, { currentDayDiet: currentDayDiet() })
 })
 
 initializeDayEffects()

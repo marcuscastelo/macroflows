@@ -20,7 +20,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
     async getSession(): Promise<AuthSession | null> {
       try {
         const { data, error } = await supabase.auth.getSession()
-        logging.debug(`getSession: data:`, data, `error:`, error)
+        logging.debug(`getSession: data:`, { data, error })
 
         if (error !== null) {
           throw new Error('Failed to get session', { cause: error })

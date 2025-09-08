@@ -16,7 +16,9 @@ export function LazyMacroEvolution() {
   const { isVisible, setRef } = useIntersectionObserver()
 
   createEffect(() => {
-    logging.debug('LazyMacroEvolution: Checking visibility:   ', isVisible())
+    logging.debug('LazyMacroEvolution: Checking visibility:   ', {
+      isVisible: isVisible(),
+    })
     if (isVisible()) {
       setShouldLoad(true)
     }

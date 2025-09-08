@@ -40,7 +40,7 @@ function createCacheItemSignal<T extends keyof DayDiet>(filter: {
 }) {
   logging.debug(`findInCache filter=`, filter)
   const result = dayDiets().find((d) => d[filter.by] === filter.value) ?? null
-  logging.debug(`findInCache result=`, result)
+  logging.debug(`findInCache result=`, { result })
   return result
 }
 
@@ -54,5 +54,5 @@ export const dayCacheStore = {
 }
 
 createEffect(() => {
-  logging.debug(`Cache size: `, dayDiets().length)
+  logging.debug(`Cache size: `, { length: dayDiets().length })
 })

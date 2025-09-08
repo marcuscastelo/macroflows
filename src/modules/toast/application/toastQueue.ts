@@ -133,7 +133,7 @@ export function registerToast(toastItem: ToastItem): void {
  * @param id The ID of the toast to kill.
  */
 export function killToast(id: ToastItem['id']): void {
-  logging.debug('Killing toast:', id)
+  logging.debug('Killing toast:', { id })
   dequeue(id)
   const toastInVisibleToasts = findInVisibleToasts(id) // Check if it's visible
   if (toastInVisibleToasts) {

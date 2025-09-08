@@ -130,7 +130,7 @@ export function createAuthService(
   async function loadInitialSession(): Promise<void> {
     try {
       const session = await authGateway.getSession()
-      logging.debug(`loadInitialSession session:`, session)
+      logging.debug(`loadInitialSession session:`, { session })
       setAuthState((prev) => ({
         ...prev,
         session,

@@ -36,7 +36,7 @@ export function QuantityControls(props: QuantityControlsProps) {
 
     logging.debug(
       '[QuantityControls] Update unified item quantity from field',
-      newQuantity,
+      { newQuantity },
     )
 
     if (isRecipeItem(currentItem)) {
@@ -45,7 +45,7 @@ export function QuantityControls(props: QuantityControlsProps) {
         const scaledItem = scaleRecipeItemQuantity(currentItem, newQuantity)
         props.setItem({ ...scaledItem })
       } catch (error) {
-        logging.debug('[QuantityControls] Error scaling recipe:', error)
+        logging.debug('[QuantityControls] Error scaling recipe:', { error })
         // Fallback to simple quantity update if scaling fails
         props.setItem({
           ...currentItem,
@@ -112,7 +112,9 @@ export function QuantityControls(props: QuantityControlsProps) {
           field={props.quantityField}
           style={{ width: '100%' }}
           onFieldCommit={(value) => {
-            logging.debug('[QuantityControls] FloatInput onFieldCommit', value)
+            logging.debug('[QuantityControls] FloatInput onFieldCommit', {
+              value,
+            })
             if (value === undefined) {
               props.quantityField.setRawValue(props.item().quantity.toString())
             }
@@ -156,7 +158,7 @@ export function QuantityControls(props: QuantityControlsProps) {
             onMaxSelected={(maxValue: number) => {
               logging.debug(
                 '[QuantityControls] MaxQuantityButton onMaxSelected',
-                maxValue,
+                { maxValue },
               )
               props.quantityField.setRawValue(maxValue.toFixed(2))
             }}

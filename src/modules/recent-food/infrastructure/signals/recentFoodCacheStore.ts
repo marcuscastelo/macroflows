@@ -44,7 +44,7 @@ function createCacheItemSignal<T extends keyof RecentFood>(filter: {
   logging.debug(`findInCache filter=`, filter)
   const result =
     recentFoods().find((rf) => rf[filter.by] === filter.value) ?? null
-  logging.debug(`findInCache result=`, result)
+  logging.debug(`findInCache result=`, { result })
   return result
 }
 
@@ -58,5 +58,5 @@ export const recentFoodCacheStore = {
 }
 
 createEffect(() => {
-  logging.debug(`Recent foods cache size: `, recentFoods().length)
+  logging.debug(`Recent foods cache size: `, { length: recentFoods().length })
 })

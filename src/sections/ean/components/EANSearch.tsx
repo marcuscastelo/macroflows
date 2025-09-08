@@ -42,7 +42,7 @@ export function EANSearch(props: EANSearchProps) {
     setLoading(true)
 
     const afterFetch = (food: Food | null) => {
-      logging.info('afterFetch food', food)
+      logging.info('afterFetch food', { food })
       if (food === null) {
         openConfirmModal(`Alimento de EAN ${props.EAN()} não encontrado`, {
           title: 'Não encontrado',
@@ -55,7 +55,7 @@ export function EANSearch(props: EANSearchProps) {
     }
 
     const catchFetch = (err: unknown) => {
-      logging.info('catchFetch err', err)
+      logging.info('catchFetch err', { err })
       errorHandler.error(err, { operation: 'userAction' })
       openConfirmModal('Erro ao buscar alimento', {
         title: `Erro ao buscar alimento de EAN ${props.EAN()}`,

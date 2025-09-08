@@ -72,8 +72,8 @@ export function UnifiedItemNutritionalInfo(
       },
     }
 
-    logging.debug('currentDayDiet_=', currentDayDiet_)
-    logging.debug('macroTarget=', macroTarget)
+    logging.debug('currentDayDiet_=', { currentDayDiet_ })
+    logging.debug('macroTarget=', { macroTarget })
 
     // If we don't have the context, return false for all
     if (currentDayDiet_ === null || macroTarget === null) {
