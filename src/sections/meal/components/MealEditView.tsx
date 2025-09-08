@@ -54,7 +54,7 @@ export type MealEditViewProps = {
   mode?: 'edit' | 'read-only' | 'summary'
 }
 
-// TODO:   move this function
+// TODO: move this function
 // a little function to help us with reordering the result
 // const reorder = (list: unknown[], startIndex: number, endIndex: number) => {
 //   const result = Array.from(list)

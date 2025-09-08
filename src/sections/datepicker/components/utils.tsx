@@ -8,7 +8,7 @@ type IconProps = {
 
 type Button = {
   children: JSXElement | JSXElement[]
-  onClick: any // TODO:   Fix any
+  onClick: any // TODO: Fix any
   disabled?: boolean
   roundedFull?: boolean
   padding?: string

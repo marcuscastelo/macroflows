@@ -1,4 +1,4 @@
-// TODO:   Unify Recipe and Recipe components into a single component?
+// TODO: Unify Recipe and Recipe components into a single component?
 
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 import { z } from 'zod/v4'
@@ -39,7 +39,7 @@ export type RecipeEditViewProps = {
   className?: string
 }
 
-// TODO:   Reenable drag and drop
+// TODO: Reenable drag and drop
 // a little function to help us with reordering the result
 // const reorder = (list: unknown[], startIndex: number, endIndex: number) => {
 //   const result = Array.from(list)
