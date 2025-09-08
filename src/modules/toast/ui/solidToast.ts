@@ -46,7 +46,7 @@ export function displaySolidToast(toastItem: ToastItem): string {
       solidToastId = toast(message, solidToastOptions)
       break
     default:
-      ;((_: never) => _)(type) // TODO:   Create a better function for exhaustive checks
+      ;((_: never) => _)(type) // TODO: Create a better function for exhaustive checks
       errorHandler.error(
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         new Error(`Unknown toast type: ${type}`),

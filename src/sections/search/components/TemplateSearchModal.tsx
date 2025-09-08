@@ -265,7 +265,7 @@ export function TemplateSearch(props: {
   onTemplateSelected: (template: Template) => void
   onEANModal: () => void
 }) {
-  // TODO:   Determine if user is on desktop or mobile to set autofocus
+  // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   createEffect(() => {

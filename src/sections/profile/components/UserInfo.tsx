@@ -20,7 +20,7 @@ import {
 } from '~/sections/profile/components/UserInfoCapsule'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 type Translation<T extends string> = { [_key in T]: string }
-// TODO:   Create module for translations
+// TODO: Create module for translations
 // Export DIET_TRANSLATION for use in UserInfoCapsule
 export const DIET_TRANSLATION: Translation<User['diet']> = {
   cut: 'Cutting',

@@ -4,7 +4,7 @@ import { createZodEntity } from '~/shared/domain/validation'
 
 const ze = createZodEntity('Measure')
 
-// TODO:   Create discriminate union type for Male and Female body measures
+// TODO: Create discriminate union type for Male and Female body measures
 export const {
   schema: bodyMeasureSchema,
   newSchema: newBodyMeasureSchema,

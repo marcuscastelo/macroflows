@@ -71,7 +71,7 @@ const calculateMacroRepresentation = (
   }
 }
 
-// TODO:   Enable changing target calories directly (and update macros accordingly)
+// TODO: Enable changing target calories directly (and update macros accordingly)
 // const calculateDifferenceInCarbs = (
 //   targetCalories: number,
 //   weight: number,
@@ -97,7 +97,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     showError('Data alvo não pode ser no futuro')
     return
   } else if (
-    profile.id !== -1 && // TODO:   Better typing system for new MacroProfile instead of -1.
+    profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
     console.log('[ProfilePage] Updating profile', profile)
@@ -116,7 +116,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
       showError(error, {}, 'Erro ao atualizar perfil de macro')
     })
   } else if (
-    profile.id === -1 || // TODO:   Better typing system for new MacroProfile instead of -1.
+    profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
     console.log('[ProfilePage] Inserting profile', profile)
@@ -155,7 +155,7 @@ export function MacroTarget(props: MacroTargetProps) {
           class="input text-center font-bold"
           style={{ width: '100%' }}
           placeholder="Insira a meta de calorias diárias"
-          disabled={true} // TODO:   Enable changing target calories directly (and update macros accordingly).
+          disabled={true} // TODO: Enable changing target calories directly (and update macros accordingly).
           required
         />
       </div>
@@ -266,7 +266,7 @@ function MacroTargetSetting(props: {
     })
   }
 
-  // TODO:   Allow changing percentage directly
+  // TODO: Allow changing percentage directly
   // const makeOnSetPercentage =
   //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   //   (macro: 'carbs' | 'protein' | 'fat') => (percentage: number) => {
