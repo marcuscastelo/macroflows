@@ -14,6 +14,7 @@ import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { addBreadcrumb, setUserContext } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { withUISpan } from '~/shared/utils/tracing'
 
@@ -89,6 +90,19 @@ export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const user = await userRepository.fetchUser(currentUserId())
     setCurrentUser(user)
+
+    // Update Sentry user context when user is loaded
+    if (user) {
+      setUserContext({
+        id: user.id,
+        name: user.name,
+      })
+      addBreadcrumb('User session loaded', 'user', {
+        userId: user.id,
+        userName: user.name,
+      })
+    }
+
     return user
   } catch (error) {
     errorHandler.error(error, {
