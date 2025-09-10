@@ -11,6 +11,7 @@ import {
 import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
 import { logging } from '~/shared/utils/logging'
+import { withDatabaseSpan } from '~/shared/utils/tracing'
 
 const errorHandler = createErrorHandler('infrastructure', 'Food')
 
@@ -140,43 +141,69 @@ async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
 ) {
-  try {
-    // Use optimized favorites search if userId and isFavoritesSearch are provided
+  return await withDatabaseSpan('SELECT', 'foods', async (span) => {
     const { userId, isFavoritesSearch, limit = 50 } = params
 
-    let result
-    if (isFavoritesSearch === true && userId !== undefined) {
-      // Search within favorites only using optimized RPC
-      result = await supabase.rpc('search_favorite_foods_with_scoring', {
-        p_user_id: userId,
-        p_search_term: name,
-        p_limit: limit,
-      })
-    } else {
-      // Use standard search for all foods
-      result = await supabase.rpc('search_foods_with_scoring', {
-        p_search_term: name,
-        p_limit: limit,
-      })
+    span.setAttributes({
+      'food.search_term': name,
+      'food.search_limit': limit,
+      'food.is_favorites_search': isFavoritesSearch ?? false,
+      'operation.type': 'search_by_name',
+    })
+
+    if (userId !== undefined) {
+      span.setAttribute('user.id', userId)
     }
 
-    if (result.error !== null) {
-      errorHandler.error(result.error)
-      throw wrapErrorWithStack(result.error)
-    }
+    try {
+      let result
+      if (isFavoritesSearch === true && userId !== undefined) {
+        span.addEvent('using_favorites_search')
+        // Search within favorites only using optimized RPC
+        result = await supabase.rpc('search_favorite_foods_with_scoring', {
+          p_user_id: userId,
+          p_search_term: name,
+          p_limit: limit,
+        })
+      } else {
+        span.addEvent('using_standard_search')
+        // Use standard search for all foods
+        result = await supabase.rpc('search_foods_with_scoring', {
+          p_search_term: name,
+          p_limit: limit,
+        })
+      }
 
-    const searchType =
-      isFavoritesSearch === true && userId !== undefined
-        ? 'favorites search'
-        : 'enhanced search'
-    logging.debug(
-      `Found ${Array.isArray(result.data) ? result.data.length : 0} foods using ${searchType}`,
-    )
-    return result.data.map(supabaseFoodMapper.toDomain)
-  } catch (err) {
-    errorHandler.error(err)
-    throw err
-  }
+      if (result.error !== null) {
+        span.addEvent('food_search_error', {
+          error:
+            'message' in result.error
+              ? result.error.message
+              : JSON.stringify(result.error),
+        })
+        errorHandler.error(result.error)
+        throw wrapErrorWithStack(result.error)
+      }
+
+      const resultsCount = Array.isArray(result.data) ? result.data.length : 0
+      const searchType =
+        isFavoritesSearch === true && userId !== undefined
+          ? 'favorites search'
+          : 'enhanced search'
+
+      span.addEvent('food_search_completed', {
+        results_count: resultsCount,
+        search_type: searchType,
+      })
+
+      logging.debug(`Found ${resultsCount} foods using ${searchType}`)
+      return result.data.map(supabaseFoodMapper.toDomain)
+    } catch (err) {
+      span.addEvent('food_search_exception', { error: String(err) })
+      errorHandler.error(err)
+      throw err
+    }
+  })
 }
 
 async function fetchFoods(params: FoodSearchParams = {}) {
