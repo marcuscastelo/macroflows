@@ -1,12 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-Macroflows is a nutrition tracking platform built with SolidJS, TypeScript, and Supabase. It follows domain-driven design principles with a layered architecture and emphasizes type safety, reactive programming, and modular organization.
-
-**Project Context:** This is a solo project by marcuscastelo - adapt all suggestions to remove team coordination/approval processes while maintaining technical quality.
+Macroflows nutrition tracking platform: SolidJS, TypeScript, Supabase. Domain-driven design with layered architecture. Solo project by marcuscastelo.
 
 ## Frontend Simplicity Principles - CRITICAL
 
