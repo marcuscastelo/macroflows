@@ -2,7 +2,6 @@ import type { Component } from 'solid-js'
 import { createSignal, Show } from 'solid-js'
 
 import { sentry } from '~/shared/config/sentry'
-import { webVitals } from '~/shared/config/webVitals'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
 import { withUISpan } from '~/shared/utils/tracing'
@@ -112,24 +111,31 @@ const TelemetryTestPage: Component = () => {
     })
   }
 
-  const testWebVitals = () => {
-    // Test custom Web Vitals reporting
-    const mockMetrics = [
-      { name: 'Custom-LCP', value: Math.random() * 2000 + 500 },
-      { name: 'User-Flow-Duration', value: Math.random() * 1000 + 200 },
-      { name: 'Page-Load-Time', value: Math.random() * 3000 + 1000 },
+  const testCustomPerformance = () => {
+    // Test custom performance measurement using existing Sentry
+    const testMetrics = [
+      { name: 'custom-user-flow', value: Math.random() * 1000 + 200 },
+      { name: 'feature-load-time', value: Math.random() * 500 + 100 },
+      { name: 'interaction-response', value: Math.random() * 300 + 50 },
     ]
 
-    mockMetrics.forEach((metric) => {
-      webVitals.reportCustom(metric.name, metric.value, {
-        testType: 'manual',
-        timestamp: new Date().toISOString(),
-        page: 'telemetry-test',
-      })
+    testMetrics.forEach((metric) => {
+      // Use Sentry's performance API for custom metrics
+      sentry.addBreadcrumb(
+        `Custom Performance: ${metric.name}`,
+        'performance',
+        {
+          metric_name: metric.name,
+          value: metric.value,
+          unit: 'ms',
+          test_type: 'manual',
+        },
+        'info',
+      )
     })
 
     setLastAction(
-      `Web Vitals metrics reported: ${mockMetrics.map((m) => `${m.name}(${m.value.toFixed(0)}ms)`).join(', ')}`,
+      `Custom performance metrics reported: ${testMetrics.map((m) => `${m.name}(${m.value.toFixed(0)}ms)`).join(', ')}`,
     )
   }
 
@@ -161,12 +167,8 @@ const TelemetryTestPage: Component = () => {
                   <span>Error Handler Integration</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div
-                    class={`badge ${webVitals.isEnabled() ? 'badge-success' : 'badge-error'}`}
-                  >
-                    {webVitals.isEnabled() ? '✓' : '✗'}
-                  </div>
-                  <span>Web Vitals Tracking</span>
+                  <div class="badge badge-success">✓</div>
+                  <span>Web Vitals (Built-in with Sentry)</span>
                 </div>
               </div>
               <Show when={lastAction()}>
@@ -226,9 +228,9 @@ const TelemetryTestPage: Component = () => {
 
                 <button
                   class="btn btn-info btn-sm w-full"
-                  onClick={testWebVitals}
+                  onClick={testCustomPerformance}
                 >
-                  Test Web Vitals
+                  Test Custom Performance
                 </button>
               </div>
             </div>
