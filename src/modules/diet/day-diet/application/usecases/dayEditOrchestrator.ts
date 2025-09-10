@@ -8,6 +8,7 @@ import {
 } from '~/modules/diet/meal/domain/mealOperations'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { createErrorHandler } from '~/shared/error/errorHandler'
+import { trackMealItemAddition, trackMealItemEdit } from '~/shared/performance'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
 const errorHandler = createErrorHandler('application', 'DayEditOrchestrator')
@@ -102,17 +103,34 @@ export function createDayEditOrchestrator() {
     meal: Meal,
     item: UnifiedItem,
     updatedItem: UnifiedItem,
+    userId?: string,
   ): Promise<void> {
-    try {
-      const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
-      await updateMeal(meal.id, updatedMeal)
-    } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'DayEditOrchestrator',
-        operation: 'updateItemInMealOrchestrated',
-        additionalData: { mealId: meal.id, itemId: item.id },
-      })
-      throw error
+    if (userId !== undefined && userId !== '') {
+      await trackMealItemEdit(
+        userId,
+        String(item.id),
+        updatedItem,
+        async () => {
+          const updatedMeal = updateItemInMeal(
+            meal,
+            updatedItem.id,
+            updatedItem,
+          )
+          await updateMeal(meal.id, updatedMeal)
+        },
+      )
+    } else {
+      try {
+        const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
+        await updateMeal(meal.id, updatedMeal)
+      } catch (error) {
+        errorHandler.apiError(error, {
+          component: 'DayEditOrchestrator',
+          operation: 'updateItemInMealOrchestrated',
+          additionalData: { mealId: meal.id, itemId: item.id },
+        })
+        throw error
+      }
     }
   }
 
@@ -122,17 +140,30 @@ export function createDayEditOrchestrator() {
   async function addItemToMealOrchestrated(
     meal: Meal,
     newItem: UnifiedItem,
+    userId?: string,
   ): Promise<void> {
-    try {
-      const updatedMeal = addItemToMeal(meal, newItem)
-      await updateMeal(meal.id, updatedMeal)
-    } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'DayEditOrchestrator',
-        operation: 'addItemToMealOrchestrated',
-        additionalData: { mealId: meal.id, newItemId: newItem.id },
-      })
-      throw error
+    if (userId !== undefined && userId !== '') {
+      await trackMealItemAddition(
+        userId,
+        String(meal.id),
+        newItem,
+        async () => {
+          const updatedMeal = addItemToMeal(meal, newItem)
+          await updateMeal(meal.id, updatedMeal)
+        },
+      )
+    } else {
+      try {
+        const updatedMeal = addItemToMeal(meal, newItem)
+        await updateMeal(meal.id, updatedMeal)
+      } catch (error) {
+        errorHandler.apiError(error, {
+          component: 'DayEditOrchestrator',
+          operation: 'addItemToMealOrchestrated',
+          additionalData: { mealId: meal.id, newItemId: newItem.id },
+        })
+        throw error
+      }
     }
   }
 

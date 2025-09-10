@@ -5,6 +5,7 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
+import { trackDayCreation, trackDayEditSession } from '~/shared/performance'
 import { withSpan } from '~/shared/utils/tracing'
 
 function createCrud(repository = createDayDietRepository()) {
@@ -37,42 +38,54 @@ function createCrud(repository = createDayDietRepository()) {
   }
 
   const insertDayDiet = async (dayDiet: NewDayDiet): Promise<void> => {
-    await withSpan('day_diet.insert', async (span) => {
-      span.setAttributes({
-        'user.id': dayDiet.owner,
-        'day_diet.target_day': dayDiet.target_day,
-        'operation.type': 'insert_day_diet',
-      })
+    await trackDayCreation(
+      String(dayDiet.owner),
+      dayDiet.target_day,
+      async () => {
+        await withSpan('day_diet.insert', async (span) => {
+          span.setAttributes({
+            'user.id': dayDiet.owner,
+            'day_diet.target_day': dayDiet.target_day,
+            'operation.type': 'insert_day_diet',
+          })
 
-      await showPromise(
-        repository.insertDayDiet(dayDiet),
-        {
-          loading: 'Criando dia de dieta...',
-          success: 'Dia de dieta criado com sucesso',
-          error: 'Erro ao criar dia de dieta',
-        },
-        { context: 'user-action' },
-      )
+          await showPromise(
+            repository.insertDayDiet(dayDiet),
+            {
+              loading: 'Criando dia de dieta...',
+              success: 'Dia de dieta criado com sucesso',
+              error: 'Erro ao criar dia de dieta',
+            },
+            { context: 'user-action' },
+          )
 
-      span.addEvent('day_diet_insert_completed', {
-        userId: dayDiet.owner,
-        targetDay: dayDiet.target_day,
-      })
-    })
+          span.addEvent('day_diet_insert_completed', {
+            userId: dayDiet.owner,
+            targetDay: dayDiet.target_day,
+          })
+        })
+      },
+    )
   }
 
   const updateDayDiet = async (
     dayId: DayDiet['id'],
     dayDiet: NewDayDiet,
   ): Promise<void> => {
-    await showPromise(
-      repository.updateDayDietById(dayId, dayDiet),
-      {
-        loading: 'Atualizando dieta...',
-        success: 'Dieta atualizada com sucesso',
-        error: 'Erro ao atualizar dieta',
+    await trackDayEditSession(
+      String(dayDiet.owner),
+      dayDiet.target_day,
+      async () => {
+        await showPromise(
+          repository.updateDayDietById(dayId, dayDiet),
+          {
+            loading: 'Atualizando dieta...',
+            success: 'Dieta atualizada com sucesso',
+            error: 'Erro ao atualizar dieta',
+          },
+          { context: 'user-action' },
+        )
       },
-      { context: 'user-action' },
     )
   }
 

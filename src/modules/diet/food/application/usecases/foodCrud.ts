@@ -13,6 +13,7 @@ import {
   isBackendOutageError,
 } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
+import { trackBarcodeSearch, trackFoodSearch } from '~/shared/performance'
 import { withUISpan } from '~/shared/utils/tracing'
 
 const foodRepository = createSupabaseFoodRepository()
@@ -66,52 +67,54 @@ export async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
 ): Promise<readonly Food[]> {
-  return withUISpan('FoodSearch', 'fetchByName', async (span) => {
-    try {
-      span.setAttributes({
-        'search.query': name,
-        'search.limit': params.limit ?? 0,
-        'search.cached': false, // Will be updated after cache check
-      })
+  return await trackFoodSearch(name, async () => {
+    return withUISpan('FoodSearch', 'fetchByName', async (span) => {
+      try {
+        span.setAttributes({
+          'search.query': name,
+          'search.limit': params.limit ?? 0,
+          'search.cached': false, // Will be updated after cache check
+        })
 
-      const isCached = await isSearchCached(name)
+        const isCached = await isSearchCached(name)
 
-      if (!isCached) {
-        await showPromise(
-          importFoodsFromApiByName(name),
+        if (!isCached) {
+          await showPromise(
+            importFoodsFromApiByName(name),
+            {
+              loading: 'Importando alimentos...',
+              success: 'Alimentos importados com sucesso',
+              error: `Erro ao importar alimentos por nome: ${name}`,
+            },
+            { context: 'background' },
+          )
+        }
+
+        const foods = await showPromise(
+          foodRepository.fetchFoodsByName(name, params),
           {
-            loading: 'Importando alimentos...',
-            success: 'Alimentos importados com sucesso',
-            error: `Erro ao importar alimentos por nome: ${name}`,
+            loading: 'Buscando alimentos por nome...',
+            success: 'Alimentos encontrados',
+            error: (error: unknown) =>
+              `Erro ao buscar alimentos por nome: ${formatError(error)}`,
           },
           { context: 'background' },
         )
+
+        span.setAttributes({
+          'result.count': foods.length,
+          'search.cached': isCached,
+        })
+
+        return foods
+      } catch (error) {
+        errorHandler.error(error, {
+          additionalData: { name },
+        })
+        if (isBackendOutageError(error)) setBackendOutage(true)
+        return []
       }
-
-      const foods = await showPromise(
-        foodRepository.fetchFoodsByName(name, params),
-        {
-          loading: 'Buscando alimentos por nome...',
-          success: 'Alimentos encontrados',
-          error: (error: unknown) =>
-            `Erro ao buscar alimentos por nome: ${formatError(error)}`,
-        },
-        { context: 'background' },
-      )
-
-      span.setAttributes({
-        'result.count': foods.length,
-        'search.cached': isCached,
-      })
-
-      return foods
-    } catch (error) {
-      errorHandler.error(error, {
-        additionalData: { name },
-      })
-      if (isBackendOutageError(error)) setBackendOutage(true)
-      return []
-    }
+    })
   })
 }
 
@@ -125,33 +128,35 @@ export async function fetchFoodByEan(
   ean: NonNullable<Food['ean']>,
   params: FoodSearchParams = {},
 ): Promise<Food | null> {
-  try {
-    await showPromise(
-      importFoodFromApiByEan(ean),
-      {
-        loading: 'Importando alimento...',
-        success: 'Alimento importado com sucesso',
-        error: `Erro ao importar alimento por EAN: ${ean}`,
-      },
-      { context: 'background' },
-    )
-    return await showPromise(
-      foodRepository.fetchFoodByEan(ean, params),
-      {
-        loading: 'Buscando alimento por EAN...',
-        success: 'Alimento encontrado',
-        error: (error: unknown) =>
-          `Erro ao buscar alimento por EAN: ${formatError(error)}`,
-      },
-      { context: 'user-action' },
-    )
-  } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ean },
-    })
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return null
-  }
+  return await trackBarcodeSearch(ean, async () => {
+    try {
+      await showPromise(
+        importFoodFromApiByEan(ean),
+        {
+          loading: 'Importando alimento...',
+          success: 'Alimento importado com sucesso',
+          error: `Erro ao importar alimento por EAN: ${ean}`,
+        },
+        { context: 'background' },
+      )
+      return await showPromise(
+        foodRepository.fetchFoodByEan(ean, params),
+        {
+          loading: 'Buscando alimento por EAN...',
+          success: 'Alimento encontrado',
+          error: (error: unknown) =>
+            `Erro ao buscar alimento por EAN: ${formatError(error)}`,
+        },
+        { context: 'user-action' },
+      )
+    } catch (error) {
+      errorHandler.error(error, {
+        additionalData: { ean },
+      })
+      if (isBackendOutageError(error)) setBackendOutage(true)
+      return null
+    }
+  })
 }
 
 /**
