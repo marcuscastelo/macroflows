@@ -215,3 +215,97 @@ export const addTraceContextToError = (error: Error): Error => {
 
   return error
 }
+
+/**
+ * Creates a span for user flow performance tracking
+ */
+export const withUserFlowSpan = <T>(
+  flowName: string,
+  step: string,
+  fn: (span: Span) => T | Promise<T>,
+  userId?: string,
+): T | Promise<T> => {
+  return withSpan(`user_flow.${flowName}.${step}`, fn, {
+    attributes: {
+      'user_flow.name': flowName,
+      'user_flow.step': step,
+      'user_flow.step_type': 'performance',
+      ...(userId !== undefined && userId !== '' ? { 'user.id': userId } : {}),
+    },
+  })
+}
+
+/**
+ * Creates a span for page navigation performance tracking
+ */
+export const withNavigationSpan = <T>(
+  fromPage: string,
+  toPage: string,
+  fn: (span: Span) => T | Promise<T>,
+): T | Promise<T> => {
+  return withSpan(`navigation.${fromPage}_to_${toPage}`, fn, {
+    attributes: {
+      'navigation.from_page': fromPage,
+      'navigation.to_page': toPage,
+      'navigation.type': 'performance',
+    },
+  })
+}
+
+/**
+ * Measures and reports the duration of a user flow step
+ */
+export const measureUserFlowDuration = async <T>(
+  flowName: string,
+  step: string,
+  operation: () => T | Promise<T>,
+  options?: {
+    userId?: string
+    additionalContext?: Record<string, string | number | boolean>
+  },
+): Promise<T> => {
+  const startTime = Date.now()
+
+  return withUserFlowSpan(
+    flowName,
+    step,
+    async (span) => {
+      try {
+        // Add additional context if provided
+        if (options?.additionalContext) {
+          span.setAttributes(options.additionalContext)
+        }
+
+        const result = await operation()
+
+        const duration = Date.now() - startTime
+        span.setAttributes({
+          'performance.duration_ms': duration,
+          'performance.status': 'success',
+        })
+
+        span.addEvent('flow_step_completed', {
+          duration_ms: duration,
+          status: 'success',
+        })
+
+        return result
+      } catch (error) {
+        const duration = Date.now() - startTime
+        span.setAttributes({
+          'performance.duration_ms': duration,
+          'performance.status': 'error',
+        })
+
+        span.addEvent('flow_step_failed', {
+          duration_ms: duration,
+          status: 'error',
+          error_message: error instanceof Error ? error.message : String(error),
+        })
+
+        throw error
+      }
+    },
+    options?.userId,
+  )
+}
