@@ -52,17 +52,6 @@ export type UserFlowOperation =
   | 'auth.password_reset'
 
 /**
- * Enhanced user flow context for detailed tracking
- */
-export type UserFlowContext = {
-  userId?: string
-  entityId?: string | number
-  entityType?: string
-  searchQuery?: string
-  itemCount?: number
-}
-
-/**
  * Custom span types for sub-operations
  */
 export type SpanType =
@@ -83,10 +72,7 @@ class PerformanceSpanManager {
   /**
    * Start a custom span for a major user flow
    */
-  startSpan(
-    operation: UserFlowOperation,
-    context?: UserFlowContext,
-  ): string | null {
+  startSpan(operation: UserFlowOperation): string | null {
     if (!sentry.isSentryEnabled()) {
       return null
     }
@@ -97,25 +83,6 @@ class PerformanceSpanManager {
     const attributes: Record<string, string | number | boolean> = {
       'span.flow_type': spanType,
       'span.operation': operation,
-    }
-
-    // Add context attributes
-    if (context) {
-      if (context.userId !== undefined && context.userId !== '') {
-        attributes['user.id'] = context.userId
-      }
-      if (context.entityId !== undefined && context.entityId !== '') {
-        attributes['entity.id'] = String(context.entityId)
-      }
-      if (context.entityType !== undefined && context.entityType !== '') {
-        attributes['entity.type'] = context.entityType
-      }
-      if (context.searchQuery !== undefined && context.searchQuery !== '') {
-        attributes['search.query'] = context.searchQuery
-      }
-      if (context.itemCount !== undefined) {
-        attributes['data.item_count'] = context.itemCount
-      }
     }
 
     const span = sentry.startSpanManual(
@@ -134,7 +101,6 @@ class PerformanceSpanManager {
         {
           spanId,
           operation,
-          context,
         },
         'info',
       )
@@ -351,9 +317,8 @@ export const performanceManager = new PerformanceSpanManager()
 export async function withUserFlowSpan<T>(
   operation: UserFlowOperation,
   fn: (spanId: string | null) => Promise<T>,
-  context?: UserFlowContext,
 ): Promise<T> {
-  const spanId = performanceManager.startSpan(operation, context)
+  const spanId = performanceManager.startSpan(operation)
 
   try {
     const result = await fn(spanId)
@@ -382,10 +347,7 @@ export async function withUserFlowSpan<T>(
 /**
  * Decorator for automatic user flow span tracking on methods
  */
-export function trackUserFlowSpan(
-  operation: UserFlowOperation,
-  getContext?: (...args: unknown[]) => UserFlowContext,
-) {
+export function trackUserFlowSpan(operation: UserFlowOperation) {
   return function <T extends (...args: unknown[]) => Promise<unknown>>(
     _target: unknown,
     _propertyKey: string | symbol,
@@ -397,12 +359,9 @@ export function trackUserFlowSpan(
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const wrappedFunction = async function (this: unknown, ...args: unknown[]) {
-      const context = getContext ? getContext(...args) : undefined
-
       return await withUserFlowSpan(
         operation,
         async () => await originalMethod.apply(this, args),
-        context,
       )
     } as T
 

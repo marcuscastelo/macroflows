@@ -43,25 +43,17 @@ function createCrud(repository = createDayDietRepository()) {
     dayId: DayDiet['id'],
     dayDiet: NewDayDiet,
   ): Promise<void> => {
-    await withUserFlowSpan(
-      'diet.day_edit',
-      async () => {
-        await showPromise(
-          repository.updateDayDietById(dayId, dayDiet),
-          {
-            loading: 'Atualizando dieta...',
-            success: 'Dieta atualizada com sucesso',
-            error: 'Erro ao atualizar dieta',
-          },
-          { context: 'user-action' },
-        )
-      },
-      {
-        userId: String(dayDiet.owner),
-        entityType: 'day_diet',
-        entityId: dayDiet.target_day,
-      },
-    )
+    await withUserFlowSpan('diet.day_edit', async () => {
+      await showPromise(
+        repository.updateDayDietById(dayId, dayDiet),
+        {
+          loading: 'Atualizando dieta...',
+          success: 'Dieta atualizada com sucesso',
+          error: 'Erro ao atualizar dieta',
+        },
+        { context: 'user-action' },
+      )
+    })
   }
 
   const deleteDayDiet = async (dayId: DayDiet['id']): Promise<void> => {

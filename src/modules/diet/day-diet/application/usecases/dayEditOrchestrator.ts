@@ -106,22 +106,10 @@ export function createDayEditOrchestrator() {
     userId?: string,
   ): Promise<void> {
     if (userId !== undefined && userId !== '') {
-      await withUserFlowSpan(
-        'diet.meal_edit_item',
-        async () => {
-          const updatedMeal = updateItemInMeal(
-            meal,
-            updatedItem.id,
-            updatedItem,
-          )
-          await updateMeal(meal.id, updatedMeal)
-        },
-        {
-          userId,
-          entityType: 'meal_item',
-          entityId: String(item.id),
-        },
-      )
+      await withUserFlowSpan('diet.meal_edit_item', async () => {
+        const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
+        await updateMeal(meal.id, updatedMeal)
+      })
     } else {
       try {
         const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
@@ -146,18 +134,10 @@ export function createDayEditOrchestrator() {
     userId?: string,
   ): Promise<void> {
     if (userId !== undefined && userId !== '') {
-      await withUserFlowSpan(
-        'diet.meal_add_item',
-        async () => {
-          const updatedMeal = addItemToMeal(meal, newItem)
-          await updateMeal(meal.id, updatedMeal)
-        },
-        {
-          userId,
-          entityType: 'meal_item',
-          entityId: String(meal.id),
-        },
-      )
+      await withUserFlowSpan('diet.meal_add_item', async () => {
+        const updatedMeal = addItemToMeal(meal, newItem)
+        await updateMeal(meal.id, updatedMeal)
+      })
     } else {
       try {
         const updatedMeal = addItemToMeal(meal, newItem)
