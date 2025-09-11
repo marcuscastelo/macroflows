@@ -6,8 +6,8 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { type User } from '~/modules/user/domain/user'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { trackDayCopy } from '~/shared/performance'
 import { withSpan } from '~/shared/utils/tracing'
 
 export type CopyDayState = {
@@ -88,10 +88,8 @@ function createCopyDayOperations(
     )
     const userId = String(copyFrom?.owner ?? 'unknown')
 
-    return await trackDayCopy(
-      userId,
-      params.fromDay,
-      params.toDay,
+    return await withUserFlowSpan(
+      'diet.day_copy',
       async () => {
         return await withSpan('day_diet.copy_operation', async (span) => {
           const { fromDay, toDay, existingDay, previousDays } = params
@@ -166,6 +164,11 @@ function createCopyDayOperations(
             setCopyingDay(null)
           }
         })
+      },
+      {
+        userId,
+        entityType: 'day_diet',
+        entityId: params.toDay,
       },
     )
   }

@@ -5,7 +5,7 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { withUserFlowSpan } from '~/shared/performance'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { withSpan } from '~/shared/utils/tracing'
 
 function createCrud(repository = createDayDietRepository()) {

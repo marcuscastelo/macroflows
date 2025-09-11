@@ -5,7 +5,7 @@ import {
 import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { trackRecipeDeletion, withUserFlowSpan } from '~/shared/performance'
+import { withUserFlowSpan } from '~/shared/config/performance'
 
 const recipeRepository = createRecipeRepository()
 
@@ -92,6 +92,7 @@ export async function updateRecipe(
     {
       userId: String(newRecipe.owner),
       entityType: 'recipe',
+      entityId: String(recipeId),
     },
   )
 }
@@ -101,20 +102,28 @@ export async function deleteRecipe(recipeId: Recipe['id']): Promise<boolean> {
   // This is a limitation of the current API design
   const userId = 'unknown'
 
-  return await trackRecipeDeletion(String(recipeId), userId, async () => {
-    try {
-      await showPromise(
-        recipeRepository.deleteRecipe(recipeId),
-        {
-          loading: 'Deletando receita...',
-          success: 'Receita deletada com sucesso',
-          error: 'Falha ao deletar receita',
-        },
-        { context: 'user-action' },
-      )
-      return true
-    } catch {
-      return false
-    }
-  })
+  return await withUserFlowSpan(
+    'recipe.delete',
+    async () => {
+      try {
+        await showPromise(
+          recipeRepository.deleteRecipe(recipeId),
+          {
+            loading: 'Deletando receita...',
+            success: 'Receita deletada com sucesso',
+            error: 'Falha ao deletar receita',
+          },
+          { context: 'user-action' },
+        )
+        return true
+      } catch {
+        return false
+      }
+    },
+    {
+      userId,
+      entityType: 'recipe',
+      entityId: String(recipeId),
+    },
+  )
 }

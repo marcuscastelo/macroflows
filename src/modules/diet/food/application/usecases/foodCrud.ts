@@ -7,13 +7,13 @@ import {
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import {
   createErrorHandler,
   isBackendOutageError,
 } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
-import { withUserFlowSpan } from '~/shared/performance'
 import { withUISpan } from '~/shared/utils/tracing'
 
 const foodRepository = createSupabaseFoodRepository()

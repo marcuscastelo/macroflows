@@ -2,12 +2,8 @@ import { showPromise } from '~/modules/toast/application/toastManager'
 import { type WeightStorageRepository } from '~/modules/weight/domain/storageRepository'
 import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
 import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { type createErrorHandler } from '~/shared/error/errorHandler'
-import {
-  trackWeightDeletion,
-  trackWeightEdit,
-  trackWeightEntry,
-} from '~/shared/performance'
 
 export function createWeightCrudService(deps: {
   weightRepository: WeightRepository
@@ -27,40 +23,37 @@ export function createWeightCrudService(deps: {
 
   async function insertWeight(newWeight: NewWeight) {
     const userId = String(newWeight.owner)
-    const weightData = {
-      weight: newWeight.weight,
-      target_timestamp: newWeight.target_timestamp,
-    }
 
-    return await trackWeightEntry(weightData, userId, async () => {
-      try {
-        const weight = await showPromise(
-          deps.weightRepository.insertWeight(newWeight),
-          {
-            loading: 'Inserindo peso...',
-            success: 'Peso inserido com sucesso',
-            error: 'Falha ao inserir peso',
-          },
-        )
-        return weight
-      } catch (error) {
-        deps.errorHandler.error(error)
-        throw error
-      }
-    })
+    return await withUserFlowSpan(
+      'weight.record_entry',
+      async () => {
+        try {
+          const weight = await showPromise(
+            deps.weightRepository.insertWeight(newWeight),
+            {
+              loading: 'Inserindo peso...',
+              success: 'Peso inserido com sucesso',
+              error: 'Falha ao inserir peso',
+            },
+          )
+          return weight
+        } catch (error) {
+          deps.errorHandler.error(error)
+          throw error
+        }
+      },
+      {
+        userId,
+        entityType: 'weight',
+      },
+    )
   }
 
   async function updateWeight(weightId: Weight['id'], newWeight: Weight) {
     const userId = String(newWeight.owner)
-    const changes = {
-      weight: newWeight.weight,
-      target_timestamp: newWeight.target_timestamp,
-    }
 
-    return await trackWeightEdit(
-      String(weightId),
-      changes,
-      userId,
+    return await withUserFlowSpan(
+      'weight.edit_entry',
       async () => {
         try {
           const weight = await showPromise(
@@ -77,6 +70,11 @@ export function createWeightCrudService(deps: {
           throw error
         }
       },
+      {
+        userId,
+        entityType: 'weight',
+        entityId: String(weightId),
+      },
     )
   }
 
@@ -85,18 +83,26 @@ export function createWeightCrudService(deps: {
     // This is a limitation of the current API design
     const userId = 'unknown'
 
-    return await trackWeightDeletion(String(weightId), userId, async () => {
-      try {
-        await showPromise(deps.weightRepository.deleteWeight(weightId), {
-          loading: 'Deletando peso...',
-          success: 'Peso deletado com sucesso',
-          error: 'Falha ao deletar peso',
-        })
-      } catch (error) {
-        deps.errorHandler.error(error)
-        throw error
-      }
-    })
+    return await withUserFlowSpan(
+      'weight.delete_entry',
+      async () => {
+        try {
+          await showPromise(deps.weightRepository.deleteWeight(weightId), {
+            loading: 'Deletando peso...',
+            success: 'Peso deletado com sucesso',
+            error: 'Falha ao deletar peso',
+          })
+        } catch (error) {
+          deps.errorHandler.error(error)
+          throw error
+        }
+      },
+      {
+        userId,
+        entityType: 'weight',
+        entityId: String(weightId),
+      },
+    )
   }
 
   return {

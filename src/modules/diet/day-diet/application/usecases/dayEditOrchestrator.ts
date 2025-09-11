@@ -7,8 +7,8 @@ import {
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { trackMealItemAddition, trackMealItemEdit } from '~/shared/performance'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
 const errorHandler = createErrorHandler('application', 'DayEditOrchestrator')
@@ -106,10 +106,8 @@ export function createDayEditOrchestrator() {
     userId?: string,
   ): Promise<void> {
     if (userId !== undefined && userId !== '') {
-      await trackMealItemEdit(
-        userId,
-        String(item.id),
-        updatedItem,
+      await withUserFlowSpan(
+        'diet.meal_edit_item',
         async () => {
           const updatedMeal = updateItemInMeal(
             meal,
@@ -117,6 +115,11 @@ export function createDayEditOrchestrator() {
             updatedItem,
           )
           await updateMeal(meal.id, updatedMeal)
+        },
+        {
+          userId,
+          entityType: 'meal_item',
+          entityId: String(item.id),
         },
       )
     } else {
@@ -143,13 +146,16 @@ export function createDayEditOrchestrator() {
     userId?: string,
   ): Promise<void> {
     if (userId !== undefined && userId !== '') {
-      await trackMealItemAddition(
-        userId,
-        String(meal.id),
-        newItem,
+      await withUserFlowSpan(
+        'diet.meal_add_item',
         async () => {
           const updatedMeal = addItemToMeal(meal, newItem)
           await updateMeal(meal.id, updatedMeal)
+        },
+        {
+          userId,
+          entityType: 'meal_item',
+          entityId: String(meal.id),
         },
       )
     } else {

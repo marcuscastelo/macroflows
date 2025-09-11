@@ -5,12 +5,8 @@ import {
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
+import { withUserFlowSpan } from '~/shared/config/performance'
 import { logError } from '~/shared/error/errorHandler'
-import {
-  trackSessionValidation,
-  trackUserLogin,
-  trackUserLogout,
-} from '~/shared/performance'
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
@@ -21,34 +17,40 @@ export function createAuthService(
    */
   async function signIn(options: SignInOptions): Promise<void> {
     const email = 'provider' in options ? 'oauth_user' : 'email_user'
-    const loginMethod = options.provider === 'google' ? 'oauth' : 'email'
 
-    await trackUserLogin(email, loginMethod, async () => {
-      try {
-        setAuthState((prev) => ({ ...prev, isLoading: true }))
+    await withUserFlowSpan(
+      'auth.login',
+      async () => {
+        try {
+          setAuthState((prev) => ({ ...prev, isLoading: true }))
 
-        const result = await authGateway.signIn(options)
+          const result = await authGateway.signIn(options)
 
-        if (result.error) {
-          throw result.error
-        }
-
-        // For OAuth providers, the user will be redirected
-        if (result.url !== undefined && options.provider === 'google') {
-          if (typeof window !== 'undefined') {
-            window.location.href = result.url
+          if (result.error) {
+            throw result.error
           }
+
+          // For OAuth providers, the user will be redirected
+          if (result.url !== undefined && options.provider === 'google') {
+            if (typeof window !== 'undefined') {
+              window.location.href = result.url
+            }
+          }
+        } catch (e) {
+          logError(e, {
+            component: 'Auth',
+            operation: 'signIn',
+            additionalData: { provider: options.provider },
+          })
+          setAuthState((prev) => ({ ...prev, isLoading: false }))
+          throw e
         }
-      } catch (e) {
-        logError(e, {
-          component: 'Auth',
-          operation: 'signIn',
-          additionalData: { provider: options.provider },
-        })
-        setAuthState((prev) => ({ ...prev, isLoading: false }))
-        throw e
-      }
-    })
+      },
+      {
+        userId: email,
+        entityType: 'auth_session',
+      },
+    )
   }
 
   /**
@@ -59,26 +61,33 @@ export function createAuthService(
     const currentSession = await authGateway.getSession()
     const userId = currentSession?.user.id ?? 'unknown'
 
-    await trackUserLogout(userId, async () => {
-      try {
-        setAuthState((prev) => ({ ...prev, isLoading: true }))
+    await withUserFlowSpan(
+      'auth.logout',
+      async () => {
+        try {
+          setAuthState((prev) => ({ ...prev, isLoading: true }))
 
-        const result = await authGateway.signOut(options)
+          const result = await authGateway.signOut(options)
 
-        if (result.error) {
-          throw result.error
+          if (result.error) {
+            throw result.error
+          }
+
+          // Auth state will be updated via the subscription
+        } catch (e) {
+          logError(e, {
+            component: 'Auth',
+            operation: 'signOut',
+          })
+          setAuthState((prev) => ({ ...prev, isLoading: false }))
+          throw e
         }
-
-        // Auth state will be updated via the subscription
-      } catch (e) {
-        logError(e, {
-          component: 'Auth',
-          operation: 'signOut',
-        })
-        setAuthState((prev) => ({ ...prev, isLoading: false }))
-        throw e
-      }
-    })
+      },
+      {
+        userId,
+        entityType: 'auth_session',
+      },
+    )
   }
 
   /**
@@ -146,37 +155,44 @@ export function createAuthService(
   async function loadInitialSession(): Promise<void> {
     const userId = 'session_check'
 
-    await trackSessionValidation(userId, async () => {
-      try {
-        const session = await authGateway.getSession()
-        logging.debug(`loadInitialSession session:`, { session })
-        setAuthState((prev) => ({
-          ...prev,
-          session,
-          user: session?.user
-            ? {
-                id: session.user.id,
-                email: session.user.email,
-                emailConfirmedAt: session.user.email_confirmed_at,
-                lastSignInAt: session.user.last_sign_in_at,
-                createdAt: session.user.created_at,
-                updatedAt: session.user.updated_at,
-                userMetadata: session.user.user_metadata,
-                appMetadata: session.user.app_metadata,
-              }
-            : null,
-          isAuthenticated: session !== null,
-          isLoading: false,
-        }))
-      } catch (e) {
-        logError(e, {
-          component: 'Auth',
-          operation: 'loadInitialSession',
-        })
-        setAuthState((prev) => ({ ...prev, isLoading: false }))
-        throw e
-      }
-    })
+    await withUserFlowSpan(
+      'auth.login',
+      async () => {
+        try {
+          const session = await authGateway.getSession()
+          logging.debug(`loadInitialSession session:`, { session })
+          setAuthState((prev) => ({
+            ...prev,
+            session,
+            user: session?.user
+              ? {
+                  id: session.user.id,
+                  email: session.user.email,
+                  emailConfirmedAt: session.user.email_confirmed_at,
+                  lastSignInAt: session.user.last_sign_in_at,
+                  createdAt: session.user.created_at,
+                  updatedAt: session.user.updated_at,
+                  userMetadata: session.user.user_metadata,
+                  appMetadata: session.user.app_metadata,
+                }
+              : null,
+            isAuthenticated: session !== null,
+            isLoading: false,
+          }))
+        } catch (e) {
+          logError(e, {
+            component: 'Auth',
+            operation: 'loadInitialSession',
+          })
+          setAuthState((prev) => ({ ...prev, isLoading: false }))
+          throw e
+        }
+      },
+      {
+        userId,
+        entityType: 'auth_session',
+      },
+    )
   }
   /**
    * Cleanup auth subscriptions
