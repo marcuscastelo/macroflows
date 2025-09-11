@@ -84,7 +84,10 @@ const initializeSentry = (): void => {
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.browserProfilingIntegration(),
-        Sentry.replayIntegration(),
+        Sentry.replayIntegration({
+          maskAllText: false,
+          maskAllInputs: false,
+        }),
       ],
 
       // Session Replay configuration
