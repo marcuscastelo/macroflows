@@ -65,7 +65,6 @@ export {
   trackWeightDbOperation,
   trackWeightDeletion,
   trackWeightEdit,
-  trackWeightEntry,
   trackWeightHistoryView,
   trackWeightStatsCalculation,
 } from '~/shared/performance/weightTransactions'
