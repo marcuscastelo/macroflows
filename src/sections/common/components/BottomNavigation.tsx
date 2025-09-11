@@ -19,7 +19,6 @@ import {
 } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { Button } from '~/sections/common/components/buttons/Button'
-import { ConsoleDumpButton } from '~/sections/common/components/ConsoleDumpButton'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
 import {
@@ -156,7 +155,6 @@ export function BottomNavigation() {
             Version: <br />
             {APP_VERSION}
           </i>
-          <ConsoleDumpButton />
         </div>
         <Show when={!window.location.href.includes('stable')}>
           <Button

@@ -187,10 +187,8 @@ export default [
     files: [
       'src/shared/error/**/*.ts',
       'src/shared/error/**/*.tsx', 
-      'src/shared/config/sentry.ts',
-      'src/shared/config/telemetry.ts',
-      'src/shared/console/**/*.ts',
-
+      'src/modules/observability/**/*.ts',
+      'src/modules/observability/**/*.tsx',
 
       '**/*.test.ts',
       '**/*.test.tsx',
