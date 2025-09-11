@@ -1,13 +1,24 @@
 import '~/app.css'
 
+import * as Sentry from '@sentry/solidstart'
+import { withSentryRouterRouting } from '@sentry/solidstart/solidrouter'
 import { Router } from '@solidjs/router'
 import { FileRoutes } from '@solidjs/start/router'
-import { createSignal, lazy, onCleanup, Suspense } from 'solid-js'
+import {
+  createSignal,
+  ErrorBoundary,
+  lazy,
+  onCleanup,
+  Suspense,
+} from 'solid-js'
 
 import { BackendOutageBanner } from '~/sections/common/components/BackendOutageBanner'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { Providers } from '~/sections/common/context/Providers'
-import { SentryErrorBoundary } from '~/shared/error/SentryErrorBoundary'
+
+const SentryRouter = withSentryRouterRouting(Router)
+
+const SentryErrorBoundary = Sentry.withSentryErrorBoundary(ErrorBoundary)
 
 const BottomNavigation = lazy(async () => ({
   default: (await import('~/sections/common/components/BottomNavigation'))
@@ -36,8 +47,9 @@ export default function App() {
   const width = useAspectWidth()
 
   return (
-    <SentryErrorBoundary>
-      <Router
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    <SentryErrorBoundary fallback={(err) => <div>Error: {err.message}</div>}>
+      <SentryRouter
         root={(props) => (
           <>
             <Suspense fallback={<PageLoading message="Iniciando app..." />}>
@@ -58,7 +70,7 @@ export default function App() {
         )}
       >
         <FileRoutes />
-      </Router>
+      </SentryRouter>
     </SentryErrorBoundary>
   )
 }
