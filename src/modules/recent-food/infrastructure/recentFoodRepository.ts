@@ -5,10 +5,9 @@ import {
 } from '~/modules/recent-food/domain/recentFood'
 import { type RecentFoodRepository } from '~/modules/recent-food/domain/recentFoodRepository'
 import { createSupabaseRecentFoodGateway } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseRecentFoodGateway()
-const errorHandler = createErrorHandler('application', 'RecentFood')
 
 export function createRecentFoodRepository(): RecentFoodRepository {
   return {
@@ -32,7 +31,7 @@ export async function fetchByUserTypeAndReferenceId(
       referenceId,
     )
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('RecentFood operation error:', error)
     return null
   }
 }
@@ -49,7 +48,7 @@ export async function fetchUserRecentFoodsAsTemplates(
       opts,
     )
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('RecentFood operation error:', error)
     return []
   }
 }
@@ -58,7 +57,7 @@ export async function insert(input: NewRecentFood): Promise<RecentFood | null> {
   try {
     return await supabaseGateway.insert(input)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('RecentFood operation error:', error)
     return null
   }
 }
@@ -70,7 +69,7 @@ export async function update(
   try {
     return await supabaseGateway.update(id, input)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('RecentFood operation error:', error)
     return null
   }
 }
@@ -83,7 +82,7 @@ export async function deleteByReference(
   try {
     return await supabaseGateway.deleteByReference(userId, type, referenceId)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('RecentFood operation error:', error)
     return false
   }
 }

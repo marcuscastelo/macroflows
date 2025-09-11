@@ -5,10 +5,9 @@ import {
 import { type BodyMeasureRepository } from '~/modules/measure/domain/measureRepository'
 import { createSupabaseBodyMeasureGateway } from '~/modules/measure/infrastructure/supabase/supabaseBodyMeasureGateway'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseBodyMeasureGateway()
-const errorHandler = createErrorHandler('application', 'Measure')
 
 export function createMeasureRepository(): BodyMeasureRepository {
   return {
@@ -25,7 +24,7 @@ export async function fetchUserBodyMeasures(
   try {
     return await supabaseGateway.fetchUserBodyMeasures(userId)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     return []
   }
 }
@@ -36,7 +35,7 @@ export async function insertBodyMeasure(
   try {
     return await supabaseGateway.insertBodyMeasure(newBodyMeasure)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     return null
   }
 }
@@ -51,7 +50,7 @@ export async function updateBodyMeasure(
       newBodyMeasure,
     )
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     return null
   }
 }
@@ -62,6 +61,6 @@ export async function deleteBodyMeasure(
   try {
     await supabaseGateway.deleteBodyMeasure(bodyMeasureId)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
   }
 }

@@ -6,13 +6,9 @@ import { type BodyMeasureGateway } from '~/modules/measure/domain/measureGateway
 import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
 import { supabaseBodyMeasureMapper } from '~/modules/measure/infrastructure/supabase/supabaseMeasureMapper'
 import { type User } from '~/modules/user/domain/user'
-import {
-  createErrorHandler,
-  wrapErrorWithStack,
-} from '~/shared/error/errorHandler'
+import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-
-const errorHandler = createErrorHandler('infrastructure', 'Measure')
+import { logging } from '~/shared/utils/logging'
 
 export function createSupabaseBodyMeasureGateway(): BodyMeasureGateway {
   return {
@@ -31,7 +27,7 @@ async function fetchUserBodyMeasures(userId: User['id']) {
     .order('target_timestamp', { ascending: true })
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -49,7 +45,7 @@ async function insertBodyMeasure(
     .single()
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -69,7 +65,7 @@ async function updateBodyMeasure(
     .single()
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -83,7 +79,7 @@ async function deleteBodyMeasure(id: BodyMeasure['id']) {
     .eq('id', id)
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Measure operation error:', error)
     throw wrapErrorWithStack(error)
   }
 }

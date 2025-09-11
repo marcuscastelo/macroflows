@@ -2,12 +2,11 @@ import { showPromise } from '~/modules/toast/application/toastManager'
 import { type WeightStorageRepository } from '~/modules/weight/domain/storageRepository'
 import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
 import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
-import { type createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 export function createWeightCrudService(deps: {
   weightRepository: WeightRepository
   storageRepository: WeightStorageRepository
-  errorHandler: ReturnType<typeof createErrorHandler>
 }) {
   async function fetchUserWeights(userId: number) {
     try {
@@ -15,7 +14,7 @@ export function createWeightCrudService(deps: {
       deps.storageRepository.setCachedWeights(userId, weights)
       return weights
     } catch (error) {
-      deps.errorHandler.error(error)
+      logging.error('Weight operation error:', error)
       throw error
     }
   }
@@ -32,7 +31,7 @@ export function createWeightCrudService(deps: {
       )
       return weight
     } catch (error) {
-      deps.errorHandler.error(error)
+      logging.error('Weight operation error:', error)
       throw error
     }
   }
@@ -49,7 +48,7 @@ export function createWeightCrudService(deps: {
       )
       return weight
     } catch (error) {
-      deps.errorHandler.error(error)
+      logging.error('Weight operation error:', error)
       throw error
     }
   }
@@ -62,7 +61,7 @@ export function createWeightCrudService(deps: {
         error: 'Falha ao deletar peso',
       })
     } catch (error) {
-      deps.errorHandler.error(error)
+      logging.error('Weight operation error:', error)
       throw error
     }
   }
