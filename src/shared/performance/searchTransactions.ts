@@ -259,7 +259,6 @@ export async function trackFoodApiFetch<T>(
     {
       searchQuery: query,
       entityType: 'api_food_fetch',
-      apiCallCount: 1,
     },
   )
 }

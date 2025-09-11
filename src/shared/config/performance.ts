@@ -60,12 +60,6 @@ export type UserFlowContext = {
   entityType?: string
   searchQuery?: string
   itemCount?: number
-  dataSize?: number
-  errorCount?: number
-  retryCount?: number
-  cacheMiss?: boolean
-  apiCallCount?: number
-  dbQueryCount?: number
 }
 
 /**
@@ -121,18 +115,6 @@ class PerformanceSpanManager {
       }
       if (context.itemCount !== undefined) {
         attributes['data.item_count'] = context.itemCount
-      }
-      if (context.dataSize !== undefined) {
-        attributes['data.size_bytes'] = context.dataSize
-      }
-      if (context.cacheMiss !== undefined) {
-        attributes['cache.miss'] = context.cacheMiss
-      }
-      if (context.apiCallCount !== undefined) {
-        attributes['performance.api_calls'] = context.apiCallCount
-      }
-      if (context.dbQueryCount !== undefined) {
-        attributes['performance.db_queries'] = context.dbQueryCount
       }
     }
 
