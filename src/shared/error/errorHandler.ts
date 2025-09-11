@@ -2,17 +2,6 @@ import { trace } from '@opentelemetry/api'
 
 import { sentry } from '~/shared/config/sentry'
 import { isTracingEnabled } from '~/shared/config/telemetry'
-import {
-  addSpanEvent,
-  addTraceContextToError,
-  getTraceContext,
-} from '~/shared/utils/tracing'
-
-/**
- * Centralized error handling utilities for the application layer.
- * Components should not directly use console.error, instead they should
- * use these utilities or pass errors to their parent components.
- */
 
 export type ErrorSeverity = 'critical' | 'error' | 'warning' | 'info'
 
@@ -63,91 +52,7 @@ function getCallerContext(): string {
 /**
  * Enhanced log function that supports both context types
  */
-export function logError(error: unknown, context?: ErrorContext): void {
-  const timestamp = new Date().toISOString()
-  const componentStr =
-    typeof context?.component === 'string' && context.component.trim() !== ''
-      ? context.component
-      : 'Unknown'
-  const operationStr =
-    typeof context?.operation === 'string' && context.operation.trim() !== ''
-      ? `::${context.operation}`
-      : ''
-  const contextStr = `[${componentStr}${operationStr}]`
-
-  // Add trace context for Sentry correlation
-  let errorToLog = error
-  if (error instanceof Error) {
-    errorToLog = addTraceContextToError(error)
-    const traceContext = getTraceContext()
-    // Only log to console in development mode
-    if (import.meta.env.DEV) {
-      if (traceContext.traceId !== undefined && traceContext.traceId !== '') {
-        console.error(
-          `${timestamp} ${contextStr} Error (trace: ${traceContext.traceId}):`,
-          errorToLog,
-        )
-      } else {
-        console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
-      }
-    }
-
-    // Send to Sentry with full context
-    if (sentry.isSentryEnabled() && errorToLog instanceof Error) {
-      sentry.captureException(errorToLog, {
-        component: componentStr,
-        operation: context?.operation ?? 'unknown',
-        additionalData: context?.additionalData,
-        traceContext,
-      })
-    }
-  } else {
-    // Only log to console in development mode
-    if (import.meta.env.DEV) {
-      console.error(`${timestamp} ${contextStr} Error:`, errorToLog)
-    }
-
-    // Convert non-Error to Error for Sentry
-    if (sentry.isSentryEnabled()) {
-      const sentryError = new Error(String(errorToLog))
-      sentry.captureException(sentryError, {
-        component: componentStr,
-        operation: context?.operation ?? 'unknown',
-        additionalData: context?.additionalData,
-        originalError: errorToLog,
-      })
-    }
-  }
-
-  // Only log additional context in development mode
-  if (import.meta.env.DEV && context?.additionalData !== undefined) {
-    console.error('Additional context:', context.additionalData)
-  }
-
-  // Record error in OpenTelemetry span if available
-  if (isTracingEnabled()) {
-    const activeSpan = trace.getActiveSpan()
-    if (activeSpan) {
-      activeSpan.recordException(
-        error instanceof Error ? error : new Error(String(error)),
-      )
-      activeSpan.setAttributes({
-        'error.component': componentStr,
-        'error.operation': context?.operation ?? 'unknown',
-        'error.type': 'application_error',
-      })
-      if (context?.userId !== undefined && context.userId !== '') {
-        activeSpan.setAttribute('user.id', context.userId)
-      }
-
-      // Add event for better visibility in traces
-      addSpanEvent('error_occurred', {
-        'error.component': componentStr,
-        'error.operation': context?.operation ?? 'unknown',
-      })
-    }
-  }
-}
+export function logError(_error: unknown, _context?: ErrorContext): void {}
 
 /**
  * Enhanced log function for comprehensive error contexts

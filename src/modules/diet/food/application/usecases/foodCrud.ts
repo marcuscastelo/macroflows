@@ -14,7 +14,6 @@ import {
   isBackendOutageError,
 } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
-import { withUISpan } from '~/shared/utils/tracing'
 
 const foodRepository = createSupabaseFoodRepository()
 const errorHandler = createErrorHandler('application', 'Food')
@@ -46,62 +45,40 @@ export async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
 ): Promise<readonly Food[]> {
-  return await withUserFlowSpan(
-    'search.food_by_name',
-    async () => {
-      return withUISpan('FoodSearch', 'fetchByName', async (span) => {
-        try {
-          span.setAttributes({
-            'search.query': name,
-            'search.limit': params.limit ?? 0,
-            'search.cached': false, // Will be updated after cache check
-          })
+  try {
+    const isCached = await isSearchCached(name)
 
-          const isCached = await isSearchCached(name)
+    if (!isCached) {
+      await showPromise(
+        importFoodsFromApiByName(name),
+        {
+          loading: 'Importando alimentos...',
+          success: 'Alimentos importados com sucesso',
+          error: `Erro ao importar alimentos por nome: ${name}`,
+        },
+        { context: 'background' },
+      )
+    }
 
-          if (!isCached) {
-            await showPromise(
-              importFoodsFromApiByName(name),
-              {
-                loading: 'Importando alimentos...',
-                success: 'Alimentos importados com sucesso',
-                error: `Erro ao importar alimentos por nome: ${name}`,
-              },
-              { context: 'background' },
-            )
-          }
+    const foods = await showPromise(
+      foodRepository.fetchFoodsByName(name, params),
+      {
+        loading: 'Buscando alimentos por nome...',
+        success: 'Alimentos encontrados',
+        error: (error: unknown) =>
+          `Erro ao buscar alimentos por nome: ${formatError(error)}`,
+      },
+      { context: 'background' },
+    )
 
-          const foods = await showPromise(
-            foodRepository.fetchFoodsByName(name, params),
-            {
-              loading: 'Buscando alimentos por nome...',
-              success: 'Alimentos encontrados',
-              error: (error: unknown) =>
-                `Erro ao buscar alimentos por nome: ${formatError(error)}`,
-            },
-            { context: 'background' },
-          )
-
-          span.setAttributes({
-            'result.count': foods.length,
-            'search.cached': isCached,
-          })
-
-          return foods
-        } catch (error) {
-          errorHandler.error(error, {
-            additionalData: { name },
-          })
-          if (isBackendOutageError(error)) setBackendOutage(true)
-          return []
-        }
-      })
-    },
-    {
-      searchQuery: name,
-      itemCount: params.limit,
-    },
-  )
+    return foods
+  } catch (error) {
+    errorHandler.error(error, {
+      additionalData: { name },
+    })
+    if (isBackendOutageError(error)) setBackendOutage(true)
+    return []
+  }
 }
 
 /**

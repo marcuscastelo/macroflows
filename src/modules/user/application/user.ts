@@ -16,7 +16,6 @@ import {
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { sentry } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
-import { withUISpan } from '~/shared/utils/tracing'
 
 const userRepository = createSupabaseUserRepository()
 
@@ -193,17 +192,8 @@ export async function deleteUser(userId: User['id']): Promise<boolean> {
 const errorHandler = createErrorHandler('application', 'User')
 
 export function changeToUser(userId: User['id']): void {
-  void withUISpan('User', 'change', (span) => {
-    span.setAttributes({
-      'user.id': userId,
-      'user.change_source': 'manual',
-    })
-
-    saveUserIdToLocalStorage(userId)
-    setCurrentUserId(userId)
-
-    span.addEvent('user_changed', { 'user.id': userId })
-  })
+  saveUserIdToLocalStorage(userId)
+  setCurrentUserId(userId)
 }
 
 // TODO: Create module for favorites

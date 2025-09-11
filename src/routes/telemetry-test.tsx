@@ -4,7 +4,6 @@ import { createSignal, Show } from 'solid-js'
 import { sentry } from '~/shared/config/sentry'
 import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
-import { withUISpan } from '~/shared/utils/tracing'
 
 const TelemetryTestPage: Component = () => {
   const [lastAction, setLastAction] = createSignal('')
@@ -39,27 +38,6 @@ const TelemetryTestPage: Component = () => {
     })
   }
 
-  const testOpenTelemetrySpan = () => {
-    void withUISpan('TelemetryTest', 'testSpan', (span) => {
-      span.setAttributes({
-        'test.type': 'manual',
-        'test.user_action': 'button_click',
-      })
-
-      // Simulate some work
-      const start = Date.now()
-      while (Date.now() - start < 100) {
-        // busy wait for 100ms
-      }
-
-      span.addEvent('work_completed', {
-        duration_ms: Date.now() - start,
-      })
-
-      setLastAction('OpenTelemetry span created with events')
-    })
-  }
-
   const testSentryBreadcrumbs = () => {
     sentry.addBreadcrumb('User clicked breadcrumb test', 'user_action', {
       component: 'TelemetryTestPage',
@@ -75,40 +53,6 @@ const TelemetryTestPage: Component = () => {
       name: 'Test User',
     })
     setLastAction('User context set in Sentry')
-  }
-
-  const testComplexFlow = () => {
-    void withUISpan('TelemetryTest', 'complexFlow', async (span) => {
-      try {
-        span.setAttributes({
-          'flow.type': 'complex_test',
-          'flow.steps': 3,
-        })
-
-        // Step 1: Add breadcrumb
-        sentry.addBreadcrumb('Complex flow started', 'flow', { step: 1 })
-        span.addEvent('step_1_completed')
-
-        // Step 2: Simulate async operation
-        await new Promise((resolve) => setTimeout(resolve, 200))
-        sentry.addBreadcrumb('Async operation completed', 'flow', { step: 2 })
-        span.addEvent('step_2_completed')
-
-        // Step 3: Intentional error for testing correlation
-        const testError = new Error('Complex flow test error')
-        throw testError
-      } catch (error) {
-        span.addEvent('error_occurred', { step: 3 })
-        errorHandler.error(error, {
-          operation: 'testComplexFlow',
-          additionalData: {
-            flowStep: 3,
-            correlationId: 'flow-123',
-          },
-        })
-        setLastAction('Complex flow completed with correlated error')
-      }
-    })
   }
 
   const testCustomPerformance = () => {
@@ -199,13 +143,6 @@ const TelemetryTestPage: Component = () => {
                 </button>
 
                 <button
-                  class="btn btn-primary btn-sm w-full"
-                  onClick={testOpenTelemetrySpan}
-                >
-                  Test OpenTelemetry Span
-                </button>
-
-                <button
                   class="btn btn-secondary btn-sm w-full"
                   onClick={testSentryBreadcrumbs}
                 >
@@ -217,13 +154,6 @@ const TelemetryTestPage: Component = () => {
                   onClick={testUserContext}
                 >
                   Set User Context
-                </button>
-
-                <button
-                  class="btn btn-warning btn-sm w-full"
-                  onClick={testComplexFlow}
-                >
-                  Test Complex Flow
                 </button>
 
                 <button
