@@ -384,14 +384,14 @@ const logToBreadcrumb = (
 /**
  * Start a new transaction for performance monitoring
  */
-const startSpan = (
+const startSpanManual = (
   name: string,
   op: string,
   data?: Record<string, unknown>,
 ) => {
   if (!isInitialized) return null
 
-  return Sentry.startSpan(
+  return Sentry.startSpanManual(
     {
       name,
       op,
@@ -419,5 +419,5 @@ export const sentry = {
   setUserContext,
   addBreadcrumb,
   logToBreadcrumb,
-  startSpan,
+  startSpanManual,
 }

@@ -135,7 +135,7 @@ class PerformanceSpanManager {
       }
     }
 
-    const span = sentry.startSpan(
+    const span = sentry.startSpanManual(
       `${spanType}.${operation}`,
       spanType,
       attributes,
