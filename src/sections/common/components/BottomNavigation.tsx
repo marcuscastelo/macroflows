@@ -308,17 +308,7 @@ const UserSelectorDropdown = (props: { modalId: string }) => {
   createEffect(() => {
     const modalId = props.modalId
     fetchUsers().catch((error) => {
-      import('~/shared/error/errorHandler')
-        .then(({ createErrorHandler }) => {
-          const errorHandler = createErrorHandler(
-            'user',
-            'UserSelectorDropdown',
-          )
-          errorHandler.apiError(error, { operation: 'fetch users' })
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('UserSelectorDropdown error:', error)
       showError('Erro ao buscar usuários', { context: 'background' })
       closeModal(modalId)
     })

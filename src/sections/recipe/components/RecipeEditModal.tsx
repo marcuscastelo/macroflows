@@ -18,7 +18,6 @@ import {
   RecipeEditHeader,
 } from '~/sections/recipe/components/RecipeEditView'
 import { RecipeEditContextProvider } from '~/sections/recipe/context/RecipeEditContext'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import {
   openDeleteConfirmModal,
   openTemplateSearchModal,
@@ -35,8 +34,6 @@ export type RecipeEditModalProps = {
   onClose?: () => void
 }
 
-const errorHandler = createErrorHandler('validation', 'RecipeEditModal')
-
 export function RecipeEditModal(props: RecipeEditModalProps) {
   const [recipe, setRecipe] = createSignal(untrack(() => props.recipe()))
 
@@ -51,15 +48,9 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
     try {
       // Only food items can be directly converted to Items for recipes
       if (newItem.reference.type !== 'food') {
-        errorHandler.validationError(
+        logging.error(
+          'RecipeEditModal handleNewUnifiedItem error:',
           new Error('Cannot add non-food items to recipes'),
-          {
-            operation: 'handleNewUnifiedItem',
-            additionalData: {
-              itemType: newItem.reference.type,
-              itemId: newItem.id,
-            },
-          },
         )
         showError(
           'Não é possível adicionar itens que não sejam alimentos a receitas.',
@@ -74,19 +65,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      import('~/shared/error/errorHandler')
-        .then(({ createErrorHandler }) => {
-          const errorHandler = createErrorHandler(
-            'validation',
-            'RecipeEditModal',
-          )
-          errorHandler.apiError(error, {
-            operation: 'convert UnifiedItem to Item',
-          })
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('RecipeEditModal convert UnifiedItem to Item error:', error)
       showError('Erro ao adicionar item à receita.')
     }
   }

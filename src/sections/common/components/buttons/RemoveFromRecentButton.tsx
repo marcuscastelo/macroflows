@@ -9,14 +9,12 @@ import { debouncedTab } from '~/modules/template-search/application/usecases/tem
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 type RemoveFromRecentButtonProps = {
   template: Template
   refetch: (info?: unknown) => unknown
 }
-
-const errorHandler = createErrorHandler('user', 'RemoveFromRecentButton')
 
 export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
   const handleClick = (e: MouseEvent) => {
@@ -32,7 +30,7 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
         loading: 'Removendo item da lista de recentes...',
         success: 'Item removido da lista de recentes com sucesso!',
         error: (err: unknown) => {
-          errorHandler.error(err, { operation: 'userAction' })
+          logging.error('RemoveFromRecentButton error:', err)
           return 'Erro ao remover item da lista de recentes.'
         },
       },

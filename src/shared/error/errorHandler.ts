@@ -45,11 +45,6 @@ function getCallerContext(): string {
 }
 
 /**
- * Enhanced log function that supports both context types
- */
-export function logError(_error: unknown, _context?: ErrorContext): void {}
-
-/**
  * Enhanced log function for comprehensive error contexts
  */
 export function logEnhancedError(

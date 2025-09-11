@@ -12,7 +12,6 @@ import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedIte
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -22,8 +21,6 @@ export type EANSearchProps = {
   food: Accessor<Food | null>
   setFood: Setter<Food | null>
 }
-
-const errorHandler = createErrorHandler('user', 'EANSearch')
 
 export function EANSearch(props: EANSearchProps) {
   const [loading, setLoading] = createSignal(false)
@@ -56,7 +53,7 @@ export function EANSearch(props: EANSearchProps) {
 
     const catchFetch = (err: unknown) => {
       logging.info('catchFetch err', { err })
-      errorHandler.error(err, { operation: 'userAction' })
+      logging.error('EANSearch error:', err)
       openConfirmModal('Erro ao buscar alimento', {
         title: `Erro ao buscar alimento de EAN ${props.EAN()}`,
         confirmText: 'OK',
