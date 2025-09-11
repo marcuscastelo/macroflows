@@ -2,14 +2,12 @@ import type { JSX } from 'solid-js'
 import { ErrorBoundary } from 'solid-js'
 
 import { sentry } from '~/shared/config/sentry'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 type SentryErrorBoundaryProps = {
   fallback?: (error: Error) => JSX.Element
   children: JSX.Element
 }
-
-const errorHandler = createErrorHandler('application', 'SentryErrorBoundary')
 
 const defaultFallback = (error: Error): JSX.Element => (
   <div class="flex min-h-screen items-center justify-center bg-base-100">
@@ -47,15 +45,8 @@ const defaultFallback = (error: Error): JSX.Element => (
 export function SentryErrorBoundary(props: SentryErrorBoundaryProps) {
   const handleError = (error: Error) => {
     try {
-      // Log error through application layer error handler
-      errorHandler.apiError(error, {
-        component: 'SentryErrorBoundary',
-        operation: 'handleGlobalError',
-        additionalData: {
-          url: window.location.href,
-          timestamp: new Date().toISOString(),
-        },
-      })
+      // Log error through logging system
+      logging.error('SentryErrorBoundary handleGlobalError:', error)
 
       // Capture in Sentry with additional context
       if (sentry.isSentryEnabled()) {

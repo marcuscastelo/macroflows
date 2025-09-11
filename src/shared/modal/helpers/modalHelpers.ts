@@ -5,9 +5,9 @@
 
 import type { JSXElement } from 'solid-js'
 
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { modalManager } from '~/shared/modal/core/modalManager'
 import type { ModalId, ModalPriority } from '~/shared/modal/types/modalTypes'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Opens a confirmation modal with standardized styling and behavior.
@@ -16,7 +16,6 @@ import type { ModalId, ModalPriority } from '~/shared/modal/types/modalTypes'
  * @param options Configuration for the confirmation modal
  * @returns The modal ID for tracking
  */
-const errorHandler = createErrorHandler('system', 'Modal')
 
 export function openConfirmModal(
   message: string,
@@ -44,7 +43,7 @@ export function openConfirmModal(
       showCloseButton: true,
     })
   } catch (e) {
-    errorHandler.criticalError(e, { operation: 'openConfirmModal' })
+    logging.error('Modal openConfirmModal error:', e)
     throw e
   }
 }
@@ -81,7 +80,7 @@ export function openContentModal(
       onClose: options.onClose,
     })
   } catch (e) {
-    errorHandler.criticalError(e, { operation: 'openContentModal' })
+    logging.error('Modal openContentModal error:', e)
     throw e
   }
 }
@@ -120,7 +119,7 @@ export function openEditModal(
       onClose: options.onClose,
     })
   } catch (e) {
-    errorHandler.criticalError(e, { operation: 'openEditModal' })
+    logging.error('Modal openEditModal error:', e)
     throw e
   }
 }
@@ -136,7 +135,7 @@ export function closeModal(modalId: ModalId, onClose?: () => void): void {
     void modalManager.closeModal(modalId)
     onClose?.()
   } catch (e) {
-    errorHandler.criticalError(e, { operation: 'closeModalHelper' })
+    logging.error('Modal closeModalHelper error:', e)
     throw e
   }
 }
