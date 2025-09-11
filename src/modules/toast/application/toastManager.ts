@@ -160,6 +160,7 @@ export function showError(
   vibrate(200)
   setTimeout(() => vibrate(200), 400)
   // TODO: Move setBackendOutage
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1048
   if (isBackendOutageError(error)) {
     setBackendOutage(true)
     // Show a custom outage toast (pt-BR):
