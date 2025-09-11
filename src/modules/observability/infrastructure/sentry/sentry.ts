@@ -1,11 +1,11 @@
 import * as Sentry from '@sentry/solidstart'
-import { solidRouterBrowserTracingIntegration } from '@sentry/solidstart/solidrouter'
 
+import { createClientIntegrations } from '~/modules/observability/infrastructure/sentry/clientIntegrations'
 import { createSentryConfig } from '~/modules/observability/infrastructure/sentry/config'
 
 let isInitialized = false
 
-export function initializeSentry(type: 'server' | 'client') {
+export async function initializeSentry(type: 'server' | 'client') {
   if (isInitialized) {
     console.warn('Sentry already initialized')
     return
@@ -41,18 +41,7 @@ export function initializeSentry(type: 'server' | 'client') {
         /^https:\/\/.*\.macroflows.*\.app/,
       ],
 
-      integrations:
-        type === 'client'
-          ? [
-              solidRouterBrowserTracingIntegration(),
-              Sentry.browserTracingIntegration(),
-              Sentry.browserProfilingIntegration(),
-              Sentry.replayIntegration({
-                maskAllText: false,
-                maskAllInputs: false,
-              }),
-            ]
-          : [],
+      integrations: type === 'client' ? await createClientIntegrations() : [],
 
       // Session Replay configuration
       replaysSessionSampleRate: 1.0,

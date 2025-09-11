@@ -24,6 +24,7 @@ export default defineConfig(
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
       debug: true,
+      instrumentation: './src/instrument.server.ts',
     },
   ),
 )
