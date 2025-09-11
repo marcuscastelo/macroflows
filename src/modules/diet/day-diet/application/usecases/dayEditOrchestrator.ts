@@ -124,22 +124,16 @@ export function createDayEditOrchestrator() {
   async function addItemToMealOrchestrated(
     meal: Meal,
     newItem: UnifiedItem,
-    userId?: string,
   ): Promise<void> {
-    if (userId !== undefined && userId !== '') {
+    try {
       const updatedMeal = addItemToMeal(meal, newItem)
       await updateMeal(meal.id, updatedMeal)
-    } else {
-      try {
-        const updatedMeal = addItemToMeal(meal, newItem)
-        await updateMeal(meal.id, updatedMeal)
-      } catch (error) {
-        logging.error(
-          'DayEditOrchestrator addItemToMealOrchestrated error:',
-          error,
-        )
-        throw error
-      }
+    } catch (error) {
+      logging.error(
+        'DayEditOrchestrator addItemToMealOrchestrated error:',
+        error,
+      )
+      throw error
     }
   }
 
