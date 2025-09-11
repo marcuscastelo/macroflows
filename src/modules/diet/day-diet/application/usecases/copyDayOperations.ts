@@ -6,7 +6,7 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 export type CopyDayState = {
   previousDays: readonly DayDiet[]
@@ -34,7 +34,6 @@ export type CopyDayOperations = {
 function createCopyDayOperations(
   repository = createDayDietRepository(),
 ): CopyDayOperations {
-  const errorHandler = createErrorHandler('application', 'dayDiet')
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
@@ -63,11 +62,7 @@ function createCopyDayOperations(
       )
       setPreviousDays(days)
     } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'CopyDayOperations',
-        operation: 'loadPreviousDays',
-        additionalData: { userId, beforeDay, limit },
-      })
+      logging.error('CopyDayOperations loadPreviousDays error:', error)
       setPreviousDays([])
       throw error
     } finally {
@@ -109,15 +104,7 @@ function createCopyDayOperations(
         await repository.insertDayDiet(newDay)
       }
     } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'CopyDayOperations',
-        operation: 'copyDay',
-        additionalData: {
-          fromDay,
-          toDay,
-          hasExistingDay: !!existingDay,
-        },
-      })
+      logging.error('CopyDayOperations copyDay error:', error)
       throw error
     } finally {
       setIsCopying(false)

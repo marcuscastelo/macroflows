@@ -7,10 +7,8 @@ import {
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
-
-const errorHandler = createErrorHandler('application', 'DayEditOrchestrator')
+import { logging } from '~/shared/utils/logging'
 
 export type EditMode = 'edit' | 'read-only' | 'summary'
 
@@ -82,11 +80,10 @@ export function createDayEditOrchestrator() {
         originalItem: item,
       }
     } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'DayEditOrchestrator',
-        operation: 'prepareMacroOverflowConfig',
-        additionalData: { dayDiet: dayDiet.id, itemId: item.id },
-      })
+      logging.error(
+        'DayEditOrchestrator prepareMacroOverflowConfig error:',
+        error,
+      )
 
       return {
         enable: false,
@@ -100,7 +97,7 @@ export function createDayEditOrchestrator() {
    */
   async function updateItemInMealOrchestrated(
     meal: Meal,
-    item: UnifiedItem,
+    _item: UnifiedItem,
     updatedItem: UnifiedItem,
     userId?: string,
   ): Promise<void> {
@@ -112,11 +109,10 @@ export function createDayEditOrchestrator() {
         const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
         await updateMeal(meal.id, updatedMeal)
       } catch (error) {
-        errorHandler.apiError(error, {
-          component: 'DayEditOrchestrator',
-          operation: 'updateItemInMealOrchestrated',
-          additionalData: { mealId: meal.id, itemId: item.id },
-        })
+        logging.error(
+          'DayEditOrchestrator updateItemInMealOrchestrated error:',
+          error,
+        )
         throw error
       }
     }
@@ -138,11 +134,10 @@ export function createDayEditOrchestrator() {
         const updatedMeal = addItemToMeal(meal, newItem)
         await updateMeal(meal.id, updatedMeal)
       } catch (error) {
-        errorHandler.apiError(error, {
-          component: 'DayEditOrchestrator',
-          operation: 'addItemToMealOrchestrated',
-          additionalData: { mealId: meal.id, newItemId: newItem.id },
-        })
+        logging.error(
+          'DayEditOrchestrator addItemToMealOrchestrated error:',
+          error,
+        )
         throw error
       }
     }
@@ -155,11 +150,7 @@ export function createDayEditOrchestrator() {
     try {
       await updateMeal(meal.id, meal)
     } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'DayEditOrchestrator',
-        operation: 'updateMealOrchestrated',
-        additionalData: { mealId: meal.id },
-      })
+      logging.error('DayEditOrchestrator updateMealOrchestrated error:', error)
       throw error
     }
   }

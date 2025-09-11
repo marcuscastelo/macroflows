@@ -8,14 +8,11 @@ import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import {
-  createErrorHandler,
-  isBackendOutageError,
-} from '~/shared/error/errorHandler'
+import { isBackendOutageError } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
+import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()
-const errorHandler = createErrorHandler('application', 'Food')
 
 /**
  * Fetches foods by search params.
@@ -28,7 +25,7 @@ export async function fetchFoods(
   try {
     return await foodRepository.fetchFoods(params)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Food application error:', error)
     if (isBackendOutageError(error)) setBackendOutage(true)
     return []
   }
@@ -72,9 +69,7 @@ export async function fetchFoodsByName(
 
     return foods
   } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { name },
-    })
+    logging.error('Food application error:', error)
     if (isBackendOutageError(error)) setBackendOutage(true)
     return []
   }
@@ -111,9 +106,7 @@ export async function fetchFoodByEan(
       { context: 'user-action' },
     )
   } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ean },
-    })
+    logging.error('Food application error:', error)
     if (isBackendOutageError(error)) setBackendOutage(true)
     return null
   }
