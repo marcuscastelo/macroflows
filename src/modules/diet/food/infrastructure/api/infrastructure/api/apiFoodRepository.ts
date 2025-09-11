@@ -15,7 +15,7 @@ import {
   type ApiFood,
   apiFoodSchema,
 } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
-import { wrapErrorWithStack } from '~/shared/error/errorHandler'
+import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'

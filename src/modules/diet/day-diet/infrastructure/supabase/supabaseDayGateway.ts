@@ -7,8 +7,8 @@ import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseMapper'
 import { type User } from '~/modules/user/domain/user'
-import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
+import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
 export function createSupabaseDayGateway(): DayGateway {

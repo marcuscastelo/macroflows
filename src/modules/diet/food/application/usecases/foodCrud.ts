@@ -8,8 +8,8 @@ import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import { isBackendOutageError } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
+import { isBackendOutageError } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()

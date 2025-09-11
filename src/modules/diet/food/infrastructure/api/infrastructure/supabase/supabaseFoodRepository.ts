@@ -5,9 +5,9 @@ import {
 } from '~/modules/diet/food/domain/foodRepository'
 import { supabaseFoodMapper } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodMapper'
 import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
-import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
+import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
 export function createSupabaseFoodRepository(): FoodRepository {
