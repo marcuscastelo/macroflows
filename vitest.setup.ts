@@ -44,6 +44,16 @@ vi.mock('~/shared/config/env', () => ({
   },
 }))
 
+// Mock localStorage globally for all tests
+const localStorageMock = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(() => {}),
+  removeItem: vi.fn(() => {}),
+  clear: vi.fn(() => {}),
+}
+
+vi.stubGlobal('localStorage', localStorageMock)
+
 // Silence all console output during tests
 vi.spyOn(console, 'log').mockImplementation(() => {})
 vi.spyOn(console, 'info').mockImplementation(() => {})

@@ -90,7 +90,6 @@ export async function fetchCurrentUser(): Promise<User | null> {
     const user = await userRepository.fetchUser(currentUserId())
     setCurrentUser(user)
 
-    // Update Sentry user context when user is loaded
     if (user) {
       sentry.setUserContext({
         id: user.id,

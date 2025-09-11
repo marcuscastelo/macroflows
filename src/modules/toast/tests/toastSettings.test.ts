@@ -4,10 +4,6 @@ vi.mock('~/shared/config/env', () => ({
   isDevelopment: vi.fn(() => false),
 }))
 
-vi.mock('~/shared/config/sentry', () => ({
-  logToBreadcrumb: vi.fn(),
-}))
-
 import {
   getToastSettings,
   resetToastSettings,
