@@ -2,26 +2,18 @@ import type { Component } from 'solid-js'
 import { createSignal, Show } from 'solid-js'
 
 import { sentry } from '~/shared/config/sentry'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
 
 const TelemetryTestPage: Component = () => {
   const [lastAction, setLastAction] = createSignal('')
-  const errorHandler = createErrorHandler('application', 'TelemetryTest')
 
   const testSentryError = () => {
     try {
       logging.info('🧪 Testing Sentry error...')
       throw new Error('Test error for Sentry integration')
     } catch (error) {
-      logging.info('📤 Sending error via errorHandler...')
-      errorHandler.error(error, {
-        operation: 'testSentryError',
-        additionalData: {
-          testType: 'manual',
-          timestamp: new Date().toISOString(),
-        },
-      })
+      logging.info('📤 Sending error via logging...')
+      logging.error('TelemetryTest testSentryError error:', error)
       setLastAction('Error sent to Sentry + OpenTelemetry')
     }
   }

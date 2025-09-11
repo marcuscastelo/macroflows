@@ -18,10 +18,44 @@ import {
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import { isBackendOutageError } from '~/shared/error/errorHandler'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
+
+function isBackendOutageError(error: unknown): boolean {
+  if (typeof error === 'string') {
+    return (
+      error.includes('Failed to fetch') ||
+      error.includes('NetworkError') ||
+      error.includes('CORS') ||
+      error.includes('net::ERR') ||
+      error.includes('Network request failed')
+    )
+  }
+  if (typeof error === 'object' && error !== null) {
+    const msg =
+      'message' in error && typeof error.message === 'string'
+        ? error.message
+        : ''
+    const details =
+      'details' in error && typeof error.details === 'string'
+        ? error.details
+        : ''
+    return (
+      msg.includes('Failed to fetch') ||
+      msg.includes('NetworkError') ||
+      msg.includes('CORS') ||
+      msg.includes('net::ERR') ||
+      msg.includes('Network request failed') ||
+      details.includes('Failed to fetch') ||
+      details.includes('NetworkError') ||
+      details.includes('CORS') ||
+      details.includes('net::ERR') ||
+      details.includes('Network request failed')
+    )
+  }
+  return false
+}
 
 /**
  * Returns true if the toast should be skipped based on context, audience, and type.

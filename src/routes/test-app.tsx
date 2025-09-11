@@ -56,10 +56,9 @@ function GoogleLoginButton() {
     } catch (error) {
       // TODO: ban inline imports
       // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
-      import('~/shared/error/errorHandler')
-        .then(({ createErrorHandler }) => {
-          const errorHandler = createErrorHandler('user', 'TestApp')
-          errorHandler.apiError(error, { operation: 'login' })
+      import('~/shared/utils/logging')
+        .then(({ logging }) => {
+          logging.error('TestApp login error:', error)
         })
         .catch(() => {
           // Fallback if import fails
@@ -79,10 +78,9 @@ function LogoutButton() {
     try {
       await signOut()
     } catch (error) {
-      import('~/shared/error/errorHandler')
-        .then(({ createErrorHandler }) => {
-          const errorHandler = createErrorHandler('user', 'TestApp')
-          errorHandler.apiError(error, { operation: 'logout' })
+      import('~/shared/utils/logging')
+        .then(({ logging }) => {
+          logging.error('TestApp logout error:', error)
         })
         .catch(() => {
           // Fallback if import fails
