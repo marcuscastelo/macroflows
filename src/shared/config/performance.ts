@@ -135,7 +135,7 @@ class PerformanceTransactionManager {
       }
     }
 
-    const span = sentry.startTransaction(
+    const span = sentry.startSpan(
       `${transactionType}.${operation}`,
       transactionType,
       attributes,

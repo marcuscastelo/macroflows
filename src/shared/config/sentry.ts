@@ -384,7 +384,7 @@ const logToBreadcrumb = (
 /**
  * Start a new transaction for performance monitoring
  */
-const startTransaction = (
+const startSpan = (
   name: string,
   op: string,
   data?: Record<string, unknown>,
@@ -419,5 +419,5 @@ export const sentry = {
   setUserContext,
   addBreadcrumb,
   logToBreadcrumb,
-  startTransaction,
+  startSpan,
 }

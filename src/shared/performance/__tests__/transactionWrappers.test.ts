@@ -17,7 +17,7 @@ import {
 vi.mock('~/shared/config/sentry', () => ({
   sentry: {
     isSentryEnabled: () => true,
-    startTransaction: vi.fn(() => ({
+    startSpan: vi.fn(() => ({
       setAttribute: vi.fn(),
       recordException: vi.fn(),
       setStatus: vi.fn(),
