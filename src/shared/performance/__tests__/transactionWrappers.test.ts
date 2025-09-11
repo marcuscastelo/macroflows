@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
-import { startSpanManual } from '@sentry/solidstart'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type NewRecipe } from '~/modules/diet/recipe/domain/recipe'

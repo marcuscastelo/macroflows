@@ -5,7 +5,7 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { trackDayCreation, trackDayEditSession } from '~/shared/performance'
+import { withUserFlowSpan } from '~/shared/performance'
 import { withSpan } from '~/shared/utils/tracing'
 
 function createCrud(repository = createDayDietRepository()) {
@@ -38,9 +38,8 @@ function createCrud(repository = createDayDietRepository()) {
   }
 
   const insertDayDiet = async (dayDiet: NewDayDiet): Promise<void> => {
-    await trackDayCreation(
-      String(dayDiet.owner),
-      dayDiet.target_day,
+    await withUserFlowSpan(
+      'diet.day_create',
       async () => {
         await withSpan('day_diet.insert', async (span) => {
           span.setAttributes({
@@ -65,6 +64,11 @@ function createCrud(repository = createDayDietRepository()) {
           })
         })
       },
+      {
+        userId: String(dayDiet.owner),
+        entityType: 'day_diet',
+        entityId: dayDiet.target_day,
+      },
     )
   }
 
@@ -72,9 +76,8 @@ function createCrud(repository = createDayDietRepository()) {
     dayId: DayDiet['id'],
     dayDiet: NewDayDiet,
   ): Promise<void> => {
-    await trackDayEditSession(
-      String(dayDiet.owner),
-      dayDiet.target_day,
+    await withUserFlowSpan(
+      'diet.day_edit',
       async () => {
         await showPromise(
           repository.updateDayDietById(dayId, dayDiet),
@@ -85,6 +88,11 @@ function createCrud(repository = createDayDietRepository()) {
           },
           { context: 'user-action' },
         )
+      },
+      {
+        userId: String(dayDiet.owner),
+        entityType: 'day_diet',
+        entityId: dayDiet.target_day,
       },
     )
   }

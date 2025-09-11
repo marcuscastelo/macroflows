@@ -35,6 +35,7 @@ export type UserFlowOperation =
   | 'recipe.delete'
   | 'recipe.duplicate'
   | 'recipe.add_to_meal'
+  | 'recipe.search'
   // Weight Tracking
   | 'weight.record_entry'
   | 'weight.edit_entry'

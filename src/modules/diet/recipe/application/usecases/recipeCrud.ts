@@ -5,12 +5,7 @@ import {
 import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import {
-  trackRecipeCreation,
-  trackRecipeDeletion,
-  trackRecipeEdit,
-  trackRecipeSearch,
-} from '~/shared/performance'
+import { trackRecipeDeletion, withUserFlowSpan } from '~/shared/performance'
 
 const recipeRepository = createRecipeRepository()
 
@@ -24,9 +19,16 @@ export async function fetchUserRecipeByName(
   userId: User['id'],
   name: string,
 ): Promise<readonly Recipe[]> {
-  return await trackRecipeSearch(name, String(userId), async () => {
-    return await recipeRepository.fetchUserRecipeByName(userId, name)
-  })
+  return await withUserFlowSpan(
+    'recipe.search',
+    async () => {
+      return await recipeRepository.fetchUserRecipeByName(userId, name)
+    },
+    {
+      userId: String(userId),
+      searchQuery: name,
+    },
+  )
 }
 
 export async function fetchRecipeById(
@@ -36,45 +38,46 @@ export async function fetchRecipeById(
 }
 
 export async function insertRecipe(newRecipe: NewRecipe): Promise<void> {
-  await trackRecipeCreation(newRecipe, String(newRecipe.owner), async () => {
-    await showPromise(
-      recipeRepository.insertRecipe(newRecipe),
-      {
-        loading: 'Criando nova receita...',
-        success: (recipe) => `Receita '${recipe?.name}' criada com sucesso`,
-        error: 'Falha ao criar receita',
-      },
-      { context: 'user-action' },
-    )
-  })
+  await withUserFlowSpan(
+    'recipe.create',
+    async () => {
+      await showPromise(
+        recipeRepository.insertRecipe(newRecipe),
+        {
+          loading: 'Criando nova receita...',
+          success: (recipe) => `Receita '${recipe?.name}' criada com sucesso`,
+          error: 'Falha ao criar receita',
+        },
+        { context: 'user-action' },
+      )
+    },
+    {
+      userId: String(newRecipe.owner),
+      entityType: 'recipe',
+    },
+  )
 }
 
 export async function saveRecipe(newRecipe: NewRecipe): Promise<Recipe | null> {
-  return await trackRecipeCreation(
-    newRecipe,
-    String(newRecipe.owner),
-    async () => {
-      return await showPromise(
-        recipeRepository.insertRecipe(newRecipe),
-        {
-          loading: 'Salvando receita...',
-          success: 'Receita salva com sucesso',
-          error: 'Falha ao salvar receita',
-        },
-        { context: 'background' },
-      )
-    },
-  )
+  return await withUserFlowSpan('recipe.create', async () => {
+    return await showPromise(
+      recipeRepository.insertRecipe(newRecipe),
+      {
+        loading: 'Salvando receita...',
+        success: 'Receita salva com sucesso',
+        error: 'Falha ao salvar receita',
+      },
+      { context: 'background' },
+    )
+  })
 }
 
 export async function updateRecipe(
   recipeId: Recipe['id'],
   newRecipe: Recipe,
 ): Promise<Recipe | null> {
-  return await trackRecipeEdit(
-    String(recipeId),
-    newRecipe,
-    String(newRecipe.owner),
+  return await withUserFlowSpan(
+    'recipe.edit',
     async () => {
       return await showPromise(
         recipeRepository.updateRecipe(recipeId, newRecipe),
@@ -85,6 +88,10 @@ export async function updateRecipe(
         },
         { context: 'user-action' },
       )
+    },
+    {
+      userId: String(newRecipe.owner),
+      entityType: 'recipe',
     },
   )
 }
