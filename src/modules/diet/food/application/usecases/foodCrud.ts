@@ -7,7 +7,6 @@ import {
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { withUserFlowSpan } from '~/shared/config/performance'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import {
   createErrorHandler,
@@ -91,33 +90,31 @@ export async function fetchFoodByEan(
   ean: NonNullable<Food['ean']>,
   params: FoodSearchParams = {},
 ): Promise<Food | null> {
-  return await withUserFlowSpan('search.food_by_barcode', async () => {
-    try {
-      await showPromise(
-        importFoodFromApiByEan(ean),
-        {
-          loading: 'Importando alimento...',
-          success: 'Alimento importado com sucesso',
-          error: `Erro ao importar alimento por EAN: ${ean}`,
-        },
-        { context: 'background' },
-      )
-      return await showPromise(
-        foodRepository.fetchFoodByEan(ean, params),
-        {
-          loading: 'Buscando alimento por EAN...',
-          success: 'Alimento encontrado',
-          error: (error: unknown) =>
-            `Erro ao buscar alimento por EAN: ${formatError(error)}`,
-        },
-        { context: 'user-action' },
-      )
-    } catch (error) {
-      errorHandler.error(error, {
-        additionalData: { ean },
-      })
-      if (isBackendOutageError(error)) setBackendOutage(true)
-      return null
-    }
-  })
+  try {
+    await showPromise(
+      importFoodFromApiByEan(ean),
+      {
+        loading: 'Importando alimento...',
+        success: 'Alimento importado com sucesso',
+        error: `Erro ao importar alimento por EAN: ${ean}`,
+      },
+      { context: 'background' },
+    )
+    return await showPromise(
+      foodRepository.fetchFoodByEan(ean, params),
+      {
+        loading: 'Buscando alimento por EAN...',
+        success: 'Alimento encontrado',
+        error: (error: unknown) =>
+          `Erro ao buscar alimento por EAN: ${formatError(error)}`,
+      },
+      { context: 'user-action' },
+    )
+  } catch (error) {
+    errorHandler.error(error, {
+      additionalData: { ean },
+    })
+    if (isBackendOutageError(error)) setBackendOutage(true)
+    return null
+  }
 }

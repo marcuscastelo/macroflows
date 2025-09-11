@@ -5,7 +5,6 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { withUserFlowSpan } from '~/shared/config/performance'
 
 function createCrud(repository = createDayDietRepository()) {
   const fetchTargetDay = async (
@@ -43,17 +42,15 @@ function createCrud(repository = createDayDietRepository()) {
     dayId: DayDiet['id'],
     dayDiet: NewDayDiet,
   ): Promise<void> => {
-    await withUserFlowSpan('diet.day_edit', async () => {
-      await showPromise(
-        repository.updateDayDietById(dayId, dayDiet),
-        {
-          loading: 'Atualizando dieta...',
-          success: 'Dieta atualizada com sucesso',
-          error: 'Erro ao atualizar dieta',
-        },
-        { context: 'user-action' },
-      )
-    })
+    await showPromise(
+      repository.updateDayDietById(dayId, dayDiet),
+      {
+        loading: 'Atualizando dieta...',
+        success: 'Dieta atualizada com sucesso',
+        error: 'Erro ao atualizar dieta',
+      },
+      { context: 'user-action' },
+    )
   }
 
   const deleteDayDiet = async (dayId: DayDiet['id']): Promise<void> => {
