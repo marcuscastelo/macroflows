@@ -1,8 +1,3 @@
-import { trace } from '@opentelemetry/api'
-
-import { sentry } from '~/shared/config/sentry'
-import { isTracingEnabled } from '~/shared/config/telemetry'
-
 export type ErrorSeverity = 'critical' | 'error' | 'warning' | 'info'
 
 export type ErrorContext = {
@@ -72,27 +67,7 @@ export function logEnhancedError(
   // Only log to console in development mode
   if (import.meta.env.DEV) {
     console.error(`${timestamp} ${contextStr} Error:`, error)
-  }
 
-  // Send to Sentry with enhanced context
-  if (sentry.isSentryEnabled()) {
-    const errorToSend =
-      error instanceof Error ? error : new Error(String(error))
-    sentry.captureException(errorToSend, {
-      severity,
-      module,
-      component,
-      operation,
-      entityType: context.entityType,
-      entityId: context.entityId,
-      userId: context.userId,
-      businessContext: context.businessContext,
-      technicalContext: context.technicalContext,
-    })
-  }
-
-  // Only log context details in development mode
-  if (import.meta.env.DEV) {
     if (context.entityType !== undefined && context.entityId !== undefined) {
       console.error(`Entity: ${context.entityType}#${context.entityId}`)
     }
@@ -107,32 +82,6 @@ export function logEnhancedError(
 
     if (context.technicalContext) {
       console.error('Technical context:', context.technicalContext)
-    }
-  }
-
-  // Record error in OpenTelemetry span if available
-  if (isTracingEnabled()) {
-    const activeSpan = trace.getActiveSpan()
-    if (activeSpan) {
-      activeSpan.recordException(
-        error instanceof Error ? error : new Error(String(error)),
-      )
-      activeSpan.setAttributes({
-        'error.severity': severity,
-        'error.module': module,
-        'error.component': component,
-        'error.operation': operation,
-        'error.type': 'enhanced_error',
-      })
-      if (context.entityType !== undefined && context.entityId !== undefined) {
-        activeSpan.setAttributes({
-          'entity.type': context.entityType,
-          'entity.id': String(context.entityId),
-        })
-      }
-      if (context.userId !== undefined) {
-        activeSpan.setAttribute('user.id', String(context.userId))
-      }
     }
   }
 }
