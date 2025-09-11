@@ -2,15 +2,11 @@ import '~/app.css'
 
 import { Router } from '@solidjs/router'
 import { FileRoutes } from '@solidjs/start/router'
-import { createSignal, lazy, onCleanup, onMount, Suspense } from 'solid-js'
+import { createSignal, lazy, onCleanup, Suspense } from 'solid-js'
 
 import { BackendOutageBanner } from '~/sections/common/components/BackendOutageBanner'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { Providers } from '~/sections/common/context/Providers'
-import {
-  startConsoleInterception,
-  stopConsoleInterception,
-} from '~/shared/console/consoleInterceptor'
 import { SentryErrorBoundary } from '~/shared/error/SentryErrorBoundary'
 
 const BottomNavigation = lazy(async () => ({
@@ -38,14 +34,6 @@ function useAspectWidth() {
  */
 export default function App() {
   const width = useAspectWidth()
-
-  onMount(() => {
-    startConsoleInterception()
-  })
-
-  onCleanup(() => {
-    stopConsoleInterception()
-  })
 
   return (
     <SentryErrorBoundary>

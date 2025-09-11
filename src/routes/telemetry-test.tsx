@@ -1,78 +1,11 @@
 import type { Component } from 'solid-js'
-import { createSignal, Show } from 'solid-js'
 
-import { sentry } from '~/shared/config/sentry'
 import { logging } from '~/shared/utils/logging'
 
 const TelemetryTestPage: Component = () => {
-  const [lastAction, setLastAction] = createSignal('')
-
   const testSentryError = () => {
-    try {
-      logging.info('🧪 Testing Sentry error...')
-      throw new Error('Test error for Sentry integration')
-    } catch (error) {
-      logging.info('📤 Sending error via logging...')
-      logging.error('TelemetryTest testSentryError error:', error)
-      setLastAction('Error sent to Sentry + OpenTelemetry')
-    }
-  }
-
-  const testDirectSentry = () => {
-    logging.info('🎯 Testing direct Sentry call...')
-    void import('@sentry/solidstart').then((Sentry) => {
-      Sentry.captureException(new Error('Direct Sentry test error'), {
-        tags: { source: 'direct_test' },
-        extra: { timestamp: new Date().toISOString() },
-      })
-      setLastAction('Direct Sentry error sent')
-      logging.info('✅ Direct error sent to Sentry')
-    })
-  }
-
-  const testSentryBreadcrumbs = () => {
-    sentry.addBreadcrumb('User clicked breadcrumb test', 'user_action', {
-      component: 'TelemetryTestPage',
-      action: 'testSentryBreadcrumbs',
-    })
-    setLastAction('Breadcrumb added to Sentry')
-  }
-
-  const testUserContext = () => {
-    sentry.setUserContext({
-      id: 'test-user-123',
-      email: 'test@macroflows.app',
-      name: 'Test User',
-    })
-    setLastAction('User context set in Sentry')
-  }
-
-  const testCustomPerformance = () => {
-    // Test custom performance measurement using existing Sentry
-    const testMetrics = [
-      { name: 'custom-user-flow', value: Math.random() * 1000 + 200 },
-      { name: 'feature-load-time', value: Math.random() * 500 + 100 },
-      { name: 'interaction-response', value: Math.random() * 300 + 50 },
-    ]
-
-    testMetrics.forEach((metric) => {
-      // Use Sentry's performance API for custom metrics
-      sentry.addBreadcrumb(
-        `Custom Performance: ${metric.name}`,
-        'performance',
-        {
-          metric_name: metric.name,
-          value: metric.value,
-          unit: 'ms',
-          test_type: 'manual',
-        },
-        'info',
-      )
-    })
-
-    setLastAction(
-      `Custom performance metrics reported: ${testMetrics.map((m) => `${m.name}(${m.value.toFixed(0)}ms)`).join(', ')}`,
-    )
+    logging.info('🧪 Testing Sentry error...')
+    throw new Error('Test error for Sentry integration')
   }
 
   return (
@@ -87,14 +20,6 @@ const TelemetryTestPage: Component = () => {
               <h2 class="card-title">Integration Status</h2>
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <div
-                    class={`badge ${sentry.isSentryEnabled() ? 'badge-success' : 'badge-error'}`}
-                  >
-                    {sentry.isSentryEnabled() ? '✓' : '✗'}
-                  </div>
-                  <span>Sentry Integration</span>
-                </div>
-                <div class="flex items-center gap-2">
                   <div class="badge badge-success">✓</div>
                   <span>OpenTelemetry Tracing</span>
                 </div>
@@ -107,11 +32,6 @@ const TelemetryTestPage: Component = () => {
                   <span>Web Vitals (Built-in with Sentry)</span>
                 </div>
               </div>
-              <Show when={lastAction()}>
-                <div class="alert alert-info mt-4">
-                  <span class="text-sm">{lastAction()}</span>
-                </div>
-              </Show>
             </div>
           </div>
 
@@ -125,34 +45,6 @@ const TelemetryTestPage: Component = () => {
                   onClick={testSentryError}
                 >
                   Test Error Tracking
-                </button>
-
-                <button
-                  class="btn btn-outline btn-error btn-sm w-full"
-                  onClick={testDirectSentry}
-                >
-                  Test Direct Sentry
-                </button>
-
-                <button
-                  class="btn btn-secondary btn-sm w-full"
-                  onClick={testSentryBreadcrumbs}
-                >
-                  Test Breadcrumbs
-                </button>
-
-                <button
-                  class="btn btn-accent btn-sm w-full"
-                  onClick={testUserContext}
-                >
-                  Set User Context
-                </button>
-
-                <button
-                  class="btn btn-info btn-sm w-full"
-                  onClick={testCustomPerformance}
-                >
-                  Test Custom Performance
                 </button>
               </div>
             </div>

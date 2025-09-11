@@ -1,11 +1,6 @@
 // @refresh reload
 import { createHandler, StartServer } from '@solidjs/start/server'
 
-import { sentry } from '~/shared/config/sentry'
-
-// Initialize Sentry on server-side
-sentry.initializeSentry()
-
 export default createHandler(() => (
   <StartServer
     document={({ assets, children, scripts }) => (
