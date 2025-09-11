@@ -159,6 +159,7 @@ export function showError(
 ): string {
   vibrate(200)
   setTimeout(() => vibrate(200), 400)
+  // TODO: Move setBackendOutage
   if (isBackendOutageError(error)) {
     setBackendOutage(true)
     // Show a custom outage toast (pt-BR):
