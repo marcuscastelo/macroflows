@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/solidstart'
 
 import { createClientIntegrations } from '~/modules/observability/infrastructure/sentry/clientIntegrations'
 import { createSentryConfig } from '~/modules/observability/infrastructure/sentry/config'
-
+import { setupSentryOTelIntegration } from '~/modules/observability/infrastructure/sentry/otelIntegration'
 let isInitialized = false
 
 export async function initializeSentry(type: 'server' | 'client') {
@@ -50,6 +50,10 @@ export async function initializeSentry(type: 'server' | 'client') {
       // Set sample rate for profiling
       profilesSampleRate: 1.0,
     })
+
+    if (config.useOTel) {
+      await setupSentryOTelIntegration(type)
+    }
 
     isInitialized = true
   } catch (error) {

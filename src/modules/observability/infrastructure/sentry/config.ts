@@ -3,6 +3,7 @@ import { APP_VERSION } from '~/app-version'
 export type SentryConfig = {
   dsn?: string
   release: string
+  useOTel: boolean
 }
 
 export function createSentryConfig(): SentryConfig {
@@ -14,5 +15,6 @@ export function createSentryConfig(): SentryConfig {
         ? import.meta.env.VITE_SENTRY_DSN
         : undefined,
     release,
+    useOTel: false,
   }
 }
