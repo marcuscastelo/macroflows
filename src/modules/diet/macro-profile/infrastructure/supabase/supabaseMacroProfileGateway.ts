@@ -9,10 +9,9 @@ import {
   supabaseMacroProfileMapper,
 } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileMapper'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-const errorHandler = createErrorHandler('infrastructure', 'MacroProfileGateway')
 
 export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
   return {
@@ -33,7 +32,7 @@ async function fetchUserMacroProfiles(
     .order('target_day', { ascending: true })
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     throw error
   }
 
@@ -41,7 +40,7 @@ async function fetchUserMacroProfiles(
   try {
     macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
   } catch (validationError) {
-    errorHandler.error(validationError)
+    logging.error('MacroProfile validation error:', validationError)
     throw validationError
   }
 
@@ -58,7 +57,7 @@ async function insertMacroProfile(
     .select()
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     throw error
   }
 
@@ -66,7 +65,7 @@ async function insertMacroProfile(
   try {
     macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
   } catch (validationError) {
-    errorHandler.error(validationError)
+    logging.error('MacroProfile validation error:', validationError)
     throw validationError
   }
 
@@ -74,7 +73,10 @@ async function insertMacroProfile(
     const notFoundError = new Error(
       'Inserted macro profile not found in response',
     )
-    errorHandler.error(notFoundError)
+    logging.error(
+      'Inserted macro profile not found in response:',
+      notFoundError,
+    )
     throw notFoundError
   }
 
@@ -93,7 +95,7 @@ async function updateMacroProfile(
     .select()
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     throw error
   }
 
@@ -101,7 +103,7 @@ async function updateMacroProfile(
   try {
     macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
   } catch (validationError) {
-    errorHandler.error(validationError)
+    logging.error('MacroProfile validation error:', validationError)
     throw validationError
   }
 
@@ -109,7 +111,7 @@ async function updateMacroProfile(
     const notFoundError = new Error(
       'Updated macro profile not found in response',
     )
-    errorHandler.error(notFoundError)
+    logging.error('Updated macro profile not found in response:', notFoundError)
     throw notFoundError
   }
 
@@ -123,7 +125,7 @@ async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {
     .eq('id', id)
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     throw error
   }
 }

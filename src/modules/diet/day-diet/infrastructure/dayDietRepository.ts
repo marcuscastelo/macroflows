@@ -6,10 +6,9 @@ import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietReposi
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseDayGateway()
-const errorHandler = createErrorHandler('application', 'DayDiet')
 
 export function createDayDietRepository(): DayRepository {
   return {
@@ -35,7 +34,7 @@ export async function fetchDayDietById(
     dayCacheStore.upsertToCache(dayDiet)
     return dayDiet
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet fetch error:', error)
     dayCacheStore.removeFromCache({ by: 'id', value: dayId })
     return null
   }
@@ -56,7 +55,7 @@ export async function fetchDayDietByUserIdAndTargetDay(
     dayCacheStore.upsertToCache(currentDayDiet)
     return currentDayDiet
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet fetch error:', error)
     dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
     return null
   }
@@ -78,7 +77,7 @@ export async function fetchDayDietsByUserIdBeforeDate(
     }
     return previousDays
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet fetch error:', error)
     return []
   }
 }
@@ -93,7 +92,7 @@ export async function insertDayDiet(
     }
     return insertedDayDiet
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet insert error:', error)
     return null
   }
 }
@@ -113,7 +112,7 @@ export async function updateDayDietById(
     }
     return updatedDayDiet
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet update error:', error)
     return null
   }
 }
@@ -123,6 +122,6 @@ export async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {
     await supabaseGateway.deleteDayDietById(dayId)
     dayCacheStore.removeFromCache({ by: 'id', value: dayId })
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('DayDiet delete error:', error)
   }
 }

@@ -7,14 +7,9 @@ import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseMapper'
 import { type User } from '~/modules/user/domain/user'
-import {
-  createErrorHandler,
-  wrapErrorWithStack,
-} from '~/shared/error/errorHandler'
+import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
-
-const errorHandler = createErrorHandler('infrastructure', 'DayDiet')
 
 export function createSupabaseDayGateway(): DayGateway {
   return {
@@ -35,31 +30,23 @@ async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
       .eq('id', dayId)
 
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('DayDiet fetch error:', error)
       throw error
     }
 
     const dayDiets = Array.isArray(data) ? data : []
     if (dayDiets.length === 0) {
-      errorHandler.validationError('DayDiet not found', {
-        component: 'supabaseDayRepository',
-        operation: 'fetchDayDiet',
-        additionalData: { dayId },
-      })
+      logging.error('DayDiet not found:', { dayId })
       throw new Error('DayDiet not found')
     }
     const result = dayDietSchema.safeParse(dayDiets[0])
     if (!result.success) {
-      errorHandler.validationError('DayDiet invalid', {
-        component: 'supabaseDayRepository',
-        operation: 'fetchDayDiet',
-        additionalData: { dayId, parseError: result.error },
-      })
+      logging.error('DayDiet invalid:', { dayId, parseError: result.error })
       throw new Error('DayDiet invalid')
     }
     return result.data
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('DayDiet fetch error:', err)
     throw err
   }
 }
@@ -85,17 +72,16 @@ async function fetchDayDietByUserIdAndTargetDay(
       logging.debug(`[supabaseDayRepository] No day found for ${targetDay}`)
       return null
     }
-    errorHandler.error(error)
+    logging.error('DayDiet fetch error:', error)
     throw error
   }
 
   const dayData = data
   const result = dayDietSchema.safeParse(dayData)
   if (!result.success) {
-    errorHandler.validationError('Error parsing current day diet', {
-      component: 'supabaseDayRepository',
-      operation: 'fetchCurrentUserDayDiet',
-      additionalData: { parseError: result.error, targetDay },
+    logging.error('Error parsing current day diet:', {
+      parseError: result.error,
+      targetDay,
     })
     throw wrapErrorWithStack(result.error)
   }
@@ -122,7 +108,7 @@ async function fetchDayDietsByUserIdBeforeDate(
     .limit(limit)
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('DayDiet fetch error:', error)
     throw error
   }
 
@@ -158,7 +144,7 @@ async function updateDayDietById(
     .single()
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('DayDiet update error:', error)
     throw error
   }
 

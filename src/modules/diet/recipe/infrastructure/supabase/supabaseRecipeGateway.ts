@@ -6,11 +6,9 @@ import { type RecipeGateway } from '~/modules/diet/recipe/domain/recipeGateway'
 import { SUPABASE_TABLE_RECIPES } from '~/modules/diet/recipe/infrastructure/supabase/constants'
 import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supabase/supabaseRecipeMapper'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
+import { logging } from '~/shared/utils/logging'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
-
-const errorHandler = createErrorHandler('infrastructure', 'Recipe')
 
 export function createSupabaseRecipeGateway(): RecipeGateway {
   return {
@@ -37,12 +35,12 @@ const fetchUserRecipes = async (
       .select()
       .eq('owner', userId)
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
       return []
     }
     return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
     return []
   }
 }
@@ -61,13 +59,13 @@ const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe | null> => {
       .single()
 
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
       return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
     return null
   }
 }
@@ -91,13 +89,13 @@ const fetchUserRecipeByName = async (
       .eq('owner', userId)
       .ilike('name', `%${normalizedName}%`)
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
       return []
     }
 
     return data.map(supabaseRecipeMapper.toDomain)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
     return []
   }
 }
@@ -117,13 +115,13 @@ const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe | null> => {
       .single()
 
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
       return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
     return null
   }
 }
@@ -148,13 +146,13 @@ const updateRecipe = async (
       .select()
       .single()
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
       return null
     }
 
     return supabaseRecipeMapper.toDomain(data)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
     return null
   }
 }
@@ -170,9 +168,9 @@ const deleteRecipe = async (id: Recipe['id']): Promise<void> => {
       .delete()
       .eq('id', id)
     if (error !== null) {
-      errorHandler.error(error)
+      logging.error('Recipe fetch error:', error)
     }
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Recipe fetch error:', err)
   }
 }

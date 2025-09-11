@@ -1,6 +1,6 @@
 // TODO: remove id utils and find a way to generate ids in the database
 
-export type Identifiable = { id: number }
+type Identifiable = { id: number }
 
 /**
  * @deprecated Probably should be done by database

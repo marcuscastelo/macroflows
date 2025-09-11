@@ -4,17 +4,11 @@ import {
   type FoodSearchParams,
 } from '~/modules/diet/food/domain/foodRepository'
 import { supabaseFoodMapper } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodMapper'
-import {
-  createErrorHandler,
-  wrapErrorWithStack,
-} from '~/shared/error/errorHandler'
+import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
+import { wrapErrorWithStack } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
 import { logging } from '~/shared/utils/logging'
-
-const errorHandler = createErrorHandler('infrastructure', 'Food')
-
-import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
 
 export function createSupabaseFoodRepository(): FoodRepository {
   return {
@@ -46,12 +40,12 @@ async function fetchFoodById(
       { ...params, limit: 1 },
     )
     if (foods.length === 0 || foods[0] === undefined) {
-      errorHandler.error(new Error('Food not found'))
+      logging.error('Food not found')
       throw new Error('Food not found')
     }
     return foods[0]
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Food fetch error:', err)
     throw err
   }
 }
@@ -74,12 +68,12 @@ async function fetchFoodByEan(
       { ...params, limit: 1 },
     )
     if (foods.length === 0 || foods[0] === undefined) {
-      errorHandler.error(new Error('Food not found'))
+      logging.error('Food not found')
       throw new Error('Food not found')
     }
     return foods[0]
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Food fetch error:', err)
     throw err
   }
 }
@@ -103,7 +97,7 @@ async function insertFood(newFood: NewFood): Promise<Food> {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
     }
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -129,7 +123,7 @@ async function upsertFood(newFood: NewFood): Promise<Food> {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
     }
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -160,7 +154,7 @@ async function fetchFoodsByName(
     }
 
     if (result.error !== null) {
-      errorHandler.error(result.error)
+      logging.error('Food search error:', result.error)
       throw wrapErrorWithStack(result.error)
     }
 
@@ -173,7 +167,7 @@ async function fetchFoodsByName(
     logging.debug(`Found ${resultsCount} foods using ${searchType}`)
     return result.data.map(supabaseFoodMapper.toDomain)
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Food search error:', err)
     throw err
   }
 }
@@ -241,7 +235,7 @@ async function internalCachedSearchFoods(
 
   const { data: foods, error } = await query
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -262,7 +256,7 @@ async function fetchFoodsByIds(ids: Food['id'][]): Promise<readonly Food[]> {
     .in('id', ids)
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
