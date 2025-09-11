@@ -5,9 +5,8 @@ import {
 import { type CachedSearchGateway } from '~/modules/search/domain/searchGateway'
 import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
 import { supabaseCachedSearchMapper } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchMapper'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
-const errorHandler = createErrorHandler('infrastructure', 'SearchCache')
+import { logging } from '~/shared/utils/logging'
 
 export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
   return {
@@ -29,11 +28,10 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
 
         return data.length > 0
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseSearchCacheRepository',
-          operation: 'isSearchCached',
-          additionalData: { searchQuery },
-        })
+        logging.error(
+          'SupabaseSearchCacheRepository isSearchCached error:',
+          error,
+        )
         throw error
       }
     },
@@ -62,11 +60,10 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
           throw new Error('Failed to mark search as cached', { cause: error })
         }
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseSearchCacheRepository',
-          operation: 'markSearchAsCached',
-          additionalData: { searchQuery },
-        })
+        logging.error(
+          'SupabaseSearchCacheRepository markSearchAsCached error:',
+          error,
+        )
         throw error
       }
     },
@@ -84,11 +81,10 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
           throw new Error('Failed to unmark search as cached', { cause: error })
         }
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseSearchCacheRepository',
-          operation: 'unmarkSearchAsCached',
-          additionalData: { searchQuery },
-        })
+        logging.error(
+          'SupabaseSearchCacheRepository unmarkSearchAsCached error:',
+          error,
+        )
         throw error
       }
     },
