@@ -1,7 +1,7 @@
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -18,12 +18,12 @@ export async function trackDayCreation<T>(
   date: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'diet.day_create',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_day_creation',
           'validation',
           { userId, date },
@@ -32,9 +32,9 @@ export async function trackDayCreation<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'day_created_successfully',
           'calculation',
           { userId, date },
@@ -60,12 +60,12 @@ export async function trackMealItemAddition<T>(
   item: UnifiedItem,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'diet.meal_add_item',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_item_addition',
           'validation',
           {
@@ -79,9 +79,9 @@ export async function trackMealItemAddition<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_nutrition_impact',
           'calculation',
           {
@@ -122,12 +122,12 @@ export async function trackMealItemEdit<T>(
   changes: Partial<UnifiedItem>,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'diet.meal_edit_item',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_item_changes',
           'validation',
           {
@@ -140,9 +140,9 @@ export async function trackMealItemEdit<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'recalculate_meal_totals',
           'calculation',
           { userId, itemId },
@@ -168,12 +168,12 @@ export async function trackDayCopy<T>(
   targetDate: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'diet.day_copy',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_source_day',
           'db.query',
           { userId, sourceDate },
@@ -182,16 +182,16 @@ export async function trackDayCopy<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'create_target_day',
           'db.query',
           { userId, targetDate },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'copy_meals_and_items',
           'db.query',
           { sourceDate, targetDate },
@@ -216,17 +216,22 @@ export async function trackDayEditSession<T>(
   date: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'diet.day_edit',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(transactionId, 'load_day_data', 'db.query', {
-          userId,
-          date,
-        })
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
+          'load_day_data',
+          'db.query',
+          {
+            userId,
+            date,
+          },
+        )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'load_macro_targets',
           'cache.read',
           { userId },
@@ -235,16 +240,16 @@ export async function trackDayEditSession<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_day_changes',
           'db.query',
           { userId, date },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_cache',
           'cache.write',
           { userId, date },
@@ -265,14 +270,14 @@ export async function trackDayEditSession<T>(
  * Utility to track database operations within diet transactions
  */
 export function trackDietDbOperation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   entityType: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'db.query', {
+  performanceManager.addSpanAttributes(spanId, operation, 'db.query', {
     entityType,
     ...metadata,
   })
@@ -282,15 +287,15 @@ export function trackDietDbOperation(
  * Utility to track API calls within diet transactions
  */
 export function trackDietApiCall(
-  transactionId: string | null,
+  spanId: string | null,
   endpoint: string,
   method: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(
-    transactionId,
+  performanceManager.addSpanAttributes(
+    spanId,
     `api_${method.toLowerCase()}_${endpoint}`,
     'api.call',
     {

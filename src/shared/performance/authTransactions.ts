@@ -1,6 +1,6 @@
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -17,12 +17,12 @@ export async function trackUserLogin<T>(
   loginMethod: 'email' | 'oauth' | 'magic_link',
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'auth.login',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_login_credentials',
           'validation',
           {
@@ -32,8 +32,8 @@ export async function trackUserLogin<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_user_cache',
           'cache.read',
           { email },
@@ -42,23 +42,23 @@ export async function trackUserLogin<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'authenticate_user',
           'api.call',
           { email, loginMethod },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'load_user_session',
           'db.query',
           { email },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_user_session',
           'cache.write',
           { email },
@@ -81,19 +81,19 @@ export async function trackUserLogout<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'auth.logout',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_logout_request',
           'validation',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'invalidate_user_session',
           'api.call',
           { userId },
@@ -102,16 +102,16 @@ export async function trackUserLogout<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'clear_user_cache',
           'cache.write',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'cleanup_local_storage',
           'cache.write',
           { userId },
@@ -136,12 +136,12 @@ export async function trackUserRegistration<T>(
   registrationMethod: 'email' | 'oauth',
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'auth.register',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_registration_data',
           'validation',
           {
@@ -151,8 +151,8 @@ export async function trackUserRegistration<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_existing_user',
           'db.query',
           { email },
@@ -161,23 +161,23 @@ export async function trackUserRegistration<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'create_user_account',
           'api.call',
           { email, registrationMethod },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'setup_user_defaults',
           'db.query',
           { email },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'send_welcome_email',
           'api.call',
           { email },
@@ -200,19 +200,19 @@ export async function trackPasswordReset<T>(
   email: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'auth.password_reset',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_reset_request',
           'validation',
           { email },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_user_exists',
           'db.query',
           { email },
@@ -221,23 +221,23 @@ export async function trackPasswordReset<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'generate_reset_token',
           'calculation',
           { email },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'send_reset_email',
           'api.call',
           { email },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'log_reset_attempt',
           'db.query',
           { email },
@@ -260,19 +260,19 @@ export async function trackSessionValidation<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'auth.login', // Reuse login transaction type for session validation
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_session_cache',
           'cache.read',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_session_token',
           'validation',
           { userId },
@@ -281,16 +281,16 @@ export async function trackSessionValidation<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'refresh_session_data',
           'api.call',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_session_cache',
           'cache.write',
           { userId },
@@ -311,13 +311,13 @@ export async function trackSessionValidation<T>(
  * Utility to track authentication API calls
  */
 export function trackAuthApiCall(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'api.call', {
+  performanceManager.addSpanAttributes(spanId, operation, 'api.call', {
     service: 'supabase_auth',
     ...metadata,
   })
@@ -327,15 +327,15 @@ export function trackAuthApiCall(
  * Utility to track authentication cache operations
  */
 export function trackAuthCache(
-  transactionId: string | null,
+  spanId: string | null,
   operation: 'hit' | 'miss' | 'write' | 'clear',
   cacheKey: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(
-    transactionId,
+  performanceManager.addSpanAttributes(
+    spanId,
     `auth_cache_${operation}`,
     operation === 'write' || operation === 'clear'
       ? 'cache.write'

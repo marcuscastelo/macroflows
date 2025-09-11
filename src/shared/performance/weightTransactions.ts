@@ -1,7 +1,7 @@
 import { type Weight } from '~/modules/weight/domain/weight'
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -18,12 +18,12 @@ export async function trackWeightEntry<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.record_entry',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_weight_data',
           'validation',
           {
@@ -32,8 +32,8 @@ export async function trackWeightEntry<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_duplicate_entry',
           'db.query',
           { userId, measuredAt: weightData.target_timestamp },
@@ -42,23 +42,23 @@ export async function trackWeightEntry<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_weight_entry',
           'db.query',
           { userId, weightValue: weightData.weight },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_weight_cache',
           'cache.write',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_weight_trends',
           'calculation',
           { userId, weightValue: weightData.weight },
@@ -84,12 +84,12 @@ export async function trackWeightEdit<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.edit_entry',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_weight_changes',
           'validation',
           {
@@ -99,8 +99,8 @@ export async function trackWeightEdit<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_existing_weight',
           'db.query',
           { weightId, userId },
@@ -109,23 +109,23 @@ export async function trackWeightEdit<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_weight_entry',
           'db.query',
           { weightId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'recalculate_weight_trends',
           'calculation',
           { userId, weightId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'invalidate_weight_cache',
           'cache.write',
           { userId },
@@ -150,19 +150,19 @@ export async function trackWeightDeletion<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.delete_entry',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_weight_deletion',
           'validation',
           { weightId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_weight_existence',
           'db.query',
           { weightId, userId },
@@ -171,23 +171,23 @@ export async function trackWeightDeletion<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'delete_weight_entry',
           'db.query',
           { weightId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'recalculate_trends_after_deletion',
           'calculation',
           { userId, weightId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_weight_cache',
           'cache.write',
           { userId },
@@ -212,12 +212,12 @@ export async function trackWeightHistoryView<T>(
   dateRange: { startDate: string; endDate: string },
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.view_history',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_date_range',
           'validation',
           {
@@ -231,8 +231,8 @@ export async function trackWeightHistoryView<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_weight_cache',
           'cache.read',
           { userId, ...dateRange },
@@ -241,23 +241,23 @@ export async function trackWeightHistoryView<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_weight_history',
           'db.query',
           { userId, ...dateRange },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_weight_statistics',
           'calculation',
           { userId, ...dateRange },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_weight_history',
           'cache.write',
           { userId, ...dateRange },
@@ -283,12 +283,12 @@ export async function trackWeightChartRender<T>(
   dataPoints: number,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.view_history',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'prepare_chart_data',
           'calculation',
           {
@@ -298,8 +298,8 @@ export async function trackWeightChartRender<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_trend_lines',
           'calculation',
           {
@@ -311,9 +311,9 @@ export async function trackWeightChartRender<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'render_weight_chart',
           'ui.render',
           {
@@ -342,26 +342,26 @@ export async function trackWeightStatsCalculation<T>(
   timeframe: 'week' | 'month' | 'quarter' | 'year',
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'weight.view_history',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_weight_data_for_stats',
           'db.query',
           { userId, timeframe },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_weight_averages',
           'calculation',
           { timeframe },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_weight_trends',
           'calculation',
           { timeframe },
@@ -370,9 +370,9 @@ export async function trackWeightStatsCalculation<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_weight_statistics',
           'cache.write',
           { userId, timeframe },
@@ -393,14 +393,14 @@ export async function trackWeightStatsCalculation<T>(
  * Utility to track weight calculation operations
  */
 export function trackWeightCalculation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   userId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'calculation', {
+  performanceManager.addSpanAttributes(spanId, operation, 'calculation', {
     userId,
     ...metadata,
   })
@@ -410,14 +410,14 @@ export function trackWeightCalculation(
  * Utility to track weight database operations
  */
 export function trackWeightDbOperation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   userId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'db.query', {
+  performanceManager.addSpanAttributes(spanId, operation, 'db.query', {
     userId,
     ...metadata,
   })

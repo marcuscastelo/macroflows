@@ -3,9 +3,9 @@ import type * as Sentry from '@sentry/solidstart'
 import { sentry } from '~/shared/config/sentry'
 
 /**
- * Custom transaction types for major user flows
+ * User flow categories for major spans
  */
-export type TransactionType =
+export type UserFlowType =
   | 'user_flow.diet_management'
   | 'user_flow.food_search'
   | 'user_flow.recipe_management'
@@ -14,9 +14,9 @@ export type TransactionType =
   | 'user_flow.authentication'
 
 /**
- * Transaction operations for granular tracking
+ * User flow operations for granular tracking
  */
-export type TransactionOperation =
+export type UserFlowOperation =
   // Diet Management
   | 'diet.day_create'
   | 'diet.day_edit'
@@ -51,9 +51,9 @@ export type TransactionOperation =
   | 'auth.password_reset'
 
 /**
- * Enhanced transaction context for detailed tracking
+ * Enhanced user flow context for detailed tracking
  */
-export type TransactionContext = {
+export type UserFlowContext = {
   userId?: string
   entityId?: string | number
   entityType?: string
@@ -80,28 +80,28 @@ export type SpanType =
   | 'ui.render'
 
 /**
- * Performance transaction manager for major user flows
+ * Performance span manager for major user flows
  */
-class PerformanceTransactionManager {
-  private activeTransactions = new Map<string, Sentry.Span>()
+class PerformanceSpanManager {
+  private activeSpans = new Map<string, Sentry.Span>()
 
   /**
-   * Start a custom transaction for a major user flow
+   * Start a custom span for a major user flow
    */
-  startTransaction(
-    operation: TransactionOperation,
-    context?: TransactionContext,
+  startSpan(
+    operation: UserFlowOperation,
+    context?: UserFlowContext,
   ): string | null {
     if (!sentry.isSentryEnabled()) {
       return null
     }
 
-    const transactionId = this.generateTransactionId(operation)
-    const transactionType = this.getTransactionType(operation)
+    const spanId = this.generateSpanId(operation)
+    const spanType = this.getUserFlowType(operation)
 
     const attributes: Record<string, string | number | boolean> = {
-      'transaction.type': transactionType,
-      'transaction.operation': operation,
+      'span.flow_type': spanType,
+      'span.operation': operation,
     }
 
     // Add context attributes
@@ -136,20 +136,20 @@ class PerformanceTransactionManager {
     }
 
     const span = sentry.startSpan(
-      `${transactionType}.${operation}`,
-      transactionType,
+      `${spanType}.${operation}`,
+      spanType,
       attributes,
     )
 
     if (span) {
-      this.activeTransactions.set(transactionId, span)
+      this.activeSpans.set(spanId, span)
 
-      // Add breadcrumb for transaction start
+      // Add breadcrumb for span start
       sentry.addBreadcrumb(
-        `Started transaction: ${operation}`,
-        'transaction',
+        `Started user flow span: ${operation}`,
+        'performance',
         {
-          transactionId,
+          spanId,
           operation,
           context,
         },
@@ -157,23 +157,24 @@ class PerformanceTransactionManager {
       )
     }
 
-    return transactionId
+    return spanId
   }
 
   /**
-   * Add a custom span to track sub-operations within a transaction
+   * Add attributes to track sub-operations within a user flow span
    */
-  addSpan(
-    transactionId: string,
-    spanName: string,
-    spanType: SpanType,
+  addSpanAttributes(
+    spanId: string,
+    operationName: string,
+    operationType: SpanType,
     data?: Record<string, unknown>,
   ): void {
-    const transaction = this.activeTransactions.get(transactionId)
-    if (transaction === undefined) return
+    const span = this.activeSpans.get(spanId)
+    if (span === undefined) return
 
     const attributes: Record<string, string | number | boolean> = {
-      'span.type': spanType,
+      'operation.type': operationType,
+      'operation.name': operationName,
     }
 
     if (data) {
@@ -190,32 +191,31 @@ class PerformanceTransactionManager {
       })
     }
 
-    // Create child span within the transaction
-    transaction.setAttribute('span.name', spanName)
+    // Add attributes to the user flow span
     Object.entries(attributes).forEach(([key, value]) => {
-      transaction.setAttribute(key, value)
+      span.setAttribute(key, value)
     })
   }
 
   /**
-   * Record an error within a transaction
+   * Record an error within a user flow span
    */
   recordError(
-    transactionId: string,
+    spanId: string,
     error: Error,
     context?: Record<string, unknown>,
   ): void {
-    const transaction = this.activeTransactions.get(transactionId)
-    if (transaction === undefined) return
+    const span = this.activeSpans.get(spanId)
+    if (span === undefined) return
 
-    // Record error on transaction
-    transaction.recordException(error)
-    transaction.setStatus({ code: 2, message: 'Internal error' })
+    // Record error on span
+    span.recordException(error)
+    span.setStatus({ code: 2, message: 'Internal error' })
 
     // Add error context as attributes
     if (context) {
       Object.entries(context).forEach(([key, value]) => {
-        transaction.setAttribute(
+        span.setAttribute(
           `error.${key}`,
           typeof value === 'string' ||
             typeof value === 'number' ||
@@ -227,10 +227,10 @@ class PerformanceTransactionManager {
     }
 
     sentry.addBreadcrumb(
-      `Transaction error: ${error.message}`,
+      `User flow span error: ${error.message}`,
       'error',
       {
-        transactionId,
+        spanId,
         error: error.name,
         message: error.message,
         context,
@@ -240,10 +240,10 @@ class PerformanceTransactionManager {
   }
 
   /**
-   * Complete a transaction with success metrics
+   * Complete a user flow span with success metrics
    */
-  completeTransaction(
-    transactionId: string,
+  completeSpan(
+    spanId: string,
     metrics?: {
       itemsProcessed?: number
       dataTransferred?: number
@@ -254,106 +254,100 @@ class PerformanceTransactionManager {
       duration?: number
     },
   ): void {
-    const transaction = this.activeTransactions.get(transactionId)
-    if (transaction === undefined) return
+    const span = this.activeSpans.get(spanId)
+    if (span === undefined) return
 
     // Add final metrics as attributes
     if (metrics) {
       if (metrics.itemsProcessed !== undefined) {
-        transaction.setAttribute(
-          'metrics.items_processed',
-          metrics.itemsProcessed,
-        )
+        span.setAttribute('metrics.items_processed', metrics.itemsProcessed)
       }
       if (metrics.dataTransferred !== undefined) {
-        transaction.setAttribute(
-          'metrics.data_transferred',
-          metrics.dataTransferred,
-        )
+        span.setAttribute('metrics.data_transferred', metrics.dataTransferred)
       }
       if (metrics.cacheHits !== undefined) {
-        transaction.setAttribute('metrics.cache_hits', metrics.cacheHits)
+        span.setAttribute('metrics.cache_hits', metrics.cacheHits)
       }
       if (metrics.cacheMisses !== undefined) {
-        transaction.setAttribute('metrics.cache_misses', metrics.cacheMisses)
+        span.setAttribute('metrics.cache_misses', metrics.cacheMisses)
       }
       if (metrics.apiCalls !== undefined) {
-        transaction.setAttribute('metrics.api_calls', metrics.apiCalls)
+        span.setAttribute('metrics.api_calls', metrics.apiCalls)
       }
       if (metrics.dbQueries !== undefined) {
-        transaction.setAttribute('metrics.db_queries', metrics.dbQueries)
+        span.setAttribute('metrics.db_queries', metrics.dbQueries)
       }
     }
 
     // Set success status
-    transaction.setStatus({ code: 1, message: 'OK' })
+    span.setStatus({ code: 1, message: 'OK' })
 
     // Add completion breadcrumb
     sentry.addBreadcrumb(
-      `Completed transaction: ${transactionId}`,
-      'transaction',
+      `Completed user flow span: ${spanId}`,
+      'performance',
       {
-        transactionId,
+        spanId,
         metrics,
       },
       'info',
     )
 
-    // End the transaction
-    transaction.end()
-    this.activeTransactions.delete(transactionId)
+    // End the span
+    span.end()
+    this.activeSpans.delete(spanId)
   }
 
   /**
-   * Abort a transaction due to error or cancellation
+   * Abort a user flow span due to error or cancellation
    */
-  abortTransaction(transactionId: string, reason: string, error?: Error): void {
-    const transaction = this.activeTransactions.get(transactionId)
-    if (transaction === undefined) return
+  abortSpan(spanId: string, reason: string, error?: Error): void {
+    const span = this.activeSpans.get(spanId)
+    if (span === undefined) return
 
     // Set abort status and reason
-    transaction.setAttribute('abort.reason', reason)
-    transaction.setStatus({ code: 2, message: 'Aborted' })
+    span.setAttribute('abort.reason', reason)
+    span.setStatus({ code: 2, message: 'Aborted' })
 
     if (error) {
-      transaction.recordException(error)
+      span.recordException(error)
     }
 
     sentry.addBreadcrumb(
-      `Aborted transaction: ${transactionId}`,
-      'transaction',
+      `Aborted user flow span: ${spanId}`,
+      'performance',
       {
-        transactionId,
+        spanId,
         reason,
         error: error?.message,
       },
       'warning',
     )
 
-    transaction.end()
-    this.activeTransactions.delete(transactionId)
+    span.end()
+    this.activeSpans.delete(spanId)
   }
 
   /**
-   * Get active transaction count for monitoring
+   * Get active span count for monitoring
    */
-  getActiveTransactionCount(): number {
-    return this.activeTransactions.size
+  getActiveSpanCount(): number {
+    return this.activeSpans.size
   }
 
   /**
-   * Generate unique transaction ID
+   * Generate unique span ID
    */
-  private generateTransactionId(operation: TransactionOperation): string {
+  private generateSpanId(operation: UserFlowOperation): string {
     const timestamp = Date.now()
     const random = Math.random().toString(36).substring(2, 8)
     return `${operation}_${timestamp}_${random}`
   }
 
   /**
-   * Map operation to transaction type
+   * Map operation to user flow type
    */
-  private getTransactionType(operation: TransactionOperation): TransactionType {
+  private getUserFlowType(operation: UserFlowOperation): UserFlowType {
     if (operation.startsWith('diet.')) return 'user_flow.diet_management'
     if (operation.startsWith('search.')) return 'user_flow.food_search'
     if (operation.startsWith('recipe.')) return 'user_flow.recipe_management'
@@ -366,34 +360,34 @@ class PerformanceTransactionManager {
 }
 
 // Singleton instance
-export const performanceManager = new PerformanceTransactionManager()
+export const performanceManager = new PerformanceSpanManager()
 
 /**
  * Utility function to wrap async operations with transaction tracking
  */
-export async function withTransaction<T>(
-  operation: TransactionOperation,
-  fn: (transactionId: string | null) => Promise<T>,
-  context?: TransactionContext,
+export async function withUserFlowSpan<T>(
+  operation: UserFlowOperation,
+  fn: (spanId: string | null) => Promise<T>,
+  context?: UserFlowContext,
 ): Promise<T> {
-  const transactionId = performanceManager.startTransaction(operation, context)
+  const spanId = performanceManager.startSpan(operation, context)
 
   try {
-    const result = await fn(transactionId)
+    const result = await fn(spanId)
 
-    if (transactionId !== null && transactionId !== '') {
-      performanceManager.completeTransaction(transactionId)
+    if (spanId !== null && spanId !== '') {
+      performanceManager.completeSpan(spanId)
     }
 
     return result
   } catch (error) {
-    if (transactionId !== null && transactionId !== '') {
+    if (spanId !== null && spanId !== '') {
       performanceManager.recordError(
-        transactionId,
+        spanId,
         error instanceof Error ? error : new Error(String(error)),
       )
-      performanceManager.abortTransaction(
-        transactionId,
+      performanceManager.abortSpan(
+        spanId,
         'Operation failed',
         error instanceof Error ? error : new Error(String(error)),
       )
@@ -403,11 +397,11 @@ export async function withTransaction<T>(
 }
 
 /**
- * Decorator for automatic transaction tracking on methods
+ * Decorator for automatic user flow span tracking on methods
  */
-export function trackTransaction(
-  operation: TransactionOperation,
-  getContext?: (...args: unknown[]) => TransactionContext,
+export function trackUserFlowSpan(
+  operation: UserFlowOperation,
+  getContext?: (...args: unknown[]) => UserFlowContext,
 ) {
   return function <T extends (...args: unknown[]) => Promise<unknown>>(
     _target: unknown,
@@ -422,7 +416,7 @@ export function trackTransaction(
     const wrappedFunction = async function (this: unknown, ...args: unknown[]) {
       const context = getContext ? getContext(...args) : undefined
 
-      return await withTransaction(
+      return await withUserFlowSpan(
         operation,
         async () => await originalMethod.apply(this, args),
         context,

@@ -1,6 +1,6 @@
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -22,12 +22,12 @@ export async function trackMacroTargetUpdate<T>(
   },
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'profile.update_macro_targets',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_macro_targets',
           'validation',
           {
@@ -40,8 +40,8 @@ export async function trackMacroTargetUpdate<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_macro_ratios',
           'calculation',
           {
@@ -63,23 +63,23 @@ export async function trackMacroTargetUpdate<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_macro_targets',
           'db.query',
           { userId, ...targets },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_profile_cache',
           'cache.write',
           { userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'invalidate_day_caches',
           'cache.write',
           { userId },
@@ -104,12 +104,12 @@ export async function trackPreferencesUpdate<T>(
   preferences: Record<string, unknown>,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'profile.update_preferences',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_preferences',
           'validation',
           {
@@ -119,8 +119,8 @@ export async function trackPreferencesUpdate<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_current_preferences',
           'db.query',
           { userId },
@@ -129,16 +129,16 @@ export async function trackPreferencesUpdate<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_user_preferences',
           'db.query',
           { userId, preferencesCount: Object.keys(preferences).length },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_preferences_cache',
           'cache.write',
           { userId },
@@ -165,12 +165,12 @@ export async function trackDataExport<T>(
   operation: () => Promise<T>,
   dateRange?: { startDate: string; endDate: string },
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'profile.export_data',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_export_request',
           'validation',
           {
@@ -183,8 +183,8 @@ export async function trackDataExport<T>(
         )
 
         if (dateRange) {
-          performanceManager.addSpan(
-            transactionId,
+          performanceManager.addSpanAttributes(
+            spanId,
             'calculate_export_scope',
             'calculation',
             {
@@ -201,23 +201,23 @@ export async function trackDataExport<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_export_data',
           'db.query',
           { userId, exportType, ...dateRange },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'format_export_data',
           'calculation',
           { userId, exportType },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'generate_export_file',
           'calculation',
           { userId, exportType },
@@ -242,20 +242,20 @@ export async function trackProfileDataLoad<T>(
   dataTypes: string[],
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'profile.update_preferences', // Reuse preferences transaction type
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_profile_cache',
           'cache.read',
           { userId, dataTypes: dataTypes.join(',') },
         )
 
         dataTypes.forEach((dataType) => {
-          performanceManager.addSpan(
-            transactionId,
+          performanceManager.addSpanAttributes(
+            spanId,
             `load_${dataType}_data`,
             'db.query',
             { userId, dataType },
@@ -265,9 +265,9 @@ export async function trackProfileDataLoad<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_profile_data',
           'cache.write',
           { userId, dataTypes: dataTypes.join(',') },
@@ -293,12 +293,12 @@ export async function trackUserOnboarding<T>(
   stepData: Record<string, unknown>,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'profile.update_preferences',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_onboarding_step',
           'validation',
           {
@@ -308,8 +308,8 @@ export async function trackUserOnboarding<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'track_onboarding_progress',
           'calculation',
           { userId, onboardingStep },
@@ -318,16 +318,16 @@ export async function trackUserOnboarding<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_onboarding_data',
           'db.query',
           { userId, onboardingStep },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_user_profile',
           'db.query',
           { userId },
@@ -348,14 +348,14 @@ export async function trackUserOnboarding<T>(
  * Utility to track profile calculation operations
  */
 export function trackProfileCalculation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   userId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'calculation', {
+  performanceManager.addSpanAttributes(spanId, operation, 'calculation', {
     userId,
     ...metadata,
   })
@@ -365,14 +365,14 @@ export function trackProfileCalculation(
  * Utility to track profile database operations
  */
 export function trackProfileDbOperation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   userId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'db.query', {
+  performanceManager.addSpanAttributes(spanId, operation, 'db.query', {
     userId,
     ...metadata,
   })

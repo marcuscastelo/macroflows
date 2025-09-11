@@ -4,7 +4,7 @@ import {
 } from '~/modules/diet/recipe/domain/recipe'
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -21,12 +21,12 @@ export async function trackRecipeCreation<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'recipe.create',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_recipe_data',
           'validation',
           {
@@ -36,8 +36,8 @@ export async function trackRecipeCreation<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_recipe_nutrition',
           'calculation',
           {
@@ -48,16 +48,16 @@ export async function trackRecipeCreation<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'save_recipe_to_db',
           'db.query',
           { userId, recipeName: newRecipe.name },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_recipe_cache',
           'cache.write',
           { userId, recipeName: newRecipe.name },
@@ -83,12 +83,12 @@ export async function trackRecipeEdit<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'recipe.edit',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_recipe_changes',
           'validation',
           {
@@ -99,8 +99,8 @@ export async function trackRecipeEdit<T>(
         )
 
         if (changes.items) {
-          performanceManager.addSpan(
-            transactionId,
+          performanceManager.addSpanAttributes(
+            spanId,
             'recalculate_recipe_nutrition',
             'calculation',
             {
@@ -113,16 +113,16 @@ export async function trackRecipeEdit<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_recipe_in_db',
           'db.query',
           { userId, recipeId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'invalidate_recipe_cache',
           'cache.write',
           { userId, recipeId },
@@ -147,19 +147,19 @@ export async function trackRecipeDeletion<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'recipe.delete',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_recipe_deletion',
           'validation',
           { recipeId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_recipe_usage',
           'db.query',
           { recipeId },
@@ -168,16 +168,16 @@ export async function trackRecipeDeletion<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'delete_recipe_from_db',
           'db.query',
           { userId, recipeId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'remove_recipe_from_cache',
           'cache.write',
           { userId, recipeId },
@@ -203,19 +203,19 @@ export async function trackRecipeDuplication<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'recipe.duplicate',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_source_recipe',
           'db.query',
           { sourceRecipeId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_new_recipe_name',
           'validation',
           { newRecipeName, userId },
@@ -224,16 +224,16 @@ export async function trackRecipeDuplication<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'create_duplicate_recipe',
           'db.query',
           { sourceRecipeId, newRecipeName, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_recipe_cache',
           'cache.write',
           { userId, newRecipeName },
@@ -260,19 +260,19 @@ export async function trackRecipeAddToMeal<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'recipe.add_to_meal',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'fetch_recipe_data',
           'cache.read',
           { recipeId, userId },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_scaled_nutrition',
           'calculation',
           {
@@ -285,16 +285,16 @@ export async function trackRecipeAddToMeal<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'add_recipe_to_meal',
           'db.query',
           { recipeId, mealId, servings },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'update_meal_cache',
           'cache.write',
           { mealId, userId },
@@ -320,12 +320,12 @@ export async function trackRecipeSearch<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_by_name', // Reuse search transaction type
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'search_user_recipes',
           'db.query',
           {
@@ -335,8 +335,8 @@ export async function trackRecipeSearch<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'filter_recipe_results',
           'calculation',
           { searchQuery, userId },
@@ -345,9 +345,9 @@ export async function trackRecipeSearch<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_recipe_search',
           'cache.write',
           { searchQuery, userId },
@@ -368,14 +368,14 @@ export async function trackRecipeSearch<T>(
  * Utility to track recipe calculation operations
  */
 export function trackRecipeCalculation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   recipeId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'calculation', {
+  performanceManager.addSpanAttributes(spanId, operation, 'calculation', {
     recipeId,
     ...metadata,
   })
@@ -385,14 +385,14 @@ export function trackRecipeCalculation(
  * Utility to track recipe database operations
  */
 export function trackRecipeDbOperation(
-  transactionId: string | null,
+  spanId: string | null,
   operation: string,
   recipeId: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(transactionId, operation, 'db.query', {
+  performanceManager.addSpanAttributes(spanId, operation, 'db.query', {
     recipeId,
     ...metadata,
   })

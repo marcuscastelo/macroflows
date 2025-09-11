@@ -18,10 +18,10 @@
 export {
   performanceManager,
   type SpanType,
-  type TransactionContext,
-  type TransactionOperation,
-  type TransactionType,
-  withTransaction,
+  type UserFlowContext,
+  type UserFlowOperation,
+  type UserFlowType,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 // Diet Management Transactions

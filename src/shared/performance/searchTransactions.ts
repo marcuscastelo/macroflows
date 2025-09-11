@@ -1,7 +1,7 @@
 import { type Food } from '~/modules/diet/food/domain/food'
 import {
   performanceManager,
-  withTransaction,
+  withUserFlowSpan,
 } from '~/shared/config/performance'
 
 /**
@@ -18,12 +18,12 @@ export async function trackFoodSearch<T>(
   operation: () => Promise<T>,
   userId?: string,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_by_name',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_search_query',
           'validation',
           {
@@ -32,8 +32,8 @@ export async function trackFoodSearch<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_search_cache',
           'cache.read',
           { searchQuery },
@@ -42,9 +42,9 @@ export async function trackFoodSearch<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'process_search_results',
           'calculation',
           { searchQuery },
@@ -69,12 +69,12 @@ export async function trackBarcodeSearch<T>(
   operation: () => Promise<T>,
   userId?: string,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_by_barcode',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_barcode',
           'validation',
           {
@@ -83,8 +83,8 @@ export async function trackBarcodeSearch<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'check_barcode_cache',
           'cache.read',
           { barcode },
@@ -93,9 +93,9 @@ export async function trackBarcodeSearch<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'process_barcode_result',
           'calculation',
           { barcode },
@@ -121,12 +121,12 @@ export async function trackFoodSelection<T>(
   userId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_selection',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'validate_food_selection',
           'validation',
           {
@@ -136,8 +136,8 @@ export async function trackFoodSelection<T>(
           },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'calculate_portion_nutrition',
           'calculation',
           {
@@ -152,9 +152,9 @@ export async function trackFoodSelection<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'add_to_recent_foods',
           'cache.write',
           { userId, foodId: food.id },
@@ -179,12 +179,12 @@ export async function trackSearchSession<T>(
   sessionId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_selection',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'initialize_search_session',
           'cache.read',
           { userId, sessionId },
@@ -193,9 +193,9 @@ export async function trackSearchSession<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'finalize_search_session',
           'cache.write',
           { userId, sessionId },
@@ -220,12 +220,12 @@ export async function trackFoodApiFetch<T>(
   operation: () => Promise<T>,
   query: string,
 ): Promise<T> {
-  return await withTransaction(
+  return await withUserFlowSpan(
     'search.food_by_name',
-    async (transactionId) => {
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+    async (spanId) => {
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           `fetch_${endpoint}`,
           'api.call',
           {
@@ -238,16 +238,16 @@ export async function trackFoodApiFetch<T>(
 
       const result = await operation()
 
-      if (transactionId !== null) {
-        performanceManager.addSpan(
-          transactionId,
+      if (spanId !== null) {
+        performanceManager.addSpanAttributes(
+          spanId,
           'process_api_response',
           'calculation',
           { endpoint, query },
         )
 
-        performanceManager.addSpan(
-          transactionId,
+        performanceManager.addSpanAttributes(
+          spanId,
           'cache_api_result',
           'cache.write',
           { endpoint, query },
@@ -268,7 +268,7 @@ export async function trackFoodApiFetch<T>(
  * Utility to track search performance metrics
  */
 export function trackSearchMetrics(
-  transactionId: string | null,
+  spanId: string | null,
   metrics: {
     resultsCount?: number
     apiResponseTime?: number
@@ -276,10 +276,10 @@ export function trackSearchMetrics(
     queryComplexity?: 'simple' | 'medium' | 'complex'
   },
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(
-    transactionId,
+  performanceManager.addSpanAttributes(
+    spanId,
     'search_performance_metrics',
     'calculation',
     {
@@ -295,15 +295,15 @@ export function trackSearchMetrics(
  * Utility to track search cache operations
  */
 export function trackSearchCache(
-  transactionId: string | null,
+  spanId: string | null,
   operation: 'hit' | 'miss' | 'write',
   cacheKey: string,
   metadata?: Record<string, unknown>,
 ): void {
-  if (transactionId === null) return
+  if (spanId === null) return
 
-  performanceManager.addSpan(
-    transactionId,
+  performanceManager.addSpanAttributes(
+    spanId,
     `cache_${operation}`,
     operation === 'write' ? 'cache.write' : 'cache.read',
     {
