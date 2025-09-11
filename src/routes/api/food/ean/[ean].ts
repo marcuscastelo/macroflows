@@ -2,12 +2,10 @@ import { json } from '@solidjs/router'
 import { type APIEvent } from '@solidjs/start/server'
 
 import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/api/apiFoodRepository'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
+// Simplified error handling - no errorHandler needed
 
 const apiFoodRepository = createApiFoodRepository()
-
-const errorHandler = createErrorHandler('infrastructure', 'Food')
 
 function getErrorStatus(error: unknown): number {
   if (error !== null && typeof error === 'object' && 'status' in error) {
@@ -29,7 +27,7 @@ export async function GET({ params }: APIEvent) {
     logging.debug('apiFood', apiFood)
     return json(apiFood)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('API food fetch error:', error)
     return json(
       {
         error:
