@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
+import { startSpanManual } from '@sentry/solidstart'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type NewRecipe } from '~/modules/diet/recipe/domain/recipe'
@@ -17,7 +18,7 @@ import {
 vi.mock('~/shared/config/sentry', () => ({
   sentry: {
     isSentryEnabled: () => true,
-    startSpan: vi.fn(() => ({
+    startSpanManual: vi.fn(() => ({
       setAttribute: vi.fn(),
       recordException: vi.fn(),
       setStatus: vi.fn(),
