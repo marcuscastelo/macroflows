@@ -99,22 +99,16 @@ export function createDayEditOrchestrator() {
     meal: Meal,
     _item: UnifiedItem,
     updatedItem: UnifiedItem,
-    userId?: string,
   ): Promise<void> {
-    if (userId !== undefined && userId !== '') {
+    try {
       const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
       await updateMeal(meal.id, updatedMeal)
-    } else {
-      try {
-        const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
-        await updateMeal(meal.id, updatedMeal)
-      } catch (error) {
-        logging.error(
-          'DayEditOrchestrator updateItemInMealOrchestrated error:',
-          error,
-        )
-        throw error
-      }
+    } catch (error) {
+      logging.error(
+        'DayEditOrchestrator updateItemInMealOrchestrated error:',
+        error,
+      )
+      throw error
     }
   }
 
