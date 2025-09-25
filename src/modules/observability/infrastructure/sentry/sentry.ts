@@ -41,7 +41,10 @@ export async function initializeSentry(type: 'server' | 'client') {
         /^https:\/\/.*\.macroflows.*\.app/,
       ],
 
-      integrations: type === 'client' ? await createClientIntegrations() : [],
+      integrations:
+        type === 'client'
+          ? await createClientIntegrations()
+          : [Sentry.consoleLoggingIntegration()],
 
       // Session Replay configuration
       replaysSessionSampleRate: 1.0,
@@ -49,6 +52,8 @@ export async function initializeSentry(type: 'server' | 'client') {
 
       // Set sample rate for profiling
       profilesSampleRate: 1.0,
+
+      enableLogs: true,
     })
 
     if (config.useOTel) {

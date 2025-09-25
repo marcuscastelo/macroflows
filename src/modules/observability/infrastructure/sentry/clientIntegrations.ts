@@ -16,5 +16,6 @@ export async function createClientIntegrations() {
       maskAllText: false,
       maskAllInputs: false,
     }),
+    Sentry.consoleLoggingIntegration(),
   ]
 }
