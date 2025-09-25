@@ -1,114 +1,11 @@
 import type { Component } from 'solid-js'
-import { createSignal, Show } from 'solid-js'
 
-import { sentry } from '~/shared/config/sentry'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
-import { withUISpan } from '~/shared/utils/tracing'
 
 const TelemetryTestPage: Component = () => {
-  const [lastAction, setLastAction] = createSignal('')
-  const errorHandler = createErrorHandler('application', 'TelemetryTest')
-
   const testSentryError = () => {
-    try {
-      logging.info('🧪 Testing Sentry error...')
-      throw new Error('Test error for Sentry integration')
-    } catch (error) {
-      logging.info('📤 Sending error via errorHandler...')
-      errorHandler.error(error, {
-        operation: 'testSentryError',
-        additionalData: {
-          testType: 'manual',
-          timestamp: new Date().toISOString(),
-        },
-      })
-      setLastAction('Error sent to Sentry + OpenTelemetry')
-    }
-  }
-
-  const testDirectSentry = () => {
-    logging.info('🎯 Testing direct Sentry call...')
-    void import('@sentry/solidstart').then((Sentry) => {
-      Sentry.captureException(new Error('Direct Sentry test error'), {
-        tags: { source: 'direct_test' },
-        extra: { timestamp: new Date().toISOString() },
-      })
-      setLastAction('Direct Sentry error sent')
-      logging.info('✅ Direct error sent to Sentry')
-    })
-  }
-
-  const testOpenTelemetrySpan = () => {
-    void withUISpan('TelemetryTest', 'testSpan', (span) => {
-      span.setAttributes({
-        'test.type': 'manual',
-        'test.user_action': 'button_click',
-      })
-
-      // Simulate some work
-      const start = Date.now()
-      while (Date.now() - start < 100) {
-        // busy wait for 100ms
-      }
-
-      span.addEvent('work_completed', {
-        duration_ms: Date.now() - start,
-      })
-
-      setLastAction('OpenTelemetry span created with events')
-    })
-  }
-
-  const testSentryBreadcrumbs = () => {
-    sentry.addBreadcrumb('User clicked breadcrumb test', 'user_action', {
-      component: 'TelemetryTestPage',
-      action: 'testSentryBreadcrumbs',
-    })
-    setLastAction('Breadcrumb added to Sentry')
-  }
-
-  const testUserContext = () => {
-    sentry.setUserContext({
-      id: 'test-user-123',
-      email: 'test@macroflows.app',
-      name: 'Test User',
-    })
-    setLastAction('User context set in Sentry')
-  }
-
-  const testComplexFlow = () => {
-    void withUISpan('TelemetryTest', 'complexFlow', async (span) => {
-      try {
-        span.setAttributes({
-          'flow.type': 'complex_test',
-          'flow.steps': 3,
-        })
-
-        // Step 1: Add breadcrumb
-        sentry.addBreadcrumb('Complex flow started', 'flow', { step: 1 })
-        span.addEvent('step_1_completed')
-
-        // Step 2: Simulate async operation
-        await new Promise((resolve) => setTimeout(resolve, 200))
-        sentry.addBreadcrumb('Async operation completed', 'flow', { step: 2 })
-        span.addEvent('step_2_completed')
-
-        // Step 3: Intentional error for testing correlation
-        const testError = new Error('Complex flow test error')
-        throw testError
-      } catch (error) {
-        span.addEvent('error_occurred', { step: 3 })
-        errorHandler.error(error, {
-          operation: 'testComplexFlow',
-          additionalData: {
-            flowStep: 3,
-            correlationId: 'flow-123',
-          },
-        })
-        setLastAction('Complex flow completed with correlated error')
-      }
-    })
+    logging.info('🧪 Testing Sentry error...')
+    throw new Error('Test error for Sentry integration')
   }
 
   return (
@@ -123,14 +20,6 @@ const TelemetryTestPage: Component = () => {
               <h2 class="card-title">Integration Status</h2>
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <div
-                    class={`badge ${sentry.isSentryEnabled() ? 'badge-success' : 'badge-error'}`}
-                  >
-                    {sentry.isSentryEnabled() ? '✓' : '✗'}
-                  </div>
-                  <span>Sentry Integration</span>
-                </div>
-                <div class="flex items-center gap-2">
                   <div class="badge badge-success">✓</div>
                   <span>OpenTelemetry Tracing</span>
                 </div>
@@ -138,12 +27,11 @@ const TelemetryTestPage: Component = () => {
                   <div class="badge badge-success">✓</div>
                   <span>Error Handler Integration</span>
                 </div>
-              </div>
-              <Show when={lastAction()}>
-                <div class="alert alert-info mt-4">
-                  <span class="text-sm">{lastAction()}</span>
+                <div class="flex items-center gap-2">
+                  <div class="badge badge-success">✓</div>
+                  <span>Web Vitals (Built-in with Sentry)</span>
                 </div>
-              </Show>
+              </div>
             </div>
           </div>
 
@@ -157,41 +45,6 @@ const TelemetryTestPage: Component = () => {
                   onClick={testSentryError}
                 >
                   Test Error Tracking
-                </button>
-
-                <button
-                  class="btn btn-outline btn-error btn-sm w-full"
-                  onClick={testDirectSentry}
-                >
-                  Test Direct Sentry
-                </button>
-
-                <button
-                  class="btn btn-primary btn-sm w-full"
-                  onClick={testOpenTelemetrySpan}
-                >
-                  Test OpenTelemetry Span
-                </button>
-
-                <button
-                  class="btn btn-secondary btn-sm w-full"
-                  onClick={testSentryBreadcrumbs}
-                >
-                  Test Breadcrumbs
-                </button>
-
-                <button
-                  class="btn btn-accent btn-sm w-full"
-                  onClick={testUserContext}
-                >
-                  Set User Context
-                </button>
-
-                <button
-                  class="btn btn-warning btn-sm w-full"
-                  onClick={testComplexFlow}
-                >
-                  Test Complex Flow
                 </button>
               </div>
             </div>

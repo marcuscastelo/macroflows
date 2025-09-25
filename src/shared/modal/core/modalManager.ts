@@ -1,6 +1,5 @@
 import { createSignal } from 'solid-js'
 
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import type {
   ModalConfig,
   ModalId,
@@ -10,8 +9,6 @@ import type {
 import { logging } from '~/shared/utils/logging'
 
 export const [modals, setModals] = createSignal<ModalState[]>([])
-
-const errorHandler = createErrorHandler('system', 'Modal')
 
 function generateModalId(): ModalId {
   return `modal-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
@@ -76,7 +73,7 @@ export const modalManager: ModalManager = {
       if (shouldClose) performClose(id, modal)
     } catch (e) {
       performClose(id, modal)
-      errorHandler.criticalError(e, { operation: 'closeModalManager' })
+      logging.error('Modal closeModalManager error:', e)
     }
   },
 }

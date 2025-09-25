@@ -1,9 +1,7 @@
 import { type z } from 'zod/v4'
 
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
-
-const errorHandler = createErrorHandler('validation', 'Clipboard')
+import { logging } from '~/shared/utils/logging'
 
 export function deserializeClipboard<T extends z.ZodType<unknown>>(
   clipboard: string,
@@ -13,28 +11,22 @@ export function deserializeClipboard<T extends z.ZodType<unknown>>(
   try {
     parsed = jsonParseWithStack(clipboard)
     if (typeof parsed !== 'object' || parsed === null) {
-      errorHandler.validationError('Clipboard JSON is not an object', {
-        component: 'clipboardUtils',
-        operation: 'deserializeClipboard',
-        additionalData: { clipboard, parsed },
+      logging.error('Clipboard deserializeClipboard - JSON is not an object:', {
+        clipboard,
+        parsed,
       })
       return null
     }
   } catch (error) {
-    errorHandler.validationError('Invalid JSON in clipboard', {
-      component: 'clipboardUtils',
-      operation: 'deserializeClipboard',
-      additionalData: { clipboard, error },
-    })
+    logging.error('Clipboard deserializeClipboard - Invalid JSON:', error)
     return null
   }
   const result = allowedSchema.safeParse(parsed)
   if (!result.success) {
-    errorHandler.validationError('Invalid clipboard data', {
-      component: 'clipboardUtils',
-      operation: 'deserializeClipboard',
-      additionalData: { clipboard, error: result.error },
-    })
+    logging.error(
+      'Clipboard deserializeClipboard - Invalid data:',
+      result.error,
+    )
     return null
   }
   return result.data

@@ -17,6 +17,7 @@ import { formatError } from '~/shared/formatError'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { lazyImport } from '~/shared/solid/lazyImport'
 import { normalizeDateToLocalMidnightPlusOne } from '~/shared/utils/date/normalizeDateToLocalMidnightPlusOne'
+import { logging } from '~/shared/utils/logging'
 
 const { Datepicker } = lazyImport(
   () => import('~/sections/datepicker/components/Datepicker'),
@@ -79,14 +80,7 @@ export function BodyMeasureView(props: {
     )
       .then(afterUpdate)
       .catch((error) => {
-        import('~/shared/error/errorHandler')
-          .then(({ createErrorHandler }) => {
-            const errorHandler = createErrorHandler('user', 'BodyMeasureView')
-            errorHandler.apiError(error, { operation: 'measure update' })
-          })
-          .catch(() => {
-            // Fallback if import fails
-          })
+        logging.error('BodyMeasureView measure update error:', error)
         showError(`Erro ao atualizar medida: ${formatError(error)}`)
       })
   }

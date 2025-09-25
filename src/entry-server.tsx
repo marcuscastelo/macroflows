@@ -1,10 +1,9 @@
 // @refresh reload
 import { createHandler, StartServer } from '@solidjs/start/server'
 
-import { sentry } from '~/shared/config/sentry'
+import { initializeTelemetry } from '~/modules/observability/application/telemetry'
 
-// Initialize Sentry on server-side
-sentry.initializeSentry()
+initializeTelemetry('server')
 
 export default createHandler(() => (
   <StartServer

@@ -17,16 +17,6 @@ vi.mock('~/modules/diet/day-diet/infrastructure/dayDietRepository', () => ({
   })),
 }))
 
-// Mock error handler
-vi.mock('~/shared/error/errorHandler', () => ({
-  createErrorHandler: vi.fn(() => ({
-    error: vi.fn(),
-    apiError: vi.fn(),
-    validationError: vi.fn(),
-    criticalError: vi.fn(),
-  })),
-}))
-
 const mockRepository = {
   fetchDayDietByUserIdAndTargetDay: vi.fn(),
   fetchDayDietsByUserIdBeforeDate: vi.fn(),

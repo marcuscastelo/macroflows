@@ -5,23 +5,17 @@ import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiF
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { markSearchAsCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  createErrorHandler,
-  ORIGINAL_ERROR_SYMBOL,
-} from '~/shared/error/errorHandler'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
+import { ORIGINAL_ERROR_SYMBOL } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()
-const errorHandler = createErrorHandler('infrastructure', 'Food')
 
 export async function importFoodFromApiByEan(
   ean: Food['ean'],
 ): Promise<Food | null> {
   if (ean === null) {
-    errorHandler.error(new Error('EAN is required to import food from API'), {
-      additionalData: { ean },
-    })
+    logging.error('EAN is required to import food from API:', { ean })
     return null
   }
 
@@ -30,12 +24,7 @@ export async function importFoodFromApiByEan(
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (apiFood.id === 0) {
-    errorHandler.error(
-      new Error(`Food with ean ${ean} not found on external api`),
-      {
-        additionalData: { ean },
-      },
-    )
+    logging.error(`Food with ean ${ean} not found on external api:`, { ean })
     return null
   }
 
@@ -97,18 +86,12 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
 
     if (relevantErrors.length > 0) {
       logging.debug(`Relevant errors:`, { relevantErrors })
-      errorHandler.error(
-        new Error(`Failed to upsert ${relevantErrors.length} foods`),
-        {
-          operation: 'searchAndUpsertFoodsByNameFromApi',
-
-          additionalData: {
-            name,
-            relevantErrors,
-            errorCount: relevantErrors.length,
-          },
-        },
-      )
+      logging.error(`Failed to upsert ${relevantErrors.length} foods:`, {
+        operation: 'searchAndUpsertFoodsByNameFromApi',
+        name,
+        relevantErrors,
+        errorCount: relevantErrors.length,
+      })
 
       showError(
         `Erro ao importar alguns alimentos: ${relevantErrors.length} falhas. Verifique o console para mais detalhes.`,

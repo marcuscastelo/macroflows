@@ -10,10 +10,9 @@ import {
 } from '~/modules/measure/infrastructure/measureRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const measureRepository = createMeasureRepository()
-const errorHandler = createErrorHandler('application', 'Measure')
 
 /**
  * Fetches all body measures for a user.
@@ -26,7 +25,7 @@ export async function fetchUserBodyMeasures(
   try {
     return await measureRepository.fetchUserBodyMeasures(userId)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure application error:', error)
     return []
   }
 }
@@ -52,7 +51,7 @@ export async function insertBodyMeasure(
 
     return result
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure application error:', error)
     return null
   }
 }
@@ -80,7 +79,7 @@ export async function updateBodyMeasure(
 
     return result
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure application error:', error)
     return null
   }
 }
@@ -106,7 +105,7 @@ export async function deleteBodyMeasure(
 
     return true
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Measure application error:', error)
     return false
   }
 }

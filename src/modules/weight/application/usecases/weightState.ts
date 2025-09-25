@@ -6,12 +6,11 @@ import { weightSchema } from '~/modules/weight/domain/weight'
 import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/supabase/realtime'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/supabase/supabaseWeightGateway'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const storageRepository = createLocalStorageWeightRepository()
 const weightRepository = createSupabaseWeightGateway()
-const errorHandler = createErrorHandler('application', 'Weight')
 
 const [
   userWeights,
@@ -24,7 +23,7 @@ const [
       storageRepository.setCachedWeights(userId, weights)
       return weights
     } catch (error) {
-      errorHandler.error(error)
+      logging.error('Weight operation error:', error)
       throw error
     }
   },
@@ -41,7 +40,6 @@ const [
 export const weightCrudService = createWeightCrudService({
   weightRepository,
   storageRepository,
-  errorHandler,
 })
 
 // Export state signals

@@ -1,24 +1,30 @@
+import { withSentry } from '@sentry/solidstart'
 import { defineConfig } from '@solidjs/start/config'
 import tailwindcss from '@tailwindcss/vite'
-
-// Skip Sentry Vite plugin for now - can be added later when package is installed
-// const useSentryPlugin = false
-
-export default defineConfig({
-  ssr: false,
-  vite: {
-    plugins: [
-      tailwindcss(),
-      // Sentry plugin can be added later when @sentry/vite-plugin is installed
-      // For now, we enable source maps for future Sentry integration
-    ],
-    define: {},
-    build: {
-      sourcemap: true, // Enable source maps for Sentry
+export default defineConfig(
+  withSentry(
+    {
+      ssr: false,
+      vite: {
+        plugins: [tailwindcss()],
+        define: {},
+        build: {
+          sourcemap: true,
+        },
+      },
+      middleware: './src/middleware.ts',
+      server: {
+        preset: 'vercel',
+        compatibilityDate: 'latest',
+      },
     },
-  },
-  server: {
-    preset: 'vercel',
-    compatibilityDate: 'latest',
-  },
-})
+    {
+      // Sentry `withSentry` options
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      debug: true,
+      instrumentation: './src/instrument.server.ts',
+    },
+  ),
+)

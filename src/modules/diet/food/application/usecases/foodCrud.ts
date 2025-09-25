@@ -8,15 +8,11 @@ import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import {
-  createErrorHandler,
-  isBackendOutageError,
-} from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
-import { withUISpan } from '~/shared/utils/tracing'
+import { isBackendOutageError } from '~/shared/utils/errorUtils'
+import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()
-const errorHandler = createErrorHandler('application', 'Food')
 
 /**
  * Fetches foods by search params.
@@ -29,30 +25,9 @@ export async function fetchFoods(
   try {
     return await foodRepository.fetchFoods(params)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Food application error:', error)
     if (isBackendOutageError(error)) setBackendOutage(true)
     return []
-  }
-}
-
-/**
- * Fetches a food by ID.
- * @param id - Food ID.
- * @param params - Search parameters.
- * @returns Food or null on error.
- */
-export async function fetchFoodById(
-  id: Food['id'],
-  params: FoodSearchParams = {},
-): Promise<Food | null> {
-  try {
-    return await foodRepository.fetchFoodById(id, params)
-  } catch (error) {
-    errorHandler.error(error, {
-      entityId: id,
-    })
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return null
   }
 }
 
@@ -66,53 +41,38 @@ export async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
 ): Promise<readonly Food[]> {
-  return withUISpan('FoodSearch', 'fetchByName', async (span) => {
-    try {
-      span.setAttributes({
-        'search.query': name,
-        'search.limit': params.limit ?? 0,
-        'search.cached': false, // Will be updated after cache check
-      })
+  try {
+    const isCached = await isSearchCached(name)
 
-      const isCached = await isSearchCached(name)
-
-      if (!isCached) {
-        await showPromise(
-          importFoodsFromApiByName(name),
-          {
-            loading: 'Importando alimentos...',
-            success: 'Alimentos importados com sucesso',
-            error: `Erro ao importar alimentos por nome: ${name}`,
-          },
-          { context: 'background' },
-        )
-      }
-
-      const foods = await showPromise(
-        foodRepository.fetchFoodsByName(name, params),
+    if (!isCached) {
+      await showPromise(
+        importFoodsFromApiByName(name),
         {
-          loading: 'Buscando alimentos por nome...',
-          success: 'Alimentos encontrados',
-          error: (error: unknown) =>
-            `Erro ao buscar alimentos por nome: ${formatError(error)}`,
+          loading: 'Importando alimentos...',
+          success: 'Alimentos importados com sucesso',
+          error: `Erro ao importar alimentos por nome: ${name}`,
         },
         { context: 'background' },
       )
-
-      span.setAttributes({
-        'result.count': foods.length,
-        'search.cached': isCached,
-      })
-
-      return foods
-    } catch (error) {
-      errorHandler.error(error, {
-        additionalData: { name },
-      })
-      if (isBackendOutageError(error)) setBackendOutage(true)
-      return []
     }
-  })
+
+    const foods = await showPromise(
+      foodRepository.fetchFoodsByName(name, params),
+      {
+        loading: 'Buscando alimentos por nome...',
+        success: 'Alimentos encontrados',
+        error: (error: unknown) =>
+          `Erro ao buscar alimentos por nome: ${formatError(error)}`,
+      },
+      { context: 'background' },
+    )
+
+    return foods
+  } catch (error) {
+    logging.error('Food application error:', error)
+    if (isBackendOutageError(error)) setBackendOutage(true)
+    return []
+  }
 }
 
 /**
@@ -146,49 +106,8 @@ export async function fetchFoodByEan(
       { context: 'user-action' },
     )
   } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ean },
-    })
+    logging.error('Food application error:', error)
     if (isBackendOutageError(error)) setBackendOutage(true)
     return null
-  }
-}
-
-/**
- * Checks if a food EAN is cached.
- * @param ean - Food EAN.
- * @returns True if cached, false otherwise.
- */
-export async function isEanCached(
-  ean: NonNullable<Required<Food>['ean']>,
-): Promise<boolean> {
-  try {
-    const cached = (await foodRepository.fetchFoodByEan(ean, {})) !== null
-    return cached
-  } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ean },
-    })
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return false
-  }
-}
-
-/**
- * Fetches foods by IDs.
- * @param ids - Array of food IDs.
- * @returns Array of foods or empty array on error.
- */
-export async function fetchFoodsByIds(
-  ids: Food['id'][],
-): Promise<readonly Food[]> {
-  try {
-    return await foodRepository.fetchFoodsByIds(ids)
-  } catch (error) {
-    errorHandler.error(error, {
-      additionalData: { ids },
-    })
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return []
   }
 }

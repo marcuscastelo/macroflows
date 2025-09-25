@@ -5,7 +5,6 @@ import {
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
-import { logError } from '~/shared/error/errorHandler'
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
@@ -31,11 +30,7 @@ export function createAuthService(
         }
       }
     } catch (e) {
-      logError(e, {
-        component: 'Auth',
-        operation: 'signIn',
-        additionalData: { provider: options.provider },
-      })
+      logging.error('Auth signIn error:', e)
       setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
@@ -56,10 +51,7 @@ export function createAuthService(
 
       // Auth state will be updated via the subscription
     } catch (e) {
-      logError(e, {
-        component: 'Auth',
-        operation: 'signOut',
-      })
+      logging.error('Auth signOut error:', e)
       setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
@@ -73,10 +65,7 @@ export function createAuthService(
       await authGateway.refreshSession()
       // Session will be updated via the subscription
     } catch (e) {
-      logError(e, {
-        component: 'Auth',
-        operation: 'refreshSession',
-      })
+      logging.error('Auth refreshSession error:', e)
       throw e
     }
   }
@@ -116,10 +105,7 @@ export function createAuthService(
       // Load initial session
       void loadInitialSession()
     } catch (e) {
-      logError(e, {
-        component: 'Auth',
-        operation: 'initializeAuth',
-      })
+      logging.error('Auth initializeAuth error:', e)
       setAuthState((prev) => ({ ...prev, isLoading: false }))
     }
   }
@@ -150,11 +136,9 @@ export function createAuthService(
         isLoading: false,
       }))
     } catch (e) {
-      logError(e, {
-        component: 'Auth',
-        operation: 'loadInitialSession',
-      })
+      logging.error('Auth loadInitialSession error:', e)
       setAuthState((prev) => ({ ...prev, isLoading: false }))
+      throw e
     }
   }
   /**

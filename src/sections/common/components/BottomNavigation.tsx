@@ -19,7 +19,6 @@ import {
 } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { Button } from '~/sections/common/components/buttons/Button'
-import { ConsoleDumpButton } from '~/sections/common/components/ConsoleDumpButton'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
 import {
@@ -156,7 +155,6 @@ export function BottomNavigation() {
             Version: <br />
             {APP_VERSION}
           </i>
-          <ConsoleDumpButton />
         </div>
         <Show when={!window.location.href.includes('stable')}>
           <Button
@@ -308,17 +306,7 @@ const UserSelectorDropdown = (props: { modalId: string }) => {
   createEffect(() => {
     const modalId = props.modalId
     fetchUsers().catch((error) => {
-      import('~/shared/error/errorHandler')
-        .then(({ createErrorHandler }) => {
-          const errorHandler = createErrorHandler(
-            'user',
-            'UserSelectorDropdown',
-          )
-          errorHandler.apiError(error, { operation: 'fetch users' })
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('UserSelectorDropdown error:', error)
       showError('Erro ao buscar usuários', { context: 'background' })
       closeModal(modalId)
     })

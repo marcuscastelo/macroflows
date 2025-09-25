@@ -149,6 +149,22 @@ export default [
           selector: "MemberExpression[object.name='navigator']",
           message: 'Direct navigator API usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
         },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='startTransaction']",
+          message: 'Sentry.startTransaction is deprecated in v8. Use Sentry.startSpan instead.'
+        },
+        {
+          selector: "CallExpression[callee.property.name='startChild']",
+          message: 'span.startChild is deprecated in v8. Use Sentry.startSpan with proper parent span context instead.'
+        },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='getCurrentHub']",
+          message: 'Sentry.getCurrentHub is deprecated in v8. Use Sentry.getCurrentScope instead.'
+        },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='configureScope']",
+          message: 'Sentry.configureScope is deprecated in v8. Use Sentry.withScope instead.'
+        },
       ],
 
       ...pluginSolid.configs.recommended.rules,
@@ -171,10 +187,8 @@ export default [
     files: [
       'src/shared/error/**/*.ts',
       'src/shared/error/**/*.tsx', 
-      'src/shared/config/sentry.ts',
-      'src/shared/config/telemetry.ts',
-      'src/shared/console/**/*.ts',
-
+      'src/modules/observability/**/*.ts',
+      'src/modules/observability/**/*.tsx',
 
       '**/*.test.ts',
       '**/*.test.tsx',

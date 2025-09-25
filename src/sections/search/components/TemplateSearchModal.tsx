@@ -45,7 +45,6 @@ import {
   availableTabs,
   TemplateSearchTabs,
 } from '~/sections/search/components/TemplateSearchTabs'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
 import {
   closeModal,
@@ -54,6 +53,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 import { isOverflow } from '~/shared/utils/macroOverflow'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
@@ -67,8 +67,6 @@ export type TemplateSearchModalProps = {
   onFinish?: () => void
   onClose?: () => void
 }
-
-const errorHandler = createErrorHandler('user', 'Search')
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
   const handleTemplateSelected = (template: Template) => {
@@ -91,7 +89,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         handleNewUnifiedItem(unifiedItem, templateItem, () =>
           controller.close(),
         ).catch((err) => {
-          errorHandler.error(err, { operation: 'handleNewUnifiedItem' })
+          logging.error('TemplateSearchModal handleNewUnifiedItem error:', err)
           showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
         })
       },
@@ -209,7 +207,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
                 closeEditModal()
               })
               .catch((err) => {
-                errorHandler.error(err, { operation: 'Adicionar mesmo assim' })
+                logging.error(
+                  'TemplateSearchModal Adicionar mesmo assim error:',
+                  err,
+                )
                 showError(err, {}, 'Erro ao adicionar item')
                 closeModal(overflowModalId)
               })
@@ -223,7 +224,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       try {
         await onConfirm()
       } catch (err) {
-        errorHandler.error(err, { operation: 'adicionar item' })
+        logging.error('TemplateSearchModal adicionar item error:', err)
         showError(err, {}, 'Erro ao adicionar item')
       }
     }

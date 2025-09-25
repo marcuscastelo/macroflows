@@ -7,8 +7,6 @@
 
 import { createEffect, createSignal } from 'solid-js'
 
-import { isDevelopment } from '~/shared/config/env'
-import { sentry } from '~/shared/config/sentry'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
 /**
@@ -54,22 +52,20 @@ const STORAGE_KEY = 'macroflows:toast-settings'
  * Load settings from local storage
  */
 function loadSettings(): ToastSettings {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored !== null && stored.length > 0) {
+  const stored = localStorage.getItem(STORAGE_KEY)
+  if (stored !== null && stored.length > 0) {
+    try {
       const parsed = jsonParseWithStack(stored)
       if (typeof parsed === 'object' && parsed !== null) {
         return { ...DEFAULT_SETTINGS, ...parsed }
       }
       return { ...DEFAULT_SETTINGS }
-    }
-  } catch (error) {
-    if (isDevelopment()) {
-      sentry.logToBreadcrumb('Failed to load toast settings', 'error', {
-        error,
-      })
+    } catch {
+      // Invalid JSON, use defaults
+      return { ...DEFAULT_SETTINGS }
     }
   }
+
   return { ...DEFAULT_SETTINGS }
 }
 
@@ -78,15 +74,7 @@ const [settings, setSettings] = createSignal<ToastSettings>(loadSettings())
 
 // Persist settings to local storage when they change
 createEffect(() => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
-  } catch (error) {
-    if (isDevelopment()) {
-      sentry.logToBreadcrumb('Failed to save toast settings', 'error', {
-        error,
-      })
-    }
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
 })
 
 /**

@@ -6,8 +6,7 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
-import { withSpan } from '~/shared/utils/tracing'
+import { logging } from '~/shared/utils/logging'
 
 export type CopyDayState = {
   previousDays: readonly DayDiet[]
@@ -35,7 +34,6 @@ export type CopyDayOperations = {
 function createCopyDayOperations(
   repository = createDayDietRepository(),
 ): CopyDayOperations {
-  const errorHandler = createErrorHandler('application', 'dayDiet')
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
@@ -64,11 +62,7 @@ function createCopyDayOperations(
       )
       setPreviousDays(days)
     } catch (error) {
-      errorHandler.apiError(error, {
-        component: 'CopyDayOperations',
-        operation: 'loadPreviousDays',
-        additionalData: { userId, beforeDay, limit },
-      })
+      logging.error('CopyDayOperations loadPreviousDays error:', error)
       setPreviousDays([])
       throw error
     } finally {
@@ -82,79 +76,40 @@ function createCopyDayOperations(
     existingDay?: DayDiet
     previousDays: readonly DayDiet[]
   }): Promise<void> => {
-    return await withSpan('day_diet.copy_operation', async (span) => {
-      const { fromDay, toDay, existingDay, previousDays } = params
+    const { fromDay, toDay, existingDay, previousDays } = params
 
-      span.setAttributes({
-        'day_diet.from_day': fromDay,
-        'day_diet.to_day': toDay,
-        'day_diet.has_existing_day': !!existingDay,
-        'day_diet.previous_days_count': previousDays.length,
-        'operation.type': 'copy_day',
+    setCopyingDay(fromDay)
+    setIsCopying(true)
+
+    try {
+      const copyFrom = previousDays.find((d) => d.target_day === fromDay)
+      if (!copyFrom) {
+        throw new Error(`No matching previous day found for ${fromDay}`, {
+          cause: {
+            fromDay,
+            availableDays: previousDays.map((d) => d.target_day),
+          },
+        })
+      }
+
+      const newDay = createNewDayDiet({
+        target_day: toDay,
+        owner: copyFrom.owner,
+        meals: copyFrom.meals,
       })
 
-      setCopyingDay(fromDay)
-      setIsCopying(true)
-
-      try {
-        const copyFrom = previousDays.find((d) => d.target_day === fromDay)
-        if (!copyFrom) {
-          span.addEvent('copy_day_source_not_found', {
-            fromDay,
-            availableDaysCount: previousDays.length,
-          })
-          throw new Error(`No matching previous day found for ${fromDay}`, {
-            cause: {
-              fromDay,
-              availableDays: previousDays.map((d) => d.target_day),
-            },
-          })
-        }
-
-        span.addEvent('copy_day_source_found', {
-          fromDay,
-          mealsCount: copyFrom.meals.length,
-          ownerId: copyFrom.owner,
-        })
-
-        const newDay = createNewDayDiet({
-          target_day: toDay,
-          owner: copyFrom.owner,
-          meals: copyFrom.meals,
-        })
-
-        if (existingDay) {
-          span.addEvent('updating_existing_day', {
-            existingDayId: existingDay.id,
-          })
-          await repository.updateDayDietById(existingDay.id, newDay)
-        } else {
-          span.addEvent('inserting_new_day')
-          await repository.insertDayDiet(newDay)
-        }
-
-        span.addEvent('copy_day_completed', {
-          fromDay,
-          toDay,
-          mealsCount: copyFrom.meals.length,
-        })
-      } catch (error) {
-        span.addEvent('copy_day_error', {
-          error: String(error),
-          fromDay,
-          toDay,
-        })
-        errorHandler.apiError(error, {
-          component: 'CopyDayOperations',
-          operation: 'copyDay',
-          additionalData: { fromDay, toDay, hasExistingDay: !!existingDay },
-        })
-        throw error
-      } finally {
-        setIsCopying(false)
-        setCopyingDay(null)
+      if (existingDay) {
+        await repository.updateDayDietById(existingDay.id, newDay)
+      } else {
+        await repository.insertDayDiet(newDay)
       }
-    })
+    } catch (error) {
+      logging.error('CopyDayOperations copyDay error:', error)
+      throw error
+    } finally {
+      setIsCopying(false)
+      setCopyingDay(null)
+    }
   }
 
   const resetState = (): void => {

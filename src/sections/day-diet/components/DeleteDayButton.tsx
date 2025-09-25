@@ -4,6 +4,7 @@ import { deleteDayDiet } from '~/modules/diet/day-diet/application/usecases/dayC
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export function DeleteDayButton(props: { day: Accessor<DayDiet> }) {
   return (
@@ -16,17 +17,7 @@ export function DeleteDayButton(props: { day: Accessor<DayDiet> }) {
           cancelText: 'Cancelar',
           onConfirm: () => {
             deleteDayDiet(props.day().id).catch((error) => {
-              import('~/shared/error/errorHandler')
-                .then(({ createErrorHandler }) => {
-                  const errorHandler = createErrorHandler(
-                    'user',
-                    'DeleteDayButton',
-                  )
-                  errorHandler.apiError(error, { operation: 'delete day' })
-                })
-                .catch(() => {
-                  // Fallback if import fails
-                })
+              logging.error('DeleteDayButton error:', error)
               throw error
             })
           },

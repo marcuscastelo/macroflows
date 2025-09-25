@@ -4,18 +4,11 @@ import {
   type FoodSearchParams,
 } from '~/modules/diet/food/domain/foodRepository'
 import { supabaseFoodMapper } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodMapper'
-import {
-  createErrorHandler,
-  wrapErrorWithStack,
-} from '~/shared/error/errorHandler'
+import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
 import { supabase } from '~/shared/supabase/supabase'
 import { isSupabaseDuplicateEanError } from '~/shared/supabase/supabaseErrorUtils'
+import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
-import { withDatabaseSpan } from '~/shared/utils/tracing'
-
-const errorHandler = createErrorHandler('infrastructure', 'Food')
-
-import { SUPABASE_TABLE_FOODS } from '~/modules/diet/food/infrastructure/supabase/constants'
 
 export function createSupabaseFoodRepository(): FoodRepository {
   return {
@@ -47,12 +40,12 @@ async function fetchFoodById(
       { ...params, limit: 1 },
     )
     if (foods.length === 0 || foods[0] === undefined) {
-      errorHandler.error(new Error('Food not found'))
+      logging.error('Food not found')
       throw new Error('Food not found')
     }
     return foods[0]
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Food fetch error:', err)
     throw err
   }
 }
@@ -75,12 +68,12 @@ async function fetchFoodByEan(
       { ...params, limit: 1 },
     )
     if (foods.length === 0 || foods[0] === undefined) {
-      errorHandler.error(new Error('Food not found'))
+      logging.error('Food not found')
       throw new Error('Food not found')
     }
     return foods[0]
   } catch (err) {
-    errorHandler.error(err)
+    logging.error('Food fetch error:', err)
     throw err
   }
 }
@@ -104,7 +97,7 @@ async function insertFood(newFood: NewFood): Promise<Food> {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
     }
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -130,7 +123,7 @@ async function upsertFood(newFood: NewFood): Promise<Food> {
     if (isSupabaseDuplicateEanError(error, newFood.ean)) {
       return await fetchFoodByEan(newFood.ean)
     }
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -141,69 +134,42 @@ async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
 ) {
-  return await withDatabaseSpan('SELECT', 'foods', async (span) => {
-    const { userId, isFavoritesSearch, limit = 50 } = params
+  const { userId, isFavoritesSearch, limit = 50 } = params
 
-    span.setAttributes({
-      'food.search_term': name,
-      'food.search_limit': limit,
-      'food.is_favorites_search': isFavoritesSearch ?? false,
-      'operation.type': 'search_by_name',
-    })
-
-    if (userId !== undefined) {
-      span.setAttribute('user.id', userId)
-    }
-
-    try {
-      let result
-      if (isFavoritesSearch === true && userId !== undefined) {
-        span.addEvent('using_favorites_search')
-        // Search within favorites only using optimized RPC
-        result = await supabase.rpc('search_favorite_foods_with_scoring', {
-          p_user_id: userId,
-          p_search_term: name,
-          p_limit: limit,
-        })
-      } else {
-        span.addEvent('using_standard_search')
-        // Use standard search for all foods
-        result = await supabase.rpc('search_foods_with_scoring', {
-          p_search_term: name,
-          p_limit: limit,
-        })
-      }
-
-      if (result.error !== null) {
-        span.addEvent('food_search_error', {
-          error:
-            'message' in result.error
-              ? result.error.message
-              : JSON.stringify(result.error),
-        })
-        errorHandler.error(result.error)
-        throw wrapErrorWithStack(result.error)
-      }
-
-      const resultsCount = Array.isArray(result.data) ? result.data.length : 0
-      const searchType =
-        isFavoritesSearch === true && userId !== undefined
-          ? 'favorites search'
-          : 'enhanced search'
-
-      span.addEvent('food_search_completed', {
-        results_count: resultsCount,
-        search_type: searchType,
+  try {
+    let result
+    if (isFavoritesSearch === true && userId !== undefined) {
+      // Search within favorites only using optimized RPC
+      result = await supabase.rpc('search_favorite_foods_with_scoring', {
+        p_user_id: userId,
+        p_search_term: name,
+        p_limit: limit,
       })
-
-      logging.debug(`Found ${resultsCount} foods using ${searchType}`)
-      return result.data.map(supabaseFoodMapper.toDomain)
-    } catch (err) {
-      span.addEvent('food_search_exception', { error: String(err) })
-      errorHandler.error(err)
-      throw err
+    } else {
+      // Use standard search for all foods
+      result = await supabase.rpc('search_foods_with_scoring', {
+        p_search_term: name,
+        p_limit: limit,
+      })
     }
-  })
+
+    if (result.error !== null) {
+      logging.error('Food search error:', result.error)
+      throw wrapErrorWithStack(result.error)
+    }
+
+    const resultsCount = Array.isArray(result.data) ? result.data.length : 0
+    const searchType =
+      isFavoritesSearch === true && userId !== undefined
+        ? 'favorites search'
+        : 'enhanced search'
+
+    logging.debug(`Found ${resultsCount} foods using ${searchType}`)
+    return result.data.map(supabaseFoodMapper.toDomain)
+  } catch (err) {
+    logging.error('Food search error:', err)
+    throw err
+  }
 }
 
 async function fetchFoods(params: FoodSearchParams = {}) {
@@ -269,7 +235,7 @@ async function internalCachedSearchFoods(
 
   const { data: foods, error } = await query
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 
@@ -290,7 +256,7 @@ async function fetchFoodsByIds(ids: Food['id'][]): Promise<readonly Food[]> {
     .in('id', ids)
 
   if (error !== null) {
-    errorHandler.error(error)
+    logging.error('Food insert error:', error)
     throw wrapErrorWithStack(error)
   }
 

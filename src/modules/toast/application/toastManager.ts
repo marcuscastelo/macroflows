@@ -18,7 +18,7 @@ import {
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import { isBackendOutageError } from '~/shared/error/errorHandler'
+import { isBackendOutageError } from '~/shared/utils/errorUtils'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
@@ -125,6 +125,8 @@ export function showError(
 ): string {
   vibrate(200)
   setTimeout(() => vibrate(200), 400)
+  // TODO: Move setBackendOutage
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1048
   if (isBackendOutageError(error)) {
     setBackendOutage(true)
     // Show a custom outage toast (pt-BR):

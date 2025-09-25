@@ -7,13 +7,10 @@ import type {
   SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import type { AuthGateway } from '~/modules/auth/domain/authGateway'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 import { supabaseAuthMapper } from './supabaseAuthMapper'
-
-const errorHandler = createErrorHandler('infrastructure', 'Auth')
 
 export function createSupabaseAuthGateway(): AuthGateway {
   return {
@@ -28,10 +25,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
 
         return supabaseAuthMapper.mapSessionToDomain(data.session)
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'getSession',
-        })
+        logging.error('SupabaseAuthRepository getSession error:', error)
         throw error
       }
     },
@@ -46,10 +40,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
 
         return supabaseAuthMapper.mapUserToDomain(data.user)
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'getUser',
-        })
+        logging.error('SupabaseAuthRepository getUser error:', error)
         throw error
       }
     },
@@ -74,16 +65,11 @@ export function createSupabaseAuthGateway(): AuthGateway {
           }
         }
 
-        // For future email/password implementation
         return {
           error: new Error(`Provider ${options.provider} not implemented yet`),
         }
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'signIn',
-          additionalData: { provider: options.provider },
-        })
+        logging.error('SupabaseAuthRepository signIn error:', error)
         return {
           error: error instanceof Error ? error : new Error(String(error)),
         }
@@ -100,10 +86,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
               : undefined,
         }
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'signOut',
-        })
+        logging.error('SupabaseAuthRepository signOut error:', error)
         return {
           error: error instanceof Error ? error : new Error(String(error)),
         }
@@ -120,10 +103,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
 
         return supabaseAuthMapper.mapSessionToDomain(data.session)
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'refreshSession',
-        })
+        logging.error('SupabaseAuthRepository refreshSession error:', error)
         throw error
       }
     },
@@ -144,11 +124,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
           subscription.unsubscribe()
         }
       } catch (error) {
-        errorHandler.error(error, {
-          component: 'SupabaseAuthRepository',
-          operation: 'onAuthStateChange',
-        })
-        // Return a no-op function for safety
+        logging.error('SupabaseAuthRepository onAuthStateChange error:', error)
         return () => {}
       }
     },

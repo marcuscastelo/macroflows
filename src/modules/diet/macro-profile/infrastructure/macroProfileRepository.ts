@@ -6,10 +6,9 @@ import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { createSupabaseMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileGateway'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseMacroProfileGateway()
-const errorHandler = createErrorHandler('application', 'MacroProfile')
 
 export function createMacroProfileRepository(): MacroProfileRepository {
   return {
@@ -28,7 +27,7 @@ export async function fetchUserMacroProfiles(
     macroProfileCacheStore.upsertManyToCache(profiles)
     return profiles
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     macroProfileCacheStore.removeFromCache({ by: 'user_id', value: userId })
     return []
   }
@@ -44,7 +43,7 @@ export async function insertMacroProfile(
     }
     return profile
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     return null
   }
 }
@@ -63,7 +62,7 @@ export async function updateMacroProfile(
     }
     return profile
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
     return null
   }
 }
@@ -75,6 +74,6 @@ export async function deleteMacroProfile(
     await supabaseGateway.deleteMacroProfile(id)
     macroProfileCacheStore.removeFromCache({ by: 'id', value: id })
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('MacroProfile fetch error:', error)
   }
 }

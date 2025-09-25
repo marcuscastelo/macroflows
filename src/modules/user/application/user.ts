@@ -14,9 +14,7 @@ import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
-import { sentry } from '~/shared/config/sentry'
-import { createErrorHandler } from '~/shared/error/errorHandler'
-import { withUISpan } from '~/shared/utils/tracing'
+import { logging } from '~/shared/utils/logging'
 
 const userRepository = createSupabaseUserRepository()
 
@@ -41,9 +39,7 @@ createEffect(() => {
 
 function bootstrap() {
   fetchUsers().catch((error) => {
-    errorHandler.error(error, {
-      businessContext: { action: 'app_initialization' },
-    })
+    logging.error('User application error:', error)
   })
 }
 
@@ -73,9 +69,7 @@ export async function fetchUsers(): Promise<readonly User[]> {
     setCurrentUser(newCurrentUser ?? null)
     return users
   } catch (error) {
-    errorHandler.error(error, {
-      businessContext: { action: 'fetch_all_users' },
-    })
+    logging.error('User application error:', error)
     setUsers([])
     setCurrentUser(null)
     return []
@@ -91,24 +85,9 @@ export async function fetchCurrentUser(): Promise<User | null> {
     const user = await userRepository.fetchUser(currentUserId())
     setCurrentUser(user)
 
-    // Update Sentry user context when user is loaded
-    if (user) {
-      sentry.setUserContext({
-        id: user.id,
-        name: user.name,
-      })
-      sentry.addBreadcrumb('User session loaded', 'user', {
-        userId: user.id,
-        userName: user.name,
-      })
-    }
-
     return user
   } catch (error) {
-    errorHandler.error(error, {
-      userId: currentUserId(),
-      businessContext: { userId: currentUserId() },
-    })
+    logging.error('User application error:', error)
     setCurrentUser(null)
     return null
   }
@@ -133,7 +112,7 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
     await fetchUsers()
     return true
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return false
   }
 }
@@ -161,7 +140,7 @@ export async function updateUser(
     await fetchUsers()
     return user
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return null
   }
 }
@@ -185,25 +164,14 @@ export async function deleteUser(userId: User['id']): Promise<boolean> {
     await fetchUsers()
     return true
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return false
   }
 }
 
-const errorHandler = createErrorHandler('application', 'User')
-
 export function changeToUser(userId: User['id']): void {
-  void withUISpan('User', 'change', (span) => {
-    span.setAttributes({
-      'user.id': userId,
-      'user.change_source': 'manual',
-    })
-
-    saveUserIdToLocalStorage(userId)
-    setCurrentUserId(userId)
-
-    span.addEvent('user_changed', { 'user.id': userId })
-  })
+  saveUserIdToLocalStorage(userId)
+  setCurrentUserId(userId)
 }
 
 // TODO: Create module for favorites
@@ -214,7 +182,7 @@ export function isFoodFavorite(foodId: number): boolean {
 export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
   const currentUser_ = currentUser()
   if (currentUser_ === null) {
-    errorHandler.error(new Error('User not initialized'))
+    logging.error('User application error:', new Error('User not initialized'))
     return
   }
   const favoriteFoods = currentUser_.favorite_foods
@@ -234,6 +202,6 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
   })
     .then(fetchCurrentUser)
     .catch((error) => {
-      errorHandler.error(error)
+      logging.error('User application error:', error)
     })
 }

@@ -6,10 +6,9 @@ import { type RecipeRepository } from '~/modules/diet/recipe/domain/recipeReposi
 import { recipeCacheStore } from '~/modules/diet/recipe/infrastructure/signals/recipeCacheStore'
 import { createSupabaseRecipeGateway } from '~/modules/diet/recipe/infrastructure/supabase/supabaseRecipeGateway'
 import { type User } from '~/modules/user/domain/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseRecipeGateway()
-const errorHandler = createErrorHandler('application', 'Recipe')
 
 export function createRecipeRepository(): RecipeRepository {
   return {
@@ -32,7 +31,7 @@ export async function fetchUserRecipes(
     }
     return recipes
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
     return []
   }
 }
@@ -55,7 +54,7 @@ export async function fetchRecipeById(
     recipeCacheStore.upsertToCache(recipe)
     return recipe
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
     recipeCacheStore.removeFromCache({ by: 'id', value: recipeId })
     return null
   }
@@ -72,7 +71,7 @@ export async function fetchUserRecipeByName(
     }
     return recipes
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
     return []
   }
 }
@@ -87,7 +86,7 @@ export async function insertRecipe(
     }
     return insertedRecipe
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
     return null
   }
 }
@@ -106,7 +105,7 @@ export async function updateRecipe(
     }
     return updatedRecipe
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
     return null
   }
 }
@@ -116,6 +115,6 @@ export async function deleteRecipe(recipeId: Recipe['id']): Promise<void> {
     await supabaseGateway.deleteRecipe(recipeId)
     recipeCacheStore.removeFromCache({ by: 'id', value: recipeId })
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('Recipe error:', error)
   }
 }
