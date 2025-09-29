@@ -1,8 +1,6 @@
 import { useLocation, useNavigate } from '@solidjs/router'
 import {
-  createEffect,
   createSignal,
-  For,
   type JSXElement,
   onCleanup,
   onMount,
@@ -10,22 +8,16 @@ import {
 } from 'solid-js'
 
 import { APP_VERSION } from '~/app-version'
-import { showError } from '~/modules/toast/application/toastManager'
 import {
-  changeToUser,
-  currentUserId,
-  fetchUsers,
-  users,
-} from '~/modules/user/application/user'
-import { type User } from '~/modules/user/domain/user'
+  getCurrentUser,
+  isAuthenticated,
+} from '~/modules/auth/application/usecases/authState'
+import { currentUserId, users } from '~/modules/user/application/user'
+import { AuthUserDropdown } from '~/sections/common/components/AuthUserDropdown'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
-import {
-  closeModal,
-  openConfirmModal,
-  openContentModal,
-} from '~/shared/modal/helpers/modalHelpers'
+import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
@@ -121,20 +113,53 @@ export function BottomNavigation() {
             />
             <BottomNavigationTab
               active={false}
-              label="Usuário"
+              label={
+                isAuthenticated()
+                  ? (getCurrentUser()?.email ?? 'Usuário')
+                  : 'Login'
+              }
               icon={(props) => (
-                <UserIcon
-                  userId={currentUserId}
-                  userName={() =>
-                    users().find((u) => u.id === currentUserId())?.name ?? ''
+                <Show
+                  when={isAuthenticated()}
+                  fallback={
+                    <svg
+                      class={props.class}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 16l-4-4m0 0l4-4m0 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
                   }
-                  {...props}
-                />
+                >
+                  <UserIcon
+                    userId={currentUserId}
+                    userName={(): string => {
+                      const localUser = users().find(
+                        (u) => u.id === currentUserId(),
+                      )?.name
+                      if (localUser !== undefined && localUser !== '')
+                        return localUser
+                      const authUser = getCurrentUser()
+                      if (authUser !== null && authUser.email !== '') {
+                        const emailParts = authUser.email.split('@')
+                        return emailParts[0] ?? ''
+                      }
+                      return ''
+                    }}
+                    {...props}
+                  />
+                </Show>
               )}
               onClick={() => {
                 vibrate(50)
                 openContentModal(
-                  (modalId) => <UserSelectorDropdown modalId={modalId} />,
+                  (modalId) => <AuthUserDropdown modalId={modalId} />,
                   {
                     closeOnOutsideClick: true,
                     showCloseButton: false,
@@ -299,58 +324,5 @@ function CTAButton() {
         <div class="tooltip-arrow" data-popper-arrow />
       </div>
     </>
-  )
-}
-
-const UserSelectorDropdown = (props: { modalId: string }) => {
-  createEffect(() => {
-    const modalId = props.modalId
-    fetchUsers().catch((error) => {
-      logging.error('UserSelectorDropdown error:', error)
-      showError('Erro ao buscar usuários', { context: 'background' })
-      closeModal(modalId)
-    })
-  })
-
-  const handleChangeUser = (user: User) => {
-    vibrate(50)
-    openConfirmModal(`Deseja entrar como ${user.name}?`, {
-      title: 'Trocar de usuário',
-      confirmText: 'Entrar',
-      cancelText: 'Cancelar',
-      onConfirm: () => {
-        vibrate(50)
-        changeToUser(user.id)
-        closeModal(props.modalId)
-      },
-    })
-  }
-
-  return (
-    <div class="flex flex-col gap-1">
-      <For each={users()}>
-        {(user) => (
-          <Button
-            class="btn-ghost flex justify-between"
-            onClick={() => {
-              handleChangeUser(user)
-              // Force dropdown to close without having to click outside setting aria
-              // Credit: https://reacthustle.com/blog/how-to-close-daisyui-dropdown-with-one-click
-              const dropdown =
-                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                document.activeElement as HTMLAnchorElement | null
-              dropdown?.blur()
-            }}
-          >
-            <UserIcon
-              class="w-10 h-10"
-              userId={() => user.id}
-              userName={() => user.name}
-            />
-            <div class="text-xl flex-1 text-start">{user.name}</div>
-          </Button>
-        )}
-      </For>
-    </div>
   )
 }
