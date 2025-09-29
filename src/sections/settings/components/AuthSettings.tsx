@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { Show } from 'solid-js'
+import { createSignal, Show } from 'solid-js'
 
 import { signOut } from '~/modules/auth/application/services/authService'
 import {
@@ -15,6 +15,17 @@ import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 export function AuthSettings() {
+  // Privacy setting state (example: allow data sharing)
+  const [allowDataSharing, setAllowDataSharing] = createSignal(false)
+
+  // Stub for backend integration
+  async function handlePrivacyChange(newValue: boolean) {
+    setAllowDataSharing(newValue)
+    // TODO: Integrate with backend API to persist privacy setting
+    showSuccess(
+      `Compartilhamento de dados ${newValue ? 'ativado' : 'desativado'}`,
+    )
+  }
   const navigate = useNavigate()
 
   const handleSignOut = () => {
@@ -189,6 +200,19 @@ export function AuthSettings() {
             >
               Exportar meus dados
             </Button>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <label class="text-sm text-gray-700 dark:text-gray-300">
+              Compartilhar meus dados anonimamente para melhorar o app
+            </label>
+            <input
+              type="checkbox"
+              checked={allowDataSharing()}
+              onChange={(e) => {
+                void handlePrivacyChange(e.currentTarget.checked)
+              }}
+              class="ml-2 w-5 h-5 accent-blue-600"
+            />
           </div>
         </div>
       </Show>
