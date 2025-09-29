@@ -102,21 +102,23 @@ export function createAuthService(
             isLoading: false,
           }))
 
-          fetchUsers()
-            .then((users) => {
-              console.debug(`Users: `, users)
-              let user = users.find((u) => u.uuid === session?.user.id)
-              if (user !== undefined) {
-                changeToUser(user.id)
-              } else {
-                showError(
-                  `Couldnt't find user ${JSON.stringify(session?.user)}`,
-                )
-                changeToUser(0)
-                signOut().catch(showError)
-              }
-            })
-            .catch(showError)
+          if (session?.user.id !== undefined) {
+            fetchUsers()
+              .then((users) => {
+                console.debug(`Users: `, users)
+                let user = users.find((u) => u.uuid === session.user.id)
+                if (user !== undefined) {
+                  changeToUser(user.id)
+                } else {
+                  showError(
+                    `Couldnt't find user ${JSON.stringify(session.user)}`,
+                  )
+                  changeToUser(0)
+                  signOut().catch(showError)
+                }
+              })
+              .catch(showError)
+          }
         },
       )
 
