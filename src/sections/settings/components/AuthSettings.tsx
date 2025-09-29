@@ -39,6 +39,41 @@ export function AuthSettings() {
     navigate('/login')
   }
 
+  // Helper to download JSON file
+  function downloadJSON(data: unknown, filename: string) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // Gather user data for export (profile, diet, measurements, etc.)
+  async function handleExportData() {
+    try {
+      // TODO: Replace with actual data fetches if needed
+      const user = getCurrentUser()
+      // Example: fetch diet, measurements, etc. from signals or API
+      const exportData = {
+        user,
+        // diet: await fetchUserDiet(),
+        // measurements: await fetchUserMeasurements(),
+        // ...add more as needed
+      }
+      downloadJSON(exportData, 'macroflows-user-data.json')
+      showSuccess('Dados exportados com sucesso!')
+    } catch (err) {
+      logging.error('Export data error:', err)
+      showError('Erro ao exportar dados. Tente novamente.')
+    }
+  }
+
   return (
     <div class="space-y-6">
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -145,6 +180,16 @@ export function AuthSettings() {
             Seus dados são sincronizados de forma segura e criptografada. Você
             pode exportar ou excluir seus dados a qualquer momento.
           </p>
+          <div class="mt-4 flex gap-2">
+            <Button
+              class="btn-primary"
+              onClick={() => {
+                void handleExportData()
+              }}
+            >
+              Exportar meus dados
+            </Button>
+          </div>
         </div>
       </Show>
     </div>
