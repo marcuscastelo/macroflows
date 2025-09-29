@@ -52,7 +52,7 @@ import { logging } from '~/shared/utils/logging'
 function GoogleLoginButton() {
   const handleLogin = async () => {
     try {
-      await signIn({ provider: 'google' })
+      await signIn({ provider: 'google', redirectTo: window.location.origin })
     } catch (error) {
       // TODO: ban inline imports
       // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045

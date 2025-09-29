@@ -45,9 +45,9 @@ export type AuthProvider = 'google' | 'email'
 
 export type SignInOptions = {
   provider: AuthProvider
-  redirectTo?: string
+  redirectTo: string
 }
 
 export type SignOutOptions = {
-  redirectTo?: string
+  redirectTo: string
 }
