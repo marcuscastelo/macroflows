@@ -37,6 +37,7 @@ export function OnboardingFlow() {
 
   const completeOnboarding = () => {
     // TODO: Save onboarding completion to user preferences
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1050
     showSuccess('Bem-vindo ao Macroflows!')
     navigate('/diet')
   }
