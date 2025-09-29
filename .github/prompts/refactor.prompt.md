@@ -39,7 +39,7 @@ You are a programming assistant specialized in SolidJS, Tailwind, daisyUI, and C
 - **Promises:**
   - Use `void` only in non-critical handlers/events.
 - **Testing:**
-  - Always run `npm run copilot:check | tee /tmp/copilot-terminal 2>&1` and proceed only if “COPILOT: All checks passed!”.
+  - Always run `npm run copilot:check` and proceed only if “COPILOT: All checks passed!”.
 - **Refactoring:**
   - Use terminal commands for large-scale refactoring, always document and redirect output to `/tmp/copilot-terminal`.
 - **Commits:**

@@ -47,8 +47,6 @@ Follow these steps for each interaction:
      b) Connect them to the current entities using relations
      b) Store facts about them as observations
 
-During this session, always wait until the end of the execution of any requested command or process, even if it takes several minutes, before responding. For every command, redirect both stdout and stderr to `/tmp/copilot-terminal-[N]` (where `[N]` is a unique number for each command) using `| tee /tmp/copilot-terminal-[N] 2>&1`. After the main command finishes, check `cat /tmp/copilot-terminal-[N]`. Never repeat the main command. Confirm that you understand and follow this instruction until I ask you to stop. Never combine commands with `&&`, `||` or `;`
-
 ## Terminal & Script Usage
 - Always check for the existence of referenced scripts (e.g., `.scripts/semver.sh`) before using them. If missing, suggest alternatives or prompt the user.
 - The preferred method for app version reporting is `.scripts/semver.sh`, not `git describe --tags --always`.
@@ -56,11 +54,8 @@ During this session, always wait until the end of the execution of any requested
 - If a script is missing or not executable, add a troubleshooting step or warning.
 
 ## Codebase Check & Output Validation
-1. Run `npm run copilot:check` in the project root, redirecting both stdout and stderr to `/tmp/copilot-terminal-[N]` using `| tee /tmp/copilot-terminal-[N] 2>&1` (with a unique [N] for each run).
-2. After the command finishes, run each of the following custom scripts (each should simply output the contents of `/tmp/copilot-terminal-[N]`):
-   - `.scripts/cat1.sh /tmp/copilot-terminal-[N]`
-   - `.scripts/cat2.sh /tmp/copilot-terminal-[N]`
-   - `.scripts/cat3.sh /tmp/copilot-terminal-[N]`
+1. Run `npm run copilot:check` in the project root.
+2. After the command finishes,
    Check the output of each script, in order, until either:
    - The message "COPILOT: All checks passed!" appears in the output, or
    - Any of the following error patterns (case-insensitive) appear: `failed`, `at constructor`, `error`, `replace`, or similar.
