@@ -28,7 +28,10 @@ describe('Auth Module', () => {
 
   it('should handle sign in operation', async () => {
     await expect(
-      authService.signIn({ provider: 'google' }),
+      authService.signIn({
+        provider: 'google',
+        redirectTo: 'localhost:3000',
+      }),
     ).resolves.not.toThrow()
   })
 
