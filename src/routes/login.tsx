@@ -16,7 +16,10 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsSigningIn(true)
     try {
-      await signIn({ provider: 'google' })
+      await signIn({
+        provider: 'google',
+        redirectTo: window.location.origin,
+      })
       // Navigation will happen automatically when auth state changes
     } catch (error) {
       logging.error('Login error:', error)
