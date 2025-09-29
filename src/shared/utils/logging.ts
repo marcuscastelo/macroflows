@@ -43,6 +43,15 @@ const createLogEvent = (
   // Use the current active span if available, otherwise create a new one
   const activeSpan = trace.getActiveSpan()
 
+  console.debug(`log.${level}`, {
+    'log.body': message,
+    'log.severity': level,
+    'code.filepath': fileName,
+    'code.function': functionName,
+    timestamp: Date.now(),
+    ...data,
+  })
+
   if (activeSpan) {
     // Add event to existing active span (nested logging)
     activeSpan.addEvent(`log.${level}`, {
@@ -110,6 +119,7 @@ export const logging = {
     error?: unknown,
     data?: Record<string, unknown>,
   ): void => {
+    console.error(message, error, data)
     createLogEvent('error', message, {
       error: error instanceof Error ? error.message : error,
       ...data,
