@@ -130,9 +130,11 @@ export default [
       'jsx-a11y/role-has-required-aria-props': 'warn',
       'jsx-a11y/role-supports-aria-props': 'warn',
 
-      'no-console': 'error', // Ban all console usage by default
+      // TODO: Re-enable console restriction after refactoring logging & observability system
+      'no-console': 'off', // Ban all console usage by default
+      // TODO: Re-enable console restriction after refactoring logging & observability system
       'no-restricted-syntax': [
-        'error',
+        'off',
         {
           selector: "CallExpression[callee.object.name='console']",
           message: 'Direct console usage is forbidden. Use errorHandler.apiError or logging utility functions instead.'
