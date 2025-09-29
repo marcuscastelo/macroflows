@@ -19,6 +19,7 @@ export const {
   birthdate: ze.string(),
   gender: z.union([z.literal('male'), z.literal('female')]),
   desired_weight: ze.number(),
+  uuid: ze.string(),
 })
 
 export type NewUser = Readonly<z.infer<typeof newUserSchema>>

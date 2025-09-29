@@ -14,6 +14,7 @@ function toInsertDTO(newUser: NewUser): InsertUserDTO {
     birthdate: newUser.birthdate,
     gender: newUser.gender,
     desired_weight: newUser.desired_weight,
+    uuid: newUser.uuid,
   }
 }
 
@@ -25,18 +26,20 @@ function toUpdateDTO(newUser: NewUser): UpdateUserDTO {
     birthdate: newUser.birthdate,
     gender: newUser.gender,
     desired_weight: newUser.desired_weight,
+    uuid: newUser.uuid,
   }
 }
 
-function toDomain(dao: UserDTO): User {
+function toDomain(dto: UserDTO): User {
   return parseWithStack(userSchema, {
-    id: dao.id,
-    name: dao.name,
-    favorite_foods: dao.favorite_foods ?? [],
-    diet: dao.diet,
-    birthdate: dao.birthdate,
-    gender: dao.gender,
-    desired_weight: dao.desired_weight,
+    id: dto.id,
+    name: dto.name,
+    favorite_foods: dto.favorite_foods ?? [],
+    diet: dto.diet,
+    birthdate: dto.birthdate,
+    gender: dto.gender,
+    desired_weight: dto.desired_weight,
+    uuid: dto.uuid ?? '', // TODO: Remove coallescing after uuid is not null
   })
 }
 
