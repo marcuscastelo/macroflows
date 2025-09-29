@@ -94,11 +94,7 @@ export function OnboardingFlow() {
               </div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Bem-vindo,{' '}
-                {user !== null &&
-                user !== undefined &&
-                user.email !== null &&
-                user.email !== undefined &&
-                user.email !== ''
+                {user !== null && user.email !== ''
                   ? user.email.split('@')[0]
                   : 'usuário'}
                 ! 👋

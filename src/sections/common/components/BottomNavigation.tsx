@@ -143,20 +143,10 @@ export function BottomNavigation() {
                       const localUser = users().find(
                         (u) => u.id === currentUserId(),
                       )?.name
-                      if (
-                        localUser !== null &&
-                        localUser !== undefined &&
-                        localUser !== ''
-                      )
+                      if (localUser !== undefined && localUser !== '')
                         return localUser
                       const authUser = getCurrentUser()
-                      if (
-                        authUser !== null &&
-                        authUser !== undefined &&
-                        authUser.email !== null &&
-                        authUser.email !== undefined &&
-                        authUser.email !== ''
-                      ) {
+                      if (authUser !== null && authUser.email !== '') {
                         const emailParts = authUser.email.split('@')
                         return emailParts[0] ?? ''
                       }
