@@ -133,6 +133,7 @@ export default [
       // TODO: Re-enable console restriction after refactoring logging & observability system
       'no-console': 'off', // Ban all console usage by default
       // TODO: Re-enable console restriction after refactoring logging & observability system
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1056
       'no-restricted-syntax': [
         'off',
         {
