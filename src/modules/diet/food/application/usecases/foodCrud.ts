@@ -8,9 +8,9 @@ import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure
 import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
+import { handleApiError } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
 import { isBackendOutageError } from '~/shared/utils/errorUtils'
-import { logging } from '~/shared/utils/logging'
 
 const foodRepository = createSupabaseFoodRepository()
 
@@ -25,7 +25,11 @@ export async function fetchFoods(
   try {
     return await foodRepository.fetchFoods(params)
   } catch (error) {
-    logging.error('Food application error:', error)
+    handleApiError(error, {
+      component: 'FoodApplication',
+      operation: 'fetchFoods',
+      additionalData: { params },
+    })
     if (isBackendOutageError(error)) setBackendOutage(true)
     return []
   }
@@ -69,7 +73,11 @@ export async function fetchFoodsByName(
 
     return foods
   } catch (error) {
-    logging.error('Food application error:', error)
+    handleApiError(error, {
+      component: 'FoodApplication',
+      operation: 'fetchFoodsByName',
+      additionalData: { name, params },
+    })
     if (isBackendOutageError(error)) setBackendOutage(true)
     return []
   }
@@ -106,7 +114,11 @@ export async function fetchFoodByEan(
       { context: 'user-action' },
     )
   } catch (error) {
-    logging.error('Food application error:', error)
+    handleApiError(error, {
+      component: 'FoodApplication',
+      operation: 'fetchFoodByEan',
+      additionalData: { ean, params },
+    })
     if (isBackendOutageError(error)) setBackendOutage(true)
     return null
   }

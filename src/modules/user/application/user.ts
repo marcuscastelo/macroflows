@@ -14,7 +14,7 @@ import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
-import { logging } from '~/shared/utils/logging'
+import { handleApiError } from '~/shared/error/errorHandler'
 
 const userRepository = createSupabaseUserRepository()
 
@@ -41,7 +41,10 @@ createEffect(() => {
 
 function bootstrap() {
   fetchUsers().catch((error) => {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'bootstrap',
+    })
   })
 }
 
@@ -71,7 +74,10 @@ export async function fetchUsers(): Promise<readonly User[]> {
     setCurrentUser(newCurrentUser ?? null)
     return users
   } catch (error) {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'fetchUsers',
+    })
     setUsers([])
     setCurrentUser(null)
     return []
@@ -89,7 +95,11 @@ export async function fetchCurrentUser(): Promise<User | null> {
 
     return user
   } catch (error) {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'fetchCurrentUser',
+      additionalData: { userId: currentUserId() },
+    })
     setCurrentUser(null)
     return null
   }
@@ -114,7 +124,11 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
     await fetchUsers()
     return true
   } catch (error) {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'insertUser',
+      additionalData: { username: newUser.name },
+    })
     return false
   }
 }
@@ -142,7 +156,11 @@ export async function updateUser(
     await fetchUsers()
     return user
   } catch (error) {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'updateUser',
+      additionalData: { userId, username: newUser.name },
+    })
     return null
   }
 }
@@ -166,7 +184,11 @@ export async function deleteUser(userId: User['uuid']): Promise<boolean> {
     await fetchUsers()
     return true
   } catch (error) {
-    logging.error('User application error:', error)
+    handleApiError(error, {
+      component: 'UserApplication',
+      operation: 'deleteUser',
+      additionalData: { userId },
+    })
     return false
   }
 }
@@ -184,7 +206,11 @@ export function isFoodFavorite(foodId: number): boolean {
 export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
   const currentUser_ = currentUser()
   if (currentUser_ === null) {
-    logging.error('User application error:', new Error('User not initialized'))
+    handleApiError(new Error('User not initialized'), {
+      component: 'UserApplication',
+      operation: 'setFoodAsFavorite',
+      additionalData: { foodId, favorite },
+    })
     return
   }
   const favoriteFoods = currentUser_.favorite_foods
@@ -204,6 +230,10 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
   })
     .then(fetchCurrentUser)
     .catch((error) => {
-      logging.error('User application error:', error)
+      handleApiError(error, {
+        component: 'UserApplication',
+        operation: 'setFoodAsFavorite',
+        additionalData: { userId: currentUser_.uuid, foodId, favorite },
+      })
     })
 }
