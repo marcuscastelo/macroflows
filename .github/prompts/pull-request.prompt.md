@@ -1,74 +1,328 @@
 ---
-description: 'Review all changes from HEAD to the nearest rc/** branch (local or remote), push unpushed commits, and generate and open a PR using gh. Confirm PR details with the user before creation. PR is created to the nearest rc/** branch.'
+description: 'Review changes, push commits, and create pull request to the nearest rc/** branch.'
 mode: 'agent'
 tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'activePullRequest']
 ---
 
-# Pull Request Review, Push & Creation Agent
+# Pull Request Creator
 
-Antes de tudo, exiba para o usuário:
+Review changes, push commits, and create pull request to the nearest rc/** branch.
 
-`AGENT HAS CHANGED, NEW AGENT: .github/prompts/pull-request.prompt.md`.
+## Usage
 
-You are: github-copilot.v1/pull-request
+```
+/pull-request
+/pr
+```
 
-Analyze all modifications in the codebase from the current `HEAD` to the nearest base branch matching `rc/**` (e.g., `rc/v0.12.0`), searching both local and remote branches. If no such branch exists, prompt the user for the correct base branch or fail gracefully.
+## Description
 
-## Required Output
+This command analyzes all changes from HEAD to the nearest `rc/**` branch, pushes any unpushed commits, and creates a properly formatted pull request using GitHub CLI.
 
-1. **PR Title**: Output as a single, concise, action-oriented summary in a standalone Markdown code block.
-2. **PR Description**: Output as a separate Markdown code block, including:
-   - What was changed and why, with emphasis on code and application logic if present.
-   - Relevant context or motivation.
-   - Notable implementation details or breaking changes.
-   - References to related documentation or issues.
-   - A list of issues that this PR closes (e.g., `closes #123`), included at the end of the description. **If no issues are closed, omit this section.**
-     - If the current branch name matches the pattern `issue<number>` (e.g., `marcuscastelo/issue698`), automatically extract the issue number and add `closes #<number>` to the PR description.
-3. **Labels**: Output as a plain list (not Markdown) for user copy-paste. Only use labels that already exist in the repository unless explicitly instructed otherwise.
-4. **Milestone**: Output as a plain value (not Markdown) for user copy-paste.
+## What it does
 
-## Instructions
+1. **Change Analysis:**
+   - Identifies nearest `rc/**` branch (local or remote)
+   - Analyzes all modifications from HEAD to base branch
+   - Collects commit messages and metadata
+   - Determines scope and type of changes
 
-- Use a single zsh code block to run all required commands for determining the diff from `HEAD` to the nearest `rc/**` branch (searching both local and remote), collecting commit messages, and gathering relevant metadata. Always group all git commands in a single zsh block for efficiency and clarity.
-- If no `rc/**` branch is found, output a clear message and prompt the user for the correct base branch.
-- When both code and documentation/.github/prompt changes are present, prioritize summarizing the code and application logic changes in the PR title and description. Only mention documentation or prompt changes as secondary details.
-- Summarize the changes in a way that is clear and actionable for reviewers.
-- Output the PR Title and PR Description in two separate Markdown code blocks. Output labels and milestone as plain text lists for user convenience.
-- Output all results in English.
-- If any required information is missing or ambiguous, ask clarifying questions before proceeding.
-- Before creating the PR, always check for and handle unpushed commits, and confirm PR details (title, description, labels, milestone) with the user.
-- For multiline PR descriptions, **always write the body to a temp file using `cat` with heredoc and single quotes for the delimiter** (e.g., `cat <<'EOF' > file`). This ensures that any backticks or variables inside the heredoc are not interpreted by the shell. Backticks are allowed inside the heredoc for Markdown/code, but the heredoc delimiter must always use single quotes. Never use `printf` or `echo` for this purpose.
-- After creating the PR, always check and report the PR URL to the user.
-- For multi-line PR descriptions or commit messages, **always use `cat` with heredoc and single quotes for the delimiter** to write the message to a temp file. Backticks are allowed inside the heredoc, but the delimiter must be single quotes to prevent shell interpretation. Never use `printf` for this purpose.
-- If any step fails (e.g., push fails, `gh` command fails), output a clear error message and stop.
-- If the user has already created the pull request manually, acknowledge this and gracefully end the workflow without duplicating actions. See [copilot-instructions.md](../copilot-instructions.md) for global rules.
-- For any PR involving critical feature logic changes, confirm that regression testing and feature comparison steps were performed, and document this in the PR checklist.
+2. **Content Generation:**
+   - Creates action-oriented PR title
+   - Generates comprehensive PR description
+   - Suggests appropriate labels and milestone
+   - Extracts issue numbers from branch names
 
----
+3. **Validation and Push:**
+   - Checks for unpushed commits
+   - Pushes local commits to remote branch
+   - Validates GitHub CLI authentication
+   - Confirms PR details with user
 
-## Additional Push & PR Creation Steps
+4. **PR Creation:**
+   - Uses `gh` CLI to create pull request
+   - Sets proper title, description, labels, milestone
+   - Links to closing issues automatically
+   - Reports PR URL upon success
 
-- After generating the PR title, description, labels, and milestone, check for any local commits that have not been pushed to the remote branch. If there are unpushed commits, push them before proceeding.
-- Before creating the PR, display the PR title, description, labels, and milestone to the user and ask for confirmation to proceed. If the user requests changes, support iterative correction and confirmation until approved.
-- Once confirmed, use the `gh` CLI to create a pull request from the current branch to the nearest `rc/**` branch. The PR should use the generated title and description. Reference [pull-request-gh.prompt.md](./pull-request-gh.prompt.md) for best practices on using the `gh` command.
-- After creating the PR, display the PR URL or summary to the user.
-- If any step fails (e.g., push fails, `gh` command fails), output a clear error message and stop.
-- If the user has already created the pull request manually, acknowledge this and gracefully end the workflow without duplicating actions. See [copilot-instructions.md](../copilot-instructions.md) for global rules.
+## Change Analysis Process
 
-## PR Update Workflow
+### Branch Detection
+```bash
+# Searches for nearest rc/** branch
+git branch -r | grep 'rc/' | head -1  # Remote branches
+git branch -l | grep 'rc/' | head -1  # Local branches
+```
 
-- If the PR description needs to be updated after creation, use `gh pr edit <number> --body-file <file>` with the body file prepared as above. Always confirm the update with the user.
+### Diff Analysis
+- Compares HEAD to detected base branch
+- Analyzes file changes and commit history
+- Prioritizes code changes over documentation
+- Identifies breaking changes or major features
 
-## PR Body Formatting and Verification (added per reportedBy: github-copilot.v1/pull-request)
+### Issue Extraction
+- Detects branch pattern: `marcuscastelo/issue<number>`
+- Automatically adds `closes #<number>` to PR description
+- Links related issues mentioned in commits
 
-- PR body formatting must be visually and functionally verified on GitHub, not just locally. If the user reports formatting issues (e.g., stray `\n` or literal escape sequences), the agent must retry using `cat` and heredoc to rewrite the body and update the PR again.
-- Add a troubleshooting step: if the PR body appears with literal `\n` or other formatting issues, rewrite the body using heredoc and update the PR again.
-- When formatting issues are suspected, display the PR body with `cat` and heredoc for user verification before updating with `gh`.
-- The agent must always update the PR on GitHub after correcting formatting, not just display the fixed content locally.
+## PR Content Structure
 
-## Issue-Focused Communication
+### Title Format
+```
+type(scope): concise action-oriented summary
+```
 
-- When the branch or user request indicates a direct issue relationship, ensure the PR title and description reference the relevant issue number and context for clarity and automatic closure.
+Examples:
+- `feat(day-diet): add copy previous day functionality`
+- `fix(unified-item): resolve hierarchy validation errors`
+- `refactor(weight): optimize period grouping algorithm`
 
-reportedBy: github-copilot.v1/pull-request
+### Description Sections
+
+1. **Summary:** What was changed and why
+2. **Implementation Details:** Notable technical decisions
+3. **Breaking Changes:** Any backward incompatible changes
+4. **Testing:** How changes were validated
+5. **Issues:** `closes #123` if applicable
+
+### Example Description
+```markdown
+## Summary
+Implements copy previous day functionality allowing users to duplicate their previous day's meals and macros to the current day.
+
+## Implementation Details
+- Added `CopyLastDayButton` component with confirmation modal
+- Created `copyDayDiet` domain operation with validation
+- Integrated with existing day diet infrastructure
+- Maintains macro targets and meal structure
+
+## Testing
+- Added unit tests for domain operations
+- Tested UI interaction flows
+- Verified data consistency after copy
+
+Closes #456
+```
+
+## Label Suggestions
+
+### Type Labels
+- `feature` - New functionality
+- `bug` - Bug fixes
+- `refactor` - Code restructuring
+- `improvement` - Enhancements
+- `chore` - Maintenance tasks
+
+### Area Labels
+- `ui` - User interface changes
+- `backend` - Server-side logic
+- `api` - API modifications
+- `performance` - Performance improvements
+- `accessibility` - Accessibility enhancements
+
+### Complexity Labels
+- `complexity-low` - Simple changes
+- `complexity-medium` - Moderate complexity
+- `complexity-high` - Complex implementation
+- `complexity-very-high` - Very complex changes
+
+## Shell and CLI Handling
+
+### Multiline Content Management (CRITICAL - HEREDOC RULES)
+
+**🚨 MANDATORY HEREDOC FORMAT:**
+```bash
+# ALWAYS use single quotes around EOF delimiter to prevent variable expansion
+cat << 'EOF' > /tmp/pr-description.md
+## Summary
+Your PR description content here.
+
+## Implementation Details
+- Bullet points work fine
+- Code blocks with `backticks` are safe
+- Variables like $VAR will NOT be expanded (good!)
+
+Closes #123
+EOF
+
+# THEN use the file with gh CLI
+gh pr create --title "your title" --body-file /tmp/pr-description.md
+```
+
+**🚨 CRITICAL RULES:**
+1. **ALWAYS use `cat << 'EOF'`** (with single quotes)
+2. **NEVER use `cat <<EOF`** (without quotes) - causes variable expansion
+3. **NEVER use `cat <<"EOF"`** (with double quotes) - allows some expansion
+4. **NEVER put content directly in `--body`** - use `--body-file` always
+5. **ALWAYS clean up:** `rm /tmp/pr-description.md` after creation
+
+### Error Handling
+- Validates `gh` CLI authentication
+- Checks remote branch existence
+- Handles network connectivity issues
+- Reports clear error messages
+
+### Formatting Verification
+- Verifies PR body formatting on GitHub
+- Retries with corrected formatting if needed
+- Uses heredoc to prevent escape sequence issues
+- Confirms visual formatting with user
+
+## Push and Validation Process
+
+### Pre-PR Checks
+1. **Unpushed Commits:**
+   ```bash
+   git log @{u}..HEAD --oneline  # Check for unpushed commits
+   git push origin HEAD          # Push if needed
+   ```
+
+2. **Branch Validation:**
+   ```bash
+   git status --porcelain        # Ensure clean working directory
+   git remote -v                 # Verify remote configuration
+   ```
+
+3. **User Confirmation:**
+   - Display generated PR title and description
+   - Show suggested labels and milestone
+   - Request explicit confirmation to proceed
+
+### Quality Validation
+- Ensures all checks pass before PR creation
+- Validates clean architecture compliance
+- Confirms no linting or type errors
+- Verifies tests pass
+
+## Target Branch Logic
+
+### Branch Priority (CRITICAL - NEVER USE STABLE)
+1. **Remote rc/ branches:** `origin/rc/v0.14.0` - PRIMARY TARGET
+2. **Local rc/ branches:** `rc/v0.14.0` - SECONDARY TARGET  
+3. **User specification:** MANDATORY prompt if no rc/ branch found
+4. **FORBIDDEN:** Never use `stable` branch - PRs to stable are ONLY for version releases
+
+### Branch Detection Rules
+```bash
+# REQUIRED: Always check for rc/ branches first
+RC_BRANCH=$(git branch -r | grep 'origin/rc/' | head -1 | sed 's/.*origin\///')
+if [ -z "$RC_BRANCH" ]; then
+  RC_BRANCH=$(git branch -l | grep 'rc/' | head -1 | sed 's/^[* ] *//')
+fi
+
+# CRITICAL: If no rc/ branch exists, STOP and ask user
+if [ -z "$RC_BRANCH" ]; then
+  echo "❌ ERROR: No rc/ branch found. Cannot proceed."
+  echo "Available branches:"
+  git branch -r | grep -v HEAD
+  exit 1
+fi
+
+# Use detected rc/ branch as base
+BASE_BRANCH="$RC_BRANCH"
+```
+
+### Version Detection
+- Uses `.scripts/semver.sh` for version information
+- Includes current version in PR metadata
+- References milestone based on target version
+
+## Integration Features
+
+### Issue Automation
+- **Branch-based detection:** Extracts issue number from branch name
+- **Automatic closure:** Adds `closes #<number>` to description
+- **Cross-references:** Links related issues from commits
+
+### Documentation Updates
+- **Architecture compliance:** References clean architecture changes
+- **Code review:** Mentions significant architectural decisions
+- **Migration notes:** Documents any breaking changes
+
+### Milestone Association
+- **Version-based:** Associates with target release milestone
+- **Feature-based:** Links to relevant feature milestones
+- **Bug-based:** Associates with current sprint milestone
+
+## Output Format
+
+### Generated Content
+```markdown
+**Title:**
+feat(day-diet): add copy previous day functionality
+
+**Description:**
+## Summary
+Implements copy previous day functionality allowing users to...
+
+**Labels:**
+feature ui complexity-medium
+
+**Milestone:**
+v0.14.0
+```
+
+### GitHub CLI Command (CORRECTED)
+```bash
+# CRITICAL: Always detect rc/ branch first - NEVER hardcode stable
+RC_BRANCH=$(git branch -r | grep 'origin/rc/' | head -1 | sed 's/.*origin\///')
+if [ -z "$RC_BRANCH" ]; then
+  echo "❌ No rc/ branch found - cannot create PR"
+  exit 1
+fi
+
+# Create PR with detected rc/ branch
+gh pr create \
+  --title "feat(day-diet): add copy previous day functionality" \
+  --body-file /tmp/pr-description.md \
+  --label feature,ui,complexity-medium \
+  --milestone "v0.14.0" \
+  --base "$RC_BRANCH"
+
+# Clean up
+rm /tmp/pr-description.md
+```
+
+## Error Recovery
+
+### CRITICAL ERRORS TO AVOID
+
+**🚨 NEVER USE STABLE BRANCH:**
+- **Problem:** Creating PR to `stable` instead of `rc/` branch
+- **Fix:** Always detect and use `rc/` branch as base
+- **Rule:** PRs to `stable` are ONLY for version release merges
+
+**🚨 EOF APPEARING IN PR DESCRIPTION:**
+- **Problem:** Using `cat <<EOF` without quotes causes shell expansion
+- **Fix:** Always use `cat << 'EOF'` with single quotes
+- **Result:** Prevents literal "EOF" text in PR descriptions
+
+### Common Issues
+- **No rc/ branch:** STOP execution and prompt user - never fallback to stable
+- **Unpushed commits:** Automatically pushes before PR creation
+- **Formatting issues:** Use proper heredoc with single quotes around EOF
+- **Label conflicts:** Removes invalid labels and continues
+
+### Graceful Failures
+- **Network issues:** Reports connectivity problems
+- **Authentication:** Guides through `gh auth login`
+- **Permission errors:** Suggests repository access verification
+- **Existing PR:** Detects and reports existing PR for branch
+
+## Requirements
+
+- GitHub CLI (`gh`) installed and authenticated
+- Git repository with proper remote configuration
+- `.scripts/semver.sh` script (with fallback)
+- Write access to repository
+- Target `rc/**` branch exists
+
+## Best Practices
+
+- **Clear titles:** Action-oriented, conventional commit style
+- **Comprehensive descriptions:** Include context and motivation
+- **Proper labeling:** Use existing repository labels
+- **Issue linking:** Automatic closure where applicable
+- **Quality validation:** Ensure all checks pass
+- **User confirmation:** Verify details before creation
 
