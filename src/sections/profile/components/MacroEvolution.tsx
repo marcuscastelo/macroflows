@@ -1,4 +1,4 @@
-import { type Resource } from 'solid-js'
+import { type Accessor } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
@@ -71,7 +71,7 @@ function _createChartData(
 }
 
 function AllMacrosChart(_props: {
-  weights: Resource<readonly Weight[] | undefined>
+  weights: Accessor<readonly Weight[]>
 }) {
   // const macroProfile = getLatestMacroProfile(userMacroProfiles())
 
@@ -224,7 +224,7 @@ function AllMacrosChart(_props: {
 }
 
 function CaloriesChart(_props: {
-  weights: Resource<readonly Weight[] | undefined>
+  weights: Accessor<readonly Weight[]>
 }) {
   // const _data = () => {
   //   const weights = props.weights()
@@ -275,7 +275,7 @@ function CaloriesChart(_props: {
 }
 
 function ProteinChart(_props: {
-  weights: Resource<readonly Weight[] | undefined>
+  weights: Accessor<readonly Weight[]>
 }) {
   // const _data = () => {
   //   const weights = props.weights()
@@ -325,7 +325,7 @@ function ProteinChart(_props: {
 }
 
 function FatChart(_props: {
-  weights: Resource<readonly Weight[] | undefined>
+  weights: Accessor<readonly Weight[]>
 }) {
   // const _data = () => {
   //   const weights = props.weights()
@@ -375,7 +375,7 @@ function FatChart(_props: {
 }
 
 function CarbsChart(_props: {
-  weights: Resource<readonly Weight[] | undefined>
+  weights: Accessor<readonly Weight[]>
 }) {
   // const _data = () => {
   //   const weights = props.weights()

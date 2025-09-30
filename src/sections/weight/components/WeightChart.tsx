@@ -1,6 +1,6 @@
 import { createMemo, createSignal, onMount, Suspense } from 'solid-js'
 
-import { type userWeights } from '~/modules/weight/application/usecases/weightState'
+import { type Weight } from '~/modules/weight/domain/weight'
 import { type WeightChartType } from '~/modules/weight/application/weightChartSettings'
 import { buildChartData } from '~/modules/weight/application/weightChartUtils'
 import {
@@ -10,12 +10,13 @@ import {
 import { Chart } from '~/sections/common/components/charts/Chart'
 import { buildWeightChartOptions } from '~/sections/weight/components/WeightChartOptions'
 import { buildWeightChartSeries } from '~/sections/weight/components/WeightChartSeries'
+import { type Accessor } from 'solid-js'
 
 /**
  * Props for the WeightChart component.
  */
 export type WeightChartProps = {
-  weights: typeof userWeights
+  weights: Accessor<readonly Weight[]>
   desiredWeight: number
   type: WeightChartType
 }
@@ -46,7 +47,7 @@ export function WeightChart(props: WeightChartProps) {
   })
 
   const weightsByPeriod = createMemo(() => {
-    return groupWeightsByPeriod(props.weights.latest, props.type, isMobile())
+    return groupWeightsByPeriod(props.weights(), props.type, isMobile())
   })
 
   const data = createMemo(() => {
