@@ -87,11 +87,25 @@ cp .env.example .env.local  # Add your Supabase credentials
 npm run dev
 ```
 
+### Android Build
+
+The project supports Android builds via Capacitor. See [Android README](android/README.md) for setup instructions.
+
+```bash
+pnpm run build
+npx cap sync android
+cd android
+./gradlew assembleRelease
+```
+
+For detailed Android release signing setup, see [Android Release Signing Documentation](docs/android-release-signing.md).
+
 ---
 
 ## Roadmap
 
 - OpenTelemetry integration
+- Android app support ✅
 - PWA support
 - ML-based food recognition
 - Social features (sharing, collaboration)

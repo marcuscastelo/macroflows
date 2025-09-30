@@ -36,7 +36,6 @@ src/app-version.json
 # Generated one-time prompts
 .github/prompts/.*.md
 android-sdk/
-android/
 *.log
 
 .serena/cache
