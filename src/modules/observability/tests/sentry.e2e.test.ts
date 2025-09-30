@@ -79,7 +79,7 @@ describe('Sentry E2E Tests', () => {
       await initializeSentry('client')
 
       const calls = (Sentry.init as ReturnType<typeof vi.fn>).mock.calls
-      if (calls.length > 0) {
+      if (calls.length > 0 && calls[0]?.[0] !== undefined) {
         expect(calls[0][0]).toHaveProperty('integrations')
       }
     })
@@ -88,7 +88,7 @@ describe('Sentry E2E Tests', () => {
       await initializeSentry('client')
 
       const calls = (Sentry.init as ReturnType<typeof vi.fn>).mock.calls
-      if (calls.length > 0) {
+      if (calls.length > 0 && calls[0]?.[0] !== undefined) {
         expect(calls[0][0]).toMatchObject({
           replaysSessionSampleRate: 1.0,
           replaysOnErrorSampleRate: 1.0,
@@ -100,7 +100,7 @@ describe('Sentry E2E Tests', () => {
       await initializeSentry('client')
 
       const calls = (Sentry.init as ReturnType<typeof vi.fn>).mock.calls
-      if (calls.length > 0) {
+      if (calls.length > 0 && calls[0]?.[0] !== undefined) {
         expect(calls[0][0]).toMatchObject({
           profilesSampleRate: 1.0,
         })
@@ -111,7 +111,7 @@ describe('Sentry E2E Tests', () => {
       await initializeSentry('client')
 
       const calls = (Sentry.init as ReturnType<typeof vi.fn>).mock.calls
-      if (calls.length > 0) {
+      if (calls.length > 0 && calls[0]?.[0] !== undefined) {
         expect(calls[0][0].tracePropagationTargets).toContain('localhost')
       }
     })
@@ -120,7 +120,7 @@ describe('Sentry E2E Tests', () => {
       await initializeSentry('client')
 
       const calls = (Sentry.init as ReturnType<typeof vi.fn>).mock.calls
-      if (calls.length > 0) {
+      if (calls.length > 0 && calls[0]?.[0] !== undefined) {
         expect(calls[0][0].beforeSend).toBeDefined()
         expect(typeof calls[0][0].beforeSend).toBe('function')
       }

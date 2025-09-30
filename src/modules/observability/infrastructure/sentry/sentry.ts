@@ -57,7 +57,7 @@ export async function initializeSentry(type: 'server' | 'client') {
       enableLogs: true,
 
       beforeSend(event) {
-        return scrubSentryEvent(event)
+        return scrubSentryEvent(event) as typeof event
       },
     })
 

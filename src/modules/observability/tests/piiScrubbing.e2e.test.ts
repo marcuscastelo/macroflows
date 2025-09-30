@@ -277,10 +277,16 @@ describe('PII Scrubbing E2E Tests', () => {
           },
         },
       }
-      const result = scrubSentryEvent(event)
+      const result = scrubSentryEvent(event) as Record<string, unknown>
+      const request = result.request as Record<string, unknown>
 
-      expect(result.request.data.email).toBe('[REDACTED]')
-      expect(result.request.data.password).toBe('[REDACTED]')
+      expect(result.request).toBeDefined()
+      expect((request.data as Record<string, unknown>).email).toBe(
+        '[REDACTED]',
+      )
+      expect((request.data as Record<string, unknown>).password).toBe(
+        '[REDACTED]',
+      )
     })
 
     it('should scrub PII from Sentry headers', () => {
@@ -292,10 +298,16 @@ describe('PII Scrubbing E2E Tests', () => {
           },
         },
       }
-      const result = scrubSentryEvent(event)
+      const result = scrubSentryEvent(event) as Record<string, unknown>
+      const request = result.request as Record<string, unknown>
 
-      expect(result.request.headers.authorization).toBe('[REDACTED]')
-      expect(result.request.headers.apikey).toBe('[REDACTED]')
+      expect(result.request).toBeDefined()
+      expect((request.headers as Record<string, unknown>).authorization).toBe(
+        '[REDACTED]',
+      )
+      expect((request.headers as Record<string, unknown>).apikey).toBe(
+        '[REDACTED]',
+      )
     })
 
     it('should scrub PII from extra context', () => {
@@ -305,10 +317,15 @@ describe('PII Scrubbing E2E Tests', () => {
           userPhone: '555-123-4567',
         },
       }
-      const result = scrubSentryEvent(event)
+      const result = scrubSentryEvent(event) as Record<string, unknown>
 
-      expect(result.extra.userEmail).toBe('[REDACTED]')
-      expect(result.extra.userPhone).toBe('[REDACTED]')
+      expect(result.extra).toBeDefined()
+      expect((result.extra as Record<string, unknown>).userEmail).toBe(
+        '[REDACTED]',
+      )
+      expect((result.extra as Record<string, unknown>).userPhone).toBe(
+        '[REDACTED]',
+      )
     })
 
     it('should scrub PII from breadcrumbs', () => {
@@ -320,10 +337,17 @@ describe('PII Scrubbing E2E Tests', () => {
           },
         ],
       }
-      const result = scrubSentryEvent(event)
+      const result = scrubSentryEvent(event) as Record<string, unknown>
+      const breadcrumbs = result.breadcrumbs as Array<{
+        message?: unknown
+        data?: unknown
+      }>
 
-      expect(result.breadcrumbs[0].message).toBe('User logged in: [REDACTED]')
-      expect(result.breadcrumbs[0].data.email).toBe('[REDACTED]')
+      expect(result.breadcrumbs).toBeDefined()
+      expect(breadcrumbs[0]?.message).toBe('User logged in: [REDACTED]')
+      expect((breadcrumbs[0]?.data as Record<string, unknown>).email).toBe(
+        '[REDACTED]',
+      )
     })
 
     it('should handle empty Sentry events', () => {
@@ -341,9 +365,12 @@ describe('PII Scrubbing E2E Tests', () => {
           },
         },
       }
-      const result = scrubSentryEvent(event)
+      const result = scrubSentryEvent(event) as Record<string, unknown>
 
-      expect(result.contexts.user.email).toBe('[REDACTED]')
+      expect(result.contexts).toBeDefined()
+      const contexts = result.contexts as Record<string, unknown>
+      const user = contexts.user as Record<string, unknown>
+      expect(user.email).toBe('[REDACTED]')
     })
   })
 

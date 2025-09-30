@@ -39,7 +39,7 @@ describe('Logging E2E Tests', () => {
     vi.spyOn(trace, 'getTracer').mockReturnValue(
       mockTracer as unknown as ReturnType<typeof trace.getTracer>,
     )
-    vi.spyOn(trace, 'getActiveSpan').mockReturnValue(null)
+    vi.spyOn(trace, 'getActiveSpan').mockReturnValue(undefined)
   })
 
   describe('Logging Persistence', () => {
@@ -133,9 +133,9 @@ describe('Logging E2E Tests', () => {
         }),
       )
 
-      const callArgs = mockSpan.addEvent.mock.calls[0][1]
-      expect(callArgs.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
-      expect(callArgs.timestamp).toBeLessThanOrEqual(afterTimestamp)
+      const callArgs = mockSpan.addEvent.mock.calls[0]?.[1]
+      expect(callArgs?.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
+      expect(callArgs?.timestamp).toBeLessThanOrEqual(afterTimestamp)
     })
 
     it('should use active span when available', () => {

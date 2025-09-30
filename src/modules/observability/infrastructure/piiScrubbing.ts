@@ -79,6 +79,7 @@ function isPasswordKey(key: string): boolean {
 }
 
 type SentryEvent = {
+  type?: string
   request?: {
     data?: unknown
     headers?: unknown
@@ -93,26 +94,28 @@ type SentryEvent = {
   [key: string]: unknown
 }
 
-export function scrubSentryEvent(event: SentryEvent): SentryEvent {
-  if (event.request !== undefined) {
-    if (event.request.data !== undefined) {
-      event.request.data = scrubPII(event.request.data)
+export function scrubSentryEvent(event: unknown): unknown {
+  const sentryEvent = event as SentryEvent
+
+  if (sentryEvent.request !== undefined) {
+    if (sentryEvent.request.data !== undefined) {
+      sentryEvent.request.data = scrubPII(sentryEvent.request.data)
     }
-    if (event.request.headers !== undefined) {
-      event.request.headers = scrubPII(event.request.headers)
+    if (sentryEvent.request.headers !== undefined) {
+      sentryEvent.request.headers = scrubPII(sentryEvent.request.headers)
     }
   }
 
-  if (event.extra !== undefined) {
-    event.extra = scrubPII(event.extra)
+  if (sentryEvent.extra !== undefined) {
+    sentryEvent.extra = scrubPII(sentryEvent.extra)
   }
 
-  if (event.contexts !== undefined) {
-    event.contexts = scrubPII(event.contexts)
+  if (sentryEvent.contexts !== undefined) {
+    sentryEvent.contexts = scrubPII(sentryEvent.contexts)
   }
 
-  if (event.breadcrumbs !== undefined) {
-    event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => ({
+  if (sentryEvent.breadcrumbs !== undefined) {
+    sentryEvent.breadcrumbs = sentryEvent.breadcrumbs.map((breadcrumb) => ({
       ...breadcrumb,
       data: scrubPII(breadcrumb.data),
       message:
@@ -122,5 +125,5 @@ export function scrubSentryEvent(event: SentryEvent): SentryEvent {
     }))
   }
 
-  return event
+  return sentryEvent
 }
