@@ -9,6 +9,7 @@ import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
+import { traceDbOperation } from '~/shared/utils/tracing'
 
 export function createSupabaseRecipeGateway(): RecipeGateway {
   return {
@@ -29,20 +30,33 @@ export function createSupabaseRecipeGateway(): RecipeGateway {
 const fetchUserRecipes = async (
   userId: User['uuid'],
 ): Promise<readonly Recipe[]> => {
-  try {
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .select()
-      .eq('user_id', userId)
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
-      return []
-    }
-    return data.map(supabaseRecipeMapper.toDomain)
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-    return []
-  }
+  return await traceDbOperation(
+    'SELECT',
+    SUPABASE_TABLE_RECIPES,
+    async (span) => {
+      span.setAttribute('user.id', userId)
+      span.setAttribute('query.filter', 'user_id')
+
+      try {
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE_RECIPES)
+          .select()
+          .eq('user_id', userId)
+        if (error !== null) {
+          logging.error('Recipe fetch error:', error)
+          span.setAttribute('error', true)
+          return []
+        }
+        const result = data.map(supabaseRecipeMapper.toDomain)
+        span.setAttribute('result.count', result.length)
+        return result
+      } catch (err) {
+        logging.error('Recipe fetch error:', err)
+        span.setAttribute('error', true)
+        return []
+      }
+    },
+  )
 }
 
 /**
@@ -51,23 +65,35 @@ const fetchUserRecipes = async (
  * @returns The recipe or null if not found/error
  */
 const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe | null> => {
-  try {
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .select()
-      .eq('id', id)
-      .single()
+  return await traceDbOperation(
+    'SELECT',
+    SUPABASE_TABLE_RECIPES,
+    async (span) => {
+      span.setAttribute('recipe.id', id)
+      span.setAttribute('query.filter', 'id')
 
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
-      return null
-    }
+      try {
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE_RECIPES)
+          .select()
+          .eq('id', id)
+          .single()
 
-    return supabaseRecipeMapper.toDomain(data)
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-    return null
-  }
+        if (error !== null) {
+          logging.error('Recipe fetch error:', error)
+          span.setAttribute('error', true)
+          return null
+        }
+
+        span.setAttribute('recipe.found', true)
+        return supabaseRecipeMapper.toDomain(data)
+      } catch (err) {
+        logging.error('Recipe fetch error:', err)
+        span.setAttribute('error', true)
+        return null
+      }
+    },
+  )
 }
 
 /**
@@ -80,24 +106,38 @@ const fetchUserRecipeByName = async (
   userId: User['uuid'],
   name: Recipe['name'],
 ): Promise<readonly Recipe[]> => {
-  try {
-    // Normalize diacritics for search
-    const normalizedName = removeDiacritics(name)
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .select()
-      .eq('user_id', userId)
-      .ilike('name', `%${normalizedName}%`)
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
-      return []
-    }
+  return await traceDbOperation(
+    'SELECT',
+    SUPABASE_TABLE_RECIPES,
+    async (span) => {
+      span.setAttribute('user.id', userId)
+      span.setAttribute('recipe.search.query', name)
+      span.setAttribute('query.filter', 'user_id,name')
 
-    return data.map(supabaseRecipeMapper.toDomain)
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-    return []
-  }
+      try {
+        // Normalize diacritics for search
+        const normalizedName = removeDiacritics(name)
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE_RECIPES)
+          .select()
+          .eq('user_id', userId)
+          .ilike('name', `%${normalizedName}%`)
+        if (error !== null) {
+          logging.error('Recipe fetch error:', error)
+          span.setAttribute('error', true)
+          return []
+        }
+
+        const result = data.map(supabaseRecipeMapper.toDomain)
+        span.setAttribute('result.count', result.length)
+        return result
+      } catch (err) {
+        logging.error('Recipe fetch error:', err)
+        span.setAttribute('error', true)
+        return []
+      }
+    },
+  )
 }
 
 /**
@@ -106,24 +146,37 @@ const fetchUserRecipeByName = async (
  * @returns The created recipe or null on error
  */
 const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe | null> => {
-  try {
-    const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .insert(createDAO)
-      .select()
-      .single()
+  return await traceDbOperation(
+    'INSERT',
+    SUPABASE_TABLE_RECIPES,
+    async (span) => {
+      span.setAttribute('recipe.name', newRecipe.name)
+      span.setAttribute('user.id', newRecipe.userId)
 
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
-      return null
-    }
+      try {
+        const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE_RECIPES)
+          .insert(createDAO)
+          .select()
+          .single()
 
-    return supabaseRecipeMapper.toDomain(data)
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-    return null
-  }
+        if (error !== null) {
+          logging.error('Recipe fetch error:', error)
+          span.setAttribute('error', true)
+          return null
+        }
+
+        const result = supabaseRecipeMapper.toDomain(data)
+        span.setAttribute('recipe.id', result.id)
+        return result
+      } catch (err) {
+        logging.error('Recipe fetch error:', err)
+        span.setAttribute('error', true)
+        return null
+      }
+    },
+  )
 }
 
 /**
@@ -136,25 +189,37 @@ const updateRecipe = async (
   recipeId: Recipe['id'],
   newRecipe: Recipe,
 ): Promise<Recipe | null> => {
-  try {
-    const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
+  return await traceDbOperation(
+    'UPDATE',
+    SUPABASE_TABLE_RECIPES,
+    async (span) => {
+      span.setAttribute('recipe.id', recipeId)
+      span.setAttribute('recipe.name', newRecipe.name)
 
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .update(updateDAO)
-      .eq('id', recipeId)
-      .select()
-      .single()
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
-      return null
-    }
+      try {
+        const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
 
-    return supabaseRecipeMapper.toDomain(data)
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-    return null
-  }
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE_RECIPES)
+          .update(updateDAO)
+          .eq('id', recipeId)
+          .select()
+          .single()
+        if (error !== null) {
+          logging.error('Recipe fetch error:', error)
+          span.setAttribute('error', true)
+          return null
+        }
+
+        span.setAttribute('recipe.updated', true)
+        return supabaseRecipeMapper.toDomain(data)
+      } catch (err) {
+        logging.error('Recipe fetch error:', err)
+        span.setAttribute('error', true)
+        return null
+      }
+    },
+  )
 }
 
 /**
@@ -162,15 +227,24 @@ const updateRecipe = async (
  * @param id - The recipe ID
  */
 const deleteRecipe = async (id: Recipe['id']): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .delete()
-      .eq('id', id)
-    if (error !== null) {
-      logging.error('Recipe fetch error:', error)
+  await traceDbOperation('DELETE', SUPABASE_TABLE_RECIPES, async (span) => {
+    span.setAttribute('recipe.id', id)
+
+    try {
+      const { error } = await supabase
+        .from(SUPABASE_TABLE_RECIPES)
+        .delete()
+        .eq('id', id)
+      if (error !== null) {
+        logging.error('Recipe fetch error:', error)
+        span.setAttribute('error', true)
+      } else {
+        span.setAttribute('recipe.deleted', true)
+      }
+    } catch (err) {
+      logging.error('Recipe fetch error:', err)
+      span.setAttribute('error', true)
     }
-  } catch (err) {
-    logging.error('Recipe fetch error:', err)
-  }
+  })
 }
+

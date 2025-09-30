@@ -3,6 +3,7 @@ import { type APIEvent } from '@solidjs/start/server'
 
 import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/api/apiFoodRepository'
 import { logging } from '~/shared/utils/logging'
+import { traceApiRoute } from '~/shared/utils/tracing'
 // Simplified error handling - no errorHandler needed
 
 const apiFoodRepository = createApiFoodRepository()
@@ -17,26 +18,44 @@ function getErrorStatus(error: unknown): number {
 }
 
 export async function GET({ params }: APIEvent) {
-  logging.debug('GET', params)
-  if (params.ean === undefined || params.ean === '') {
-    return json({ error: 'EAN parameter is required' }, { status: 400 })
-  }
+  return await traceApiRoute(
+    'GET',
+    '/api/food/ean/:ean',
+    async (span) => {
+      logging.debug('GET', params)
+      
+      if (params.ean === undefined || params.ean === '') {
+        span.setAttribute('error', true)
+        span.setAttribute('error.type', 'validation')
+        return json({ error: 'EAN parameter is required' }, { status: 400 })
+      }
 
-  try {
-    const apiFood = await apiFoodRepository.fetchApiFoodByEan(params.ean)
-    logging.debug('apiFood', apiFood)
-    return json(apiFood)
-  } catch (error) {
-    logging.error('API food fetch error:', error)
-    return json(
-      {
-        error:
-          'Error fetching food item by EAN: ' +
-          (error instanceof Error ? error.message : String(error)),
-      },
-      {
-        status: getErrorStatus(error),
-      },
-    )
-  }
+      span.setAttribute('food.ean', params.ean)
+
+      try {
+        const apiFood = await apiFoodRepository.fetchApiFoodByEan(params.ean)
+        logging.debug('apiFood', apiFood)
+        span.setAttribute('food.found', true)
+        return json(apiFood)
+      } catch (error) {
+        logging.error('API food fetch error:', error)
+        span.setAttribute('error', true)
+        span.setAttribute('error.type', 'fetch')
+        return json(
+          {
+            error:
+              'Error fetching food item by EAN: ' +
+              (error instanceof Error ? error.message : String(error)),
+          },
+          {
+            status: getErrorStatus(error),
+          },
+        )
+      }
+    },
+    {
+      'api.route': '/api/food/ean/:ean',
+      'api.parameter.ean': params.ean ?? 'undefined',
+    },
+  )
 }
