@@ -3,26 +3,31 @@
  * These provide convenient APIs for frequently used modal operations.
  */
 
-import type { JSXElement } from 'solid-js'
+import type { Accessor, JSXElement } from 'solid-js'
 
 import { modalManager } from '~/shared/modal/core/modalManager'
-import type { ModalId, ModalPriority } from '~/shared/modal/types/modalTypes'
+import type {
+  ModalBody,
+  ModalId,
+  ModalPriority,
+  ModalTitle,
+} from '~/shared/modal/types/modalTypes'
 import { logging } from '~/shared/utils/logging'
 
 /**
  * Opens a confirmation modal with standardized styling and behavior.
  *
- * @param message The confirmation message to display
+ * @param message The confirmation message to display (can be static string or Accessor<string>)
  * @param options Configuration for the confirmation modal
  * @returns The modal ID for tracking
  */
 
 export function openConfirmModal(
-  message: string,
+  message: string | Accessor<string>,
   options: {
-    title?: string
-    confirmText?: string
-    cancelText?: string
+    title?: ModalTitle | Accessor<ModalTitle>
+    confirmText?: string | Accessor<string>
+    cancelText?: string | Accessor<string>
     onConfirm: () => void | Promise<void>
     onCancel?: () => void
     priority?: ModalPriority
@@ -38,7 +43,7 @@ export function openConfirmModal(
       onConfirm: options.onConfirm,
       onCancel: options.onCancel,
       priority: options.priority ?? 'normal',
-      closeOnOutsideClick: false, // Prevent accidental confirmation
+      closeOnOutsideClick: false,
       closeOnEscape: true,
       showCloseButton: true,
     })
@@ -56,14 +61,14 @@ export function openConfirmModal(
  * @returns The modal ID for tracking
  */
 export function openContentModal(
-  content: JSXElement | ((modalId: ModalId) => JSXElement),
+  content: ModalBody | ((modalId: ModalId) => ModalBody),
   options: {
-    title?: string
+    title?: ModalTitle | Accessor<ModalTitle>
     priority?: ModalPriority
     closeOnOutsideClick?: boolean
     closeOnEscape?: boolean
     showCloseButton?: boolean
-    footer?: JSXElement | (() => JSXElement)
+    footer?: ModalBody | Accessor<ModalBody>
     onClose?: () => void
   } = {},
 ): ModalId {
@@ -93,28 +98,36 @@ export function openContentModal(
  * @returns The modal ID for tracking
  */
 export function openEditModal(
-  content: JSXElement | ((modalId: ModalId) => JSXElement),
+  content: ModalBody | ((modalId: ModalId) => ModalBody),
   options: {
-    title: string
-    targetName?: string // For nested editing contexts like "Day Diet > Breakfast"
+    title: ModalTitle | Accessor<ModalTitle>
+    targetName?: string
     onClose?: () => void
     onSave?: () => void
     onCancel?: () => void
   },
 ): ModalId {
   try {
-    const fullTitle =
-      options.targetName !== undefined && options.targetName.length > 0
-        ? `${options.title} - ${options.targetName}`
-        : options.title
+    let fullTitle: ModalTitle | Accessor<ModalTitle>
+
+    if (options.targetName !== undefined && options.targetName.length > 0) {
+      if (typeof options.title === 'function') {
+        fullTitle = () =>
+          `${(options.title as Accessor<ModalTitle>)()} - ${options.targetName}`
+      } else {
+        fullTitle = `${options.title} - ${options.targetName}`
+      }
+    } else {
+      fullTitle = options.title
+    }
 
     return modalManager.openModal({
       type: 'content',
       title: fullTitle,
       content,
       priority: 'normal',
-      closeOnOutsideClick: false, // Prevent accidental loss of edits
-      closeOnEscape: false, // Require explicit save/cancel
+      closeOnOutsideClick: false,
+      closeOnEscape: false,
       showCloseButton: true,
       onClose: options.onClose,
     })
