@@ -154,6 +154,7 @@ export function createZodEntity<TEntity extends keyof typeof ENTITY_NAMES>(
       entityExtras?: TExtras,
     ) => {
       // TODO: remove defaultExtras (maybe entire entityExtras?)
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1065
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const defaultExtras = {
         id: z.number(
