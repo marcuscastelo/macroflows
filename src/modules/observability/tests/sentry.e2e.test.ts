@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import * as Sentry from '@sentry/solidstart'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -27,7 +30,10 @@ vi.mock('~/modules/observability/infrastructure/piiScrubbing', () => ({
 describe('Sentry E2E Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://test-dsn@test.ingest.sentry.io/123456')
+    vi.stubEnv(
+      'VITE_SENTRY_DSN',
+      'https://test-dsn@test.ingest.sentry.io/123456',
+    )
   })
 
   describe('Error Reporting', () => {

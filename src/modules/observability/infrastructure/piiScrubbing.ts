@@ -15,14 +15,21 @@ const DEFAULT_OPTIONS: Required<ScrubOptions> = {
 }
 
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
-const PHONE_REGEX = /\b(\+?\d{1,3}[-.\s]?)?\(?\d{2,3}\)?[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g
+const PHONE_REGEX =
+  /\b(\+?\d{1,3}[-.\s]?)?\(?\d{2,3}\)?[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g
 const CREDIT_CARD_REGEX = /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g
-const PASSWORD_KEYS = ['password', 'passwd', 'pwd', 'secret', 'token', 'apikey', 'api_key', 'authorization']
+const PASSWORD_KEYS = [
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'token',
+  'apikey',
+  'api_key',
+  'authorization',
+]
 
-export function scrubPII(
-  data: unknown,
-  options: ScrubOptions = {},
-): unknown {
+export function scrubPII(data: unknown, options: ScrubOptions = {}): unknown {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   if (typeof data === 'string') {
@@ -71,31 +78,47 @@ function isPasswordKey(key: string): boolean {
   return PASSWORD_KEYS.some((passwordKey) => lowerKey.includes(passwordKey))
 }
 
-export function scrubSentryEvent(event: any): any {
-  if (event.request) {
-    if (event.request.data) {
+type SentryEvent = {
+  request?: {
+    data?: unknown
+    headers?: unknown
+  }
+  extra?: unknown
+  contexts?: unknown
+  breadcrumbs?: Array<{
+    data?: unknown
+    message?: unknown
+    [key: string]: unknown
+  }>
+  [key: string]: unknown
+}
+
+export function scrubSentryEvent(event: SentryEvent): SentryEvent {
+  if (event.request !== undefined) {
+    if (event.request.data !== undefined) {
       event.request.data = scrubPII(event.request.data)
     }
-    if (event.request.headers) {
+    if (event.request.headers !== undefined) {
       event.request.headers = scrubPII(event.request.headers)
     }
   }
 
-  if (event.extra) {
+  if (event.extra !== undefined) {
     event.extra = scrubPII(event.extra)
   }
 
-  if (event.contexts) {
+  if (event.contexts !== undefined) {
     event.contexts = scrubPII(event.contexts)
   }
 
-  if (event.breadcrumbs) {
-    event.breadcrumbs = event.breadcrumbs.map((breadcrumb: any) => ({
+  if (event.breadcrumbs !== undefined) {
+    event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => ({
       ...breadcrumb,
       data: scrubPII(breadcrumb.data),
-      message: typeof breadcrumb.message === 'string'
-        ? scrubPII(breadcrumb.message)
-        : breadcrumb.message,
+      message:
+        typeof breadcrumb.message === 'string'
+          ? scrubPII(breadcrumb.message)
+          : breadcrumb.message,
     }))
   }
 

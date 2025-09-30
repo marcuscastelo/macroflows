@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -31,10 +33,11 @@ describe('PII Scrubbing E2E Tests', () => {
           message: 'My email is test@test.com',
         },
       }
-      const result = scrubPII(input) as any
+      const result = scrubPII(input) as Record<string, unknown>
+      const user = result.user as Record<string, unknown>
 
-      expect(result.user.contact).toBe('[REDACTED]')
-      expect(result.user.message).toBe('My email is [REDACTED]')
+      expect(user.contact).toBe('[REDACTED]')
+      expect(user.message).toBe('My email is [REDACTED]')
     })
 
     it('should allow disabling email scrubbing', () => {
@@ -116,7 +119,7 @@ describe('PII Scrubbing E2E Tests', () => {
         username: 'john',
         password: 'secret123',
       }
-      const result = scrubPII(input) as any
+      const result = scrubPII(input) as Record<string, unknown>
 
       expect(result.username).toBe('john')
       expect(result.password).toBe('[REDACTED]')
@@ -133,7 +136,7 @@ describe('PII Scrubbing E2E Tests', () => {
         api_key: 'pass7',
         authorization: 'pass8',
       }
-      const result = scrubPII(input) as any
+      const result = scrubPII(input) as Record<string, unknown>
 
       expect(result.password).toBe('[REDACTED]')
       expect(result.passwd).toBe('[REDACTED]')
@@ -151,7 +154,7 @@ describe('PII Scrubbing E2E Tests', () => {
         Password: 'secret',
         passWORD: 'secret',
       }
-      const result = scrubPII(input) as any
+      const result = scrubPII(input) as Record<string, unknown>
 
       expect(result.PASSWORD).toBe('[REDACTED]')
       expect(result.Password).toBe('[REDACTED]')
@@ -160,7 +163,10 @@ describe('PII Scrubbing E2E Tests', () => {
 
     it('should allow disabling password scrubbing', () => {
       const input = { password: 'secret123' }
-      const result = scrubPII(input, { scrubPasswords: false }) as any
+      const result = scrubPII(input, { scrubPasswords: false }) as Record<
+        string,
+        unknown
+      >
 
       expect(result.password).toBe('secret123')
     })
@@ -173,11 +179,11 @@ describe('PII Scrubbing E2E Tests', () => {
         'Phone: 555-123-4567',
         { password: 'secret' },
       ]
-      const result = scrubPII(input) as any[]
+      const result = scrubPII(input) as unknown[]
 
       expect(result[0]).toBe('Email: [REDACTED]')
       expect(result[1]).toBe('Phone: [REDACTED]')
-      expect(result[2].password).toBe('[REDACTED]')
+      expect((result[2] as Record<string, unknown>).password).toBe('[REDACTED]')
     })
 
     it('should scrub nested arrays', () => {
@@ -185,11 +191,13 @@ describe('PII Scrubbing E2E Tests', () => {
         ['test@example.com', 'user@test.com'],
         [{ password: 'secret' }],
       ]
-      const result = scrubPII(input) as any[]
+      const result = scrubPII(input) as unknown[]
 
-      expect(result[0][0]).toBe('[REDACTED]')
-      expect(result[0][1]).toBe('[REDACTED]')
-      expect(result[1][0].password).toBe('[REDACTED]')
+      expect((result[0] as unknown[])[0]).toBe('[REDACTED]')
+      expect((result[0] as unknown[])[1]).toBe('[REDACTED]')
+      expect(
+        ((result[1] as unknown[])[0] as Record<string, unknown>).password,
+      ).toBe('[REDACTED]')
     })
   })
 
@@ -205,7 +213,11 @@ describe('PII Scrubbing E2E Tests', () => {
           },
         },
       }
-      const result = scrubPII(input) as any
+      type Level3 = { email: string; password: string }
+      type Level2 = { level3: Level3 }
+      type Level1 = { level2: Level2 }
+      type Result = { level1: Level1 }
+      const result = scrubPII(input) as Result
 
       expect(result.level1.level2.level3.email).toBe('[REDACTED]')
       expect(result.level1.level2.level3.password).toBe('[REDACTED]')
@@ -217,20 +229,22 @@ describe('PII Scrubbing E2E Tests', () => {
         number: 12345,
         boolean: true,
         null: null,
-        undefined: undefined,
+        undefined,
         array: ['email@test.com', 42],
         object: { password: 'secret' },
       }
-      const result = scrubPII(input) as any
+      const result = scrubPII(input) as Record<string, unknown>
 
       expect(result.string).toBe('Contact: [REDACTED]')
       expect(result.number).toBe(12345)
       expect(result.boolean).toBe(true)
       expect(result.null).toBe(null)
       expect(result.undefined).toBe(undefined)
-      expect(result.array[0]).toBe('[REDACTED]')
-      expect(result.array[1]).toBe(42)
-      expect(result.object.password).toBe('[REDACTED]')
+      expect((result.array as unknown[])[0]).toBe('[REDACTED]')
+      expect((result.array as unknown[])[1]).toBe(42)
+      expect((result.object as Record<string, unknown>).password).toBe(
+        '[REDACTED]',
+      )
     })
   })
 
@@ -244,7 +258,10 @@ describe('PII Scrubbing E2E Tests', () => {
 
     it('should use custom replacement in objects', () => {
       const input = { password: 'secret' }
-      const result = scrubPII(input, { replacement: 'HIDDEN' }) as any
+      const result = scrubPII(input, { replacement: 'HIDDEN' }) as Record<
+        string,
+        unknown
+      >
 
       expect(result.password).toBe('HIDDEN')
     })

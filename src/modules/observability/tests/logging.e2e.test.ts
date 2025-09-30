@@ -1,11 +1,26 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { trace } from '@opentelemetry/api'
+import { type Span } from '@opentelemetry/sdk-trace-base'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { logging } from '~/shared/utils/logging'
 
+type MockSpan = {
+  addEvent: ReturnType<typeof vi.fn>
+  end: ReturnType<typeof vi.fn>
+  setAttribute: ReturnType<typeof vi.fn>
+  setAttributes: ReturnType<typeof vi.fn>
+}
+
+type MockTracer = {
+  startSpan: ReturnType<typeof vi.fn>
+}
+
 describe('Logging E2E Tests', () => {
-  let mockSpan: any
-  let mockTracer: any
+  let mockSpan: MockSpan
+  let mockTracer: MockTracer
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -21,7 +36,9 @@ describe('Logging E2E Tests', () => {
       startSpan: vi.fn(() => mockSpan),
     }
 
-    vi.spyOn(trace, 'getTracer').mockReturnValue(mockTracer)
+    vi.spyOn(trace, 'getTracer').mockReturnValue(
+      mockTracer as unknown as ReturnType<typeof trace.getTracer>,
+    )
     vi.spyOn(trace, 'getActiveSpan').mockReturnValue(null)
   })
 
@@ -125,7 +142,9 @@ describe('Logging E2E Tests', () => {
       const mockActiveSpan = {
         addEvent: vi.fn(),
       }
-      vi.spyOn(trace, 'getActiveSpan').mockReturnValue(mockActiveSpan as any)
+      vi.spyOn(trace, 'getActiveSpan').mockReturnValue(
+        mockActiveSpan as unknown as Span,
+      )
 
       logging.info('Test message')
 
