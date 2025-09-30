@@ -198,7 +198,7 @@ get_dev_version() {
   rc_branch=$(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | grep 'rc/' | sort | tail -n1)
 
   if [ -z "$rc_branch" ]; then
-    dev_count=$(git rev-list --count "$stable_sha..$dev_sha")
+    dev_count=$(get_commit_count_between "$stable_sha..$dev_sha")
     echo "${base_version}-dev.0.${dev_count}"
     return
   fi
