@@ -31,6 +31,8 @@ get_next_minor_version() {
 get_current_branch() {
   if [ -n "$VERCEL_GIT_COMMIT_REF" ]; then
     echo "$VERCEL_GIT_COMMIT_REF"
+  elif [ -n "$GITHUB_REF_NAME" ]; then
+    echo "$GITHUB_REF_NAME"
   else
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD)
