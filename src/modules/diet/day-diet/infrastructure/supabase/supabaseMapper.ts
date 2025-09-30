@@ -21,7 +21,7 @@ function toDomain(dto: DayDietDTO): DayDiet {
   return parseWithStack(dayDietSchema, {
     id: dto.id,
     target_day: dto.target_day,
-    owner: dto.owner,
+    user_id: dto.user_id,
     meals: dto.meals,
   })
 }
