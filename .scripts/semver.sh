@@ -195,7 +195,11 @@ get_dev_version() {
   stable_sha=$(get_sha_for_branch stable)
   dev_sha=$(get_sha_for_branch "$current_branch")
 
-  rc_branch=$(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | grep 'rc/' | sort | tail -n1)
+  rc_branch=$(curl -s "https://api.github.com/repos/marcuscastelo/macroflows/branches" \
+  | jq -r '.[].name' \
+  | grep '^rc/' \
+  | sort \
+  | tail -n1)
 
   if [ -z "$rc_branch" ]; then
     dev_count=$(get_commit_count_between "$stable_sha" "$dev_sha")
