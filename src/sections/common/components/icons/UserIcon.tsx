@@ -1,5 +1,6 @@
 import { type Accessor, createSignal, Show } from 'solid-js'
 
+import { getAuthState } from '~/modules/auth/application/usecases/authState'
 import { type User } from '~/modules/user/domain/user'
 import { UserInitialFallback } from '~/sections/common/components/icons/UserInitialFallback'
 
@@ -19,7 +20,8 @@ export function UserIcon(props: {
       >
         <img
           class="w-full h-full rounded-full"
-          src={`https://sbhhxgeaflzmzpmatnir.supabase.co/storage/v1/object/public/uploads/${props.userId()}.jpg`}
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          src={getAuthState().user?.userMetadata?.['picture'] as string}
           sizes="100vw"
           alt=""
           width={0}
