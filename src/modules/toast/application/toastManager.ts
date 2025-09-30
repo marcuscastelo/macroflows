@@ -5,6 +5,8 @@
  * Handles toast creation, queue management, and integration with solid-toast.
  */
 
+import * as Sentry from '@sentry/solidstart'
+
 import {
   killToast,
   registerToast,
@@ -46,6 +48,52 @@ function shouldSkipToast(options: ToastOptions): boolean {
   }
 
   return false
+}
+
+/**
+ * Reports an error to Sentry with context and tags.
+ * Opt-out pattern: set `reportToSentry: false` in ToastOptions to disable reporting.
+ *
+ * @param error - The error to report
+ * @param options - Toast options containing context and reportToSentry flag
+ */
+function reportErrorToSentry(error: unknown, options: ToastOptions): void {
+  if (!options.reportToSentry) {
+    logging.debug('Sentry reporting disabled for this error via ToastOptions')
+    return
+  }
+
+  try {
+    const errorType =
+      error instanceof Error ? error.constructor.name : typeof error
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    Sentry.captureException(error, {
+      tags: {
+        source: 'toast-error',
+        error_type: errorType,
+        context: options.context,
+      },
+      contexts: {
+        toast: {
+          context: options.context,
+          error_type: errorType,
+          error_message: errorMessage,
+          has_stack:
+            options.includeStack &&
+            error instanceof Error &&
+            Boolean(error.stack),
+        },
+      },
+    })
+
+    logging.debug('Error reported to Sentry', {
+      errorType,
+      context: options.context,
+    })
+  } catch (sentryError) {
+    logging.error('Failed to report error to Sentry', sentryError)
+  }
 }
 
 function filterPromiseMessages<T>(
@@ -114,6 +162,11 @@ export function show(
  * Uses createExpandableErrorData and DEFAULT_ERROR_OPTIONS to ensure consistent error formatting, truncation, and stack display.
  * Error display options can be overridden via providedOptions.
  *
+ * Sentry Integration:
+ * - By default, all errors are reported to Sentry with context and tags
+ * - Opt-out pattern: set `reportToSentry: false` in providedOptions to disable Sentry reporting
+ * - Context includes: source='toast-error', error_type, context (user-action/background)
+ *
  * @param error - The error to display.
  * @param providedOptions - Partial toast options (except type). Error display options are merged with defaults from errorMessageHandler.ts.
  * @returns The toast ID.
@@ -143,6 +196,9 @@ export function showError(
     )
   }
   const options = mergeToastOptions({ ...providedOptions, type: 'error' })
+
+  // Report error to Sentry with context and tags
+  reportErrorToSentry(error, options)
 
   // Pass the original error object to preserve stack/context
   const expandableErrorData = createExpandableErrorData(

@@ -9,12 +9,19 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('~/shared/utils/logging', () => ({
   logging: {
     debug: vi.fn(),
+    error: vi.fn(),
   },
 }))
 
 vi.mock('~/shared/config/env', () => ({
   isDevelopment: vi.fn(() => false),
 }))
+
+vi.mock('@sentry/solidstart', () => ({
+  captureException: vi.fn(),
+}))
+
+import * as Sentry from '@sentry/solidstart'
 
 import {
   showError,
@@ -164,5 +171,105 @@ describe('toastManager (refactored)', () => {
     expect(errorToast?.options.type).toBe('error')
     expect(typeof errorToast?.message).toBe('string')
     expect(errorToast?.message).toContain('Erro:')
+  })
+
+  it('showError reports error to Sentry by default', () => {
+    vi.spyOn(toastQueue, 'registerToast').mockImplementation((item) => item.id)
+    const createExpandableErrorData = vi
+      .spyOn(errorMessageHandler, 'createExpandableErrorData')
+      .mockImplementation((msg, opts, displayMsg) => ({
+        displayMessage: String(displayMsg ?? msg),
+        raw: String(msg),
+        options: opts,
+        isTruncated: false,
+        originalMessage: String(msg),
+        errorDetails: { message: String(msg), fullError: String(msg) },
+        canExpand: false,
+      }))
+    const captureException = vi.mocked(Sentry.captureException)
+    captureException.mockClear()
+
+    const testError = new Error('Test error for Sentry')
+    showError(testError, { context: 'user-action' })
+
+    expect(captureException).toHaveBeenCalledWith(testError, {
+      tags: {
+        source: 'toast-error',
+        error_type: 'Error',
+        context: 'user-action',
+      },
+      contexts: {
+        toast: {
+          context: 'user-action',
+          error_type: 'Error',
+          error_message: 'Test error for Sentry',
+          has_stack: true,
+        },
+      },
+    })
+
+    createExpandableErrorData.mockRestore()
+  })
+
+  it('showError respects reportToSentry: false opt-out', () => {
+    vi.spyOn(toastQueue, 'registerToast').mockImplementation((item) => item.id)
+    const createExpandableErrorData = vi
+      .spyOn(errorMessageHandler, 'createExpandableErrorData')
+      .mockImplementation((msg, opts, displayMsg) => ({
+        displayMessage: String(displayMsg ?? msg),
+        raw: String(msg),
+        options: opts,
+        isTruncated: false,
+        originalMessage: String(msg),
+        errorDetails: { message: String(msg), fullError: String(msg) },
+        canExpand: false,
+      }))
+    const captureException = vi.mocked(Sentry.captureException)
+    captureException.mockClear()
+
+    const testError = new Error('Test error with opt-out')
+    showError(testError, { context: 'user-action', reportToSentry: false })
+
+    expect(captureException).not.toHaveBeenCalled()
+
+    createExpandableErrorData.mockRestore()
+  })
+
+  it('showError reports non-Error objects to Sentry', () => {
+    vi.spyOn(toastQueue, 'registerToast').mockImplementation((item) => item.id)
+    const createExpandableErrorData = vi
+      .spyOn(errorMessageHandler, 'createExpandableErrorData')
+      .mockImplementation((msg, opts, displayMsg) => ({
+        displayMessage: String(displayMsg ?? msg),
+        raw: String(msg),
+        options: opts,
+        isTruncated: false,
+        originalMessage: String(msg),
+        errorDetails: { message: String(msg), fullError: String(msg) },
+        canExpand: false,
+      }))
+    const captureException = vi.mocked(Sentry.captureException)
+    captureException.mockClear()
+
+    const testError = 'String error message'
+    showError(testError, { context: 'background' })
+
+    expect(captureException).toHaveBeenCalledWith(testError, {
+      tags: {
+        source: 'toast-error',
+        error_type: 'string',
+        context: 'background',
+      },
+      contexts: {
+        toast: {
+          context: 'background',
+          error_type: 'string',
+          error_message: 'String error message',
+          has_stack: false,
+        },
+      },
+    })
+
+    createExpandableErrorData.mockRestore()
   })
 })
