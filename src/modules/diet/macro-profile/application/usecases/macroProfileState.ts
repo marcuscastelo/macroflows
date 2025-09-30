@@ -1,4 +1,7 @@
-import { getLatestMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
+import {
+  createDefaultMacroProfile,
+  getLatestMacroProfile,
+} from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { initializeMacroProfileEffects } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileEffects'
 import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileStateStore'
@@ -15,7 +18,11 @@ export const userMacroProfiles = () => {
 
 export const latestMacroProfile = () => {
   const profiles = userMacroProfiles()
-  return getLatestMacroProfile(profiles)
+  const latest = getLatestMacroProfile(profiles)
+  if (latest === null) {
+    return createDefaultMacroProfile(currentUserId())
+  }
+  return latest
 }
 
 export const previousMacroProfile = () => {

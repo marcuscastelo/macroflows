@@ -9,6 +9,7 @@ import {
   newMacroProfileSchema,
   promoteToMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { createDefaultMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 
 describe('MacroProfile Domain', () => {
   describe('macroProfileSchema', () => {
@@ -214,6 +215,21 @@ describe('MacroProfile Domain', () => {
       expect(newMacroProfile.gramsPerKgFat).toBe(1.0)
       expect(newMacroProfile.__type).toBe('NewMacroProfile')
       expect('id' in newMacroProfile).toBe(false)
+    })
+  })
+
+  describe('createDefaultMacroProfile', () => {
+    it('should create a default macro profile with zeros for new users', () => {
+      const userId = 'test-user-123'
+      const defaultProfile = createDefaultMacroProfile(userId)
+
+      expect(defaultProfile.id).toBe(-1)
+      expect(defaultProfile.user_id).toBe(userId)
+      expect(defaultProfile.gramsPerKgCarbs).toBe(0)
+      expect(defaultProfile.gramsPerKgProtein).toBe(0)
+      expect(defaultProfile.gramsPerKgFat).toBe(0)
+      expect(defaultProfile.__type).toBe('MacroProfile')
+      expect(defaultProfile.target_day).toBeInstanceOf(Date)
     })
   })
 })

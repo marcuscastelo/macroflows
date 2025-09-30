@@ -120,6 +120,24 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
 }
 
 /**
+ * Silently inserts a new user without showing toast notifications.
+ * @param newUser - The new user data.
+ * @returns The created user or null on error.
+ */
+export async function insertUserSilently(
+  newUser: NewUser,
+): Promise<User | null> {
+  try {
+    const createdUser = await userRepository.insertUser(newUser)
+    await fetchUsers()
+    return createdUser
+  } catch (error) {
+    logging.error('User application error:', error)
+    return null
+  }
+}
+
+/**
  * Updates a user by ID.
  * @param userId - The user ID.
  * @param newUser - The new user data.

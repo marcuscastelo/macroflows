@@ -41,7 +41,7 @@ export function BodyMeasureChart(props: BodyMeasureChartProps) {
   const data = createMemo(() =>
     processMeasuresByDay(
       measuresByDay(),
-      userWeights.latest,
+      userWeights(),
       currentUser()?.gender ?? 'female',
     ),
   )
