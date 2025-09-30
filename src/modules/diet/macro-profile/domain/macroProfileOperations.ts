@@ -1,4 +1,6 @@
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { type User } from '~/modules/user/domain/user'
+import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 
 export function getLatestMacroProfile(
   profiles: readonly MacroProfile[],
@@ -67,3 +69,16 @@ export function inForceMacroProfile(
   )
   return found === undefined ? null : found
 }
+
+export function createDefaultMacroProfile(userId: User['uuid']): MacroProfile {
+  return {
+    id: -1,
+    user_id: userId,
+    target_day: new Date(getTodayYYYYMMDD()),
+    gramsPerKgCarbs: 0,
+    gramsPerKgProtein: 0,
+    gramsPerKgFat: 0,
+    __type: 'MacroProfile',
+  }
+}
+
