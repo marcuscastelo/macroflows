@@ -9,10 +9,10 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 // Types
 export type RecipeDTO = Database['public']['Tables']['recipes']['Row']
-export type InsertRecipeDAO = Database['public']['Tables']['recipes']['Insert']
-export type UpdateRecipeDAO = Database['public']['Tables']['recipes']['Update']
+export type InsertRecipeDTO = Database['public']['Tables']['recipes']['Insert']
+export type UpdateRecipeDTO = Database['public']['Tables']['recipes']['Update']
 
-function toInsertDTO(recipe: NewRecipe): InsertRecipeDAO {
+function toInsertDTO(recipe: NewRecipe): InsertRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,
@@ -21,7 +21,7 @@ function toInsertDTO(recipe: NewRecipe): InsertRecipeDAO {
   }
 }
 
-function toUpdateDTO(recipe: Recipe): UpdateRecipeDAO {
+function toUpdateDTO(recipe: Recipe): UpdateRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,

@@ -107,10 +107,10 @@ const fetchUserRecipeByName = async (
  */
 const insertRecipe = async (newRecipe: NewRecipe): Promise<Recipe | null> => {
   try {
-    const createDAO = supabaseRecipeMapper.toInsertDTO(newRecipe)
+    const createDTO = supabaseRecipeMapper.toInsertDTO(newRecipe)
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_RECIPES)
-      .insert(createDAO)
+      .insert(createDTO)
       .select()
       .single()
 
@@ -137,11 +137,11 @@ const updateRecipe = async (
   newRecipe: Recipe,
 ): Promise<Recipe | null> => {
   try {
-    const updateDAO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
+    const updateDTO = supabaseRecipeMapper.toUpdateDTO(newRecipe)
 
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_RECIPES)
-      .update(updateDAO)
+      .update(updateDTO)
       .eq('id', recipeId)
       .select()
       .single()
