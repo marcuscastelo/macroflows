@@ -5,6 +5,7 @@ import {
 } from '~/modules/recent-food/domain/recentFood'
 import { type RecentFoodRepository } from '~/modules/recent-food/domain/recentFoodRepository'
 import { createSupabaseRecentFoodGateway } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
+import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseRecentFoodGateway()
@@ -20,7 +21,7 @@ export function createRecentFoodRepository(): RecentFoodRepository {
 }
 
 export async function fetchByUserTypeAndReferenceId(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<RecentFood | null> {
@@ -37,7 +38,7 @@ export async function fetchByUserTypeAndReferenceId(
 }
 
 export async function fetchUserRecentFoodsAsTemplates(
-  userId: number,
+  userId: User['uuid'],
   search: string,
   opts?: { limit?: number },
 ): Promise<readonly Template[]> {
@@ -75,7 +76,7 @@ export async function update(
 }
 
 export async function deleteByReference(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<boolean> {

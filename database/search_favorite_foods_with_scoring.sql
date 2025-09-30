@@ -7,7 +7,7 @@ DROP FUNCTION IF EXISTS search_favorite_foods_with_scoring(text, bigint[], integ
 DROP FUNCTION IF EXISTS search_favorite_foods_with_scoring(bigint, text, integer);
 
 CREATE OR REPLACE FUNCTION search_favorite_foods_with_scoring(
-  p_user_id bigint,
+  p_user_uuid uuid,
   p_search_term text,
   p_limit integer DEFAULT 50
 )
@@ -30,7 +30,7 @@ BEGIN
   -- Get user's favorite foods from users table
   SELECT u.favorite_foods INTO user_favorite_ids
   FROM public.users u
-  WHERE u.id = p_user_id;
+  WHERE u.uuid = p_user_uuid;
   
   -- Handle empty favorite list - return empty result
   IF user_favorite_ids IS NULL OR array_length(user_favorite_ids, 1) IS NULL OR array_length(user_favorite_ids, 1) = 0 THEN

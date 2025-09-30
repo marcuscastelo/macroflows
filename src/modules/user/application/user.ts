@@ -22,7 +22,9 @@ export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-export const [currentUserId, setCurrentUserId] = createSignal<number>(1)
+export const [currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
+  'a141dbbd-d33b-4a90-918d-cbaddc769c73',
+)
 
 createEffect(() => {
   setCurrentUserId(loadUserIdFromLocalStorage())
@@ -64,7 +66,7 @@ setupUserRealtimeSubscription(() => {
 export async function fetchUsers(): Promise<readonly User[]> {
   try {
     const users = await userRepository.fetchUsers()
-    const newCurrentUser = users.find((user) => user.id === currentUserId())
+    const newCurrentUser = users.find((user) => user.uuid === currentUserId())
     setUsers(users)
     setCurrentUser(newCurrentUser ?? null)
     return users
@@ -124,7 +126,7 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
  * @returns The updated user or null on error.
  */
 export async function updateUser(
-  userId: User['id'],
+  userId: User['uuid'],
   newUser: NewUser,
 ): Promise<User | null> {
   try {
@@ -150,7 +152,7 @@ export async function updateUser(
  * @param userId - The user ID.
  * @returns True if deleted, false otherwise.
  */
-export async function deleteUser(userId: User['id']): Promise<boolean> {
+export async function deleteUser(userId: User['uuid']): Promise<boolean> {
   try {
     await showPromise(
       userRepository.deleteUser(userId),
@@ -169,7 +171,7 @@ export async function deleteUser(userId: User['id']): Promise<boolean> {
   }
 }
 
-export function changeToUser(userId: User['id']): void {
+export function changeToUser(userId: User['uuid']): void {
   saveUserIdToLocalStorage(userId)
   setCurrentUserId(userId)
 }
@@ -196,7 +198,7 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
       favoriteFoods.splice(index, 1)
     }
   }
-  void updateUser(currentUser_.id, {
+  void updateUser(currentUser_.uuid, {
     ...demoteUserToNewUser(currentUser_),
     favorite_foods: favoriteFoods,
   })

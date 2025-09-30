@@ -52,7 +52,7 @@ async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
 }
 
 async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   logging.debug(
@@ -62,7 +62,7 @@ async function fetchDayDietByUserIdAndTargetDay(
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .select()
-    .eq('owner', userId)
+    .eq('user_id', userId)
     .eq('target_day', targetDay)
     .single()
 
@@ -91,7 +91,7 @@ async function fetchDayDietByUserIdAndTargetDay(
 }
 
 async function fetchDayDietsByUserIdBeforeDate(
-  userId: User['id'],
+  userId: User['uuid'],
   beforeDay: string,
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
@@ -102,7 +102,7 @@ async function fetchDayDietsByUserIdBeforeDate(
   const { data: dayDTOs, error } = await supabase
     .from(SUPABASE_TABLE_DAYS)
     .select()
-    .eq('owner', userId)
+    .eq('user_id', userId)
     .lt('target_day', beforeDay)
     .order('target_day', { ascending: false })
     .limit(limit)

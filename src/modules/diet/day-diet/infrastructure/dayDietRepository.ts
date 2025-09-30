@@ -41,7 +41,7 @@ export async function fetchDayDietById(
 }
 
 export async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   try {
@@ -62,7 +62,7 @@ export async function fetchDayDietByUserIdAndTargetDay(
 }
 
 export async function fetchDayDietsByUserIdBeforeDate(
-  userId: User['id'],
+  userId: User['uuid'],
   beforeDay: string,
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {

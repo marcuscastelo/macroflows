@@ -63,11 +63,11 @@ export const createDayDiet = (data: DayDiet): DayDiet => {
 ```ts
 export type DayDietRepository = {
   fetchDayDietByUserIdAndTargetDay: (
-    userId: User['id'],
+    userId: User['uuid'],
     targetDay: string,
   ) => Promise<DayDiet | null>
   fetchDayDietsByUserIdBeforeDate: (
-    userId: User['id'],
+    userId: User['uuid'],
     beforeDay: string,
     limit?: number,
   ) => Promise<readonly DayDiet[]>
@@ -221,7 +221,7 @@ export function createCacheManagementService(deps: {
 }) {
   return ({ currentTargetDay, userId }: {
     currentTargetDay: string
-    userId: number
+    userId: User['uuid']
   }) => {
     const existingDays = untrack(deps.getExistingDays);
     
@@ -244,7 +244,7 @@ import { showPromise } from '~/modules/toast/application/toastManager';
 const dayRepository = createDayDietRepository();
 
 export async function fetchTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<void> {
   await dayRepository.fetchDayDietByUserIdAndTargetDay(userId, targetDay);
@@ -373,7 +373,7 @@ export function createSupabaseDayGateway(): DayRepository {
 }
 
 async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   const { data, error } = await supabase
@@ -406,7 +406,7 @@ export function createDayDietRepository(): DayRepository {
 }
 
 export async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   try {
@@ -468,7 +468,7 @@ export function createCacheManagementService(deps: {
 }) {
   return ({ currentTargetDay, userId }: {
     currentTargetDay: string
-    userId: number
+    userId: User['uuid']
   }) => {
     const existingDays = untrack(deps.getExistingDays)
     
@@ -526,9 +526,9 @@ The project adopts an explicit, manual Dependency Injection (DI) pattern for all
 ```ts
 // application/searchLogic.ts
 export type FetchTemplatesDeps = {
-  fetchUserRecipes: (userId: number) => Promise<readonly Recipe[] | null>
-  fetchUserRecipeByName: (userId: number, name: string) => Promise<readonly Recipe[] | null>
-  fetchUserRecentFoods: (userId: number) => Promise<...>
+  fetchUserRecipes: (userId: User['uuid']) => Promise<readonly Recipe[] | null>
+  fetchUserRecipeByName: (userId: User['uuid'], name: string) => Promise<readonly Recipe[] | null>
+  fetchUserRecentFoods: (userId: User['uuid']) => Promise<...>
   fetchFoodById: (id: number) => Promise<Food | null>
   fetchRecipeById: (id: number) => Promise<Recipe | null>
   fetchFoods: (opts: { limit?: number; allowedFoods?: number[] }) => Promise<readonly Food[] | null>
@@ -540,7 +540,7 @@ export type FetchTemplatesDeps = {
 export async function fetchTemplatesByTabLogic(
   tabId: string,
   search: string,
-  userId: number,
+  userId: User['uuid'],
   deps: FetchTemplatesDeps,
 ): Promise<readonly Template[]> {
   // ...logic using only deps

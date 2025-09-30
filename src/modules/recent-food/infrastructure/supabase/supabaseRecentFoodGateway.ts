@@ -9,6 +9,7 @@ import {
 } from '~/modules/recent-food/domain/recentFood'
 import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
 import { supabaseRecentFoodMapper } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodMapper'
+import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
@@ -17,7 +18,7 @@ import { removeDiacritics } from '~/shared/utils/removeDiacritics'
 const enhancedRecentFoodRowSchema = z
   .object({
     recent_food_id: z.number(),
-    user_id: z.number(),
+    user_id: z.string(),
     type: z.enum(['food', 'recipe']),
     reference_id: z.number(),
     last_used: z.coerce.date(),
@@ -27,7 +28,7 @@ const enhancedRecentFoodRowSchema = z
     template_ean: z.string().nullable(),
     template_source: z.unknown(),
     template_macros: z.unknown(),
-    template_owner: z.number().nullable(),
+    template_owner: z.string().nullable(),
     template_items: z.unknown(),
     template_prepared_multiplier: z.number().nullable(),
   })
@@ -39,14 +40,14 @@ function getRecipeFields(row: z.infer<typeof enhancedRecentFoodRowSchema>) {
     throw new Error('Expected recipe type but got food')
   }
 
-  const owner = row.template_owner
+  const user_id = row.template_owner
   const preparedMultiplier = row.template_prepared_multiplier
 
-  if (owner === null || preparedMultiplier === null) {
+  if (user_id === null || preparedMultiplier === null) {
     throw new Error('Recipe fields cannot be null')
   }
 
-  return { owner, preparedMultiplier }
+  return { user_id, preparedMultiplier }
 }
 
 // Helper function to transform raw database data to Template objects
@@ -63,11 +64,12 @@ function transformRowToTemplate(row: unknown): Template {
       __type: 'Food',
     })
   } else {
-    const { owner, preparedMultiplier } = getRecipeFields(validatedRow)
+    const { user_id: user_id, preparedMultiplier } =
+      getRecipeFields(validatedRow)
     return parseWithStack(recipeSchema, {
       id: validatedRow.template_id,
       name: validatedRow.template_name,
-      owner,
+      user_id,
       items: validatedRow.template_items,
       prepared_multiplier: preparedMultiplier,
       __type: 'Recipe',
@@ -86,7 +88,7 @@ export function createSupabaseRecentFoodGateway() {
 }
 
 async function fetchByUserTypeAndReferenceId(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<RecentFood | null> {
@@ -104,7 +106,7 @@ async function fetchByUserTypeAndReferenceId(
 }
 
 async function fetchUserRecentFoodsAsTemplates(
-  userId: number,
+  userId: User['uuid'],
   search: string,
   opts?: { limit?: number },
 ): Promise<readonly Template[]> {
@@ -113,7 +115,7 @@ async function fetchUserRecentFoodsAsTemplates(
     search.trim() !== '' ? removeDiacritics(search.trim()) : undefined
 
   const response = await supabase.rpc('search_recent_foods_with_names', {
-    p_user_id: userId,
+    p_user_uuid: userId,
     p_search_term: normalizedSearch ?? undefined,
     p_limit: limit,
   })
@@ -154,7 +156,7 @@ async function update(
 }
 
 async function deleteByReference(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<boolean> {

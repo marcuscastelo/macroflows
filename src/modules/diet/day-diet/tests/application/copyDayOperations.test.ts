@@ -7,6 +7,7 @@ import {
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
+import { type User } from '~/modules/user/domain/user'
 
 // Mock the repository
 vi.mock('~/modules/diet/day-diet/infrastructure/dayDietRepository', () => ({
@@ -26,11 +27,14 @@ const mockRepository = {
   deleteDayDietById: vi.fn(),
 }
 
-function makeMockDayDiet(targetDay: string, owner: number = 1): DayDiet {
+function makeMockDayDiet(
+  targetDay: string,
+  user_id: User['uuid'] = '1',
+): DayDiet {
   return promoteDayDiet(
     createNewDayDiet({
       target_day: targetDay,
-      owner,
+      user_id,
       meals: createDefaultMeals(),
     }),
     { id: 1 },
@@ -66,11 +70,11 @@ describe('CopyDayOperations', () => {
         mockDays,
       )
 
-      await operations.loadPreviousDays(1, '2023-01-03', 30)
+      await operations.loadPreviousDays('1', '2023-01-03', 30)
 
       expect(
         mockRepository.fetchDayDietsByUserIdBeforeDate,
-      ).toHaveBeenCalledWith(1, '2023-01-03', 30)
+      ).toHaveBeenCalledWith('1', '2023-01-03', 30)
       expect(operations.state().previousDays).toEqual(mockDays)
       expect(operations.state().isLoadingPreviousDays).toBe(false)
     })
@@ -84,7 +88,7 @@ describe('CopyDayOperations', () => {
         promise,
       )
 
-      const loadPromise = operations.loadPreviousDays(1, '2023-01-03')
+      const loadPromise = operations.loadPreviousDays('1', '2023-01-03')
 
       expect(operations.state().isLoadingPreviousDays).toBe(true)
 
@@ -101,7 +105,7 @@ describe('CopyDayOperations', () => {
       )
 
       await expect(
-        operations.loadPreviousDays(1, '2023-01-03'),
+        operations.loadPreviousDays('1', '2023-01-03'),
       ).rejects.toThrow('Network error')
 
       expect(operations.state().previousDays).toEqual([])
@@ -113,8 +117,8 @@ describe('CopyDayOperations', () => {
         () => new Promise(() => {}),
       ) // Never resolves
 
-      const firstCall = operations.loadPreviousDays(1, '2023-01-03')
-      const secondCall = operations.loadPreviousDays(1, '2023-01-03')
+      const firstCall = operations.loadPreviousDays('1', '2023-01-03')
+      const secondCall = operations.loadPreviousDays('1', '2023-01-03')
 
       await Promise.race([
         firstCall,
@@ -130,11 +134,11 @@ describe('CopyDayOperations', () => {
     it('should use default limit of 30', async () => {
       mockRepository.fetchDayDietsByUserIdBeforeDate.mockResolvedValueOnce([])
 
-      await operations.loadPreviousDays(1, '2023-01-03')
+      await operations.loadPreviousDays('1', '2023-01-03')
 
       expect(
         mockRepository.fetchDayDietsByUserIdBeforeDate,
-      ).toHaveBeenCalledWith(1, '2023-01-03', 30)
+      ).toHaveBeenCalledWith('1', '2023-01-03', 30)
     })
   })
 
@@ -153,7 +157,7 @@ describe('CopyDayOperations', () => {
 
       expect(mockRepository.insertDayDiet).toHaveBeenCalledWith({
         target_day: '2023-01-03',
-        owner: sourceDayDiet.owner,
+        user_id: sourceDayDiet.user_id,
         meals: sourceDayDiet.meals,
         __type: 'NewDayDiet',
       })
@@ -179,7 +183,7 @@ describe('CopyDayOperations', () => {
         existingDayDiet.id,
         {
           target_day: '2023-01-03',
-          owner: sourceDayDiet.owner,
+          user_id: sourceDayDiet.user_id,
           meals: sourceDayDiet.meals,
           __type: 'NewDayDiet',
         },
@@ -252,7 +256,7 @@ describe('CopyDayOperations', () => {
       mockRepository.fetchDayDietsByUserIdBeforeDate.mockResolvedValueOnce([
         makeMockDayDiet('2023-01-01'),
       ])
-      await operations.loadPreviousDays(1, '2023-01-03')
+      await operations.loadPreviousDays('1', '2023-01-03')
 
       // Verify state is set
       expect(operations.state().previousDays).toHaveLength(1)

@@ -3,16 +3,17 @@ import {
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
+import { type User } from '~/modules/user/domain/user'
 
 export type RecentFoodRepository = {
   fetchByUserTypeAndReferenceId(
-    userId: number,
+    userId: User['uuid'],
     type: RecentFood['type'],
     referenceId: number,
   ): Promise<RecentFood | null>
 
   fetchUserRecentFoodsAsTemplates(
-    userId: number,
+    userId: User['uuid'],
     search: string,
     opts?: { limit?: number },
   ): Promise<readonly Template[]>
@@ -22,7 +23,7 @@ export type RecentFoodRepository = {
   update(id: number, input: NewRecentFood): Promise<RecentFood | null>
 
   deleteByReference(
-    userId: number,
+    userId: User['uuid'],
     type: RecentFood['type'],
     referenceId: number,
   ): Promise<boolean>

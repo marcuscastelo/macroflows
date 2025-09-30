@@ -15,7 +15,7 @@ export type UpdateRecipeDAO = Database['public']['Tables']['recipes']['Update']
 function toInsertDTO(recipe: NewRecipe): InsertRecipeDAO {
   return {
     name: recipe.name,
-    owner: recipe.owner,
+    user_id: recipe.user_id,
     items: [...recipe.items],
     prepared_multiplier: recipe.prepared_multiplier,
   }
@@ -24,7 +24,7 @@ function toInsertDTO(recipe: NewRecipe): InsertRecipeDAO {
 function toUpdateDTO(recipe: Recipe): UpdateRecipeDAO {
   return {
     name: recipe.name,
-    owner: recipe.owner,
+    user_id: recipe.user_id,
     items: [...recipe.items],
     prepared_multiplier: recipe.prepared_multiplier,
   }

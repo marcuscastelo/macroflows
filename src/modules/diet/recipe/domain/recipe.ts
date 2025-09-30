@@ -12,7 +12,7 @@ export const {
   promote: promoteRecipe,
 } = ze.create({
   name: ze.string(),
-  owner: ze.number(),
+  user_id: ze.string(),
   items: ze.array(unifiedItemSchema).readonly(),
   prepared_multiplier: ze.number().default(1),
 })

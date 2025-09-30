@@ -84,7 +84,7 @@ export function UserInfo() {
             {(user) => (
               <>
                 <UserIcon
-                  userId={() => user().id}
+                  userId={() => user().uuid}
                   userName={() => user().name}
                   class={'w-32 h-32 mx-auto'}
                 />
@@ -117,7 +117,7 @@ export function UserInfo() {
           }
           // Convert User to NewUser for the update
           const newUser = demoteUserToNewUser(user)
-          updateUser(user.id, newUser).catch((error) => {
+          updateUser(user.uuid, newUser).catch((error) => {
             logging.error('UserInfo changeUser error:', error)
             showError(error, {}, 'Erro ao atualizar usuário')
           })

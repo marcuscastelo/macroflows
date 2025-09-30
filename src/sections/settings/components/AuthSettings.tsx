@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { Show } from 'solid-js'
+import { createSignal, Show } from 'solid-js'
 
 import { signOut } from '~/modules/auth/application/services/authService'
 import {
@@ -15,6 +15,18 @@ import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 export function AuthSettings() {
+  // Privacy setting state (example: allow data sharing)
+  const [allowDataSharing, setAllowDataSharing] = createSignal(false)
+
+  // Stub for backend integration
+  async function handlePrivacyChange(newValue: boolean) {
+    setAllowDataSharing(newValue)
+    // TODO: Integrate with backend API to persist privacy setting
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1060
+    showSuccess(
+      `Compartilhamento de dados ${newValue ? 'ativado' : 'desativado'}`,
+    )
+  }
   const navigate = useNavigate()
 
   const handleSignOut = () => {
@@ -37,6 +49,42 @@ export function AuthSettings() {
 
   const handleLogin = () => {
     navigate('/login')
+  }
+
+  // Helper to download JSON file
+  function downloadJSON(data: unknown, filename: string) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // Gather user data for export (profile, diet, measurements, etc.)
+  async function handleExportData() {
+    try {
+      // TODO: Replace with actual data fetches if needed
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1059
+      const user = getCurrentUser()
+      // Example: fetch diet, measurements, etc. from signals or API
+      const exportData = {
+        user,
+        // diet: await fetchUserDiet(),
+        // measurements: await fetchUserMeasurements(),
+        // ...add more as needed
+      }
+      downloadJSON(exportData, 'macroflows-user-data.json')
+      showSuccess('Dados exportados com sucesso!')
+    } catch (err) {
+      logging.error('Export data error:', err)
+      showError('Erro ao exportar dados. Tente novamente.')
+    }
   }
 
   return (
@@ -145,6 +193,29 @@ export function AuthSettings() {
             Seus dados são sincronizados de forma segura e criptografada. Você
             pode exportar ou excluir seus dados a qualquer momento.
           </p>
+          <div class="mt-4 flex gap-2">
+            <Button
+              class="btn-primary"
+              onClick={() => {
+                void handleExportData()
+              }}
+            >
+              Exportar meus dados
+            </Button>
+          </div>
+          <div class="mt-4 flex items-center gap-3">
+            <label class="text-sm text-gray-700 dark:text-gray-300">
+              Compartilhar meus dados anonimamente para melhorar o app
+            </label>
+            <input
+              type="checkbox"
+              checked={allowDataSharing()}
+              onChange={(e) => {
+                void handlePrivacyChange(e.currentTarget.checked)
+              }}
+              class="ml-2 w-5 h-5 accent-blue-600"
+            />
+          </div>
         </div>
       </Show>
     </div>

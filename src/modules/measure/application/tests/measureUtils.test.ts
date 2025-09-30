@@ -26,7 +26,7 @@ describe('measureUtils', () => {
       const measures: BodyMeasure[] = [
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T10:00:00Z'),
             height: 170,
             waist: 80,
@@ -37,7 +37,7 @@ describe('measureUtils', () => {
         ),
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T14:00:00Z'),
             height: 171,
             waist: 81,
@@ -48,7 +48,7 @@ describe('measureUtils', () => {
         ),
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-02T10:00:00Z'),
             height: 172,
             waist: 82,
@@ -76,7 +76,7 @@ describe('measureUtils', () => {
     it('should return true for valid measure', () => {
       const measure: BodyMeasure = promoteToBodyMeasure(
         createNewBodyMeasure({
-          owner: 1,
+          user_id: '1',
           target_timestamp: new Date(),
           height: 170,
           waist: 80,
@@ -92,7 +92,7 @@ describe('measureUtils', () => {
     it('should return true for valid measure without hip', () => {
       const measure: BodyMeasure = promoteToBodyMeasure(
         createNewBodyMeasure({
-          owner: 1,
+          user_id: '1',
           target_timestamp: new Date(),
           height: 170,
           waist: 80,
@@ -106,63 +106,63 @@ describe('measureUtils', () => {
     })
 
     it('should return false for invalid measure with missing required fields', () => {
-      const measure = {
+      const measure: BodyMeasure = {
         id: 1,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
         height: 0,
         waist: 80,
         hip: 90,
         neck: 35,
+        __type: 'Measure',
       }
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Test needs to pass invalid data to validate runtime checks
-      expect(isValidBodyMeasure(measure as BodyMeasure)).toBe(false)
+      expect(isValidBodyMeasure(measure)).toBe(false)
     })
 
     it('should return false for invalid measure with negative waist', () => {
-      const measure = {
+      const measure: BodyMeasure = {
         id: 1,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
         height: 170,
         waist: -10,
         hip: 90,
         neck: 35,
+        __type: 'Measure',
       }
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Test needs to pass invalid data to validate runtime checks
-      expect(isValidBodyMeasure(measure as BodyMeasure)).toBe(false)
+      expect(isValidBodyMeasure(measure)).toBe(false)
     })
 
     it('should return false for invalid measure with negative neck', () => {
-      const measure = {
+      const measure: BodyMeasure = {
         id: 1,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
         height: 170,
         waist: 80,
         hip: 90,
         neck: -5,
+        __type: 'Measure',
       }
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Test needs to pass invalid data to validate runtime checks
-      expect(isValidBodyMeasure(measure as BodyMeasure)).toBe(false)
+      expect(isValidBodyMeasure(measure)).toBe(false)
     })
 
     it('should return false for invalid measure with negative hip', () => {
-      const measure = {
+      const measure: BodyMeasure = {
         id: 1,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
         height: 170,
         waist: 80,
         hip: -20,
         neck: 35,
+        __type: 'Measure',
       }
 
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Test needs to pass invalid data to validate runtime checks
-      expect(isValidBodyMeasure(measure as BodyMeasure)).toBe(false)
+      expect(isValidBodyMeasure(measure)).toBe(false)
     })
   })
 
@@ -184,7 +184,7 @@ describe('measureUtils', () => {
       const measures: BodyMeasure[] = [
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T10:00:00Z'),
             height: 170,
             waist: 80,
@@ -195,7 +195,7 @@ describe('measureUtils', () => {
         ),
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T14:00:00Z'),
             height: 172,
             waist: 82,
@@ -218,7 +218,7 @@ describe('measureUtils', () => {
       const measures: BodyMeasure[] = [
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T10:00:00Z'),
             height: 170,
             waist: 80,
@@ -229,7 +229,7 @@ describe('measureUtils', () => {
         ),
         promoteToBodyMeasure(
           createNewBodyMeasure({
-            owner: 1,
+            user_id: '1',
             target_timestamp: new Date('2023-01-01T14:00:00Z'),
             height: 172,
             waist: 82,
@@ -254,7 +254,7 @@ describe('measureUtils', () => {
       const weights: Weight[] = [
         promoteToWeight(
           createNewWeight({
-            owner: 1,
+            user_id: '',
             weight: 70,
             target_timestamp: new Date('2023-01-01T10:00:00Z'),
           }),
@@ -262,7 +262,7 @@ describe('measureUtils', () => {
         ),
         promoteToWeight(
           createNewWeight({
-            owner: 1,
+            user_id: '',
             weight: 71,
             target_timestamp: new Date('2023-01-02T10:00:00Z'),
           }),
@@ -270,7 +270,7 @@ describe('measureUtils', () => {
         ),
         promoteToWeight(
           createNewWeight({
-            owner: 1,
+            user_id: '',
             weight: 72,
             target_timestamp: new Date('2023-01-03T10:00:00Z'),
           }),
@@ -340,7 +340,7 @@ describe('measureUtils', () => {
         '2023-01-01': [
           promoteToBodyMeasure(
             createNewBodyMeasure({
-              owner: 1,
+              user_id: '1',
               target_timestamp: new Date('2023-01-01T10:00:00Z'),
               height: 170,
               waist: 80,
@@ -355,7 +355,7 @@ describe('measureUtils', () => {
       const weights: Weight[] = [
         promoteToWeight(
           createNewWeight({
-            owner: 1,
+            user_id: '',
             weight: 70,
             target_timestamp: new Date('2023-01-01T10:00:00Z'),
           }),

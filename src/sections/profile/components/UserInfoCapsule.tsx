@@ -76,7 +76,7 @@ export const convertString = (value: string) => value
 
 // User field keys without the brand symbol
 type UserFieldKey =
-  | 'id'
+  | 'uuid'
   | 'name'
   | 'favorite_foods'
   | 'diet'
@@ -104,7 +104,7 @@ const USER_FIELD_TRANSLATION: Translation<UserFieldKey> = {
   diet: 'Dieta',
   birthdate: 'Data de Nascimento',
   favorite_foods: 'Alimentos Favoritos',
-  id: 'ID',
+  uuid: 'ID',
   desired_weight: 'Peso Alvo',
 }
 

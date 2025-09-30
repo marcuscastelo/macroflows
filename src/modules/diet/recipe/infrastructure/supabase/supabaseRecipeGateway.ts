@@ -27,13 +27,13 @@ export function createSupabaseRecipeGateway(): RecipeGateway {
  * @returns Array of recipes or empty array on error
  */
 const fetchUserRecipes = async (
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly Recipe[]> => {
   try {
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_RECIPES)
       .select()
-      .eq('owner', userId)
+      .eq('user_id', userId)
     if (error !== null) {
       logging.error('Recipe fetch error:', error)
       return []
@@ -77,7 +77,7 @@ const fetchRecipeById = async (id: Recipe['id']): Promise<Recipe | null> => {
  * @returns Array of recipes or empty array on error
  */
 const fetchUserRecipeByName = async (
-  userId: User['id'],
+  userId: User['uuid'],
   name: Recipe['name'],
 ): Promise<readonly Recipe[]> => {
   try {
@@ -86,7 +86,7 @@ const fetchUserRecipeByName = async (
     const { data, error } = await supabase
       .from(SUPABASE_TABLE_RECIPES)
       .select()
-      .eq('owner', userId)
+      .eq('user_id', userId)
       .ilike('name', `%${normalizedName}%`)
     if (error !== null) {
       logging.error('Recipe fetch error:', error)

@@ -14,8 +14,8 @@ import {
 
 describe('cacheManagementService', () => {
   describe('when there are days from other users', () => {
-    const myUserId = 1
-    const otherUserId = 2
+    const myUserId = '1'
+    const otherUserId = '2'
     it('should clear cache and fetch current day', () => {
       const clearCache = vi.fn()
       const fetchTargetDay = vi.fn()
@@ -23,7 +23,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: myUserId,
+            user_id: myUserId,
             target_day: '2023-01-01',
           }),
           { id: 1 },
@@ -33,7 +33,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: otherUserId, // Different user than current userId
+            user_id: otherUserId, // Different user than current userId
             target_day: '2023-01-01',
           }),
           { id: 1 },
@@ -53,7 +53,7 @@ describe('cacheManagementService', () => {
       })
 
       expect(clearCache).toHaveBeenCalledOnce()
-      expect(fetchTargetDay).toHaveBeenCalledWith(1, '2023-01-01')
+      expect(fetchTargetDay).toHaveBeenCalledWith('1', '2023-01-01')
     })
   })
 
@@ -73,11 +73,11 @@ describe('cacheManagementService', () => {
 
       runService({
         currentTargetDay: '2023-01-01',
-        userId: 1,
+        userId: '1',
       })
 
       expect(clearCache).not.toHaveBeenCalled()
-      expect(fetchTargetDay).toHaveBeenCalledWith(1, '2023-01-01')
+      expect(fetchTargetDay).toHaveBeenCalledWith('1', '2023-01-01')
     })
   })
 
@@ -89,7 +89,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: 1,
+            user_id: '1',
             target_day: '2023-01-01',
           }),
           { id: 1 },
@@ -99,7 +99,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: 1, // Same user
+            user_id: '1', // Same user
             target_day: '2023-01-01',
           }),
           { id: 1 },
@@ -115,7 +115,7 @@ describe('cacheManagementService', () => {
 
       runService({
         currentTargetDay: '2023-01-01',
-        userId: 1,
+        userId: '1',
       })
 
       expect(clearCache).not.toHaveBeenCalled()
@@ -132,7 +132,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: 1, // Same user
+            user_id: '1', // Same user
             target_day: '2023-01-01',
           }),
           { id: 1 },
@@ -140,7 +140,7 @@ describe('cacheManagementService', () => {
         promoteDayDiet(
           createNewDayDiet({
             meals: [],
-            owner: 2, // Different user - should trigger purge
+            user_id: '2', // Different user - should trigger purge
             target_day: '2023-01-02',
           }),
           { id: 2 },
@@ -156,11 +156,11 @@ describe('cacheManagementService', () => {
 
       runService({
         currentTargetDay: '2023-01-01',
-        userId: 1,
+        userId: '1',
       })
 
       expect(clearCache).toHaveBeenCalledOnce()
-      expect(fetchTargetDay).toHaveBeenCalledWith(1, '2023-01-01')
+      expect(fetchTargetDay).toHaveBeenCalledWith('1', '2023-01-01')
     })
   })
 })

@@ -5,6 +5,8 @@ import {
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
+import { showError } from '~/modules/toast/application/toastManager'
+import { changeToUser, fetchUsers } from '~/modules/user/application/user'
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
@@ -99,6 +101,24 @@ export function createAuthService(
             isAuthenticated: !!session,
             isLoading: false,
           }))
+
+          if (session?.user.id !== undefined) {
+            fetchUsers()
+              .then((users) => {
+                console.debug(`Users: `, users)
+                const user = users.find((u) => u.uuid === session.user.id)
+                if (user !== undefined) {
+                  changeToUser(user.uuid)
+                } else {
+                  showError(
+                    `Couldn't find user ${JSON.stringify(session.user)}`,
+                  )
+                  changeToUser('')
+                  signOut().catch(showError)
+                }
+              })
+              .catch(showError)
+          }
         },
       )
 

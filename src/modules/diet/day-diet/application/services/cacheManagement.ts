@@ -1,27 +1,28 @@
 import { untrack } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
 export function createCacheManagementService(deps: {
   getExistingDays: () => readonly DayDiet[]
   getCurrentDayDiet: () => DayDiet | null
   clearCache: () => void
-  fetchTargetDay: (userId: number, targetDay: string) => void
+  fetchTargetDay: (userId: User['uuid'], targetDay: string) => void
 }) {
   return ({
     currentTargetDay,
     userId,
   }: {
     currentTargetDay: string
-    userId: number
+    userId: User['uuid']
   }) => {
     logging.debug(`Effect - Refetch/Manage cache`)
     const existingDays = untrack(deps.getExistingDays)
     const currentDayDiet_ = untrack(deps.getCurrentDayDiet)
 
     // If any day is from other user, purge cache
-    if (existingDays.find((d) => d.owner !== userId) !== undefined) {
+    if (existingDays.find((d) => d.user_id !== userId) !== undefined) {
       logging.debug(`User changed! Purge cache`)
       deps.clearCache()
       void deps.fetchTargetDay(userId, currentTargetDay)

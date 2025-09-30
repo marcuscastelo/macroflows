@@ -153,7 +153,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
             ? `${item.name} (Receita)`
             : 'Nova receita (a partir de um grupo)',
         items: children(), // Use UnifiedItems directly
-        owner: currentUserId(),
+        user_id: currentUserId(),
       })
 
       const insertedRecipe = await saveRecipe(newUnifiedRecipe)

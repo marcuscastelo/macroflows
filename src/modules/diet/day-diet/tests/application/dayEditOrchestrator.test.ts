@@ -51,7 +51,7 @@ function makeTestDayDiet() {
   return promoteDayDiet(
     createNewDayDiet({
       target_day: '2023-01-01',
-      owner: 1,
+      user_id: '1',
       meals: [makeTestMeal()],
     }),
     { id: 1 },

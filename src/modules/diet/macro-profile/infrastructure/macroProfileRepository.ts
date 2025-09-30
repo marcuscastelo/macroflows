@@ -20,7 +20,7 @@ export function createMacroProfileRepository(): MacroProfileRepository {
 }
 
 export async function fetchUserMacroProfiles(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly MacroProfile[]> {
   try {
     const profiles = await supabaseGateway.fetchUserMacroProfiles(userId)

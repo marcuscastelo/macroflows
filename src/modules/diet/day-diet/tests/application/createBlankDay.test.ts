@@ -43,11 +43,11 @@ describe('createBlankDay', () => {
     mockCreateDefaultMeals.mockReturnValue(mockMeals)
     mockInsertDayDiet.mockResolvedValueOnce(undefined)
 
-    await createBlankDay(123, '2023-01-01')
+    await createBlankDay('123', '2023-01-01')
 
     expect(mockCreateDefaultMeals).toHaveBeenCalledOnce()
     expect(mockInsertDayDiet).toHaveBeenCalledWith({
-      owner: 123,
+      user_id: '123',
       target_day: '2023-01-01',
       meals: mockMeals,
       __type: 'NewDayDiet',
@@ -57,11 +57,11 @@ describe('createBlankDay', () => {
   it('should handle different user IDs and dates', async () => {
     mockInsertDayDiet.mockResolvedValueOnce(undefined)
 
-    await createBlankDay(456, '2023-12-25')
+    await createBlankDay('456', '2023-12-25')
 
     expect(mockInsertDayDiet).toHaveBeenCalledWith(
       expect.objectContaining({
-        owner: 456,
+        user_id: '456',
         target_day: '2023-12-25',
       }),
     )
@@ -71,7 +71,7 @@ describe('createBlankDay', () => {
     const error = new Error('Database error')
     mockInsertDayDiet.mockRejectedValueOnce(error)
 
-    await expect(createBlankDay(123, '2023-01-01')).rejects.toThrow(
+    await expect(createBlankDay('123', '2023-01-01')).rejects.toThrow(
       'Database error',
     )
   })
@@ -83,11 +83,11 @@ describe('createBlankDay', () => {
     mockCreateDefaultMeals.mockReturnValue(mockMeals)
     mockInsertDayDiet.mockResolvedValueOnce(undefined)
 
-    await createBlankDay(789, '2023-06-15')
+    await createBlankDay('789', '2023-06-15')
 
     expect(mockInsertDayDiet).toHaveBeenCalledWith({
       __type: 'NewDayDiet',
-      owner: 789,
+      user_id: '789',
       target_day: '2023-06-15',
       meals: mockMeals,
     })
@@ -97,7 +97,7 @@ describe('createBlankDay', () => {
     mockCreateDefaultMeals.mockReturnValue([])
     mockInsertDayDiet.mockResolvedValueOnce(undefined)
 
-    await createBlankDay(100, '2023-01-01')
+    await createBlankDay('100', '2023-01-01')
 
     expect(mockInsertDayDiet).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -42,7 +42,7 @@ function makeFakeDayDiet(macros: {
   // Create the DayDiet
   const newDayDiet = createNewDayDiet({
     target_day: '2025-01-01',
-    owner: 1,
+    user_id: '',
     meals: [meal],
   })
 

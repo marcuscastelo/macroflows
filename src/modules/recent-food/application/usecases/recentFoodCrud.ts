@@ -5,12 +5,13 @@ import {
 } from '~/modules/recent-food/domain/recentFood'
 import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
+import { type User } from '~/modules/user/domain/user'
 import env from '~/shared/config/env'
 
 const recentFoodRepository = createRecentFoodRepository()
 
 export async function fetchRecentFoodByUserTypeAndReferenceId(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<RecentFood | null> {
@@ -22,7 +23,7 @@ export async function fetchRecentFoodByUserTypeAndReferenceId(
 }
 
 export async function fetchUserRecentFoods(
-  userId: number,
+  userId: User['uuid'],
   search: string,
   opts?: { limit?: number },
 ): Promise<readonly Template[]> {
@@ -64,7 +65,7 @@ export async function updateRecentFood(
 }
 
 export async function deleteRecentFoodByReference(
-  userId: number,
+  userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
 ): Promise<boolean> {

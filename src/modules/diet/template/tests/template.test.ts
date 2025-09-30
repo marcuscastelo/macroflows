@@ -32,7 +32,7 @@ describe('Template Domain', () => {
       const recipe: Recipe = {
         id: 1,
         name: 'Test Recipe',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 1,
         __type: 'Recipe',
@@ -85,7 +85,7 @@ describe('Template Domain', () => {
       const recipe: Recipe = {
         id: 1,
         name: 'Test Recipe',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 1,
         __type: 'Recipe',
@@ -115,7 +115,7 @@ describe('Template Domain', () => {
       const recipeWithItems: Recipe = {
         id: 1,
         name: 'Recipe With Items',
-        owner: 42,
+        user_id: '42',
         items: [
           {
             id: 1,
@@ -164,7 +164,7 @@ describe('Template Domain', () => {
         const recipe: Recipe = {
           id: 1,
           name: `Recipe with ${multiplier}x multiplier`,
-          owner: 42,
+          user_id: '42',
           items: [],
           prepared_multiplier: multiplier,
           __type: 'Recipe',
@@ -193,7 +193,7 @@ describe('Template Domain', () => {
         {
           id: 2,
           name: 'Template Recipe',
-          owner: 42,
+          user_id: '42',
           items: [],
           prepared_multiplier: 1,
           __type: 'Recipe',
@@ -206,7 +206,7 @@ describe('Template Domain', () => {
           expect(template.ean).toBe('1234567890123')
         } else if (isTemplateRecipe(template)) {
           expect(template.name).toBe('Template Recipe')
-          expect(template.owner).toBe(42)
+          expect(template.user_id).toBe('42')
           expect(template.items).toEqual([])
           expect(template.prepared_multiplier).toBe(1)
         } else {
@@ -227,7 +227,7 @@ describe('Template Domain', () => {
         {
           id: 2,
           name: 'Recipe 1',
-          owner: 42,
+          user_id: '42',
           items: [],
           prepared_multiplier: 1,
           __type: 'Recipe',
@@ -242,7 +242,7 @@ describe('Template Domain', () => {
         {
           id: 4,
           name: 'Recipe 2',
-          owner: 43,
+          user_id: '43',
           items: [],
           prepared_multiplier: 2,
           __type: 'Recipe',
@@ -263,7 +263,7 @@ describe('Template Domain', () => {
 
       recipes.forEach((recipe) => {
         expect(recipe.__type).toBe('Recipe')
-        expect('owner' in recipe).toBe(true)
+        expect('user_id' in recipe).toBe(true)
         expect('items' in recipe).toBe(true)
         expect('prepared_multiplier' in recipe).toBe(true)
       })
@@ -312,7 +312,7 @@ describe('Template Domain', () => {
       const recipeWithEmptyItems: Recipe = {
         id: 1,
         name: 'Recipe With Empty Items',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 1,
         __type: 'Recipe',
@@ -326,7 +326,7 @@ describe('Template Domain', () => {
       const recipeWithZeroMultiplier: Recipe = {
         id: 1,
         name: 'Recipe With Zero Multiplier',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 0,
         __type: 'Recipe',
@@ -340,7 +340,7 @@ describe('Template Domain', () => {
       const recipeWithLargeMultiplier: Recipe = {
         id: 1,
         name: 'Recipe With Large Multiplier',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 1000,
         __type: 'Recipe',
@@ -354,7 +354,7 @@ describe('Template Domain', () => {
       const recipeWithDecimalMultiplier: Recipe = {
         id: 1,
         name: 'Recipe With Decimal Multiplier',
-        owner: 42,
+        user_id: '42',
         items: [],
         prepared_multiplier: 0.5,
         __type: 'Recipe',

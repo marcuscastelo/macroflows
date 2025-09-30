@@ -9,13 +9,13 @@ import { type User } from '~/modules/user/domain/user'
 const recipeRepository = createRecipeRepository()
 
 export async function fetchUserRecipes(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly Recipe[]> {
   return await recipeRepository.fetchUserRecipes(userId)
 }
 
 export async function fetchUserRecipeByName(
-  userId: User['id'],
+  userId: User['uuid'],
   name: string,
 ): Promise<readonly Recipe[]> {
   return await recipeRepository.fetchUserRecipeByName(userId, name)

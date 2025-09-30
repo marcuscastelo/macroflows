@@ -7,6 +7,7 @@ import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProf
 import { inForceMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
+import { type User } from '~/modules/user/domain/user'
 import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
@@ -25,10 +26,10 @@ export const calculateMacroTarget = (
 
 class WeightNotFoundForDayError extends Error {
   readonly day: Date
-  readonly userId: number
+  readonly userId: User['uuid']
   readonly errorId: string
 
-  constructor(day: Date, userId: number) {
+  constructor(day: Date, userId: User['uuid']) {
     super(
       `Peso não encontrado para o dia ${day.toISOString()}, usuário ${userId}`,
     )
@@ -52,10 +53,10 @@ class WeightNotFoundForDayError extends Error {
 
 class MacroTargetNotFoundForDayError extends Error {
   readonly day: Date
-  readonly userId: number
+  readonly userId: User['uuid']
   readonly errorId: string
 
-  constructor(day: Date, userId: number) {
+  constructor(day: Date, userId: User['uuid']) {
     super(
       `Meta de macros não encontrada para o dia ${day.toISOString()}, usuário ${userId}`,
     )

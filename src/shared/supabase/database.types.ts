@@ -8,7 +8,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: '12.2.3 (519615d)'
@@ -22,8 +22,9 @@ export type Database = {
           hip: number | null
           id: number
           neck: number
-          owner: number
+          owner: number | null
           target_timestamp: string
+          user_id: string | null
           waist: number
         }
         Insert: {
@@ -32,8 +33,9 @@ export type Database = {
           hip?: number | null
           id?: number
           neck: number
-          owner: number
+          owner?: number | null
           target_timestamp: string
+          user_id?: string | null
           waist: number
         }
         Update: {
@@ -42,8 +44,9 @@ export type Database = {
           hip?: number | null
           id?: number
           neck?: number
-          owner?: number
+          owner?: number | null
           target_timestamp?: string
+          user_id?: string | null
           waist?: number
         }
         Relationships: [
@@ -58,12 +61,15 @@ export type Database = {
       }
       cached_searches: {
         Row: {
+          created_at: string
           search: string
         }
         Insert: {
+          created_at?: string
           search: string
         }
         Update: {
+          created_at?: string
           search?: string
         }
         Relationships: []
@@ -73,22 +79,25 @@ export type Database = {
           created_at: string
           id: number
           meals: Json
-          owner: number
+          owner: number | null
           target_day: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: number
           meals?: Json
-          owner: number
+          owner?: number | null
           target_day: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: number
           meals?: Json
-          owner?: number
+          owner?: number | null
           target_day?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -191,70 +200,6 @@ export type Database = {
         }
         Relationships: []
       }
-      groups: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-          recipe: number | null
-          type: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-          recipe?: number | null
-          type: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-          recipe?: number | null
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'groups_recipe_fkey'
-            columns: ['recipe']
-            isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      items: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-          quantity: number
-          reference: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-          quantity: number
-          reference: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-          quantity?: number
-          reference?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'items_reference_fkey'
-            columns: ['reference']
-            isOneToOne: false
-            referencedRelation: 'foods'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       macro_profiles: {
         Row: {
           created_at: string
@@ -264,6 +209,7 @@ export type Database = {
           id: number
           owner: number | null
           target_day: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -273,6 +219,7 @@ export type Database = {
           id?: number
           owner?: number | null
           target_day?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -282,6 +229,7 @@ export type Database = {
           id?: number
           owner?: number | null
           target_day?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -293,24 +241,6 @@ export type Database = {
           },
         ]
       }
-      meals: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
       recent_foods: {
         Row: {
           created_at: string
@@ -319,7 +249,8 @@ export type Database = {
           reference_id: number
           times_used: number
           type: string
-          user_id: number
+          user_id: string | null
+          user_id_old: number | null
         }
         Insert: {
           created_at?: string
@@ -328,7 +259,8 @@ export type Database = {
           reference_id: number
           times_used: number
           type?: string
-          user_id: number
+          user_id?: string | null
+          user_id_old?: number | null
         }
         Update: {
           created_at?: string
@@ -337,12 +269,13 @@ export type Database = {
           reference_id?: number
           times_used?: number
           type?: string
-          user_id?: number
+          user_id?: string | null
+          user_id_old?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: 'recent_foods_user_id_fkey'
-            columns: ['user_id']
+            foreignKeyName: 'recent_foods_user_id_old_fkey'
+            columns: ['user_id_old']
             isOneToOne: false
             referencedRelation: 'users'
             referencedColumns: ['id']
@@ -355,24 +288,27 @@ export type Database = {
           id: number
           items: Json
           name: string
-          owner: number
+          owner: number | null
           prepared_multiplier: number
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: number
           items?: Json
           name: string
-          owner: number
+          owner?: number | null
           prepared_multiplier: number
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: number
           items?: Json
           name?: string
-          owner?: number
+          owner?: number | null
           prepared_multiplier?: number
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -427,22 +363,25 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          owner: number
+          owner: number | null
           target_timestamp: string
+          user_id: string | null
           weight: number
         }
         Insert: {
           created_at?: string
           id?: number
-          owner: number
+          owner?: number | null
           target_timestamp: string
+          user_id?: string | null
           weight: number
         }
         Update: {
           created_at?: string
           id?: number
-          owner?: number
+          owner?: number | null
           target_timestamp?: string
+          user_id?: string | null
           weight?: number
         }
         Relationships: [
@@ -512,44 +451,44 @@ export type Database = {
         Returns: unknown
       }
       search_favorite_foods_with_scoring: {
-        Args: { p_user_id: number; p_search_term: string; p_limit?: number }
+        Args: { p_limit?: number; p_search_term: string; p_user_uuid: string }
         Returns: {
-          id: number
-          name: string
-          ean: string
-          macros: Json
-          source: Json
           created_at: string
+          ean: string
+          id: number
+          macros: Json
+          name: string
+          source: Json
         }[]
       }
       search_foods_with_scoring: {
-        Args: { p_search_term: string; p_limit?: number }
+        Args: { p_limit?: number; p_search_term: string }
         Returns: {
-          id: number
-          name: string
-          ean: string
-          macros: Json
-          source: Json
           created_at: string
+          ean: string
+          id: number
+          macros: Json
+          name: string
+          source: Json
         }[]
       }
       search_recent_foods_with_names: {
-        Args: { p_user_id: number; p_search_term?: string; p_limit?: number }
+        Args: { p_limit?: number; p_search_term?: string; p_user_uuid: string }
         Returns: {
-          recent_food_id: number
-          user_id: number
-          type: string
-          reference_id: number
           last_used: string
-          times_used: number
-          template_id: number
-          template_name: string
+          recent_food_id: number
+          reference_id: number
           template_ean: string
-          template_source: Json
-          template_macros: Json
-          template_owner: number
+          template_id: number
           template_items: Json
+          template_macros: Json
+          template_name: string
+          template_owner: number
           template_prepared_multiplier: number
+          template_source: Json
+          times_used: number
+          type: string
+          user_id_new: string
         }[]
       }
       set_limit: {

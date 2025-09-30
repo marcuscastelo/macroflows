@@ -7,7 +7,7 @@ const supabaseWeightGateway = createSupabaseWeightGateway()
 
 export function createWeightRepository(): WeightRepository {
   return {
-    async fetchUserWeights(userId: User['id']): Promise<readonly Weight[]> {
+    async fetchUserWeights(userId: User['uuid']): Promise<readonly Weight[]> {
       return supabaseWeightGateway.fetchUserWeights(userId)
     },
     async insertWeight(newWeight: NewWeight): Promise<Weight> {

@@ -32,7 +32,7 @@ const baseMeal = makeMeal(1, 'Almoço', [baseItem])
 const baseDayDiet: DayDiet = promoteDayDiet(
   createNewDayDiet({
     target_day: '2023-01-01',
-    owner: 1,
+    user_id: '1',
     meals: [baseMeal],
   }),
   { id: 1 },
@@ -62,7 +62,7 @@ describe('dayDietOperations', () => {
       const dayDietWithTwoMeals = promoteDayDiet(
         createNewDayDiet({
           target_day: '2023-01-01',
-          owner: 1,
+          user_id: '1',
           meals: [baseMeal, meal2],
         }),
         { id: 1 },
@@ -80,7 +80,7 @@ describe('dayDietOperations', () => {
       const result = updateMealInDayDiet(baseDayDiet, 1, updated)
 
       expect(result.target_day).toBe(baseDayDiet.target_day)
-      expect(result.owner).toBe(baseDayDiet.owner)
+      expect(result.user_id).toBe(baseDayDiet.user_id)
       expect(result.id).toBe(baseDayDiet.id)
     })
   })

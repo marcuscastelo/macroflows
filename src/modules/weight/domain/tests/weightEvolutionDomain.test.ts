@@ -19,7 +19,7 @@ function createTestWeights(startDate: string, weights: number[]): Weight[] {
     const date = new Date(baseDate)
     date.setDate(date.getDate() + index)
     const newWeight = createNewWeight({
-      owner: 1,
+      user_id: '',
       weight,
       target_timestamp: date.toISOString(),
     })

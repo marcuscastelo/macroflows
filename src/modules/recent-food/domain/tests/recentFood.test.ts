@@ -7,7 +7,7 @@ describe('Recent Food Domain', () => {
     it('should create a recent food input with default values', () => {
       const beforeCreation = Date.now()
       const params = createNewRecentFood({
-        user_id: 42,
+        user_id: '42',
         type: 'food',
         reference_id: 123,
         last_used: new Date(Date.now()),
@@ -17,7 +17,7 @@ describe('Recent Food Domain', () => {
       const input = createNewRecentFood(params)
       const afterCreation = Date.now()
 
-      expect(input.user_id).toBe(42)
+      expect(input.user_id).toBe('42')
       expect(input.type).toBe('food')
       expect(input.reference_id).toBe(123)
       expect(input.last_used).toBeInstanceOf(Date)
@@ -31,7 +31,7 @@ describe('Recent Food Domain', () => {
 
     it('should increment times_used when provided', () => {
       const params = createNewRecentFood({
-        user_id: 42,
+        user_id: '42',
         type: 'recipe',
         reference_id: 456,
         times_used: 6,
@@ -45,7 +45,7 @@ describe('Recent Food Domain', () => {
 
     it('should default times_used to 1 when not provided', () => {
       const params = createNewRecentFood({
-        user_id: 42,
+        user_id: '42',
         type: 'food',
         reference_id: 123,
         last_used: new Date(),
@@ -59,7 +59,7 @@ describe('Recent Food Domain', () => {
 
     it('should handle zero times_used', () => {
       const params = createNewRecentFood({
-        user_id: 42,
+        user_id: '42',
         type: 'food',
         reference_id: 123,
         times_used: 1,
@@ -75,7 +75,7 @@ describe('Recent Food Domain', () => {
       const pastDate = new Date('2020-01-01')
       const beforeCreation = Date.now()
       const params = createNewRecentFood({
-        user_id: 42,
+        user_id: '42',
         type: 'food',
         reference_id: 123,
         last_used: new Date(Date.now()),

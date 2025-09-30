@@ -22,7 +22,7 @@ export function createRecipeRepository(): RecipeRepository {
 }
 
 export async function fetchUserRecipes(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly Recipe[]> {
   try {
     const recipes = await supabaseGateway.fetchUserRecipes(userId)
@@ -61,7 +61,7 @@ export async function fetchRecipeById(
 }
 
 export async function fetchUserRecipeByName(
-  userId: User['id'],
+  userId: User['uuid'],
   name: Recipe['name'],
 ): Promise<readonly Recipe[]> {
   try {

@@ -6,11 +6,11 @@ import { type User } from '~/modules/user/domain/user'
 
 export type DayGateway = {
   fetchDayDietByUserIdAndTargetDay: (
-    userId: User['id'],
+    userId: User['uuid'],
     targetDay: string,
   ) => Promise<DayDiet | null>
   fetchDayDietsByUserIdBeforeDate: (
-    userId: User['id'],
+    userId: User['uuid'],
     beforeDay: string,
     limit?: number,
   ) => Promise<readonly DayDiet[]>

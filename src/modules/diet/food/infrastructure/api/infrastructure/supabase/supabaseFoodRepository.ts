@@ -141,7 +141,7 @@ async function fetchFoodsByName(
     if (isFavoritesSearch === true && userId !== undefined) {
       // Search within favorites only using optimized RPC
       result = await supabase.rpc('search_favorite_foods_with_scoring', {
-        p_user_id: userId,
+        p_user_uuid: userId,
         p_search_term: name,
         p_limit: limit,
       })

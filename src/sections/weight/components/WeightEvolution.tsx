@@ -115,7 +115,7 @@ export function WeightEvolution() {
               weightCrudService
                 .insertWeight(
                   createNewWeight({
-                    owner: userId,
+                    user_id: userId,
                     weight,
                     target_timestamp: new Date(Date.now()),
                   }),

@@ -11,7 +11,7 @@ export const {
   promote: promoteToWeight,
   demote: demoteToNewWeight,
 } = ze.create({
-  owner: ze.number(),
+  user_id: ze.string(),
   weight: ze.number(),
   target_timestamp: z
     .date()

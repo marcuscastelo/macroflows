@@ -4,14 +4,10 @@ import {
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
 import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
-import {
-  macroProfileDAOSchema,
-  supabaseMacroProfileMapper,
-} from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileMapper'
+import { supabaseMacroProfileMapper } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileMapper'
 import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
   return {
@@ -23,12 +19,12 @@ export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
 }
 
 async function fetchUserMacroProfiles(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly MacroProfile[]> {
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .select('*')
-    .eq('owner', userId)
+    .eq('user_id', userId)
     .order('target_day', { ascending: true })
 
   if (error !== null) {
@@ -36,15 +32,7 @@ async function fetchUserMacroProfiles(
     throw error
   }
 
-  let macroProfileDAOs
-  try {
-    macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
-  } catch (validationError) {
-    logging.error('MacroProfile validation error:', validationError)
-    throw validationError
-  }
-
-  return macroProfileDAOs.map(supabaseMacroProfileMapper.toDomain)
+  return data.map(supabaseMacroProfileMapper.toDomain)
 }
 
 async function insertMacroProfile(
@@ -55,32 +43,14 @@ async function insertMacroProfile(
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .insert(createDAO)
     .select()
+    .single()
 
   if (error !== null) {
     logging.error('MacroProfile fetch error:', error)
     throw error
   }
 
-  let macroProfileDAOs
-  try {
-    macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
-  } catch (validationError) {
-    logging.error('MacroProfile validation error:', validationError)
-    throw validationError
-  }
-
-  if (!macroProfileDAOs[0]) {
-    const notFoundError = new Error(
-      'Inserted macro profile not found in response',
-    )
-    logging.error(
-      'Inserted macro profile not found in response:',
-      notFoundError,
-    )
-    throw notFoundError
-  }
-
-  return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
+  return supabaseMacroProfileMapper.toDomain(data)
 }
 
 async function updateMacroProfile(
@@ -93,29 +63,14 @@ async function updateMacroProfile(
     .update(updateDAO)
     .eq('id', profileId)
     .select()
+    .single()
 
   if (error !== null) {
     logging.error('MacroProfile fetch error:', error)
     throw error
   }
 
-  let macroProfileDAOs
-  try {
-    macroProfileDAOs = parseWithStack(macroProfileDAOSchema.array(), data)
-  } catch (validationError) {
-    logging.error('MacroProfile validation error:', validationError)
-    throw validationError
-  }
-
-  if (!macroProfileDAOs[0]) {
-    const notFoundError = new Error(
-      'Updated macro profile not found in response',
-    )
-    logging.error('Updated macro profile not found in response:', notFoundError)
-    throw notFoundError
-  }
-
-  return supabaseMacroProfileMapper.toDomain(macroProfileDAOs[0])
+  return supabaseMacroProfileMapper.toDomain(data)
 }
 
 async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {
