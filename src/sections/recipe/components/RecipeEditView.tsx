@@ -29,6 +29,7 @@ import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedMo
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 import { calcRecipeCalories } from '~/shared/utils/macroMath'
+import { isUnifiedItem } from '~/shared/utils/typeUtils'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -65,38 +66,24 @@ export function RecipeEditHeader(props: {
       acceptedClipboardSchema,
       getDataToCopy: () => recipe(),
       onPaste: (data) => {
-        // Helper function to check if an object is a UnifiedItem
-        const isUnifiedItem = (obj: unknown): obj is UnifiedItem => {
-          return (
-            typeof obj === 'object' &&
-            obj !== null &&
-            '__type' in obj &&
-            obj.__type === 'UnifiedItem'
-          )
-        }
-
-        // Check if data is array of UnifiedItems
         if (Array.isArray(data) && data.every(isUnifiedItem)) {
           const itemsToAdd = data
-            .filter((item) => item.reference.type === 'food') // Only food items in recipes
+            .filter((item) => item.reference.type === 'food')
             .map((item) => regenerateId(item))
           const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
           props.onUpdateRecipe(newRecipe)
           return
         }
 
-        // Check if data is single UnifiedItem
         if (isUnifiedItem(data)) {
           if (data.reference.type === 'food') {
-            const item = data
-            const regeneratedItem = regenerateId(item)
+            const regeneratedItem = regenerateId(data)
             const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
             props.onUpdateRecipe(newRecipe)
           }
           return
         }
 
-        // Handle other supported clipboard formats
         logging.warn('Unsupported paste format:', data)
       },
     })
