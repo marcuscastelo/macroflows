@@ -1,6 +1,5 @@
 import { userWeights } from '~/modules/weight/application/usecases/weightState'
 import { type Weight } from '~/modules/weight/domain/weight'
-import { inForceGeneric } from '~/shared/utils/generic/inForce'
 
 function sortWeightsByDate(weights: readonly Weight[]): readonly Weight[] {
   return [...weights].sort(
@@ -214,6 +213,7 @@ export function inForceWeight(
   weights: readonly Weight[],
   date: Date,
 ): Weight | undefined {
-  const result = inForceGeneric(weights, 'target_timestamp', date)
-  return result === null ? undefined : result
+  return [...weights]
+    .reverse()
+    .find((item) => item.target_timestamp.getTime() <= date.getTime())
 }

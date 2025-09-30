@@ -43,7 +43,7 @@ function _createChartData(
     const currentWeight = inForceWeight(weights, dayDate)
     const currentMacroProfile = inForceMacroProfile(macroProfiles, dayDate)
     const macroTarget =
-      currentMacroProfile !== null
+      currentMacroProfile !== undefined
         ? calculateMacroTarget(currentWeight?.weight ?? 0, currentMacroProfile)
         : null
 
