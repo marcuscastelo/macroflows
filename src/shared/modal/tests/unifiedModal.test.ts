@@ -3,6 +3,7 @@
  * Validates that the core functionality works correctly.
  */
 
+import { createSignal } from 'solid-js'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
@@ -76,6 +77,31 @@ describe('Unified Modal System', () => {
     const modalList = modals()
     const modal = modalList.find((m) => m.id === modalId)
     expect(modal?.type).toBe('confirmation')
+
+    void modalManager.closeModal(modalId)
+  })
+
+  it('should support Accessor types for reactive values', () => {
+    const [title, setTitle] = createSignal('Initial Title')
+    const [message, setMessage] = createSignal('Initial Message')
+
+    const modalId = modalManager.openModal({
+      type: 'confirmation',
+      title,
+      message,
+      onConfirm: () => {},
+    })
+
+    const modalList = modals()
+    const modal = modalList.find((m) => m.id === modalId)
+    expect(modal).toBeDefined()
+    expect(modal?.type).toBe('confirmation')
+    expect(typeof modal?.title).toBe('function')
+
+    // Verify the modal stores the accessor
+    if (modal?.type === 'confirmation') {
+      expect(typeof modal.message).toBe('function')
+    }
 
     void modalManager.closeModal(modalId)
   })
