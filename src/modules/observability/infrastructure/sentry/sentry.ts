@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/solidstart'
 import { createClientIntegrations } from '~/modules/observability/infrastructure/sentry/clientIntegrations'
 import { createSentryConfig } from '~/modules/observability/infrastructure/sentry/config'
 import { setupSentryOTelIntegration } from '~/modules/observability/infrastructure/sentry/otelIntegration'
+import { scrubPiiFromEvent } from '~/modules/observability/infrastructure/sentry/piiScrubber'
 let isInitialized = false
 
 export async function initializeSentry(type: 'server' | 'client') {
@@ -54,6 +55,9 @@ export async function initializeSentry(type: 'server' | 'client') {
       profilesSampleRate: 1.0,
 
       enableLogs: true,
+
+      // PII scrubbing hook
+      beforeSend: scrubPiiFromEvent,
     })
 
     if (config.useOTel) {
