@@ -12,8 +12,5 @@ fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$DIR/.."
-cat /home/runner/work/macroflows/macroflows/src/shared/modal/helpers/modalHelpers.ts
-echo '----'
-cat /home/runner/work/macroflows/macroflows/src/shared/modal/tests/unifiedModal.test.ts
 VERSION=$("$DIR/semver.sh")
 echo '{"version": "'$VERSION'"}' > "$ROOT/src/app-version.json"
