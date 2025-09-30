@@ -22,6 +22,7 @@ export function AuthSettings() {
   async function handlePrivacyChange(newValue: boolean) {
     setAllowDataSharing(newValue)
     // TODO: Integrate with backend API to persist privacy setting
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1060
     showSuccess(
       `Compartilhamento de dados ${newValue ? 'ativado' : 'desativado'}`,
     )
@@ -69,6 +70,7 @@ export function AuthSettings() {
   async function handleExportData() {
     try {
       // TODO: Replace with actual data fetches if needed
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1059
       const user = getCurrentUser()
       // Example: fetch diet, measurements, etc. from signals or API
       const exportData = {
