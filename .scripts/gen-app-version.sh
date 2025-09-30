@@ -12,5 +12,6 @@ fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$DIR/.."
+$DIR/semver.sh --debug --verbose
 VERSION=$("$DIR/semver.sh")
 echo '{"version": "'$VERSION'"}' > "$ROOT/src/app-version.json"
