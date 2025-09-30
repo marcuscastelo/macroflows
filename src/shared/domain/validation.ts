@@ -153,6 +153,7 @@ export function createZodEntity<TEntity extends keyof typeof ENTITY_NAMES>(
       shape: TShape,
       entityExtras?: TExtras,
     ) => {
+      // TODO: remove defaultExtras (maybe entire entityExtras?)
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const defaultExtras = {
         id: z.number(
