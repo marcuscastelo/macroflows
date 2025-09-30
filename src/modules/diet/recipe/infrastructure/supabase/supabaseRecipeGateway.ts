@@ -8,7 +8,6 @@ import { supabaseRecipeMapper } from '~/modules/diet/recipe/infrastructure/supab
 import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
-import { removeDiacritics } from '~/shared/utils/removeDiacritics'
 
 export function createSupabaseRecipeGateway(): RecipeGateway {
   return {
@@ -81,19 +80,27 @@ const fetchUserRecipeByName = async (
   name: Recipe['name'],
 ): Promise<readonly Recipe[]> => {
   try {
-    // Normalize diacritics for search
-    const normalizedName = removeDiacritics(name)
-    const { data, error } = await supabase
-      .from(SUPABASE_TABLE_RECIPES)
-      .select()
-      .eq('user_id', userId)
-      .ilike('name', `%${normalizedName}%`)
+    const { data, error } = await supabase.rpc('search_recipes_by_name', {
+      p_user_uuid: userId,
+      p_search_term: name,
+      p_limit: 50,
+    })
     if (error !== null) {
       logging.error('Recipe fetch error:', error)
       return []
     }
 
-    return data.map(supabaseRecipeMapper.toDomain)
+    return data.map((rpcResult) =>
+      supabaseRecipeMapper.toDomain({
+        id: rpcResult.id,
+        name: rpcResult.name,
+        user_id: userId,
+        owner: rpcResult.owner,
+        items: rpcResult.items,
+        prepared_multiplier: rpcResult.prepared_multiplier,
+        created_at: rpcResult.created_at,
+      }),
+    )
   } catch (err) {
     logging.error('Recipe fetch error:', err)
     return []

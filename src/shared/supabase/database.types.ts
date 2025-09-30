@@ -491,6 +491,17 @@ export type Database = {
           user_id_new: string
         }[]
       }
+      search_recipes_by_name: {
+        Args: { p_limit?: number; p_search_term: string; p_user_uuid: string }
+        Returns: {
+          created_at: string
+          id: number
+          items: Json
+          name: string
+          owner: number
+          prepared_multiplier: number
+        }[]
+      }
       set_limit: {
         Args: { '': number }
         Returns: number

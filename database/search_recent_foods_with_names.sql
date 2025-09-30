@@ -1,6 +1,6 @@
 -- PostgreSQL function for searching recent foods with joined names
 -- This function efficiently searches recent foods by joining with foods and recipes tables
--- Supports Portuguese diacritic-insensitive search using client-side normalization approach
+-- Supports Portuguese diacritic-insensitive search using server-side normalization
 
 -- Drop any existing function to avoid signature conflicts
 DROP FUNCTION IF EXISTS search_recent_foods_with_names(integer, text, integer);
@@ -32,9 +32,11 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  normalized_search text;
 BEGIN
   -- If no search term provided, return recent foods with complete template data (no filtering)
-  IF p_search_term IS NULL OR p_search_term = '' THEN
+  IF p_search_term IS NULL OR trim(p_search_term) = '' THEN
     RETURN QUERY
     SELECT 
       rf.id as recent_food_id,
@@ -60,8 +62,16 @@ BEGIN
     ORDER BY rf.last_used DESC
     LIMIT p_limit;
   ELSE
-    -- Search with diacritic-insensitive filtering
-    -- Note: Using client-side normalized search term approach to match existing patterns
+    -- Normalize search term (remove diacritics and convert to lowercase)
+    normalized_search := lower(
+      translate(
+        p_search_term,
+        'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+        'aaaaaeeeeiiiioooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'
+      )
+    );
+    
+    -- Search with diacritic-insensitive filtering using server-side normalization
     RETURN QUERY
     SELECT 
       rf.id as recent_food_id,
@@ -85,8 +95,21 @@ BEGIN
     WHERE rf.user_id = p_user_uuid
       AND (f.id IS NOT NULL OR r.id IS NOT NULL) -- Ensure we have a valid template
       AND (
-        f.name ILIKE '%' || p_search_term || '%' OR
-        r.name ILIKE '%' || p_search_term || '%'
+        lower(
+          translate(
+            f.name,
+            'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+            'aaaaaeeeeiiiioooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'
+          )
+        ) LIKE '%' || normalized_search || '%' 
+        OR
+        lower(
+          translate(
+            r.name,
+            'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ',
+            'aaaaaeeeeiiiioooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN'
+          )
+        ) LIKE '%' || normalized_search || '%'
       )
     ORDER BY rf.last_used DESC
     LIMIT p_limit;

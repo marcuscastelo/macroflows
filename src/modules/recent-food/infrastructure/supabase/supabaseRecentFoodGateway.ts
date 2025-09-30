@@ -12,7 +12,6 @@ import { supabaseRecentFoodMapper } from '~/modules/recent-food/infrastructure/s
 import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
-import { removeDiacritics } from '~/shared/utils/removeDiacritics'
 
 // Schema for the enhanced database function response
 const enhancedRecentFoodRowSchema = z
@@ -111,12 +110,11 @@ async function fetchUserRecentFoodsAsTemplates(
   opts?: { limit?: number },
 ): Promise<readonly Template[]> {
   const limit = opts?.limit
-  const normalizedSearch =
-    search.trim() !== '' ? removeDiacritics(search.trim()) : undefined
+  const searchTerm = search.trim() !== '' ? search.trim() : undefined
 
   const response = await supabase.rpc('search_recent_foods_with_names', {
     p_user_uuid: userId,
-    p_search_term: normalizedSearch ?? undefined,
+    p_search_term: searchTerm ?? undefined,
     p_limit: limit,
   })
   if (response.error !== null) throw response.error
