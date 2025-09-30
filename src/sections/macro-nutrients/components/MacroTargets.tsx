@@ -94,16 +94,18 @@ export type MacroTargetProps = {
 
 const onSaveMacroProfile = (profile: MacroProfile) => {
   logging.info('[ProfilePage] Saving profile', profile)
-  if (profile.target_day.getTime() > new Date(getTodayYYYYMMDD()).getTime()) {
+  const today = new Date(getTodayYYYYMMDD())
+  const profileDate = new Date(profile.target_day).getTime()
+  const todayTime = today.getTime()
+
+  if (profileDate > todayTime) {
     showError('Data alvo não pode ser no futuro')
     return
-  } else if (
-    profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
-    profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
-  ) {
-    logging.info('[ProfilePage] Updating profile', profile)
+  }
 
-    // Same day, update
+  if (profileDate === todayTime) {
+    logging.info('[ProfilePage] Updating profile for today', profile)
+
     updateMacroProfile(
       profile.id,
       createNewMacroProfile({
@@ -116,21 +118,15 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     ).catch((error) => {
       showError(error, {}, 'Erro ao atualizar perfil de macro')
     })
-  } else if (
-    profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
-    profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
-  ) {
-    logging.info('[ProfilePage] Inserting profile', profile)
+  } else {
+    logging.info('[ProfilePage] Inserting new profile for today', profile)
 
-    // Past day, insert with new date
     void insertMacroProfile(
       createNewMacroProfile({
         ...profile,
-        target_day: new Date(getTodayYYYYMMDD()),
+        target_day: today,
       }),
     )
-  } else {
-    showError('Erro imprevisto ao salvar perfil de macro')
   }
 }
 
