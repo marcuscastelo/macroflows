@@ -18,7 +18,7 @@ jobs:
         run: ls -la
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # pega todo histórico
+          fetch-depth: 0 
           ref: ${{ github.ref }}
       - name: Clean untracked files
         run: git clean -fdx
