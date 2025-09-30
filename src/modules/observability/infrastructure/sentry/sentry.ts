@@ -30,7 +30,8 @@ export async function initializeSentry(type: 'server' | 'client') {
     Sentry.init({
       dsn: config.dsn,
       release: config.release,
-      tracesSampleRate: 1.0,
+      environment: config.environment,
+      tracesSampleRate: config.sampleRates.traces,
 
       // SolidStart specific configuration
       sendDefaultPii: true,
@@ -47,11 +48,11 @@ export async function initializeSentry(type: 'server' | 'client') {
           : [Sentry.consoleLoggingIntegration()],
 
       // Session Replay configuration
-      replaysSessionSampleRate: 1.0,
-      replaysOnErrorSampleRate: 1.0,
+      replaysSessionSampleRate: config.sampleRates.replays,
+      replaysOnErrorSampleRate: config.sampleRates.replaysOnError,
 
       // Set sample rate for profiling
-      profilesSampleRate: 1.0,
+      profilesSampleRate: config.sampleRates.profiles,
 
       enableLogs: true,
     })
