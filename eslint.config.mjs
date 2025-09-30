@@ -130,15 +130,12 @@ export default [
       'jsx-a11y/role-has-required-aria-props': 'warn',
       'jsx-a11y/role-supports-aria-props': 'warn',
 
-      // TODO: Re-enable console restriction after refactoring logging & observability system
-      'no-console': 'off', // Ban all console usage by default
-      // TODO: Re-enable console restriction after refactoring logging & observability system
-      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1056
+      'no-console': 'error',
       'no-restricted-syntax': [
-        'off',
+        'error',
         {
           selector: "CallExpression[callee.object.name='console']",
-          message: 'Direct console usage is forbidden. Use errorHandler.apiError or logging utility functions instead.'
+          message: 'Direct console usage is forbidden. Use logging utility functions instead.'
         },
         {
           selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
@@ -189,7 +186,8 @@ export default [
     // Allow console usage in error handling, telemetry, and testing infrastructure
     files: [
       'src/shared/error/**/*.ts',
-      'src/shared/error/**/*.tsx', 
+      'src/shared/error/**/*.tsx',
+      'src/shared/utils/logging.ts',
       'src/modules/observability/**/*.ts',
       'src/modules/observability/**/*.tsx',
 

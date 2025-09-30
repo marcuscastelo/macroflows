@@ -105,7 +105,7 @@ export function createAuthService(
           if (session?.user.id !== undefined) {
             fetchUsers()
               .then((users) => {
-                console.debug(`Users: `, users)
+                logging.debug(`Users: `, { users })
                 const user = users.find((u) => u.uuid === session.user.id)
                 if (user !== undefined) {
                   changeToUser(user.uuid)
