@@ -79,8 +79,7 @@ class MacroTargetNotFoundForDayError extends Error {
 }
 
 export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
-  const targetDayWeight_ =
-    inForceWeight(userWeights(), day)?.weight ?? null
+  const targetDayWeight_ = inForceWeight(userWeights(), day)?.weight ?? null
   const targetDayMacroProfile_ = inForceMacroProfile(userMacroProfiles(), day)
 
   const userId = currentUserId()

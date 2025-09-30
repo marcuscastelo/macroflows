@@ -1,8 +1,9 @@
 import { createMemo, createSignal, onMount, Suspense } from 'solid-js'
+import { type Accessor } from 'solid-js'
 
-import { type Weight } from '~/modules/weight/domain/weight'
 import { type WeightChartType } from '~/modules/weight/application/weightChartSettings'
 import { buildChartData } from '~/modules/weight/application/weightChartUtils'
+import { type Weight } from '~/modules/weight/domain/weight'
 import {
   calculateMovingAverage,
   groupWeightsByPeriod,
@@ -10,7 +11,6 @@ import {
 import { Chart } from '~/sections/common/components/charts/Chart'
 import { buildWeightChartOptions } from '~/sections/weight/components/WeightChartOptions'
 import { buildWeightChartSeries } from '~/sections/weight/components/WeightChartSeries'
-import { type Accessor } from 'solid-js'
 
 /**
  * Props for the WeightChart component.

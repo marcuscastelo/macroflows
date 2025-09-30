@@ -70,9 +70,7 @@ function _createChartData(
   return data
 }
 
-function AllMacrosChart(_props: {
-  weights: Accessor<readonly Weight[]>
-}) {
+function AllMacrosChart(_props: { weights: Accessor<readonly Weight[]> }) {
   // const macroProfile = getLatestMacroProfile(userMacroProfiles())
 
   // const proteinDeviance = () =>
@@ -223,9 +221,7 @@ function AllMacrosChart(_props: {
   )
 }
 
-function CaloriesChart(_props: {
-  weights: Accessor<readonly Weight[]>
-}) {
+function CaloriesChart(_props: { weights: Accessor<readonly Weight[]> }) {
   // const _data = () => {
   //   const weights = props.weights()
   //   if (!weights) return []
@@ -274,9 +270,7 @@ function CaloriesChart(_props: {
   )
 }
 
-function ProteinChart(_props: {
-  weights: Accessor<readonly Weight[]>
-}) {
+function ProteinChart(_props: { weights: Accessor<readonly Weight[]> }) {
   // const _data = () => {
   //   const weights = props.weights()
   //   if (!weights) return []
@@ -324,9 +318,7 @@ function ProteinChart(_props: {
   )
 }
 
-function FatChart(_props: {
-  weights: Accessor<readonly Weight[]>
-}) {
+function FatChart(_props: { weights: Accessor<readonly Weight[]> }) {
   // const _data = () => {
   //   const weights = props.weights()
   //   if (!weights) return []
@@ -374,9 +366,7 @@ function FatChart(_props: {
   )
 }
 
-function CarbsChart(_props: {
-  weights: Accessor<readonly Weight[]>
-}) {
+function CarbsChart(_props: { weights: Accessor<readonly Weight[]> }) {
   // const _data = () => {
   //   const weights = props.weights()
   //   if (!weights) return []

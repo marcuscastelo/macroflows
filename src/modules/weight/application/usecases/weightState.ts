@@ -26,7 +26,6 @@ async function fetchUserWeights(userId: User['uuid']) {
   }
 }
 
-// Initialize cache from local storage
 const cachedWeights = parseWithStack(
   weightSchema.array(),
   storageRepository.getCachedWeights(currentUserId()),
@@ -35,12 +34,10 @@ if (cachedWeights.length > 0) {
   weightCacheStore.setWeights(cachedWeights)
 }
 
-// Fetch fresh data on mount
 onMount(() => {
   void fetchUserWeights(currentUserId())
 })
 
-// Refetch when user changes
 createEffect(() => {
   const userId = currentUserId()
   void fetchUserWeights(userId)
@@ -52,10 +49,8 @@ export const weightCrudService = createWeightCrudService({
   storageRepository,
 })
 
-// Export weight signals from cache store
 export const userWeights = weightCacheStore.weights
 
-// Export refetch function
 export function refetchUserWeights() {
   void fetchUserWeights(currentUserId())
 }

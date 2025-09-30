@@ -20,8 +20,7 @@ function upsertToCache(weight: Weight) {
     } else {
       weightList.push(weight)
       weightList.sort(
-        (a, b) =>
-          a.target_timestamp.getTime() - b.target_timestamp.getTime(),
+        (a, b) => a.target_timestamp.getTime() - b.target_timestamp.getTime(),
       )
     }
     return weightList
