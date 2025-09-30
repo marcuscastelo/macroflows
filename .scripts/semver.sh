@@ -4,6 +4,18 @@ set -e
 OWNER_REPO="marcuscastelo/macroflows"
 REPO_URL="https://github.com/$OWNER_REPO"
 
+# Retry and rate limit configuration
+MAX_RETRIES="${SEMVER_MAX_RETRIES:-3}"
+INITIAL_RETRY_DELAY="${SEMVER_INITIAL_RETRY_DELAY:-2}"
+MAX_RETRY_DELAY="${SEMVER_MAX_RETRY_DELAY:-60}"
+DEBUG_MODE="${SEMVER_DEBUG:-false}"
+
+debug_log() {
+  if [ "$DEBUG_MODE" = "true" ]; then
+    echo "[DEBUG] $*" >&2
+  fi
+}
+
 get_current_branch() {
   if [ -n "$VERCEL_GIT_COMMIT_REF" ]; then
     echo "$VERCEL_GIT_COMMIT_REF"
@@ -32,22 +44,108 @@ get_sha_for_branch() {
 get_commit_count_between() {
   local from_sha="$1"
   local to_sha="$2"
-  local response http_status
-  response=$(curl -s -w "\n%{http_code}" "https://api.github.com/repos/$OWNER_REPO/compare/$from_sha...$to_sha")
-  http_status=$(echo "$response" | tail -n1)
-  response=$(echo "$response" | sed '$d')
-  if [ "$http_status" != "200" ]; then
+  local attempt=0
+  local delay="$INITIAL_RETRY_DELAY"
+  local response http_status rate_limit_remaining rate_limit_reset
+  
+  while [ $attempt -lt "$MAX_RETRIES" ]; do
+    debug_log "API call attempt $((attempt + 1))/$MAX_RETRIES for commit count between $from_sha and $to_sha"
+    
+    response=$(curl -s -w "\n%{http_code}" -D /tmp/semver_headers_$$.txt \
+      "https://api.github.com/repos/$OWNER_REPO/compare/$from_sha...$to_sha" 2>&1)
+    http_status=$(echo "$response" | tail -n1)
+    response=$(echo "$response" | sed '$d')
+    
+    # Extract rate limit info from headers if available
+    if [ -f /tmp/semver_headers_$$.txt ]; then
+      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rm -f /tmp/semver_headers_$$.txt
+      
+      debug_log "Rate limit remaining: ${rate_limit_remaining:-unknown}"
+      if [ -n "$rate_limit_reset" ]; then
+        debug_log "Rate limit resets at: $(date -d @$rate_limit_reset 2>/dev/null || echo $rate_limit_reset)"
+      fi
+    fi
+    
+    # Handle different HTTP status codes
+    case "$http_status" in
+      200)
+        debug_log "API call successful (HTTP 200)"
+        local count
+        count=$(echo "$response" | grep 'total_commits' | head -1 | awk '{print $2}' | tr -d ',')
+        if [ -z "$count" ]; then
+          echo "Error: could not parse commit count from GitHub API response" >&2
+          echo "$response" >&2
+          exit 1
+        fi
+        echo "$count"
+        return 0
+        ;;
+      
+      403)
+        # Rate limit or forbidden
+        if echo "$response" | grep -qi "rate limit"; then
+          echo "Warning: GitHub API rate limit exceeded" >&2
+          if [ -n "$rate_limit_reset" ]; then
+            local wait_time=$((rate_limit_reset - $(date +%s)))
+            if [ $wait_time -gt 0 ] && [ $wait_time -lt 3600 ]; then
+              echo "Rate limit resets in $wait_time seconds" >&2
+              if [ $attempt -lt $((MAX_RETRIES - 1)) ]; then
+                echo "Waiting for rate limit reset..." >&2
+                sleep $((wait_time + 5))
+                attempt=$((attempt + 1))
+                continue
+              fi
+            fi
+          fi
+        else
+          echo "Error: GitHub API access forbidden (HTTP 403)" >&2
+          echo "This might be due to authentication issues or repository access restrictions" >&2
+        fi
+        ;;
+      
+      404)
+        echo "Error: GitHub API resource not found (HTTP 404)" >&2
+        echo "The comparison between $from_sha and $to_sha may not exist" >&2
+        echo "?"
+        return 1
+        ;;
+      
+      5*)
+        echo "Warning: GitHub API server error (HTTP $http_status)" >&2
+        if [ $attempt -lt $((MAX_RETRIES - 1)) ]; then
+          echo "Retrying after ${delay}s (attempt $((attempt + 1))/$MAX_RETRIES)..." >&2
+          sleep $delay
+          delay=$((delay * 2))
+          if [ $delay -gt "$MAX_RETRY_DELAY" ]; then
+            delay="$MAX_RETRY_DELAY"
+          fi
+          attempt=$((attempt + 1))
+          continue
+        fi
+        ;;
+      
+      *)
+        echo "Warning: Unexpected HTTP status $http_status from GitHub API" >&2
+        debug_log "Response: $response"
+        ;;
+    esac
+    
+    # If we've exhausted retries for retryable errors, fall through
+    if [ $attempt -ge $((MAX_RETRIES - 1)) ]; then
+      echo "Error: GitHub API call failed after $MAX_RETRIES attempts" >&2
+      echo "?"
+      return 1
+    fi
+    
+    # For non-retryable errors, exit early
     echo "?"
-    return
-  fi
-  local count
-  count=$(echo "$response" | grep 'total_commits' | head -1 | awk '{print $2}' | tr -d ',')
-  if [ -z "$count" ]; then
-    echo "Error: could not parse commit count from GitHub API response" >&2
-    echo "$response" >&2
-    exit 1
-  fi
-  echo "$count"
+    return 1
+  done
+  
+  echo "?"
+  return 1
 }
 
 get_issue_number() {
@@ -130,16 +228,28 @@ main() {
 }
 
 show_help() {
-  echo "Usage: $0 [--help] [--test] [--verbose]"
+  echo "Usage: $0 [--help] [--test] [--verbose] [--debug]"
   echo "  --help      Show this help message and exit."
   echo "  --test      Run simple function tests and exit."
   echo "  --verbose   Enable verbose output (set -x)."
+  echo "  --debug     Enable debug logging for API calls and retry logic."
+  echo ""
+  echo "Environment variables:"
+  echo "  SEMVER_MAX_RETRIES          Maximum number of retry attempts (default: 3)"
+  echo "  SEMVER_INITIAL_RETRY_DELAY  Initial delay between retries in seconds (default: 2)"
+  echo "  SEMVER_MAX_RETRY_DELAY      Maximum delay between retries in seconds (default: 60)"
+  echo "  SEMVER_DEBUG                Enable debug mode (true/false, default: false)"
 }
 
 # Parse arguments
 if [ "$1" = "--help" ]; then
   show_help
   exit 0
+fi
+
+if [ "$1" = "--debug" ]; then
+  DEBUG_MODE="true"
+  shift
 fi
 
 if [ "$1" = "--test" ]; then
