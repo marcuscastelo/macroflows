@@ -81,4 +81,3 @@ export function createDefaultMacroProfile(userId: User['uuid']): MacroProfile {
     __type: 'MacroProfile',
   }
 }
-
