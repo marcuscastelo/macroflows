@@ -95,8 +95,8 @@ describe('Unified Modal System', () => {
     const modalList = modals()
     const modal = modalList.find((m) => m.id === modalId)
     expect(modal).toBeDefined()
+    expect(modal?.type).toBe('confirmation')
     expect(typeof modal?.title).toBe('function')
-    expect(typeof modal?.message).toBe('function')
 
     // Verify the modal stores the accessor
     if (modal?.type === 'confirmation') {
