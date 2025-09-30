@@ -19,11 +19,11 @@ export function createSupabaseBodyMeasureGateway(): BodyMeasureGateway {
   }
 }
 
-async function fetchUserBodyMeasures(userId: User['id']) {
+async function fetchUserBodyMeasures(userId: User['uuid']) {
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_BODY_MEASURES)
     .select('*')
-    .eq('owner', userId)
+    .eq('user_id', userId)
     .order('target_timestamp', { ascending: true })
 
   if (error !== null) {

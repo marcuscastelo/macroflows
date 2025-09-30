@@ -169,7 +169,7 @@ export default function TestApp() {
     promoteDayDiet(
       createNewDayDiet({
         meals: [],
-        owner: 3,
+        user_id: '3',
         target_day: '2023-11-02',
       }),
       { id: 1 },

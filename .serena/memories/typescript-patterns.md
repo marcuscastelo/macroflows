@@ -14,10 +14,10 @@
 // ✅ Good: Factory function returning object
 export function createLocalStorageRepository(): StorageRepository {
   return {
-    getCachedWeights: (userId: number) => {
+    getCachedWeights: (userId: User['uuid']) => {
       // implementation
     },
-    setCachedWeights: (userId: number, weights: readonly unknown[]) => {
+    setCachedWeights: (userId: User['uuid'], weights: readonly unknown[]) => {
       // implementation  
     }
   }
@@ -38,8 +38,8 @@ export class Repository implements Interface {
 ```typescript
 // ✅ Always use `type`
 export type StorageRepository = {
-  getCachedWeights(userId: number): readonly unknown[]
-  setCachedWeights(userId: number, weights: readonly unknown[]): void
+  getCachedWeights(userId: User['uuid']): readonly unknown[]
+  setCachedWeights(userId: User['uuid'], weights: readonly unknown[]): void
 }
 
 // ❌ Never use interface

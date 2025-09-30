@@ -9,7 +9,8 @@ export type Template = Food | Recipe
  * @returns True if Template is food
  */
 export function isTemplateFood(t: Template): t is Food {
-  return 'ean' in t && 'macros' in t && !('owner' in t)
+  // TODO: Replace property assertion as typeguard with a more reliable alternetive
+  return 'ean' in t && 'macros' in t && !('user_id' in t)
 }
 
 /**
@@ -18,5 +19,6 @@ export function isTemplateFood(t: Template): t is Food {
  * @returns True if Template is recipe
  */
 export function isTemplateRecipe(t: Template): t is Recipe {
-  return 'owner' in t && 'items' in t && 'prepared_multiplier' in t
+  // TODO: Replace property assertion as typeguard with a more reliable alternetive
+  return 'user_id' in t && 'items' in t && 'prepared_multiplier' in t
 }

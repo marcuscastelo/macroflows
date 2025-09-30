@@ -18,7 +18,7 @@ function toDomain(dto: WeightDTO): Weight {
 
 function toInsertDTO(weight: NewWeight): InsertWeightDTO {
   return {
-    owner: weight.owner,
+    user_id: weight.user_id,
     weight: weight.weight,
     target_timestamp: weight.target_timestamp.toISOString(),
   }
@@ -26,7 +26,7 @@ function toInsertDTO(weight: NewWeight): InsertWeightDTO {
 
 function toUpdateDTO(weight: Weight): UpdateWeightDTO {
   return {
-    owner: weight.owner,
+    user_id: weight.user_id,
     weight: weight.weight,
     target_timestamp: weight.target_timestamp.toISOString(),
   }

@@ -31,13 +31,13 @@ describe('fetchTemplatesByTabLogic', () => {
   const mockRecipe = promoteRecipe(
     createNewRecipe({
       name: 'Bolo',
-      owner: 1,
+      user_id: '',
       items: [],
       prepared_multiplier: 1,
     }),
     { id: 2 },
   )
-  const userId = 1
+  const userId = '1'
   let deps: FetchTemplatesDeps
 
   beforeEach(() => {

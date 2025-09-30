@@ -15,7 +15,7 @@ describe('MacroProfile Domain', () => {
     it('should transform string target_day to Date', () => {
       const macroProfileWithStringDate = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         target_day: '2023-01-01T00:00:00Z',
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -36,7 +36,7 @@ describe('MacroProfile Domain', () => {
     it('should transform negative gramsPerKg values to 0', () => {
       const macroProfileWithNegativeValues = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: -2.5,
         gramsPerKgProtein: -1.8,
@@ -58,7 +58,7 @@ describe('MacroProfile Domain', () => {
     it('should fail validation with NaN gramsPerKg values', () => {
       const macroProfileWithNaNValues = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: NaN,
         gramsPerKgProtein: NaN,
@@ -72,7 +72,7 @@ describe('MacroProfile Domain', () => {
 
     it('should fail validation with missing required fields', () => {
       const invalidMacroProfile = {
-        // Missing owner, target_day, gramsPerKg values
+        // Missing user_id, target_day, gramsPerKg values
         id: 1,
         __type: 'MacroProfile',
       }
@@ -84,7 +84,7 @@ describe('MacroProfile Domain', () => {
     it('should fail validation with invalid field types', () => {
       const invalidMacroProfile = {
         id: 1,
-        owner: 'not-a-number',
+        user_id: 42,
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -99,7 +99,7 @@ describe('MacroProfile Domain', () => {
     it('should handle invalid date format by creating Invalid Date', () => {
       const invalidMacroProfile = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         target_day: 'not-a-date',
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -119,7 +119,7 @@ describe('MacroProfile Domain', () => {
   describe('newMacroProfileSchema', () => {
     it('should transform string target_day to Date', () => {
       const newMacroProfileWithStringDate = {
-        owner: 42,
+        user_id: '42',
         target_day: '2023-06-15T12:30:00Z',
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -152,7 +152,7 @@ describe('MacroProfile Domain', () => {
   describe('createNewMacroProfile', () => {
     it('should create a valid NewMacroProfile', () => {
       const macroProfileProps = {
-        owner: 42,
+        user_id: '42',
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -161,7 +161,7 @@ describe('MacroProfile Domain', () => {
 
       const newMacroProfile = createNewMacroProfile(macroProfileProps)
 
-      expect(newMacroProfile.owner).toBe(42)
+      expect(newMacroProfile.user_id).toBe('42')
       expect(newMacroProfile.target_day).toStrictEqual(new Date('2023-01-01'))
       expect(newMacroProfile.gramsPerKgCarbs).toBe(5.0)
       expect(newMacroProfile.gramsPerKgProtein).toBe(2.2)
@@ -173,7 +173,7 @@ describe('MacroProfile Domain', () => {
   describe('promoteToMacroProfile', () => {
     it('should promote NewMacroProfile to MacroProfile', () => {
       const newMacroProfile: NewMacroProfile = {
-        owner: 42,
+        user_id: '42',
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -184,7 +184,7 @@ describe('MacroProfile Domain', () => {
       const macroProfile = promoteToMacroProfile(newMacroProfile, { id: 123 })
 
       expect(macroProfile.id).toBe(123)
-      expect(macroProfile.owner).toBe(42)
+      expect(macroProfile.user_id).toBe('42')
       expect(macroProfile.target_day).toStrictEqual(new Date('2023-01-01'))
       expect(macroProfile.gramsPerKgCarbs).toBe(5.0)
       expect(macroProfile.gramsPerKgProtein).toBe(2.2)
@@ -197,7 +197,7 @@ describe('MacroProfile Domain', () => {
     it('should demote MacroProfile to NewMacroProfile', () => {
       const macroProfile: MacroProfile = {
         id: 123,
-        owner: 42,
+        user_id: '42',
         target_day: new Date('2023-01-01'),
         gramsPerKgCarbs: 5.0,
         gramsPerKgProtein: 2.2,
@@ -207,7 +207,7 @@ describe('MacroProfile Domain', () => {
 
       const newMacroProfile = demoteToNewMacroProfile(macroProfile)
 
-      expect(newMacroProfile.owner).toBe(42)
+      expect(newMacroProfile.user_id).toBe('42')
       expect(newMacroProfile.target_day).toStrictEqual(new Date('2023-01-01'))
       expect(newMacroProfile.gramsPerKgCarbs).toBe(5.0)
       expect(newMacroProfile.gramsPerKgProtein).toBe(2.2)

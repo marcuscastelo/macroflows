@@ -42,11 +42,11 @@ const fetchUsers = async (): Promise<User[]> => {
   return users.map(subapaseUserMapper.toDomain)
 }
 
-const fetchUser = async (id: User['id']): Promise<User | null> => {
+const fetchUser = async (userId: User['uuid']): Promise<User | null> => {
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
     .select()
-    .eq('id', id)
+    .eq('uuid', userId)
 
   if (error !== null) {
     throw wrapErrorWithStack(error)
@@ -75,7 +75,7 @@ const insertUser = async (newUser: NewUser): Promise<User | null> => {
 }
 
 const updateUser = async (
-  id: User['id'],
+  userId: User['uuid'],
   newUser: NewUser,
 ): Promise<User | null> => {
   const updateDAO = subapaseUserMapper.toUpdateDTO(newUser)
@@ -83,7 +83,7 @@ const updateUser = async (
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
     .update(updateDAO)
-    .eq('id', id)
+    .eq('uuid', userId)
     .select()
 
   if (error !== null) {
@@ -95,11 +95,11 @@ const updateUser = async (
   return users[0] ?? null
 }
 
-const deleteUser = async (id: User['id']): Promise<void> => {
+const deleteUser = async (userId: User['uuid']): Promise<void> => {
   const { error } = await supabase
     .from(SUPABASE_TABLE_USERS)
     .delete()
-    .eq('id', id)
+    .eq('uuid', userId)
 
   if (error !== null) {
     throw wrapErrorWithStack(error)

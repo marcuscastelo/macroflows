@@ -34,12 +34,12 @@ describe('DayDiet Factory Functions', () => {
       const meals = [makeTestMeal()]
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals,
       })
 
       expect(newDayDiet.target_day).toBe('2023-01-01')
-      expect(newDayDiet.owner).toBe(1)
+      expect(newDayDiet.user_id).toBe('1')
       expect(newDayDiet.meals).toEqual(meals)
       expect(newDayDiet.__type).toBe('NewDayDiet')
     })
@@ -47,7 +47,7 @@ describe('DayDiet Factory Functions', () => {
     it('should create a day diet with empty meals array', () => {
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
 
@@ -59,7 +59,7 @@ describe('DayDiet Factory Functions', () => {
       const meals = [makeTestMeal()]
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals,
       })
 
@@ -73,7 +73,7 @@ describe('DayDiet Factory Functions', () => {
     it('should promote new day diet to day diet with id', () => {
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
 
@@ -81,7 +81,7 @@ describe('DayDiet Factory Functions', () => {
 
       expect(dayDiet.id).toBe(123)
       expect(dayDiet.target_day).toBe('2023-01-01')
-      expect(dayDiet.owner).toBe(1)
+      expect(dayDiet.user_id).toBe('1')
       expect(dayDiet.__type).toBe('DayDiet')
     })
 
@@ -89,7 +89,7 @@ describe('DayDiet Factory Functions', () => {
       const meals = [makeTestMeal()]
       const newDayDiet = createNewDayDiet({
         target_day: '2023-12-25',
-        owner: 42,
+        user_id: '42',
         meals,
       })
 
@@ -97,7 +97,7 @@ describe('DayDiet Factory Functions', () => {
 
       expect(dayDiet.id).toBe(999)
       expect(dayDiet.target_day).toBe('2023-12-25')
-      expect(dayDiet.owner).toBe(42)
+      expect(dayDiet.user_id).toBe('42')
       expect(dayDiet.meals).toEqual(meals)
     })
   })
@@ -106,7 +106,7 @@ describe('DayDiet Factory Functions', () => {
     it('should demote day diet back to new day diet', () => {
       const originalNewDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
       const dayDiet = promoteDayDiet(originalNewDayDiet, { id: 123 })
@@ -114,7 +114,7 @@ describe('DayDiet Factory Functions', () => {
       const demotedDayDiet = demoteNewDayDiet(dayDiet)
 
       expect(demotedDayDiet.target_day).toBe('2023-01-01')
-      expect(demotedDayDiet.owner).toBe(1)
+      expect(demotedDayDiet.user_id).toBe('1')
       expect(demotedDayDiet.meals).toEqual([])
       expect(demotedDayDiet.__type).toBe('NewDayDiet')
       expect('id' in demotedDayDiet).toBe(false)
@@ -124,7 +124,7 @@ describe('DayDiet Factory Functions', () => {
       const meals = [makeTestMeal()]
       const originalNewDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals,
       })
       const dayDiet = promoteDayDiet(originalNewDayDiet, { id: 123 })
@@ -140,7 +140,7 @@ describe('DayDiet Factory Functions', () => {
     it('should correctly discriminate between NewDayDiet and DayDiet types', () => {
       const newDayDiet: NewDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
       const dayDiet: DayDiet = promoteDayDiet(newDayDiet, { id: 1 })

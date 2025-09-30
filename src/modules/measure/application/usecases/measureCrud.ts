@@ -20,7 +20,7 @@ const measureRepository = createMeasureRepository()
  * @returns Array of body measures or empty array on error.
  */
 export async function fetchUserBodyMeasures(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly BodyMeasure[]> {
   try {
     return await measureRepository.fetchUserBodyMeasures(userId)

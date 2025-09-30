@@ -5,10 +5,10 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type RecipeGateway = {
-  fetchUserRecipes: (userId: User['id']) => Promise<readonly Recipe[]>
+  fetchUserRecipes: (userId: User['uuid']) => Promise<readonly Recipe[]>
   fetchRecipeById: (id: Recipe['id']) => Promise<Recipe | null>
   fetchUserRecipeByName: (
-    userId: User['id'],
+    userId: User['uuid'],
     name: Recipe['name'],
   ) => Promise<readonly Recipe[]>
   insertRecipe: (newRecipe: NewRecipe) => Promise<Recipe | null>

@@ -1,9 +1,10 @@
+import { type User } from '~/modules/user/domain/user'
 import type { WeightStorageRepository } from '~/modules/weight/domain/storageRepository'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
 const CHART_TYPE_KEY = 'weight-evolution-chart-type'
 
-function getCachedWeights(userId: number): readonly unknown[] {
+function getCachedWeights(userId: User['uuid']): readonly unknown[] {
   const key = `userWeights-${userId}`
   const stored = localStorage.getItem(key)
   if (stored === null) {
@@ -18,7 +19,10 @@ function getCachedWeights(userId: number): readonly unknown[] {
   }
 }
 
-function setCachedWeights(userId: number, weights: readonly unknown[]): void {
+function setCachedWeights(
+  userId: User['uuid'],
+  weights: readonly unknown[],
+): void {
   const key = `userWeights-${userId}`
   localStorage.setItem(key, JSON.stringify(weights))
 }

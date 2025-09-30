@@ -9,7 +9,7 @@ import { type User } from '~/modules/user/domain/user'
 const macroProfileRepository = createMacroProfileRepository()
 
 export async function fetchUserMacroProfiles(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly MacroProfile[]> {
   return await macroProfileRepository.fetchUserMacroProfiles(userId)
 }

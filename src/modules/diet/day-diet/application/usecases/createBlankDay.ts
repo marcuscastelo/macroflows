@@ -10,11 +10,11 @@ import { type User } from '~/modules/user/domain/user'
  * @returns Promise that resolves when the day is created
  */
 export async function createBlankDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<void> {
   const newDayDiet = createNewDayDiet({
-    owner: userId,
+    user_id: userId,
     target_day: targetDay,
     meals: createDefaultMeals(),
   })

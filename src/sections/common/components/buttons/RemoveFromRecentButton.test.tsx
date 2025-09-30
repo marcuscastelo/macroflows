@@ -60,7 +60,7 @@ const mockLogging = vi.mocked(logging)
 
 describe('RemoveFromRecentButton Logic', () => {
   const mockRefetch = vi.fn()
-  const mockUserId = 1
+  const mockUserId = '42'
 
   const mockFoodTemplate: Food = promoteNewFoodToFood(
     createNewFood({
@@ -78,7 +78,7 @@ describe('RemoveFromRecentButton Logic', () => {
   const mockRecipeTemplate: Recipe = promoteRecipe(
     createNewRecipe({
       name: 'Test Recipe',
-      owner: 1,
+      user_id: '',
       items: [],
       prepared_multiplier: 1,
     }),

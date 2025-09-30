@@ -13,7 +13,7 @@ export const {
   promote: promoteRecentFood,
   newSchema: newRecentFoodSchema,
 } = ze.create({
-  user_id: ze.number(),
+  user_id: ze.string(),
   type: z.union([z.literal('food'), z.literal('recipe')]),
   reference_id: ze.number(),
   last_used: z.date(),

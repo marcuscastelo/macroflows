@@ -11,7 +11,7 @@ export function CreateBlankDayButton(props: { selectedDay: string }) {
         <Button
           class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
           onClick={() => {
-            void createBlankDay(currentUser().id, props.selectedDay)
+            void createBlankDay(currentUser().uuid, props.selectedDay)
           }}
         >
           Criar dia do zero

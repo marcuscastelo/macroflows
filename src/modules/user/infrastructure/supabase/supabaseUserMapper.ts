@@ -39,8 +39,8 @@ function toDomain(dto: UserDTO): User {
     birthdate: dto.birthdate,
     gender: dto.gender,
     desired_weight: dto.desired_weight,
-    uuid: dto.uuid ?? '', // TODO: Remove coallescing after uuid is not null
-                          // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1057
+    uuid: dto.uuid ?? '', // TODO: Remove coalescing after uuid is not null
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1057
   })
 }
 

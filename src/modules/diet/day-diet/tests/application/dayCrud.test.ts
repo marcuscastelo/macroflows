@@ -36,12 +36,16 @@ const mockRepository = {
 // Import the createCrud function
 import { createCrud } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { type User } from '~/modules/user/domain/user'
 
-function makeMockDayDiet(targetDay: string, owner: number = 1): DayDiet {
+function makeMockDayDiet(
+  targetDay: string,
+  user_id: User['uuid'] = '1',
+): DayDiet {
   return promoteDayDiet(
     createNewDayDiet({
       target_day: targetDay,
-      owner,
+      user_id,
       meals: createDefaultMeals(),
     }),
     { id: 1 },
@@ -62,11 +66,11 @@ describe('Day Diet CRUD Operations', () => {
         undefined,
       )
 
-      await crud.fetchTargetDay(1, '2023-01-01')
+      await crud.fetchTargetDay('1', '2023-01-01')
 
       expect(
         mockRepository.fetchDayDietByUserIdAndTargetDay,
-      ).toHaveBeenCalledWith(1, '2023-01-01')
+      ).toHaveBeenCalledWith('1', '2023-01-01')
     })
 
     it('should handle repository errors', async () => {
@@ -75,7 +79,7 @@ describe('Day Diet CRUD Operations', () => {
         error,
       )
 
-      await expect(crud.fetchTargetDay(1, '2023-01-01')).rejects.toThrow(
+      await expect(crud.fetchTargetDay('1', '2023-01-01')).rejects.toThrow(
         'Database error',
       )
     })
@@ -91,11 +95,11 @@ describe('Day Diet CRUD Operations', () => {
         mockDays,
       )
 
-      const result = await crud.fetchPreviousDayDiets(1, '2023-01-03')
+      const result = await crud.fetchPreviousDayDiets('1', '2023-01-03')
 
       expect(
         mockRepository.fetchDayDietsByUserIdBeforeDate,
-      ).toHaveBeenCalledWith(1, '2023-01-03', 30)
+      ).toHaveBeenCalledWith('1', '2023-01-03', 30)
       expect(result).toEqual(mockDays)
     })
 
@@ -105,18 +109,18 @@ describe('Day Diet CRUD Operations', () => {
         mockDays,
       )
 
-      const result = await crud.fetchPreviousDayDiets(1, '2023-01-03', 10)
+      const result = await crud.fetchPreviousDayDiets('1', '2023-01-03', 10)
 
       expect(
         mockRepository.fetchDayDietsByUserIdBeforeDate,
-      ).toHaveBeenCalledWith(1, '2023-01-03', 10)
+      ).toHaveBeenCalledWith('1', '2023-01-03', 10)
       expect(result).toEqual(mockDays)
     })
 
     it('should handle empty results', async () => {
       mockRepository.fetchDayDietsByUserIdBeforeDate.mockResolvedValueOnce([])
 
-      const result = await crud.fetchPreviousDayDiets(1, '2023-01-03')
+      const result = await crud.fetchPreviousDayDiets('1', '2023-01-03')
 
       expect(result).toEqual([])
     })
@@ -127,9 +131,9 @@ describe('Day Diet CRUD Operations', () => {
         error,
       )
 
-      await expect(crud.fetchPreviousDayDiets(1, '2023-01-03')).rejects.toThrow(
-        'Network error',
-      )
+      await expect(
+        crud.fetchPreviousDayDiets('1', '2023-01-03'),
+      ).rejects.toThrow('Network error')
     })
   })
 
@@ -137,7 +141,7 @@ describe('Day Diet CRUD Operations', () => {
     it('should insert day diet with toast notifications', async () => {
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: createDefaultMeals(),
       })
 
@@ -164,7 +168,7 @@ describe('Day Diet CRUD Operations', () => {
     it('should handle repository errors with toast', async () => {
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
 
@@ -182,7 +186,7 @@ describe('Day Diet CRUD Operations', () => {
       const dayDiet = makeMockDayDiet('2023-01-01')
       const updatedData = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: createDefaultMeals(),
       })
 
@@ -215,7 +219,7 @@ describe('Day Diet CRUD Operations', () => {
 
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
 
@@ -264,7 +268,7 @@ describe('Day Diet CRUD Operations', () => {
 
       const newDayDiet = createNewDayDiet({
         target_day: '2023-01-01',
-        owner: 1,
+        user_id: '1',
         meals: [],
       })
 
@@ -282,7 +286,7 @@ describe('Day Diet CRUD Operations', () => {
         undefined,
       )
       await expect(
-        crud.fetchTargetDay(1, '2023-01-01'),
+        crud.fetchTargetDay('1', '2023-01-01'),
       ).resolves.toBeUndefined()
 
       // Second operation fails

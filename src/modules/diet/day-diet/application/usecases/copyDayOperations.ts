@@ -18,7 +18,7 @@ export type CopyDayState = {
 export type CopyDayOperations = {
   state: () => CopyDayState
   loadPreviousDays: (
-    userId: User['id'],
+    userId: User['uuid'],
     beforeDay: string,
     limit?: number,
   ) => Promise<void>
@@ -47,7 +47,7 @@ function createCopyDayOperations(
   })
 
   const loadPreviousDays = async (
-    userId: User['id'],
+    userId: User['uuid'],
     beforeDay: string,
     limit: number = 30,
   ): Promise<void> => {
@@ -94,7 +94,7 @@ function createCopyDayOperations(
 
       const newDay = createNewDayDiet({
         target_day: toDay,
-        owner: copyFrom.owner,
+        user_id: copyFrom.user_id,
         meals: copyFrom.meals,
       })
 

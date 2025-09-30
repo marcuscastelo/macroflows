@@ -18,20 +18,20 @@ function toInsertDTO(newBodyMeasure: NewBodyMeasure): InsertBodyMeasureDTO {
     waist: newBodyMeasure.waist,
     hip: newBodyMeasure.hip,
     neck: newBodyMeasure.neck,
-    owner: newBodyMeasure.owner,
+    user_id: newBodyMeasure.user_id,
     target_timestamp: newBodyMeasure.target_timestamp.toISOString(),
   }
 }
 
-function toDomain(dao: BodyMeasureDTO): BodyMeasure {
+function toDomain(dto: BodyMeasureDTO): BodyMeasure {
   return parseWithStack(bodyMeasureSchema, {
-    id: dao.id,
-    height: dao.height,
-    waist: dao.waist,
-    hip: dao.hip === null ? undefined : dao.hip,
-    neck: dao.neck,
-    owner: dao.owner,
-    target_timestamp: new Date(dao.target_timestamp),
+    id: dto.id,
+    height: dto.height,
+    waist: dto.waist,
+    hip: dto.hip === null ? undefined : dto.hip,
+    neck: dto.neck,
+    user_id: dto.user_id,
+    target_timestamp: new Date(dto.target_timestamp),
   })
 }
 

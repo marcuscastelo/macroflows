@@ -5,7 +5,7 @@ import { type User } from '~/modules/user/domain/user'
 
 type CacheKey =
   | { by: 'id'; value: MacroProfile['id'] }
-  | { by: 'user_id'; value: User['id'] }
+  | { by: 'user_id'; value: User['uuid'] }
 
 const [cachedProfiles, setCachedProfiles] = createSignal<
   readonly MacroProfile[]
@@ -52,7 +52,7 @@ export const macroProfileCacheStore = {
         case 'id':
           return current.filter((p) => p.id !== key.value)
         case 'user_id':
-          return current.filter((p) => p.owner !== key.value)
+          return current.filter((p) => p.user_id !== key.value)
         default:
           return current
       }
@@ -61,8 +61,8 @@ export const macroProfileCacheStore = {
 
   clearCache: () => setCachedProfiles([]),
 
-  getProfilesByUserId: (userId: User['id']) => {
-    return cachedProfiles().filter((p) => p.owner === userId)
+  getProfilesByUserId: (userId: User['uuid']) => {
+    return cachedProfiles().filter((p) => p.user_id === userId)
   },
 
   getProfileById: (id: MacroProfile['id']) => {

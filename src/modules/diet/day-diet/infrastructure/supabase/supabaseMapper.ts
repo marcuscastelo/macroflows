@@ -12,7 +12,7 @@ export type InsertDayDietDTO = Database['public']['Tables']['days']['Insert']
 function toInsertDTO(newDayDiet: NewDayDiet): InsertDayDietDTO {
   return {
     target_day: newDayDiet.target_day,
-    owner: newDayDiet.owner,
+    user_id: newDayDiet.user_id,
     meals: newDayDiet.meals,
   }
 }

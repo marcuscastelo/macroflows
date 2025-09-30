@@ -19,7 +19,7 @@ export const {
     .nullish()
     .transform((v) => (v === null ? undefined : v)),
   neck: ze.number(),
-  owner: ze.number(),
+  user_id: ze.string(),
   target_timestamp: z
     .date()
     .or(z.string())

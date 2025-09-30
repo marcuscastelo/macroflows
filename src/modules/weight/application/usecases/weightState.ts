@@ -1,6 +1,7 @@
 import { createResource } from 'solid-js'
 
 import { currentUserId } from '~/modules/user/application/user'
+import { type User } from '~/modules/user/domain/user'
 import { createWeightCrudService } from '~/modules/weight/application/usecases/weightCrud'
 import { weightSchema } from '~/modules/weight/domain/weight'
 import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
@@ -17,7 +18,7 @@ const [
   { mutate: mutateUserWeights, refetch: refetchUserWeights },
 ] = createResource(
   currentUserId, // Source signal - refetches when userId changes
-  async (userId: number) => {
+  async (userId: User['uuid']) => {
     try {
       const weights = await weightRepository.fetchUserWeights(userId)
       storageRepository.setCachedWeights(userId, weights)
@@ -30,7 +31,7 @@ const [
   {
     initialValue: parseWithStack(
       weightSchema.array(),
-      storageRepository.getCachedWeights(currentUserId() || 0),
+      storageRepository.getCachedWeights(currentUserId()),
     ),
     ssrLoadFrom: 'initial',
   },

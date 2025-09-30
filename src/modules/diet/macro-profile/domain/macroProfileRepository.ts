@@ -6,7 +6,7 @@ import { type User } from '~/modules/user/domain/user'
 
 export type MacroProfileRepository = {
   fetchUserMacroProfiles: (
-    userId: User['id'],
+    userId: User['uuid'],
   ) => Promise<readonly MacroProfile[]>
   insertMacroProfile: (
     newMacroProfile: NewMacroProfile,

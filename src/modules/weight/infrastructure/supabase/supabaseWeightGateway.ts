@@ -14,11 +14,11 @@ export function createSupabaseWeightGateway(): WeightGateway {
   }
 }
 
-async function fetchUserWeights(userId: User['id']) {
+async function fetchUserWeights(userId: User['uuid']) {
   const { data: weights, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
     .select('*')
-    .eq('owner', userId)
+    .eq('user_id', userId)
     .order('target_timestamp', { ascending: true })
 
   if (error !== null) {

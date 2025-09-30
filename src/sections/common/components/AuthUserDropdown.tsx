@@ -82,7 +82,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
                 userId={currentUserId}
                 userName={(): string => {
                   const localUser = users().find(
-                    (u) => u.id === currentUserId(),
+                    (u) => u.uuid === currentUserId(),
                   )?.name
                   if (localUser !== undefined && localUser !== '')
                     return localUser

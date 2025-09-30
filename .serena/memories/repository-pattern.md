@@ -24,7 +24,7 @@ export function createSupabaseDayGateway(): DayRepository {
 }
 
 async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   const { data, error } = await supabase
@@ -55,7 +55,7 @@ export function createDayDietRepository(): DayRepository {
 }
 
 export async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['id'],
+  userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
   try {
@@ -114,7 +114,7 @@ export function createCacheManagementService(deps: {
 }) {
   return ({ currentTargetDay, userId }: {
     currentTargetDay: string
-    userId: number
+    userId: User['uuid']
   }) => {
     // Complex business logic with injected dependencies
   }

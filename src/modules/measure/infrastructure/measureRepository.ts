@@ -19,7 +19,7 @@ export function createMeasureRepository(): BodyMeasureRepository {
 }
 
 export async function fetchUserBodyMeasures(
-  userId: User['id'],
+  userId: User['uuid'],
 ): Promise<readonly BodyMeasure[]> {
   try {
     return await supabaseGateway.fetchUserBodyMeasures(userId)

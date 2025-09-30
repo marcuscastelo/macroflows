@@ -8,14 +8,14 @@ import { type User } from '~/modules/user/domain/user'
 
 function createCrud(repository = createDayDietRepository()) {
   const fetchTargetDay = async (
-    userId: User['id'],
+    userId: User['uuid'],
     targetDay: string,
   ): Promise<void> => {
     await repository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
   }
 
   const fetchPreviousDayDiets = async (
-    userId: User['id'],
+    userId: User['uuid'],
     beforeDay: string,
     limit: number = 30,
   ): Promise<readonly DayDiet[]> => {

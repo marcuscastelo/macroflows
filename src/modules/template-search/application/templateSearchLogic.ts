@@ -5,19 +5,20 @@ import type { Food } from '~/modules/diet/food/domain/food'
 import type { FoodSearchParams } from '~/modules/diet/food/domain/foodRepository'
 import type { Recipe } from '~/modules/diet/recipe/domain/recipe'
 import type { Template } from '~/modules/diet/template/domain/template'
+import { type User } from '~/modules/user/domain/user'
 import { availableTabs } from '~/sections/search/components/TemplateSearchTabs'
 
 /**
  * Dependencies for fetchTemplatesByTabLogic
  */
 export type FetchTemplatesDeps = {
-  fetchUserRecipes: (userId: number) => Promise<readonly Recipe[] | null>
+  fetchUserRecipes: (userId: User['uuid']) => Promise<readonly Recipe[] | null>
   fetchUserRecipeByName: (
-    userId: number,
+    userId: User['uuid'],
     name: string,
   ) => Promise<readonly Recipe[] | null>
   fetchUserRecentFoods: (
-    userId: number,
+    userId: User['uuid'],
     search: string,
     opts?: { limit?: number },
   ) => Promise<readonly Template[]>
@@ -43,7 +44,7 @@ export type FetchTemplatesDeps = {
 export async function fetchTemplatesByTabLogic(
   tabId: string,
   search: string,
-  userId: number,
+  userId: User['uuid'],
   deps: FetchTemplatesDeps,
 ): Promise<readonly Template[]> {
   const lowerSearch = search.trim().toLowerCase()

@@ -5,7 +5,9 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type BodyMeasureGateway = {
-  fetchUserBodyMeasures: (userId: User['id']) => Promise<readonly BodyMeasure[]>
+  fetchUserBodyMeasures: (
+    userId: User['uuid'],
+  ) => Promise<readonly BodyMeasure[]>
   insertBodyMeasure: (
     newBodyMeasure: NewBodyMeasure,
   ) => Promise<BodyMeasure | null>
