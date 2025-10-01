@@ -34,6 +34,7 @@ function getStoredChartType(): WeightChartType {
   const validTypes = ['7d', '14d', '30d', '6m', '1y', 'all'] as const
 
   // TODO: Make tuple.includes narrow item type if tuple is const
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1298
   if (stored !== null && validTypes.includes(stored)) {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return stored as WeightChartType

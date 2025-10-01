@@ -68,6 +68,7 @@ export function formatErrorForClipboard(errorDetails: ToastError): string {
  * @param context The context for error handling.
  */
 // TODO: use _context
+// Issue URL: https://github.com/marcuscastelo/macroflows/issues/1296
 export async function handleCopyErrorToClipboard(
   errorDetails: ToastError,
   _context: ClipboardErrorContext,

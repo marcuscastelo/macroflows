@@ -39,6 +39,7 @@ const makeOnChange = <T extends keyof User>(
     const newUser: Mutable<User> = { ...innerData_ }
 
     // TODO: Stop storing intermediate values with type assertion lies (maybe store in local var)
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1304
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     newUser[field] = convert(event.target.value) as unknown as User[T]
     setInnerData(newUser)
@@ -190,6 +191,7 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
                 }
                 value={valueToString(innerData()[props.field])}
                 // TODO: Stop storing intermediate values with type assertion lies (maybe store in local var)
+                // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1303
                 onChange={makeOnChange(props.field, convertString)}
                 onBlur={makeOnBlur(props.field, props.convert)}
                 style={{ width: '100%' }}

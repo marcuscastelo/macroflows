@@ -39,6 +39,7 @@ type ProfileChartTabsProps = {
  */
 export function ProfileChartTabs(props: ProfileChartTabsProps) {
   // TODO: Find a way to make Object.keys strongly typed
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1301
   const tabKeys = Object.keys(availableChartTabs)
 
   const handleKeyDown = (event: KeyboardEvent) => {
