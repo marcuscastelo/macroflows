@@ -5,7 +5,7 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const ze = createZodEntity('MacroNutrients')
 
-// TODO:   Use macroNutrientsSchema for other schemas that need macro nutrients
+// TODO: Use macroNutrientsSchema for other schemas that need macro nutrients
 const macronutrientsEntity = ze.create(
   {
     carbs: ze

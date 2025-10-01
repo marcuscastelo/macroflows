@@ -4,9 +4,35 @@ set -e
 OWNER_REPO="marcuscastelo/macroflows"
 REPO_URL="https://github.com/$OWNER_REPO"
 
+
+# Retry and rate limit configuration
+MAX_RETRIES="${SEMVER_MAX_RETRIES:-3}"
+INITIAL_RETRY_DELAY="${SEMVER_INITIAL_RETRY_DELAY:-2}"
+MAX_RETRY_DELAY="${SEMVER_MAX_RETRY_DELAY:-60}"
+DEBUG_MODE="${SEMVER_DEBUG:-false}"
+
+debug_log() {
+  if [ "$DEBUG_MODE" = "true" ]; then
+    echo "[DEBUG] $*" >&2
+  fi
+}
+
+get_next_minor_version() {
+  local last_tag="$1"
+  # remove prefix 'v'
+  local version="${last_tag#v}"
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "$version"
+  minor=$((minor + 1))
+  echo "v${major}.${minor}.0"
+}
+
+
 get_current_branch() {
   if [ -n "$VERCEL_GIT_COMMIT_REF" ]; then
     echo "$VERCEL_GIT_COMMIT_REF"
+  elif [ -n "$GITHUB_HEAD_REF" ]; then
+    echo "$GITHUB_HEAD_REF"
   else
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD)
@@ -16,6 +42,15 @@ get_current_branch() {
     fi
     echo "$branch"
   fi
+}
+
+get_latest_release_tag() {
+  local tag
+  tag=$(git ls-remote --tags --refs "$REPO_URL" | awk -F/ '{print $3}' | sort -V | tail -n1)
+  if [ -z "$tag" ]; then
+    tag="v0.0.0"
+  fi
+  echo "$tag"
 }
 
 get_sha_for_branch() {
@@ -32,22 +67,108 @@ get_sha_for_branch() {
 get_commit_count_between() {
   local from_sha="$1"
   local to_sha="$2"
-  local response http_status
-  response=$(curl -s -w "\n%{http_code}" "https://api.github.com/repos/$OWNER_REPO/compare/$from_sha...$to_sha")
-  http_status=$(echo "$response" | tail -n1)
-  response=$(echo "$response" | sed '$d')
-  if [ "$http_status" != "200" ]; then
+  local attempt=0
+  local delay="$INITIAL_RETRY_DELAY"
+  local response http_status rate_limit_remaining rate_limit_reset
+  
+  while [ $attempt -lt "$MAX_RETRIES" ]; do
+    debug_log "API call attempt $((attempt + 1))/$MAX_RETRIES for commit count between $from_sha and $to_sha"
+    
+    response=$(curl -s -w "\n%{http_code}" -D /tmp/semver_headers_$$.txt \
+      "https://api.github.com/repos/$OWNER_REPO/compare/$from_sha...$to_sha" 2>&1)
+    http_status=$(echo "$response" | tail -n1)
+    response=$(echo "$response" | sed '$d')
+    
+    # Extract rate limit info from headers if available
+    if [ -f /tmp/semver_headers_$$.txt ]; then
+      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rm -f /tmp/semver_headers_$$.txt
+      
+      debug_log "Rate limit remaining: ${rate_limit_remaining:-unknown}"
+      if [ -n "$rate_limit_reset" ]; then
+        debug_log "Rate limit resets at: $(date -d @$rate_limit_reset 2>/dev/null || echo $rate_limit_reset)"
+      fi
+    fi
+    
+    # Handle different HTTP status codes
+    case "$http_status" in
+      200)
+        debug_log "API call successful (HTTP 200)"
+        local count
+        count=$(echo "$response" | grep 'total_commits' | head -1 | awk '{print $2}' | tr -d ',')
+        if [ -z "$count" ]; then
+          echo "Error: could not parse commit count from GitHub API response" >&2
+          echo "$response" >&2
+          exit 1
+        fi
+        echo "$count"
+        return 0
+        ;;
+      
+      403)
+        # Rate limit or forbidden
+        if echo "$response" | grep -qi "rate limit"; then
+          echo "Warning: GitHub API rate limit exceeded" >&2
+          if [ -n "$rate_limit_reset" ]; then
+            local wait_time=$((rate_limit_reset - $(date +%s)))
+            if [ $wait_time -gt 0 ] && [ $wait_time -lt 3600 ]; then
+              echo "Rate limit resets in $wait_time seconds" >&2
+              if [ $attempt -lt $((MAX_RETRIES - 1)) ]; then
+                echo "Waiting for rate limit reset..." >&2
+                sleep $((wait_time + 5))
+                attempt=$((attempt + 1))
+                continue
+              fi
+            fi
+          fi
+        else
+          echo "Error: GitHub API access forbidden (HTTP 403)" >&2
+          echo "This might be due to authentication issues or repository access restrictions" >&2
+        fi
+        ;;
+      
+      404)
+        echo "Error: GitHub API resource not found (HTTP 404)" >&2
+        echo "The comparison between $from_sha and $to_sha may not exist" >&2
+        echo "?"
+        return 1
+        ;;
+      
+      5*)
+        echo "Warning: GitHub API server error (HTTP $http_status)" >&2
+        if [ $attempt -lt $((MAX_RETRIES - 1)) ]; then
+          echo "Retrying after ${delay}s (attempt $((attempt + 1))/$MAX_RETRIES)..." >&2
+          sleep $delay
+          delay=$((delay * 2))
+          if [ $delay -gt "$MAX_RETRY_DELAY" ]; then
+            delay="$MAX_RETRY_DELAY"
+          fi
+          attempt=$((attempt + 1))
+          continue
+        fi
+        ;;
+      
+      *)
+        echo "Warning: Unexpected HTTP status $http_status from GitHub API" >&2
+        debug_log "Response: $response"
+        ;;
+    esac
+    
+    # If we've exhausted retries for retryable errors, fall through
+    if [ $attempt -ge $((MAX_RETRIES - 1)) ]; then
+      echo "Error: GitHub API call failed after $MAX_RETRIES attempts" >&2
+      echo "?"
+      return 1
+    fi
+    
+    # For non-retryable errors, exit early
     echo "?"
-    return
-  fi
-  local count
-  count=$(echo "$response" | grep 'total_commits' | head -1 | awk '{print $2}' | tr -d ',')
-  if [ -z "$count" ]; then
-    echo "Error: could not parse commit count from GitHub API response" >&2
-    echo "$response" >&2
-    exit 1
-  fi
-  echo "$count"
+    return 1
+  done
+  
+  echo "?"
+  return 1
 }
 
 get_issue_number() {
@@ -57,72 +178,59 @@ get_issue_number() {
 
 get_rc_version() {
   local current_branch="$1"
-  local version stable_sha branch_sha rc_count
-  version="${BASH_REMATCH[1]}"
+  local base_version stable_sha rc_sha rc_count
+  base_version=$(get_next_minor_version "$(get_latest_release_tag)")
   stable_sha=$(get_sha_for_branch stable)
-  branch_sha=$(get_sha_for_branch "$current_branch")
-  if [[ -n "$stable_sha" && -n "$branch_sha" ]]; then
-    rc_count=$(get_commit_count_between "$stable_sha" "$branch_sha")
-    if [[ -z "$rc_count" ]]; then
-      rc_count='unavailable'
-    fi
-  else
-    rc_count='error'
-  fi
-  echo "$version-rc.$rc_count"
+  rc_sha=$(get_sha_for_branch "$current_branch")
+
+  rc_count=$(get_commit_count_between "$stable_sha" "$rc_sha")
+  echo "${base_version}-rc.${rc_count}"
 }
 
 get_dev_version() {
   local current_branch="$1"
-  local closest_rc version merge_base count issue_number version_str
-  closest_rc=$(git for-each-ref --format='%(refname:short)' refs/heads/ |
-    grep '^rc/' |
-    while read branch; do
-      echo "$(git merge-base $current_branch $branch) $branch"
-    done |
-    sort -r |
-    head -n1 |
-    awk '{print $2}')
+  local base_version stable_sha rc_branch rc_sha dev_sha rc_count dev_count issue_number
 
-  if [ -z "$closest_rc" ]; then
-    count=$(git rev-list --count HEAD)
-    echo "0.0.0-dev.$count"
+  base_version=$(get_next_minor_version "$(get_latest_release_tag)")
+  stable_sha=$(get_sha_for_branch stable)
+  dev_sha=$(get_sha_for_branch "$current_branch")
+
+  rc_branch=$(curl -s "https://api.github.com/repos/marcuscastelo/macroflows/branches" \
+  | jq -r '.[].name' \
+  | grep '^rc/' \
+  | sort \
+  | tail -n1)
+
+  if [ -z "$rc_branch" ]; then
+    dev_count=$(get_commit_count_between "$stable_sha" "$dev_sha")
+    echo "${base_version}-dev.0.${dev_count}"
     return
   fi
 
-  version=$(echo "$closest_rc" | sed -E 's|rc/(v[0-9]+\.[0-9]+\.[0-9]+)|\1|')
-  merge_base=$(git merge-base HEAD "$closest_rc")
-  count=$(git rev-list --count "$merge_base"..HEAD)
+  rc_sha=$(git ls-remote "$REPO_URL" "refs/heads/${rc_branch#origin/}" | awk '{print $1}')
+
+  rc_count=$(get_commit_count_between "$stable_sha" "$rc_sha")
+  dev_count=$(get_commit_count_between "$rc_sha" "$dev_sha")
   issue_number=$(get_issue_number "$current_branch")
 
-  if [ "$count" -eq 0 ]; then
-    version_str="$version-dev.0"
-  else
-    version_str="$version-dev.$rc_count.$count"
-  fi
-
+  local version="${base_version}-dev.${rc_count}.${dev_count}"
   if [[ -n "$issue_number" ]]; then
-    version_str="$version_str+issue.$issue_number"
+    version="${version}+issue${issue_number}"
   fi
 
-  echo "$version_str"
+  echo "$version"
 }
 
 main() {
   current_branch=$(get_current_branch)
 
-  if [[ "$current_branch" =~ ^rc\/(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+  if [[ "$current_branch" =~ ^rc/ ]]; then
     get_rc_version "$current_branch"
     exit 0
   fi
 
   if [[ "$current_branch" == "stable" ]]; then
-    # Output the latest version tag for stable branch from remote using ls-remote
-    latest_tag=$(git ls-remote --tags --refs "$REPO_URL" | awk -F/ '{print $3}' | sort -V | tail -n1)
-    if [ -z "$latest_tag" ]; then
-      latest_tag="v0.0.0"
-    fi
-    echo "$latest_tag"
+    get_latest_release_tag
     exit 0
   fi
 
@@ -130,16 +238,28 @@ main() {
 }
 
 show_help() {
-  echo "Usage: $0 [--help] [--test] [--verbose]"
+  echo "Usage: $0 [--help] [--test] [--verbose] [--debug]"
   echo "  --help      Show this help message and exit."
   echo "  --test      Run simple function tests and exit."
   echo "  --verbose   Enable verbose output (set -x)."
+  echo "  --debug     Enable debug logging for API calls and retry logic."
+  echo ""
+  echo "Environment variables:"
+  echo "  SEMVER_MAX_RETRIES          Maximum number of retry attempts (default: 3)"
+  echo "  SEMVER_INITIAL_RETRY_DELAY  Initial delay between retries in seconds (default: 2)"
+  echo "  SEMVER_MAX_RETRY_DELAY      Maximum delay between retries in seconds (default: 60)"
+  echo "  SEMVER_DEBUG                Enable debug mode (true/false, default: false)"
 }
 
 # Parse arguments
 if [ "$1" = "--help" ]; then
   show_help
   exit 0
+fi
+
+if [ "$1" = "--debug" ]; then
+  DEBUG_MODE="true"
+  shift
 fi
 
 if [ "$1" = "--test" ]; then

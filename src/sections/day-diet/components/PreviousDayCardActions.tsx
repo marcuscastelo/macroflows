@@ -1,4 +1,4 @@
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
@@ -34,7 +34,10 @@ export function PreviousDayCardActions(props: PreviousDayCardActionsProps) {
 
   return (
     <div class="flex gap-3">
-      <button class="btn-secondary btn flex-1" onClick={props.onShowDetails}>
+      <button
+        class="btn-secondary btn flex-1"
+        onClick={() => props.onShowDetails()}
+      >
         Ver dia
       </button>
       <button

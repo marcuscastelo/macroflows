@@ -1,9 +1,10 @@
 import { type Accessor } from 'solid-js'
 
-import { deleteDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { deleteDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export function DeleteDayButton(props: { day: Accessor<DayDiet> }) {
   return (
@@ -16,7 +17,7 @@ export function DeleteDayButton(props: { day: Accessor<DayDiet> }) {
           cancelText: 'Cancelar',
           onConfirm: () => {
             deleteDayDiet(props.day().id).catch((error) => {
-              console.error('Error deleting day', error)
+              logging.error('DeleteDayButton error:', error)
               throw error
             })
           },

@@ -115,19 +115,16 @@ export function createUnifiedItem({
     }
   }
 
-  if (reference.type === 'group') {
-    return {
-      ...itemWithoutReference,
-      reference: {
-        type: 'group',
-        children: reference.children.map((child) => {
-          return createUnifiedItem(child)
-        }),
-      },
-    }
-  }
+  reference satisfies GroupReference
 
-  reference satisfies never // Ensure TypeScript narrows down the type
-  // @ts-expect-error Property 'type' does not exist on type 'never'.ts(2339)
-  throw new Error(`Unknown reference type: ${reference.type}`) // Fallback for safety
+  // TypeScript has already narrowed this to 'group' type
+  return {
+    ...itemWithoutReference,
+    reference: {
+      type: 'group',
+      children: reference.children.map((child) => {
+        return createUnifiedItem(child)
+      }),
+    },
+  }
 }

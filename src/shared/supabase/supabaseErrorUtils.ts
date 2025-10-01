@@ -11,15 +11,15 @@ export function isSupabaseDuplicateKeyError(
   error: unknown,
   uniqueKey: string,
   ean?: string | null,
-): boolean {
+): ean is string {
   if (
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    (error as { code?: string }).code === '23505' &&
+    error.code === '23505' &&
     'message' in error &&
-    typeof (error as { message?: string }).message === 'string' &&
-    (error as { message: string }).message.includes(uniqueKey)
+    typeof error.message === 'string' &&
+    error.message.includes(uniqueKey)
   ) {
     if (
       ean !== undefined &&
@@ -30,7 +30,7 @@ export function isSupabaseDuplicateKeyError(
       return true
     }
     // If no EAN provided, still consider it a duplicate key error
-    return true
+    return false
   }
   return false
 }
@@ -44,6 +44,6 @@ export function isSupabaseDuplicateKeyError(
 export function isSupabaseDuplicateEanError(
   error: unknown,
   ean?: string | null,
-): boolean {
+): ean is string {
   return isSupabaseDuplicateKeyError(error, 'foods_ean_key', ean)
 }

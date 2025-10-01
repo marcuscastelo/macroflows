@@ -4,7 +4,7 @@ import { createZodEntity } from '~/shared/domain/validation'
 
 const ze = createZodEntity('Measure')
 
-// TODO:   Create discriminate union type for Male and Female body measures
+// TODO: Create discriminate union type for Male and Female body measures
 export const {
   schema: bodyMeasureSchema,
   newSchema: newBodyMeasureSchema,
@@ -19,7 +19,7 @@ export const {
     .nullish()
     .transform((v) => (v === null ? undefined : v)),
   neck: ze.number(),
-  owner: ze.number(),
+  user_id: ze.string(),
   target_timestamp: z
     .date()
     .or(z.string())

@@ -1,0 +1,107 @@
+import { type NewUser, type User, userSchema } from '~/modules/user/domain/user'
+import { type UserRepository } from '~/modules/user/domain/userRepository'
+import { SUPABASE_TABLE_USERS } from '~/modules/user/infrastructure/supabase/constants'
+import { subapaseUserMapper } from '~/modules/user/infrastructure/supabase/supabaseUserMapper'
+import {
+  registerSubapabaseRealtimeCallback,
+  supabase,
+} from '~/shared/supabase/supabase'
+import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
+
+export function createSupabaseUserRepository(): UserRepository {
+  return {
+    fetchUsers,
+    fetchUser,
+    insertUser,
+    updateUser,
+    deleteUser,
+  }
+}
+
+/**
+ * Sets up realtime subscription for user changes
+ * @param onUsersChange - Callback function to call when data changes
+ */
+export function setupUserRealtimeSubscription(onUsersChange: () => void): void {
+  registerSubapabaseRealtimeCallback(
+    SUPABASE_TABLE_USERS,
+    userSchema,
+    onUsersChange,
+  )
+}
+
+const fetchUsers = async (): Promise<User[]> => {
+  const { data: users, error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .select()
+
+  if (error !== null) {
+    throw wrapErrorWithStack(error)
+  }
+
+  return users.map(subapaseUserMapper.toDomain)
+}
+
+const fetchUser = async (userId: User['uuid']): Promise<User | null> => {
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .select()
+    .eq('uuid', userId)
+
+  if (error !== null) {
+    throw wrapErrorWithStack(error)
+  }
+
+  const users = data.map(subapaseUserMapper.toDomain)
+
+  return users[0] ?? null
+}
+
+const insertUser = async (newUser: NewUser): Promise<User | null> => {
+  const createDAO = subapaseUserMapper.toInsertDTO(newUser)
+
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .insert(createDAO)
+    .select()
+
+  if (error !== null) {
+    throw wrapErrorWithStack(error)
+  }
+
+  const users = data.map(subapaseUserMapper.toDomain)
+
+  return users[0] ?? null
+}
+
+const updateUser = async (
+  userId: User['uuid'],
+  newUser: NewUser,
+): Promise<User | null> => {
+  const updateDAO = subapaseUserMapper.toUpdateDTO(newUser)
+
+  const { data, error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .update(updateDAO)
+    .eq('uuid', userId)
+    .select()
+
+  if (error !== null) {
+    throw wrapErrorWithStack(error)
+  }
+
+  const users = data.map(subapaseUserMapper.toDomain)
+
+  return users[0] ?? null
+}
+
+const deleteUser = async (userId: User['uuid']): Promise<void> => {
+  const { error } = await supabase
+    .from(SUPABASE_TABLE_USERS)
+    .delete()
+    .eq('uuid', userId)
+
+  if (error !== null) {
+    throw wrapErrorWithStack(error)
+  }
+}

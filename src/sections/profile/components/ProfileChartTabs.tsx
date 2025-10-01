@@ -38,11 +38,13 @@ type ProfileChartTabsProps = {
  * @returns SolidJS component
  */
 export function ProfileChartTabs(props: ProfileChartTabsProps) {
+  // TODO: Find a way to make Object.keys strongly typed
   const tabKeys = Object.keys(availableChartTabs)
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const currentIndex = tabKeys.findIndex(
       (key) =>
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         availableChartTabs[key as keyof typeof availableChartTabs].id ===
         props.activeTab(),
     )
@@ -51,6 +53,7 @@ export function ProfileChartTabs(props: ProfileChartTabsProps) {
       event.preventDefault()
       const prevTab = tabKeys[currentIndex - 1]
       const prevTabId =
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         availableChartTabs[prevTab as keyof typeof availableChartTabs].id
       props.setActiveTab(prevTabId)
     }
@@ -59,6 +62,7 @@ export function ProfileChartTabs(props: ProfileChartTabsProps) {
       event.preventDefault()
       const nextTab = tabKeys[currentIndex + 1]
       const nextTabId =
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         availableChartTabs[nextTab as keyof typeof availableChartTabs].id
       props.setActiveTab(nextTabId)
     }
@@ -70,8 +74,10 @@ export function ProfileChartTabs(props: ProfileChartTabsProps) {
         <For each={tabKeys}>
           {(tabKey, i) => {
             const tabId = () =>
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
               availableChartTabs[tabKey as keyof typeof availableChartTabs].id
             const tabTitle = () =>
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
               availableChartTabs[tabKey as keyof typeof availableChartTabs]
                 .title
             const isActive = () => props.activeTab() === tabId()

@@ -91,12 +91,10 @@ describe('TemplateItem Domain', () => {
       }
 
       // Recipe templates should maintain structural integrity
-      if (complexRecipe.reference.type === 'recipe') {
-        expect(complexRecipe.reference.children.length).toBeGreaterThan(0)
-        expect(
-          complexRecipe.reference.children.every((child) => child.quantity > 0),
-        ).toBe(true)
-      }
+      expect(complexRecipe.reference.children.length).toBeGreaterThan(0)
+      expect(
+        complexRecipe.reference.children.every((child) => child.quantity > 0),
+      ).toBe(true)
       expect(complexRecipe.name).toContain('Recipe')
     })
   })

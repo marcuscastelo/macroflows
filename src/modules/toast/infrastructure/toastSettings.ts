@@ -52,18 +52,20 @@ const STORAGE_KEY = 'macroflows:toast-settings'
  * Load settings from local storage
  */
 function loadSettings(): ToastSettings {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored !== null && stored.length > 0) {
+  const stored = localStorage.getItem(STORAGE_KEY)
+  if (stored !== null && stored.length > 0) {
+    try {
       const parsed = jsonParseWithStack(stored)
       if (typeof parsed === 'object' && parsed !== null) {
         return { ...DEFAULT_SETTINGS, ...parsed }
       }
       return { ...DEFAULT_SETTINGS }
+    } catch {
+      // Invalid JSON, use defaults
+      return { ...DEFAULT_SETTINGS }
     }
-  } catch (error) {
-    console.error('Failed to load toast settings:', error)
   }
+
   return { ...DEFAULT_SETTINGS }
 }
 
@@ -72,11 +74,7 @@ const [settings, setSettings] = createSignal<ToastSettings>(loadSettings())
 
 // Persist settings to local storage when they change
 createEffect(() => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
-  } catch (error) {
-    console.error('Failed to save toast settings:', error)
-  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
 })
 
 /**

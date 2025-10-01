@@ -1,7 +1,7 @@
 import { createMemo, createSignal, onMount, Show } from 'solid-js'
 
 import { showError } from '~/modules/toast/application/toastManager'
-import { deleteWeight, updateWeight } from '~/modules/weight/application/weight'
+import { weightCrudService } from '~/modules/weight/application/usecases/weightState'
 import { type Weight } from '~/modules/weight/domain/weight'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
@@ -51,7 +51,7 @@ export function WeightView(props: WeightViewProps) {
       showError('Digite uma data')
       return
     }
-    void updateWeight(props.weight.id, {
+    void weightCrudService.updateWeight(props.weight.id, {
       ...props.weight,
       weight: weightValue,
       target_timestamp: dateValue,
@@ -80,9 +80,7 @@ export function WeightView(props: WeightViewProps) {
               showError('Data inválida: \n' + JSON.stringify(value))
               return
             }
-            const date = normalizeDateToLocalMidnightPlusOne(
-              value.startDate as string,
-            )
+            const date = normalizeDateToLocalMidnightPlusOne(value.startDate)
             dateField.setRawValue(dateToYYYYMMDD(date))
             handleSave({
               dateValue: date,
@@ -127,7 +125,7 @@ export function WeightView(props: WeightViewProps) {
                 itemName: `peso de ${props.weight.weight}kg`,
                 itemType: 'registro',
                 onConfirm: () => {
-                  void deleteWeight(props.weight.id)
+                  void weightCrudService.deleteWeight(props.weight.id)
                 },
               })
             }}

@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
-  createUnifiedItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-
-import {
   compareUnifiedItemArrays,
   scaleRecipeItemQuantity,
   synchronizeRecipeItemWithOriginal,
-} from '../unifiedItemOperations'
+} from '~/modules/diet/unified-item/domain/unifiedItemOperations'
+import {
+  createUnifiedItem,
+  type UnifiedItem,
+} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 describe('compareUnifiedItemArrays', () => {
   const createFoodItem = (id: number, name: string, quantity: number) =>

@@ -10,8 +10,10 @@ import {
   type ToastExpandableErrorData,
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
+import { isDevelopment } from '~/shared/config/env'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Options for error processing in toasts.
@@ -113,7 +115,9 @@ function mapUnknownToToastError(
   includeStack: boolean,
 ): ToastError {
   // DEBUG: Log error and stack for investigation
-  console.debug('[mapUnknownToToastError] error:', error)
+  if (isDevelopment()) {
+    logging.debug('mapUnknownToToastError error:', { error })
+  }
   if (error instanceof Error) {
     // Only serialize cause if it's a primitive or stringifiable
     let cause: unknown = error.cause
@@ -125,12 +129,16 @@ function mapUnknownToToastError(
       }
     }
     if (typeof error.stack === 'string') {
-      console.debug('[mapUnknownToToastError] error.stack:', error.stack)
+      if (isDevelopment()) {
+        logging.debug('mapUnknownToToastError error.stack:', { error })
+      }
     } else {
-      console.debug(
-        '[mapUnknownToToastError] error.stack is not a string:',
-        error.stack,
-      )
+      if (isDevelopment()) {
+        logging.debug(
+          'mapUnknownToToastError error.stack is not a string:',
+          error.stack,
+        )
+      }
     }
     // Copia todas as propriedades próprias do erro customizado
     const customProps: Record<string, unknown> = {}
@@ -160,6 +168,7 @@ function mapUnknownToToastError(
   }
 
   if (typeof error === 'object' && error !== null) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const errorObj = error as Record<string, unknown>
     let message: string
     if (typeof errorObj.message === 'string') {

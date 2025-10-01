@@ -44,8 +44,12 @@ function lazyImport<T extends Record<string, unknown>, K extends keyof T>(
     // Return only specified keys
     const result: Record<string, unknown> = {}
     for (const key of keys) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       result[key as string] = lazy(() =>
-        modulePromise.then((module) => ({ default: module[key] as never })),
+        modulePromise.then((module) => ({
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          default: module[key] as never,
+        })),
       )
     }
     return result
@@ -59,7 +63,10 @@ function lazyImport<T extends Record<string, unknown>, K extends keyof T>(
       const key = String(prop)
       if (!(key in target)) {
         target[key] = lazy(() =>
-          modulePromise.then((module) => ({ default: module[key] as never })),
+          modulePromise.then((module) => ({
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            default: module[key] as never,
+          })),
         )
       }
       return target[key]

@@ -1,5 +1,4 @@
 import { createSignal, type JSX, onMount, Show } from 'solid-js'
-import { set } from 'zod/v4'
 
 import { type ProfileChartTab } from '~/sections/profile/components/ProfileChartTabs'
 import { cn } from '~/shared/cn'

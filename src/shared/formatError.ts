@@ -1,6 +1,6 @@
 import { z, ZodError } from 'zod/v4'
 
-export function isZodError(error: unknown): error is ZodError {
+function isZodError(error: unknown): error is ZodError {
   return (
     error instanceof ZodError ||
     (typeof error === 'object' &&
@@ -11,7 +11,7 @@ export function isZodError(error: unknown): error is ZodError {
   )
 }
 
-export function getZodErrorMessage(error: ZodError): string {
+function getZodErrorMessage(error: ZodError): string {
   return `Validation error: \n${z.prettifyError(error)}`
 }
 

@@ -1,16 +1,23 @@
 import { json } from '@solidjs/router'
 import { type APIEvent } from '@solidjs/start/server'
-import { type AxiosError } from 'axios'
 
-import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/apiFoodRepository'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { createApiFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/api/apiFoodRepository'
+import { logging } from '~/shared/utils/logging'
+// Simplified error handling - no errorHandler needed
 
 const apiFoodRepository = createApiFoodRepository()
 
-const errorHandler = createErrorHandler('infrastructure', 'Food')
+function getErrorStatus(error: unknown): number {
+  if (error !== null && typeof error === 'object' && 'status' in error) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const status = (error as { status: unknown }).status
+    return typeof status === 'number' ? status : 500
+  }
+  return 500
+}
 
 export async function GET({ params }: APIEvent) {
-  console.debug('GET', params)
+  logging.debug('GET', params)
   if (params.name === undefined || params.name === '') {
     return json({ error: 'Name parameter is required' }, { status: 400 })
   }
@@ -18,16 +25,19 @@ export async function GET({ params }: APIEvent) {
     const apiFood = await apiFoodRepository.fetchApiFoodsByName(
       decodeURIComponent(params.name),
     )
-    console.debug('apiFood', apiFood)
+    logging.debug('apiFood', { apiFood })
     return json(apiFood)
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('API food fetch error:', error)
     return json(
       {
         error:
-          'Error fetching food items by name: ' + (error as AxiosError).message,
+          'Error fetching food items by name: ' +
+          (error instanceof Error ? error.message : String(error)),
       },
-      { status: (error as AxiosError).status },
+      {
+        status: getErrorStatus(error),
+      },
     )
   }
 }

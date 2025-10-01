@@ -1,4 +1,4 @@
-import { type Accessor, type JSXElement, type Setter } from 'solid-js'
+import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
@@ -25,6 +25,7 @@ import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContex
 import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
 import { calcRecipeCalories } from '~/shared/utils/macroMath'
 
 export type RecipeEditViewProps = {
@@ -41,7 +42,8 @@ export type RecipeEditViewProps = {
 export function RecipeEditView(props: RecipeEditViewProps) {
   const clipboard = useClipboard()
 
-  const { recipe, setRecipe } = props
+  const recipe = untrack(() => props.recipe)
+  const setRecipe = untrack(() => props.setRecipe)
 
   const acceptedClipboardSchema = z.union([
     unifiedItemSchema,
@@ -70,7 +72,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
             .filter((item) => item.reference.type === 'food') // Only food items in recipes
             .map((item) => regenerateId(item))
           const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
-          props.onUpdateRecipe(newRecipe)
+          setRecipe(newRecipe)
           return
         }
 
@@ -79,13 +81,13 @@ export function RecipeEditView(props: RecipeEditViewProps) {
           if (data.reference.type === 'food') {
             const regeneratedItem = regenerateId(data)
             const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
-            props.onUpdateRecipe(newRecipe)
+            setRecipe(newRecipe)
           }
           return
         }
 
         // Handle other supported clipboard formats
-        console.warn('Unsupported paste format:', data)
+        logging.warn('Unsupported paste format:', data)
       },
     })
 

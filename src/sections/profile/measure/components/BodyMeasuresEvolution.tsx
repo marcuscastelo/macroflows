@@ -1,10 +1,10 @@
 import { For, Show, Suspense } from 'solid-js'
 
+import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
 import {
   bodyMeasures,
-  insertBodyMeasure,
   refetchBodyMeasures,
-} from '~/modules/measure/application/measure'
+} from '~/modules/measure/application/usecases/measureState'
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
@@ -53,7 +53,7 @@ export function BodyMeasuresEvolution() {
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
             onClick={() => {
               handleAddMeasures({
-                owner: currentUserId(),
+                user_id: currentUserId(),
                 height: heightField.value() ?? 0,
                 waist: waistField.value() ?? 0,
                 hip: hipField.value() ?? 0,

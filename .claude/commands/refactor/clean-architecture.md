@@ -278,7 +278,7 @@ const Component = lazy(() => import('./Component')) // ✅
 ### Quality Checks
 1. **Run comprehensive checks:**
    ```bash
-   npm run copilot:check | tee /tmp/copilot-terminal 2>&1
+   npm run copilot:check 
    ```
 
 2. **Verify success message:**

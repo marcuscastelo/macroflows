@@ -1,5 +1,3 @@
-// filepath: src/shared/utils/isNonEmptyString.ts
-
 /**
  * Checks if a value is a non-empty string.
  *

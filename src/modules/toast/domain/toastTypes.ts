@@ -10,13 +10,6 @@
 export const TOAST_DURATION_INFINITY = Infinity
 
 /**
- * ToastAudience defines who should see this toast.
- * - 'user': Toasts relevant to the end user (normal user-facing notifications)
- * - 'system': Toasts relevant to system administrators or critical system operations
- */
-export type ToastAudience = 'user' | 'system'
-
-/**
  * ToastContext defines the origin of the event that triggered the toast.
  * - 'user-action': Direct user interaction (e.g., button click, form submit)
  * - 'background': Automatic/background operations (e.g., sync, bootstrap, polling)
@@ -35,7 +28,6 @@ export type ToastType = 'success' | 'loading' | 'error' | 'info'
 /**
  * ToastOptions configures the display behavior of a toast notification.
  * @property context The origin of the event that triggered the toast
- * @property audience Who should see this toast
  * @property type The type of the toast
  * @property duration Auto-dismiss timeout in milliseconds
  * @property dismissible Whether this toast can be dismissed by the user
@@ -49,7 +41,6 @@ export type ToastType = 'success' | 'loading' | 'error' | 'info'
  */
 export type ToastOptions = {
   context: ToastContext
-  audience: ToastAudience
   type: ToastType
   duration: number
   dismissible: boolean
@@ -94,7 +85,6 @@ export const DEFAULT_TOAST_OPTIONS: Record<ToastContext, ToastOptions> = {
     duration: 3000,
     dismissible: true,
     context: 'user-action',
-    audience: 'user',
     type: 'info',
     preserveLineBreaks: false,
     truncationSuffix: '...',
@@ -108,7 +98,6 @@ export const DEFAULT_TOAST_OPTIONS: Record<ToastContext, ToastOptions> = {
     duration: 2000,
     dismissible: true,
     context: 'background',
-    audience: 'user',
     type: 'info',
     preserveLineBreaks: false,
     truncationSuffix: '...',

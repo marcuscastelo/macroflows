@@ -18,26 +18,24 @@ import {
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
-import { isBackendOutageError } from '~/shared/error/errorHandler'
-import { createDebug } from '~/shared/utils/createDebug'
+import { isBackendOutageError } from '~/shared/utils/errorUtils'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
+import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
-
-const debug = createDebug()
 
 /**
  * Returns true if the toast should be skipped based on context, audience, and type.
  *
- * @param options - ToastOptions including context, audience, type, showSuccess, showLoading.
+ * @param options - ToastOptions including context, type, showSuccess, showLoading.
  * @returns True if the toast should be skipped, false otherwise.
  */
 function shouldSkipToast(options: ToastOptions): boolean {
-  const { context, audience, type, showSuccess, showLoading } = options
+  const { context, type, showSuccess, showLoading } = options
 
   // Always show error toasts
   if (type === 'error') return false
 
-  const isBackgroundOrSystem = context === 'background' || audience === 'system'
+  const isBackgroundOrSystem = context === 'background'
 
   if (type === 'success' && isBackgroundOrSystem && showSuccess !== true) {
     return true
@@ -84,7 +82,11 @@ function resolveValueOrFunction<T, R>(
   arg: T,
 ): R | undefined {
   if (valueOrFn === undefined) return undefined
-  if (typeof valueOrFn === 'function') return (valueOrFn as (arg: T) => R)(arg)
+  if (typeof valueOrFn === 'function') {
+    // Type assertion needed for generic function parameter
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return (valueOrFn as (arg: T) => R)(arg)
+  }
   return valueOrFn
 }
 
@@ -123,6 +125,8 @@ export function showError(
 ): string {
   vibrate(200)
   setTimeout(() => vibrate(200), 400)
+  // TODO: Move setBackendOutage
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1048
   if (isBackendOutageError(error)) {
     setBackendOutage(true)
     // Show a custom outage toast (pt-BR):
@@ -133,7 +137,6 @@ export function showError(
           ...providedOptions,
           type: 'error',
           context: 'background',
-          audience: 'user',
         }),
         duration: 8000,
       },
@@ -205,10 +208,10 @@ function handlePromiseLoading<T>(
   providedOptions?: Partial<ToastOptions>,
 ): string | null {
   if (isNonEmptyString(filteredMessages.loading)) {
-    debug(`Promise loading toast: "${filteredMessages.loading}"`)
+    logging.debug(`Promise loading toast: "${filteredMessages.loading}"`)
     return showLoading(filteredMessages.loading, providedOptions)
   } else {
-    debug('No loading toast message provided, skipping loading toast')
+    logging.debug('No loading toast message provided, skipping loading toast')
   }
   return null
 }
@@ -220,10 +223,10 @@ function handlePromiseSuccess<T>(
 ) {
   const successMsg = resolveValueOrFunction(filteredMessages.success, data)
   if (isNonEmptyString(successMsg)) {
-    debug('Showing success toast', { successMsg })
+    logging.debug('Showing success toast', { successMsg })
     showSuccess(successMsg, providedOptions)
   } else {
-    debug('No success toast message provided, skipping success toast')
+    logging.debug('No success toast message provided, skipping success toast')
   }
 }
 
@@ -234,16 +237,16 @@ function handlePromiseError<T>(
 ) {
   const errorMsg = resolveValueOrFunction(filteredMessages.error, err)
   if (isNonEmptyString(errorMsg)) {
-    debug('Showing error toast with custom message', { errorMsg, err })
+    logging.debug('Showing error toast with custom message', { errorMsg, err })
     showError(err, providedOptions, errorMsg)
   } else {
-    debug('Showing error toast with message from error', { err })
+    logging.debug('Showing error toast with message from error', { err })
     showError(err, providedOptions)
   }
 }
 
 function handleLoadingToastRemoval(loadingToastId: string | null) {
-  debug('Removing loading toast', { loadingToastId })
+  logging.debug('Removing loading toast', { loadingToastId })
   if (typeof loadingToastId === 'string' && loadingToastId.length > 0) {
     killToast(loadingToastId)
   }
@@ -300,7 +303,7 @@ function mergeToastOptions(
 }
 
 // ToastPromiseMessages type for promise-based toast messages
-export type ToastPromiseMessages<T> = {
+type ToastPromiseMessages<T> = {
   loading?: string
   success?: string | ((data: T) => string)
   error?: string | ((error: unknown) => string)

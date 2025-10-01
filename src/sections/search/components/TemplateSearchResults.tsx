@@ -1,6 +1,6 @@
 import { For, Show } from 'solid-js'
 
-import { deleteRecipe } from '~/modules/diet/recipe/application/recipe'
+import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
 import {
@@ -8,16 +8,17 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { debouncedTab, templates } from '~/modules/search/application/search'
+import {
+  debouncedTab,
+  templates,
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { createDebug } from '~/shared/utils/createDebug'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export function TemplateSearchResults(props: {
   search: string
@@ -57,9 +58,9 @@ export function TemplateSearchResults(props: {
                 } else {
                   // For recipes, show the prepared quantity rounded to nearest RECIPE_ROUNDING_FACTOR
                   const recipe = template
-                  debug('recipe', recipe)
+                  logging.debug('recipe', recipe)
                   const preparedQuantity = getRecipePreparedQuantity(recipe)
-                  debug('recipe.preparedQuantity', preparedQuantity)
+                  logging.debug('recipe.preparedQuantity', { preparedQuantity })
                   return preparedQuantity
                 }
               }
@@ -69,7 +70,7 @@ export function TemplateSearchResults(props: {
               // Convert template to UnifiedItem using shared utility
               const createUnifiedItemFromTemplate = () => {
                 const result = templateToUnifiedItem(template, displayQuantity)
-                debug('createUnifiedItemFromTemplate', result)
+                logging.debug('createUnifiedItemFromTemplate', result)
                 return result
               }
 

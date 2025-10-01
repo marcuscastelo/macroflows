@@ -1,9 +1,17 @@
-import { createEffect, createSignal, untrack } from 'solid-js'
+import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
+import {
+  signIn,
+  signOut,
+} from '~/modules/auth/application/services/authService'
+import {
+  getCurrentUser,
+  isAuthenticated,
+} from '~/modules/auth/application/usecases/authState'
 import {
   setTargetDay,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -39,10 +47,67 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
+import { logging } from '~/shared/utils/logging'
+
+function GoogleLoginButton() {
+  const handleLogin = async () => {
+    try {
+      await signIn({ provider: 'google', redirectTo: window.location.origin })
+    } catch (error) {
+      // TODO: ban inline imports
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
+      import('~/shared/utils/logging')
+        .then(({ logging }) => {
+          logging.error('TestApp login error:', error)
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
+    }
+  }
+
+  return (
+    <button class="btn btn-primary" onClick={() => void handleLogin()}>
+      Login with Google (Test) [{getCurrentUser()?.id ?? 'not logged in'}]
+    </button>
+  )
+}
+
+function LogoutButton() {
+  const handleLogout = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      import('~/shared/utils/logging')
+        .then(({ logging }) => {
+          logging.error('TestApp logout error:', error)
+        })
+        .catch(() => {
+          // Fallback if import fails
+        })
+    }
+  }
+
+  return (
+    <button class="btn btn-secondary" onClick={() => void handleLogout()}>
+      Logout
+    </button>
+  )
+}
+
+function UserInfo() {
+  return (
+    <Show when={isAuthenticated} fallback="not auth">
+      <div class="p-4 border rounded-md">
+        <p>User: {getCurrentUser()?.email}</p>
+        <LogoutButton />
+      </div>
+    </Show>
+  )
+}
 
 export default function TestApp() {
-  const [_unifiedItemEditModalVisible, setUnifiedItemEditModalVisible] =
-    createSignal(false)
+  const [_, setUnifiedItemEditModalVisible] = createSignal(false)
 
   const [item] = createSignal<UnifiedItem>(
     createUnifiedItem({
@@ -104,7 +169,7 @@ export default function TestApp() {
     promoteDayDiet(
       createNewDayDiet({
         meals: [],
-        owner: 3,
+        user_id: '3',
         target_day: '2023-11-02',
       }),
       { id: 1 },
@@ -125,6 +190,15 @@ export default function TestApp() {
       <Providers>
         <DayMacros />
 
+        {/* Auth */}
+        <details open>
+          <summary class="text-lg cursor-pointer select-none">Auth</summary>
+          <div class="pl-4 flex flex-col gap-2">
+            <GoogleLoginButton />
+            <UserInfo />
+          </div>
+        </details>
+
         {/* Modals */}
         <details open>
           <summary class="text-lg cursor-pointer select-none">Modals</summary>
@@ -140,7 +214,7 @@ export default function TestApp() {
                     <TemplateSearchModal
                       targetName="Teste"
                       onNewUnifiedItem={() => {
-                        console.debug('New unified item added')
+                        logging.debug('New unified item added')
                       }}
                       onFinish={() => {}}
                       onClose={() => {}}
@@ -189,7 +263,7 @@ export default function TestApp() {
                   setUnifiedItemEditModalVisible(true)
                 },
                 onCopy: (item) => {
-                  console.debug('Copy item:', item)
+                  logging.debug('Copy item:', item)
                 },
               }}
             />
@@ -212,6 +286,7 @@ export default function TestApp() {
                 endDate: targetDay(),
               }}
               onChange={(value: DateValueType) => {
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                 setTargetDay(value?.startDate as string)
               }}
             />

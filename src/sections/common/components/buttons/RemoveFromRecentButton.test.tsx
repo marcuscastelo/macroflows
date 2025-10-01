@@ -17,13 +17,16 @@ import {
 } from '~/modules/diet/template/domain/template'
 
 // Mock the modules
-vi.mock('~/modules/recent-food/application/recentFood', () => ({
+vi.mock('~/modules/recent-food/application/usecases/recentFoodCrud', () => ({
   deleteRecentFoodByReference: vi.fn(),
 }))
 
-vi.mock('~/modules/search/application/search', () => ({
-  debouncedTab: vi.fn(),
-}))
+vi.mock(
+  '~/modules/template-search/application/usecases/templateSearchState',
+  () => ({
+    debouncedTab: vi.fn(),
+  }),
+)
 
 vi.mock('~/modules/toast/application/toastManager', () => ({
   showPromise: vi.fn(),
@@ -33,31 +36,31 @@ vi.mock('~/modules/user/application/user', () => ({
   currentUserId: vi.fn(),
 }))
 
-vi.mock('~/shared/error/errorHandler', () => ({
-  createErrorHandler: vi.fn(() => ({
+vi.mock('~/shared/utils/logging', () => ({
+  logging: {
     error: vi.fn(),
-    apiError: vi.fn(),
-    validationError: vi.fn(),
-    criticalError: vi.fn(),
-  })),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+  },
 }))
 
 // Import the mocked modules
-import { deleteRecentFoodByReference } from '~/modules/recent-food/application/recentFood'
-import { debouncedTab } from '~/modules/search/application/search'
+import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 const mockDeleteRecentFoodByReference = vi.mocked(deleteRecentFoodByReference)
 const mockDebouncedTab = vi.mocked(debouncedTab)
 const mockShowPromise = vi.mocked(showPromise)
 const mockCurrentUserId = vi.mocked(currentUserId)
-const mockCreateErrorHandler = vi.mocked(createErrorHandler)
+const mockLogging = vi.mocked(logging)
 
 describe('RemoveFromRecentButton Logic', () => {
   const mockRefetch = vi.fn()
-  const mockUserId = 1
+  const mockUserId = '42'
 
   const mockFoodTemplate: Food = promoteNewFoodToFood(
     createNewFood({
@@ -75,7 +78,7 @@ describe('RemoveFromRecentButton Logic', () => {
   const mockRecipeTemplate: Recipe = promoteRecipe(
     createNewRecipe({
       name: 'Test Recipe',
-      owner: 1,
+      user_id: '',
       items: [],
       prepared_multiplier: 1,
     }),
@@ -170,10 +173,7 @@ describe('RemoveFromRecentButton Logic', () => {
         loading: 'Removendo item da lista de recentes...',
         success: 'Item removido da lista de recentes com sucesso!',
         error: (err: unknown) => {
-          const errorHandler = mockCreateErrorHandler('user', 'RecentFood')
-          errorHandler.error(err, {
-            operation: 'userAction',
-          })
+          mockLogging.error('RemoveFromRecentButton error:', err)
           return 'Erro ao remover item da lista de recentes.'
         },
       })
@@ -195,16 +195,16 @@ describe('RemoveFromRecentButton Logic', () => {
 
       // Create error handler function like in the component
       const errorHandler = (err: unknown) => {
-        const handler = mockCreateErrorHandler('user', 'RecentFood')
-        handler.error(err, {
-          operation: 'userAction',
-        })
+        mockLogging.error('RemoveFromRecentButton error:', err)
         return 'Erro ao remover item da lista de recentes.'
       }
 
       const errorMessage = errorHandler(mockError)
 
-      expect(mockCreateErrorHandler).toHaveBeenCalledWith('user', 'RecentFood')
+      expect(mockLogging.error).toHaveBeenCalledWith(
+        'RemoveFromRecentButton error:',
+        mockError,
+      )
       expect(errorMessage).toBe('Erro ao remover item da lista de recentes.')
     })
   })

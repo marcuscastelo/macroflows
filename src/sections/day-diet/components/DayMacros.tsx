@@ -1,6 +1,6 @@
 import { createMemo, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/dayDiet'
+import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import {
   createMacroNutrients,
@@ -115,7 +115,7 @@ function Macros(props: {
   targetMacros: MacroNutrients
   class?: string
 }) {
-  // TODO:   Add Progress component
+  // TODO: Add Progress component
   return (
     <div class={`mx-2 ${props.class}`}>
       <Progress

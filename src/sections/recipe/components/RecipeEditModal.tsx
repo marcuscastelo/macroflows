@@ -18,12 +18,12 @@ import {
   RecipeEditHeader,
 } from '~/sections/recipe/components/RecipeEditView'
 import { RecipeEditContextProvider } from '~/sections/recipe/context/RecipeEditContext'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import {
   openDeleteConfirmModal,
   openTemplateSearchModal,
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export type RecipeEditModalProps = {
   recipe: Accessor<Recipe>
@@ -34,8 +34,6 @@ export type RecipeEditModalProps = {
   onClose?: () => void
 }
 
-const errorHandler = createErrorHandler('validation', 'RecipeEditModal')
-
 export function RecipeEditModal(props: RecipeEditModalProps) {
   const [recipe, setRecipe] = createSignal(untrack(() => props.recipe()))
 
@@ -44,21 +42,15 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
   })
 
   const handleNewUnifiedItem = (newItem: UnifiedItem) => {
-    console.debug('onNewUnifiedItem', newItem)
+    logging.debug('onNewUnifiedItem', newItem)
 
     // Convert UnifiedItem to Item for adding to recipe
     try {
       // Only food items can be directly converted to Items for recipes
       if (newItem.reference.type !== 'food') {
-        errorHandler.validationError(
+        logging.error(
+          'RecipeEditModal handleNewUnifiedItem error:',
           new Error('Cannot add non-food items to recipes'),
-          {
-            operation: 'handleNewUnifiedItem',
-            additionalData: {
-              itemType: newItem.reference.type,
-              itemId: newItem.id,
-            },
-          },
         )
         showError(
           'Não é possível adicionar itens que não sejam alimentos a receitas.',
@@ -69,14 +61,11 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       const item = newItem
       const updatedRecipe = addItemToRecipe(recipe(), item)
 
-      console.debug(
-        'handleNewUnifiedItem: applying',
-        JSON.stringify(updatedRecipe, null, 2),
-      )
+      logging.debug('handleNewUnifiedItem: applying', { updatedRecipe })
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      console.error('Error converting UnifiedItem to Item:', error)
+      logging.error('RecipeEditModal convert UnifiedItem to Item error:', error)
       showError('Erro ao adicionar item à receita.')
     }
   }
@@ -90,7 +79,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       <div class="space-y-4">
         <RecipeEditHeader
           onUpdateRecipe={(newRecipe) => {
-            console.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
+            logging.debug('[RecipeEditModal] onUpdateRecipe: ', newRecipe)
             setRecipe(newRecipe)
           }}
         />

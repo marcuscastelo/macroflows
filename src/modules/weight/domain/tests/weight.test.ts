@@ -9,14 +9,13 @@ import {
   type Weight,
   weightSchema,
 } from '~/modules/weight/domain/weight'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 describe('Weight Domain', () => {
   describe('weightSchema', () => {
     it('should validate a valid weight object', () => {
       const validWeight = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date('2023-01-01'),
         __type: 'Weight' as const,
@@ -35,7 +34,7 @@ describe('Weight Domain', () => {
     it('should transform string target_timestamp to Date', () => {
       const weightWithStringDate = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: '2023-01-01T10:00:00Z',
       }
@@ -52,7 +51,7 @@ describe('Weight Domain', () => {
 
     it('should fail validation with missing required fields', () => {
       const invalidWeight = {
-        owner: 42,
+        user_id: '42',
         // Missing id, weight, target_timestamp
       }
 
@@ -63,7 +62,7 @@ describe('Weight Domain', () => {
     it('should fail validation with invalid id type', () => {
       const invalidWeight = {
         id: 'not-a-number',
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date(),
       }
@@ -75,7 +74,7 @@ describe('Weight Domain', () => {
     it('should fail validation with invalid owner type', () => {
       const invalidWeight = {
         id: 1,
-        owner: 'not-a-number',
+        user_id: 42,
         weight: 75.5,
         target_timestamp: new Date(),
       }
@@ -87,7 +86,7 @@ describe('Weight Domain', () => {
     it('should fail validation with invalid weight type', () => {
       const invalidWeight = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         weight: 'not-a-number',
         target_timestamp: new Date(),
       }
@@ -99,7 +98,7 @@ describe('Weight Domain', () => {
     it('should handle invalid timestamp string (creates invalid Date)', () => {
       const invalidWeight = {
         id: 1,
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: 'invalid-date',
       }
@@ -116,7 +115,7 @@ describe('Weight Domain', () => {
   describe('newWeightSchema', () => {
     it('should validate a valid new weight object', () => {
       const validNewWeight = {
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date('2023-01-01'),
         __type: 'NewWeight' as const,
@@ -128,7 +127,7 @@ describe('Weight Domain', () => {
 
     it('should transform string target_timestamp to Date', () => {
       const newWeightWithStringDate = {
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: '2023-01-01T10:00:00Z',
         __type: 'NewWeight',
@@ -144,7 +143,7 @@ describe('Weight Domain', () => {
     it('should ignore id field if provided (no strict mode)', () => {
       const invalidNewWeight = {
         id: 1, // Should be ignored in NewWeight
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date(),
         __type: 'NewWeight',
@@ -171,13 +170,13 @@ describe('Weight Domain', () => {
     it('should create a valid NewWeight', () => {
       const targetDate = new Date('2023-01-01T10:00:00Z')
       const newWeight = createNewWeight({
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: targetDate,
       })
 
       expect(newWeight).toEqual({
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: targetDate,
         __type: 'NewWeight',
@@ -194,7 +193,7 @@ describe('Weight Domain', () => {
 
       testCases.forEach(({ weight, description: _description }) => {
         const newWeight = createNewWeight({
-          owner: 1,
+          user_id: '1',
           weight,
           target_timestamp: new Date(),
         })
@@ -205,23 +204,23 @@ describe('Weight Domain', () => {
     })
 
     it('should handle different owner IDs', () => {
-      const testCases = [1, 42, 999, 123456]
+      const testCases = [1, 42, 999, 123456].map((a) => a.toString())
 
       testCases.forEach((owner) => {
         const newWeight = createNewWeight({
-          owner,
+          user_id: owner,
           weight: 75.0,
           target_timestamp: new Date(),
         })
 
-        expect(newWeight.owner).toBe(owner)
+        expect(newWeight.user_id).toBe(owner)
       })
     })
 
     it('should preserve exact timestamp', () => {
       const exactTime = new Date('2023-06-15T14:30:45.123Z')
       const newWeight = createNewWeight({
-        owner: 1,
+        user_id: '1',
         weight: 70.0,
         target_timestamp: exactTime,
       })
@@ -234,7 +233,7 @@ describe('Weight Domain', () => {
   describe('promoteToWeight', () => {
     it('should promote a NewWeight to Weight with provided id', () => {
       const newWeight: NewWeight = {
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date('2023-01-01'),
         __type: 'NewWeight',
@@ -244,7 +243,7 @@ describe('Weight Domain', () => {
 
       expect(weight).toEqual({
         id: 123,
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: newWeight.target_timestamp,
         __type: 'Weight',
@@ -254,7 +253,7 @@ describe('Weight Domain', () => {
     it('should preserve all NewWeight properties', () => {
       const timestamp = new Date('2023-12-25T12:00:00Z')
       const newWeight: NewWeight = {
-        owner: 999,
+        user_id: '999',
         weight: 68.7,
         target_timestamp: timestamp,
         __type: 'NewWeight',
@@ -262,7 +261,7 @@ describe('Weight Domain', () => {
 
       const weight = promoteToWeight(newWeight, { id: 456 })
 
-      expect(weight.owner).toBe(newWeight.owner)
+      expect(weight.user_id).toBe(newWeight.user_id)
       expect(weight.weight).toBe(newWeight.weight)
       expect(weight.target_timestamp).toStrictEqual(newWeight.target_timestamp)
       expect(weight.id).toBe(456)
@@ -271,7 +270,7 @@ describe('Weight Domain', () => {
 
     it('should handle different ID values', () => {
       const newWeight: NewWeight = {
-        owner: 1,
+        user_id: '1',
         weight: 70.0,
         target_timestamp: new Date(),
         __type: 'NewWeight',
@@ -290,7 +289,7 @@ describe('Weight Domain', () => {
     it('should demote a Weight to NewWeight by removing id', () => {
       const weight: Weight = {
         id: 123,
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date('2023-01-01'),
         __type: 'Weight',
@@ -299,7 +298,7 @@ describe('Weight Domain', () => {
       const newWeight = demoteToNewWeight(weight)
 
       expect(newWeight).toEqual({
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: weight.target_timestamp,
         __type: 'NewWeight',
@@ -310,7 +309,7 @@ describe('Weight Domain', () => {
       const timestamp = new Date('2023-05-10T08:30:00Z')
       const weight: Weight = {
         id: 789,
-        owner: 555,
+        user_id: '555',
         weight: 82.3,
         target_timestamp: timestamp,
         __type: 'Weight',
@@ -318,7 +317,7 @@ describe('Weight Domain', () => {
 
       const newWeight = demoteToNewWeight(weight)
 
-      expect(newWeight.owner).toBe(weight.owner)
+      expect(newWeight.user_id).toBe(weight.user_id)
       expect(newWeight.weight).toBe(weight.weight)
       expect(newWeight.target_timestamp).toStrictEqual(weight.target_timestamp)
       expect(newWeight.__type).toBe('NewWeight')
@@ -328,7 +327,7 @@ describe('Weight Domain', () => {
     it('should validate the demoted result against newWeightSchema', () => {
       const weight: Weight = {
         id: 999,
-        owner: 1,
+        user_id: '1',
         weight: 60.0,
         target_timestamp: new Date(),
         __type: 'Weight',
@@ -344,7 +343,7 @@ describe('Weight Domain', () => {
   describe('Round-trip consistency', () => {
     it('should maintain data consistency through promote/demote cycle', () => {
       const originalNewWeight = createNewWeight({
-        owner: 42,
+        user_id: '42',
         weight: 75.5,
         target_timestamp: new Date('2023-01-01T10:00:00Z'),
       })
@@ -352,7 +351,7 @@ describe('Weight Domain', () => {
       const weight = promoteToWeight(originalNewWeight, { id: 123 })
       const demotedNewWeight = demoteToNewWeight(weight)
 
-      expect(demotedNewWeight.owner).toBe(originalNewWeight.owner)
+      expect(demotedNewWeight.user_id).toBe(originalNewWeight.user_id)
       expect(demotedNewWeight.weight).toBe(originalNewWeight.weight)
       expect(demotedNewWeight.target_timestamp).toStrictEqual(
         originalNewWeight.target_timestamp,
@@ -362,7 +361,7 @@ describe('Weight Domain', () => {
 
     it('should handle multiple promote/demote cycles', () => {
       let currentNewWeight = createNewWeight({
-        owner: 1,
+        user_id: '1',
         weight: 70.0,
         target_timestamp: new Date('2023-01-01'),
       })
@@ -371,7 +370,7 @@ describe('Weight Domain', () => {
         const weight = promoteToWeight(currentNewWeight, { id: i })
         currentNewWeight = demoteToNewWeight(weight)
 
-        expect(currentNewWeight.owner).toBe(1)
+        expect(currentNewWeight.user_id).toBe('1')
         expect(currentNewWeight.weight).toBe(70.0)
         expect(currentNewWeight.__type).toBe('NewWeight')
       }
@@ -381,7 +380,7 @@ describe('Weight Domain', () => {
   describe('Edge cases and boundary conditions', () => {
     it('should handle minimum valid weight values', () => {
       const newWeight = createNewWeight({
-        owner: 1,
+        user_id: '1',
         weight: 0.1, // Very low but positive
         target_timestamp: new Date(),
       })
@@ -391,7 +390,7 @@ describe('Weight Domain', () => {
 
     it('should handle maximum reasonable weight values', () => {
       const newWeight = createNewWeight({
-        owner: 1,
+        user_id: '1',
         weight: 1000.0, // Very high but possible
         target_timestamp: new Date(),
       })
@@ -410,7 +409,7 @@ describe('Weight Domain', () => {
 
       timestamps.forEach((timestamp) => {
         const newWeight = createNewWeight({
-          owner: 1,
+          user_id: '1',
           weight: 70.0,
           target_timestamp: timestamp,
         })
@@ -424,12 +423,12 @@ describe('Weight Domain', () => {
 
       ownerIds.forEach((owner) => {
         const newWeight = createNewWeight({
-          owner,
+          user_id: owner.toString(),
           weight: 70.0,
           target_timestamp: new Date(),
         })
 
-        expect(newWeight.owner).toBe(owner)
+        expect(newWeight.user_id).toBe(owner.toString())
       })
     })
 
@@ -438,7 +437,7 @@ describe('Weight Domain', () => {
 
       preciseWeights.forEach((weight) => {
         const newWeight = createNewWeight({
-          owner: 1,
+          user_id: '1',
           weight,
           target_timestamp: new Date(),
         })
@@ -456,7 +455,7 @@ describe('Weight Domain', () => {
 
       preciseTimes.forEach((timestamp) => {
         const newWeight = createNewWeight({
-          owner: 1,
+          user_id: '1',
           weight: 70.0,
           target_timestamp: timestamp,
         })

@@ -93,6 +93,11 @@ if [[ $# -ge 1 && "$1" != "clear-merged" ]]; then
     # Create hardlink of .claude/settings.json to .claude/settings.local.json
     mkdir -p "$WORKTREE_PATH/.claude"
     if [[ -f "$REPO_ROOT/.claude/settings.json" ]]; then
+      rm -f "$REPO_ROOT/.claude/settings.local.json"
+      ln "$REPO_ROOT/.claude/settings.json" "$REPO_ROOT/.claude/settings.local.json"
+      rm -f "$WORKTREE_PATH/.claude/settings.json"
+      rm -f "$WORKTREE_PATH/.claude/settings.local.json"
+      ln "$REPO_ROOT/.claude/settings.json" "$WORKTREE_PATH/.claude/settings.json"
       ln "$REPO_ROOT/.claude/settings.json" "$WORKTREE_PATH/.claude/settings.local.json"
     fi
     # Create immediate.prompt.md focused on this issue

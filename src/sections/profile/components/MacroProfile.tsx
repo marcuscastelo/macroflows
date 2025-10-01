@@ -3,11 +3,9 @@ import { Show } from 'solid-js'
 import {
   latestMacroProfile,
   previousMacroProfile,
-  userMacroProfiles,
-} from '~/modules/diet/macro-profile/application/macroProfile'
+} from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
-import { getLatestMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { latestWeight } from '~/shared/utils/weightUtils'
 
 export function MacroProfileSettings() {
@@ -20,19 +18,12 @@ export function MacroProfileSettings() {
         }
       >
         {(weight) => (
-          <Show
-            when={latestMacroProfile()}
-            fallback={<h1>Não há perfis de macro registrados</h1>}
-          >
-            {(macroProfile) => (
-              <MacroTarget
-                weight={() => weight().weight}
-                currentProfile={macroProfile}
-                previousMacroProfile={previousMacroProfile}
-                mode="edit"
-              />
-            )}
-          </Show>
+          <MacroTarget
+            weight={() => weight().weight}
+            currentProfile={latestMacroProfile}
+            previousMacroProfile={previousMacroProfile}
+            mode="edit"
+          />
         )}
       </Show>
     </div>

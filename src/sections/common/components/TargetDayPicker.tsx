@@ -3,10 +3,14 @@ import { Suspense } from 'solid-js'
 import {
   setTargetDay,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DateValueType } from '~/sections/datepicker/types'
 import { lazyImport } from '~/shared/solid/lazyImport'
-import { getTodayYYYYMMDD, stringToDate } from '~/shared/utils/date/dateUtils'
+import {
+  dateToYYYYMMDD,
+  getTodayYYYYMMDD,
+  stringToDate,
+} from '~/shared/utils/date/dateUtils'
 
 const { Datepicker } = lazyImport(
   () => import('~/sections/datepicker/components/Datepicker'),
@@ -17,13 +21,13 @@ export function TargetDayPicker() {
     newValue: DateValueType,
     element?: HTMLInputElement | null,
   ) => {
-    let dayString: string
+    let dayString: string = getTodayYYYYMMDD()
     if (newValue === null || newValue.startDate === null) {
       dayString = getTodayYYYYMMDD()
     } else {
       const dateString = newValue.startDate
       const date = stringToDate(dateString)
-      dayString = date.toISOString().split('T')[0] as string // TODO:   use dateUtils when this is understood
+      dayString = dateToYYYYMMDD(date)
     }
 
     setTargetDay(dayString)

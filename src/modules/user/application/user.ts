@@ -9,13 +9,12 @@ import {
 import {
   loadUserIdFromLocalStorage,
   saveUserIdToLocalStorage,
-} from '~/modules/user/infrastructure/localStorageUserRepository'
+} from '~/modules/user/infrastructure/localStorage/localStorageUserRepository'
 import {
   createSupabaseUserRepository,
-  SUPABASE_TABLE_USERS,
-} from '~/modules/user/infrastructure/supabaseUserRepository'
-import { createErrorHandler } from '~/shared/error/errorHandler'
-import { registerSubapabaseRealtimeCallback } from '~/shared/utils/supabase'
+  setupUserRealtimeSubscription,
+} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { logging } from '~/shared/utils/logging'
 
 const userRepository = createSupabaseUserRepository()
 
@@ -23,7 +22,9 @@ export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-export const [currentUserId, setCurrentUserId] = createSignal<number>(1)
+export const [currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
+  'a141dbbd-d33b-4a90-918d-cbaddc769c73',
+)
 
 createEffect(() => {
   setCurrentUserId(loadUserIdFromLocalStorage())
@@ -40,9 +41,7 @@ createEffect(() => {
 
 function bootstrap() {
   fetchUsers().catch((error) => {
-    errorHandler.error(error, {
-      businessContext: { action: 'app_initialization' },
-    })
+    logging.error('User application error:', error)
   })
 }
 
@@ -56,7 +55,7 @@ createEffect(() => {
 /**
  * When realtime event occurs, fetch all users again
  */
-registerSubapabaseRealtimeCallback(SUPABASE_TABLE_USERS, () => {
+setupUserRealtimeSubscription(() => {
   bootstrap()
 })
 
@@ -67,14 +66,12 @@ registerSubapabaseRealtimeCallback(SUPABASE_TABLE_USERS, () => {
 export async function fetchUsers(): Promise<readonly User[]> {
   try {
     const users = await userRepository.fetchUsers()
-    const newCurrentUser = users.find((user) => user.id === currentUserId())
+    const newCurrentUser = users.find((user) => user.uuid === currentUserId())
     setUsers(users)
     setCurrentUser(newCurrentUser ?? null)
     return users
   } catch (error) {
-    errorHandler.error(error, {
-      businessContext: { action: 'fetch_all_users' },
-    })
+    logging.error('User application error:', error)
     setUsers([])
     setCurrentUser(null)
     return []
@@ -89,12 +86,10 @@ export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const user = await userRepository.fetchUser(currentUserId())
     setCurrentUser(user)
+
     return user
   } catch (error) {
-    errorHandler.error(error, {
-      userId: currentUserId(),
-      businessContext: { userId: currentUserId() },
-    })
+    logging.error('User application error:', error)
     setCurrentUser(null)
     return null
   }
@@ -114,13 +109,31 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
         success: 'Usuário inserido com sucesso',
         error: 'Falha ao inserir usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return true
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return false
+  }
+}
+
+/**
+ * Silently inserts a new user without showing toast notifications.
+ * @param newUser - The new user data.
+ * @returns The created user or null on error.
+ */
+export async function insertUserSilently(
+  newUser: NewUser,
+): Promise<User | null> {
+  try {
+    const createdUser = await userRepository.insertUser(newUser)
+    await fetchUsers()
+    return createdUser
+  } catch (error) {
+    logging.error('User application error:', error)
+    return null
   }
 }
 
@@ -131,7 +144,7 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
  * @returns The updated user or null on error.
  */
 export async function updateUser(
-  userId: User['id'],
+  userId: User['uuid'],
   newUser: NewUser,
 ): Promise<User | null> {
   try {
@@ -142,12 +155,12 @@ export async function updateUser(
         success: 'Informações do usuário atualizadas com sucesso',
         error: 'Falha ao atualizar informações do usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return user
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return null
   }
 }
@@ -157,7 +170,7 @@ export async function updateUser(
  * @param userId - The user ID.
  * @returns True if deleted, false otherwise.
  */
-export async function deleteUser(userId: User['id']): Promise<boolean> {
+export async function deleteUser(userId: User['uuid']): Promise<boolean> {
   try {
     await showPromise(
       userRepository.deleteUser(userId),
@@ -166,24 +179,22 @@ export async function deleteUser(userId: User['id']): Promise<boolean> {
         success: 'Usuário removido com sucesso',
         error: 'Falha ao remover usuário',
       },
-      { context: 'user-action', audience: 'user' },
+      { context: 'user-action' },
     )
     await fetchUsers()
     return true
   } catch (error) {
-    errorHandler.error(error)
+    logging.error('User application error:', error)
     return false
   }
 }
 
-const errorHandler = createErrorHandler('application', 'User')
-
-export function changeToUser(userId: User['id']): void {
+export function changeToUser(userId: User['uuid']): void {
   saveUserIdToLocalStorage(userId)
   setCurrentUserId(userId)
 }
 
-// TODO:   Create module for favorites
+// TODO: Create module for favorites
 export function isFoodFavorite(foodId: number): boolean {
   return currentUser()?.favorite_foods.includes(foodId) ?? false
 }
@@ -191,7 +202,7 @@ export function isFoodFavorite(foodId: number): boolean {
 export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
   const currentUser_ = currentUser()
   if (currentUser_ === null) {
-    errorHandler.error(new Error('User not initialized'))
+    logging.error('User application error:', new Error('User not initialized'))
     return
   }
   const favoriteFoods = currentUser_.favorite_foods
@@ -205,12 +216,12 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
       favoriteFoods.splice(index, 1)
     }
   }
-  void updateUser(currentUser_.id, {
+  void updateUser(currentUser_.uuid, {
     ...demoteUserToNewUser(currentUser_),
     favorite_foods: favoriteFoods,
   })
     .then(fetchCurrentUser)
     .catch((error) => {
-      errorHandler.error(error)
+      logging.error('User application error:', error)
     })
 }

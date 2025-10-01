@@ -25,7 +25,7 @@ export function ContextMenu(props: {
 
   function handleDocumentClick(e: MouseEvent) {
     // Close if click is outside the menu (not the trigger or menu)
-    if (menuRef && !menuRef.contains(e.target as Node)) {
+    if (menuRef && e.target instanceof Node && !menuRef.contains(e.target)) {
       setOpen(false)
     }
   }

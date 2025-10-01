@@ -22,7 +22,13 @@ export function Chart(props: ApexChartProps) {
       when={loaded()}
       fallback={
         <ChartLoadingPlaceholder
-          height={parseInt(props.height as string, 10) || 400}
+          height={
+            parseInt(
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              props.height as string,
+              10,
+            ) || 400
+          }
         />
       }
     >

@@ -5,16 +5,17 @@
 -- Drop any existing function to avoid signature conflicts
 DROP FUNCTION IF EXISTS search_recent_foods_with_names(integer, text, integer);
 DROP FUNCTION IF EXISTS search_recent_foods_with_names(bigint, text, integer);
+DROP FUNCTION IF EXISTS search_recent_foods_with_names(uuid, text, integer);
 
 CREATE OR REPLACE FUNCTION search_recent_foods_with_names(
-  p_user_id bigint,
+  p_user_uuid uuid,
   p_search_term text DEFAULT NULL,
   p_limit integer DEFAULT 50
 )
 RETURNS TABLE (
   -- Recent food metadata
   recent_food_id bigint,
-  user_id bigint,
+  user_id uuid,
   type text,
   reference_id bigint,
   last_used timestamp with time zone,
@@ -25,7 +26,7 @@ RETURNS TABLE (
   template_ean text,
   template_source jsonb,
   template_macros jsonb,
-  template_owner bigint,
+  template_owner uuid,
   template_items jsonb,
   template_prepared_multiplier real
 ) 
@@ -48,13 +49,13 @@ BEGIN
       f.ean as template_ean,
       f.source as template_source,
       f.macros::jsonb as template_macros,
-      r.owner as template_owner,
+      r.user_id as template_owner,
       r.items as template_items,
       r.prepared_multiplier as template_prepared_multiplier
     FROM public.recent_foods rf
     LEFT JOIN public.foods f ON rf.type = 'food' AND rf.reference_id = f.id
     LEFT JOIN public.recipes r ON rf.type = 'recipe' AND rf.reference_id = r.id
-    WHERE rf.user_id = p_user_id
+    WHERE rf.user_id = p_user_uuid
       AND (f.id IS NOT NULL OR r.id IS NOT NULL) -- Ensure we have a valid template
     ORDER BY rf.last_used DESC
     LIMIT p_limit;
@@ -81,7 +82,7 @@ BEGIN
     FROM public.recent_foods rf
     LEFT JOIN public.foods f ON rf.type = 'food' AND rf.reference_id = f.id
     LEFT JOIN public.recipes r ON rf.type = 'recipe' AND rf.reference_id = r.id
-    WHERE rf.user_id = p_user_id
+    WHERE rf.user_id = p_user_uuid
       AND (f.id IS NOT NULL OR r.id IS NOT NULL) -- Ensure we have a valid template
       AND (
         f.name ILIKE '%' || p_search_term || '%' OR

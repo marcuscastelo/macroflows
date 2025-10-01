@@ -2,7 +2,7 @@
 
 **A nutrition tracking platform built with modular architecture and modern web technologies.**
 
-![Version](https://img.shields.io/badge/version-0.13.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-2c4f7c?logo=solid&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)

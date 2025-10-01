@@ -1,5 +1,3 @@
-import { type Accessor } from 'solid-js'
-
 import {
   type DayDiet,
   type NewDayDiet,
@@ -7,14 +5,20 @@ import {
 import { type User } from '~/modules/user/domain/user'
 
 export type DayRepository = {
-  // fetchAllUserDayIndexes: (
-  //   userId: User['id'],
-  // ) => Promise<Accessor<readonly DayIndex[]>>
-  fetchAllUserDayDiets: (
-    userId: User['id'],
-  ) => Promise<Accessor<readonly DayDiet[]>>
-  fetchDayDiet: (dayId: DayDiet['id']) => Promise<DayDiet | null>
-  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO:   Remove nullability from insertDay
-  updateDayDiet: (dayId: DayDiet['id'], newDay: NewDayDiet) => Promise<DayDiet>
-  deleteDayDiet: (id: DayDiet['id']) => Promise<void>
+  fetchDayDietByUserIdAndTargetDay: (
+    userId: User['uuid'],
+    targetDay: string,
+  ) => Promise<DayDiet | null>
+  fetchDayDietsByUserIdBeforeDate: (
+    userId: User['uuid'],
+    beforeDay: string,
+    limit?: number,
+  ) => Promise<readonly DayDiet[]>
+  fetchDayDietById: (dayId: DayDiet['id']) => Promise<DayDiet | null>
+  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null> // TODO: Remove nullability from insertDay
+  updateDayDietById: (
+    dayId: DayDiet['id'],
+    newDay: NewDayDiet,
+  ) => Promise<DayDiet | null>
+  deleteDayDietById: (id: DayDiet['id']) => Promise<void>
 }

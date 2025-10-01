@@ -6,14 +6,14 @@ import {
   Show,
 } from 'solid-js'
 
-import { fetchFoodByEan } from '~/modules/diet/food/application/food'
+import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 export type EANSearchProps = {
   EAN: Accessor<string>
@@ -21,8 +21,6 @@ export type EANSearchProps = {
   food: Accessor<Food | null>
   setFood: Setter<Food | null>
 }
-
-const errorHandler = createErrorHandler('user', 'EANSearch')
 
 export function EANSearch(props: EANSearchProps) {
   const [loading, setLoading] = createSignal(false)
@@ -41,7 +39,7 @@ export function EANSearch(props: EANSearchProps) {
     setLoading(true)
 
     const afterFetch = (food: Food | null) => {
-      console.log('afterFetch food', food)
+      logging.info('afterFetch food', { food })
       if (food === null) {
         openConfirmModal(`Alimento de EAN ${props.EAN()} não encontrado`, {
           title: 'Não encontrado',
@@ -54,8 +52,8 @@ export function EANSearch(props: EANSearchProps) {
     }
 
     const catchFetch = (err: unknown) => {
-      console.log('catchFetch err', err)
-      errorHandler.error(err, { operation: 'userAction' })
+      logging.info('catchFetch err', { err })
+      logging.error('EANSearch error:', err)
       openConfirmModal('Erro ao buscar alimento', {
         title: `Erro ao buscar alimento de EAN ${props.EAN()}`,
         confirmText: 'OK',
@@ -65,7 +63,7 @@ export function EANSearch(props: EANSearchProps) {
     }
 
     const finallyFetch = () => {
-      console.log('finallyFetch')
+      logging.info('finallyFetch')
       setLoading(false)
       props.setEAN('')
     }

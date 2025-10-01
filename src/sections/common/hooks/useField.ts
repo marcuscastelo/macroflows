@@ -149,6 +149,7 @@ export function useDateField<
   }
   return {
     ...field,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     value: valueWithFallback as Options extends { fallback: () => Date }
       ? () => Date
       : () => Date | undefined,

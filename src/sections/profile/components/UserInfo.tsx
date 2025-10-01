@@ -18,9 +18,9 @@ import {
   convertString,
   UserInfoCapsule,
 } from '~/sections/profile/components/UserInfoCapsule'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 type Translation<T extends string> = { [_key in T]: string }
-// TODO:   Create module for translations
+// TODO: Create module for translations
 // Export DIET_TRANSLATION for use in UserInfoCapsule
 export const DIET_TRANSLATION: Translation<User['diet']> = {
   cut: 'Cutting',
@@ -33,8 +33,6 @@ export const GENDER_TRANSLATION: Translation<User['gender']> = {
   male: 'Masculino',
   female: 'Feminino',
 }
-
-const errorHandler = createErrorHandler('user', 'User')
 
 export function UserInfo() {
   createEffect(() => {
@@ -49,16 +47,16 @@ export function UserInfo() {
       return
     }
 
-    const reduceFunc = (acc: UnsavedFields, key: string) => {
-      acc[key as keyof UnsavedFields] =
-        innerData_[key as keyof UnsavedFields] !== user_[key as keyof User]
+    const reduceFunc = (acc: UnsavedFields, key: keyof UnsavedFields) => {
+      acc[key] = innerData_[key] !== user_[key]
       return acc
     }
+
+    // TODO: Find a way to make Object.keys strongly typed
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const keys = Object.keys(innerData_) as (keyof UnsavedFields)[]
     setUnsavedFields(
-      Object.keys(innerData_).reduce<UnsavedFields>(
-        reduceFunc,
-        {} satisfies UnsavedFields,
-      ),
+      keys.reduce<UnsavedFields>(reduceFunc, {} satisfies UnsavedFields),
     )
   })
 
@@ -73,6 +71,7 @@ export function UserInfo() {
   }
 
   const convertDiet = (value: string): User['diet'] =>
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     (Object.keys(DIET_TRANSLATION) as Array<User['diet']>).find(
       (key) => key === value,
     ) ?? 'normo'
@@ -85,7 +84,7 @@ export function UserInfo() {
             {(user) => (
               <>
                 <UserIcon
-                  userId={() => user().id}
+                  userId={() => user().uuid}
                   userName={() => user().name}
                   class={'w-32 h-32 mx-auto'}
                 />
@@ -118,8 +117,8 @@ export function UserInfo() {
           }
           // Convert User to NewUser for the update
           const newUser = demoteUserToNewUser(user)
-          updateUser(user.id, newUser).catch((error) => {
-            errorHandler.error(error, { operation: 'changeUser' })
+          updateUser(user.uuid, newUser).catch((error) => {
+            logging.error('UserInfo changeUser error:', error)
             showError(error, {}, 'Erro ao atualizar usuário')
           })
         }}

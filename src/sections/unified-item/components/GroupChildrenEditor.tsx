@@ -1,7 +1,7 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
-import { saveRecipe } from '~/modules/diet/recipe/application/unifiedRecipe'
+import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addChildToItem,
@@ -24,11 +24,8 @@ import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertT
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
-import { createErrorHandler } from '~/shared/error/errorHandler'
-import { createDebug } from '~/shared/utils/createDebug'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export type GroupChildrenEditorProps = {
   item: Accessor<UnifiedItem>
@@ -37,8 +34,6 @@ export type GroupChildrenEditorProps = {
   onAddNewItem?: () => void
   showAddButton?: boolean
 }
-
-const errorHandler = createErrorHandler('user', 'UnifiedItem')
 
 export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
   const clipboard = useClipboard()
@@ -97,7 +92,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
           // Validate hierarchy to prevent circular references
           const tempItem = addChildToItem(updatedItem, childWithNewId)
           if (!validateItemHierarchy(tempItem)) {
-            console.warn(
+            logging.warn(
               `Skipping item ${childWithNewId.name} - would create circular reference`,
             )
             continue
@@ -111,7 +106,10 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
     })
 
   const updateChildQuantity = (childId: number, newQuantity: number) => {
-    debug('[GroupChildrenEditor] updateChildQuantity', { childId, newQuantity })
+    logging.debug('[GroupChildrenEditor] updateChildQuantity', {
+      childId,
+      newQuantity,
+    })
 
     const updatedItem = updateChildInItem(props.item(), childId, {
       quantity: newQuantity,
@@ -121,7 +119,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
   }
 
   const applyMultiplierToAll = (multiplier: number) => {
-    debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
+    logging.debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
 
     let updatedItem = props.item()
 
@@ -155,7 +153,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
             ? `${item.name} (Receita)`
             : 'Nova receita (a partir de um grupo)',
         items: children(), // Use UnifiedItems directly
-        owner: currentUserId(),
+        user_id: currentUserId(),
       })
 
       const insertedRecipe = await saveRecipe(newUnifiedRecipe)
@@ -179,7 +177,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
 
       props.setItem(recipeUnifiedItem)
     } catch (err) {
-      errorHandler.error(err, { operation: 'handleConvertToRecipe' })
+      logging.error('GroupChildrenEditor handleConvertToRecipe error:', err)
       showError(err, undefined, 'Falha ao criar receita a partir do grupo')
     }
   }

@@ -20,7 +20,7 @@ type Translation<T extends string> = { [key in T]: string }
 
 const makeOnChange = <T extends keyof User>(
   field: T,
-  convert: (value: string) => string,
+  convert: (value: string) => User[T] | string,
 ) => {
   return (
     event: Event & {
@@ -38,6 +38,8 @@ const makeOnChange = <T extends keyof User>(
 
     const newUser: Mutable<User> = { ...innerData_ }
 
+    // TODO: Stop storing intermediate values with type assertion lies (maybe store in local var)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     newUser[field] = convert(event.target.value) as unknown as User[T]
     setInnerData(newUser)
   }
@@ -65,7 +67,7 @@ const makeOnBlur = <T extends keyof User>(
 
     newUser[field] = convert(event.target.value)
 
-    // TODO:   Move to server onSave(newProfile)
+    // TODO: Move to server onSave(newProfile)
     setInnerData(parseWithStack(userSchema, newUser))
   }
 }
@@ -74,7 +76,7 @@ export const convertString = (value: string) => value
 
 // User field keys without the brand symbol
 type UserFieldKey =
-  | 'id'
+  | 'uuid'
   | 'name'
   | 'favorite_foods'
   | 'diet'
@@ -95,14 +97,14 @@ function valueToString(value: unknown): string {
   return JSON.stringify(value)
 }
 
-// TODO:   Create module for translations
+// TODO: Create module for translations
 const USER_FIELD_TRANSLATION: Translation<UserFieldKey> = {
   name: 'Nome',
   gender: 'Gênero',
   diet: 'Dieta',
   birthdate: 'Data de Nascimento',
   favorite_foods: 'Alimentos Favoritos',
-  id: 'ID',
+  uuid: 'ID',
   desired_weight: 'Peso Alvo',
 }
 
@@ -187,6 +189,7 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
                   'btn-ghost input bg-transparent text-center px-0 text-xl my-auto'
                 }
                 value={valueToString(innerData()[props.field])}
+                // TODO: Stop storing intermediate values with type assertion lies (maybe store in local var)
                 onChange={makeOnChange(props.field, convertString)}
                 onBlur={makeOnBlur(props.field, props.convert)}
                 style={{ width: '100%' }}

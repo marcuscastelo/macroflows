@@ -10,10 +10,8 @@ Your task is to ensure the codebase passes all checks and is error-free. Never o
 
 ## Instructions
 
-1. Run `npm run copilot:check` in the project root, redirecting both stdout and stderr to `/tmp/copilot-terminal-[N]` using `| tee /tmp/copilot-terminal-[N] 2>&1` (with a unique [N] for each run).
-2. After the command finishes, run each of the following custom scripts (each should simply output the contents of `/tmp/copilot-terminal-[N]`):
-   - `.scripts/cat1.sh /tmp/copilot-terminal-[N]`
-   - `.scripts/cat2.sh /tmp/copilot-terminal-[N]`
+1. Run `npm run copilot:check` in the project root.
+2. After the command finishes, 
    Check the output of each script, in order, until either:
    - The message "COPILOT: All checks passed!" appears in the output, or
    - Any of the following error patterns (case-insensitive) appear: `failed`, `at constructor`, `error`, `replace`, or similar.

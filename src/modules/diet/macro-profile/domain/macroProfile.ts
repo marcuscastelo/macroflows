@@ -11,7 +11,7 @@ export const {
   promote: promoteToMacroProfile,
   demote: demoteToNewMacroProfile,
 } = ze.create({
-  owner: ze.number(),
+  user_id: ze.string(),
   target_day: z
     .date()
     .or(z.string())

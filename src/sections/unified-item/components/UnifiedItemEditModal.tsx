@@ -13,7 +13,7 @@ import {
   deleteRecipe,
   fetchRecipeById,
   updateRecipe,
-} from '~/modules/diet/recipe/application/recipe'
+} from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addChildToItem,
@@ -42,10 +42,8 @@ import {
   openTemplateSearchModal,
   openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
-import { createDebug } from '~/shared/utils/createDebug'
 import { generateId } from '~/shared/utils/idUtils'
-
-const debug = createDebug()
+import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemEditModalProps = {
   targetMealName: string
@@ -63,7 +61,7 @@ export type UnifiedItemEditModalProps = {
 }
 
 export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
-  debug('[UnifiedItemEditModal] called', _props)
+  logging.debug('[UnifiedItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 
   const handleClose = () => {
@@ -161,7 +159,9 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
   })
 
   const canApply = () => {
-    debug('[UnifiedItemEditModal] canApply', item().quantity)
+    logging.debug('[UnifiedItemEditModal] canApply', {
+      quantity: item().quantity,
+    })
     return item().quantity > 0
   }
 
@@ -292,24 +292,26 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
 
               {/* Edit recipe button - only show for recipe items */}
               <Show when={isRecipeItem(item()) && originalRecipe()}>
-                <button
-                  class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
-                  onClick={() => {
-                    openRecipeEditModal({
-                      recipe: () => originalRecipe() as Recipe,
-                      onSaveRecipe: (updatedRecipe) => {
-                        void handleSaveRecipe(updatedRecipe)
-                      },
-                      onRefetch: () => {},
-                      onDelete: (recipeId) => {
-                        void handleDeleteRecipe(recipeId)
-                      },
-                    })
-                  }}
-                  title="Editar receita original"
-                >
-                  ✏️
-                </button>
+                {(originalRecipe) => (
+                  <button
+                    class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
+                    onClick={() => {
+                      openRecipeEditModal({
+                        recipe: () => originalRecipe(),
+                        onSaveRecipe: (updatedRecipe) => {
+                          void handleSaveRecipe(updatedRecipe)
+                        },
+                        onRefetch: () => {},
+                        onDelete: (recipeId) => {
+                          void handleDeleteRecipe(recipeId)
+                        },
+                      })
+                    }}
+                    title="Editar receita original"
+                  >
+                    ✏️
+                  </button>
+                )}
               </Show>
             </div>
           </Show>
@@ -379,7 +381,7 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
         <button
           class="btn cursor-pointer uppercase"
           onClick={(e) => {
-            debug('[UnifiedItemEditModal] Cancel clicked')
+            logging.debug('[UnifiedItemEditModal] Cancel clicked')
             e.preventDefault()
             e.stopPropagation()
             handleClose()

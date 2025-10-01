@@ -122,21 +122,33 @@ Closes #456
 
 ## Shell and CLI Handling
 
-### Multiline Content Management
-```bash
-# Uses cat with heredoc for proper shell escaping
-cat <<'EOF' > /tmp/pr-description.md
-## Summary
-Comprehensive PR description with proper formatting.
+### Multiline Content Management (CRITICAL - HEREDOC RULES)
 
-## Details
-- Multiple lines
-- Code blocks with `backticks`
-- No shell interpretation issues
+**🚨 MANDATORY HEREDOC FORMAT:**
+```bash
+# ALWAYS use single quotes around EOF delimiter to prevent variable expansion
+cat << 'EOF' > /tmp/pr-description.md
+## Summary
+Your PR description content here.
+
+## Implementation Details
+- Bullet points work fine
+- Code blocks with `backticks` are safe
+- Variables like $VAR will NOT be expanded (good!)
+
+Closes #123
 EOF
 
-gh pr create --title "feat: new feature" --body-file /tmp/pr-description.md
+# THEN use the file with gh CLI
+gh pr create --title "your title" --body-file /tmp/pr-description.md
 ```
+
+**🚨 CRITICAL RULES:**
+1. **ALWAYS use `cat << 'EOF'`** (with single quotes)
+2. **NEVER use `cat <<EOF`** (without quotes) - causes variable expansion
+3. **NEVER use `cat <<"EOF"`** (with double quotes) - allows some expansion
+4. **NEVER put content directly in `--body`** - use `--body-file` always
+5. **ALWAYS clean up:** `rm /tmp/pr-description.md` after creation
 
 ### Error Handling
 - Validates `gh` CLI authentication
@@ -178,11 +190,31 @@ gh pr create --title "feat: new feature" --body-file /tmp/pr-description.md
 
 ## Target Branch Logic
 
-### Branch Priority
-1. **Remote rc/ branches:** `origin/rc/v0.14.0`
-2. **Local rc/ branches:** `rc/v0.14.0`
-3. **User specification:** Prompts if no rc/ branch found
-4. **Fallback:** Uses repository default branch
+### Branch Priority (CRITICAL - NEVER USE STABLE)
+1. **Remote rc/ branches:** `origin/rc/v0.14.0` - PRIMARY TARGET
+2. **Local rc/ branches:** `rc/v0.14.0` - SECONDARY TARGET  
+3. **User specification:** MANDATORY prompt if no rc/ branch found
+4. **FORBIDDEN:** Never use `stable` branch - PRs to stable are ONLY for version releases
+
+### Branch Detection Rules
+```bash
+# REQUIRED: Always check for rc/ branches first
+RC_BRANCH=$(git branch -r | grep 'origin/rc/' | head -1 | sed 's/.*origin\///')
+if [ -z "$RC_BRANCH" ]; then
+  RC_BRANCH=$(git branch -l | grep 'rc/' | head -1 | sed 's/^[* ] *//')
+fi
+
+# CRITICAL: If no rc/ branch exists, STOP and ask user
+if [ -z "$RC_BRANCH" ]; then
+  echo "❌ ERROR: No rc/ branch found. Cannot proceed."
+  echo "Available branches:"
+  git branch -r | grep -v HEAD
+  exit 1
+fi
+
+# Use detected rc/ branch as base
+BASE_BRANCH="$RC_BRANCH"
+```
 
 ### Version Detection
 - Uses `.scripts/semver.sh` for version information
@@ -224,22 +256,45 @@ feature ui complexity-medium
 v0.14.0
 ```
 
-### GitHub CLI Command
+### GitHub CLI Command (CORRECTED)
 ```bash
+# CRITICAL: Always detect rc/ branch first - NEVER hardcode stable
+RC_BRANCH=$(git branch -r | grep 'origin/rc/' | head -1 | sed 's/.*origin\///')
+if [ -z "$RC_BRANCH" ]; then
+  echo "❌ No rc/ branch found - cannot create PR"
+  exit 1
+fi
+
+# Create PR with detected rc/ branch
 gh pr create \
   --title "feat(day-diet): add copy previous day functionality" \
   --body-file /tmp/pr-description.md \
   --label feature,ui,complexity-medium \
   --milestone "v0.14.0" \
-  --base rc/v0.14.0
+  --base "$RC_BRANCH"
+
+# Clean up
+rm /tmp/pr-description.md
 ```
 
 ## Error Recovery
 
+### CRITICAL ERRORS TO AVOID
+
+**🚨 NEVER USE STABLE BRANCH:**
+- **Problem:** Creating PR to `stable` instead of `rc/` branch
+- **Fix:** Always detect and use `rc/` branch as base
+- **Rule:** PRs to `stable` are ONLY for version release merges
+
+**🚨 EOF APPEARING IN PR DESCRIPTION:**
+- **Problem:** Using `cat <<EOF` without quotes causes shell expansion
+- **Fix:** Always use `cat << 'EOF'` with single quotes
+- **Result:** Prevents literal "EOF" text in PR descriptions
+
 ### Common Issues
-- **No rc/ branch:** Prompts user for correct base branch
+- **No rc/ branch:** STOP execution and prompt user - never fallback to stable
 - **Unpushed commits:** Automatically pushes before PR creation
-- **Formatting issues:** Retries with corrected heredoc formatting
+- **Formatting issues:** Use proper heredoc with single quotes around EOF
 - **Label conflicts:** Removes invalid labels and continues
 
 ### Graceful Failures

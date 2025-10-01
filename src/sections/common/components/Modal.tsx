@@ -5,18 +5,16 @@ import { DarkToaster } from '~/sections/common/components/DarkToaster'
 import { cn } from '~/shared/cn'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { type ModalState } from '~/shared/modal/types/modalTypes'
-import { createDebug } from '~/shared/utils/createDebug'
+import { logging } from '~/shared/utils/logging'
 
 export type ModalProps = ModalState & {
   children: JSXElement
 }
 
-const debug = createDebug()
-
 export const Modal = (props: ModalProps) => {
   const [active, setActive] = createSignal(false)
   createEffect(() => {
-    debug(
+    logging.debug(
       `Modal ${props.id} isOpen: ${props.isOpen}, isClosing: ${props.isClosing()} isActive: ${active()}`,
     )
     let timeoutId
@@ -29,7 +27,7 @@ export const Modal = (props: ModalProps) => {
       timeoutId = null
       setActive(false)
     } else {
-      debug(`Modal ${props.id} is not active, no action taken`)
+      logging.debug(`Modal ${props.id} is not active, no action taken`)
       timeoutId = null
     }
     return () => {

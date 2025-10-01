@@ -50,13 +50,21 @@ export default [
       "simple-import-sort/imports": "warn",
       "simple-import-sort/exports": "warn",
       'no-restricted-imports': [
-        'warn',
+        'error',
         {
           patterns: ['../*', './*'],
           paths: [
             {
               name: 'zod',
               message: "Please use 'zod/v4' instead.",
+            },
+            {
+              name: '~/shared/utils/supabase',
+              message: "Direct import of '~/shared/utils/supabase' is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.",
+            },
+            {
+              name: 'axios',
+              message: "Direct import of 'axios' is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.",
             },
           ],
         },
@@ -84,10 +92,10 @@ export default [
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/prefer-readonly-parameter-types': 'off',
       '@typescript-eslint/strict-boolean-expressions': 'error',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/consistent-type-assertions': [
-        'warn',
+        'error',
         { assertionStyle: 'never' },
       ],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports', fixStyle: 'inline-type-imports' }],
@@ -97,7 +105,7 @@ export default [
 
       'no-unused-vars': 'off',
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         {
           "args": "all",
           "argsIgnorePattern": "^_",
@@ -122,15 +130,48 @@ export default [
       'jsx-a11y/role-has-required-aria-props': 'warn',
       'jsx-a11y/role-supports-aria-props': 'warn',
 
+      // TODO: Re-enable console restriction after refactoring logging & observability system
+      'no-console': 'off', // Ban all console usage by default
+      // TODO: Re-enable console restriction after refactoring logging & observability system
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1056
       'no-restricted-syntax': [
-        'error',
+        'off',
+        {
+          selector: "CallExpression[callee.object.name='console']",
+          message: 'Direct console usage is forbidden. Use errorHandler.apiError or logging utility functions instead.'
+        },
         {
           selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
           message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
         },
+        {
+          selector: "MemberExpression[object.name='localStorage']",
+          message: 'Direct localStorage usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
+        },
+        {
+          selector: "MemberExpression[object.name='navigator']",
+          message: 'Direct navigator API usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
+        },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='startTransaction']",
+          message: 'Sentry.startTransaction is deprecated in v8. Use Sentry.startSpan instead.'
+        },
+        {
+          selector: "CallExpression[callee.property.name='startChild']",
+          message: 'span.startChild is deprecated in v8. Use Sentry.startSpan with proper parent span context instead.'
+        },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='getCurrentHub']",
+          message: 'Sentry.getCurrentHub is deprecated in v8. Use Sentry.getCurrentScope instead.'
+        },
+        {
+          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='configureScope']",
+          message: 'Sentry.configureScope is deprecated in v8. Use Sentry.withScope instead.'
+        },
       ],
 
       ...pluginSolid.configs.recommended.rules,
+      'solid/reactivity': 'error',
     },
     settings: {
       'import/parsers': {
@@ -142,6 +183,66 @@ export default [
           project: ['./tsconfig.json'],
         },
       },
+    },
+  },
+  {
+    // Allow console usage in error handling, telemetry, and testing infrastructure
+    files: [
+      'src/shared/error/**/*.ts',
+      'src/shared/error/**/*.tsx', 
+      'src/modules/observability/**/*.ts',
+      'src/modules/observability/**/*.tsx',
+
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      'vitest.setup.ts'
+    ],
+    rules: {
+      'no-console': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
+          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
+        },
+        // Note: Console usage allowed in error handling infrastructure
+      ],
+    },
+  },
+  {
+    // Allow external dependencies only in infrastructure layer
+    files: [
+      '**/infrastructure/**/*.ts', 
+      '**/infrastructure/**/*.tsx', 
+      'src/shared/utils/supabase.ts', 
+      'src/shared/console/**/*.ts', 
+      'src/shared/hooks/**/*.ts', 
+      'src/shared/utils/**/*.ts', 
+      'src/sections/**/*.tsx',
+      'vitest.setup.ts'
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: ['../*', './/*'],
+          paths: [
+            {
+              name: 'zod',
+              message: "Please use 'zod/v4' instead.",
+            },
+            // Note: supabase, axios restrictions removed for infrastructure layer
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
+          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
+        },
+        // Note: localStorage, navigator restrictions removed for infrastructure layer
+      ],
     },
   },
   {

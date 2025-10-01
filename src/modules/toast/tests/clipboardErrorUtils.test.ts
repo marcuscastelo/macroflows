@@ -48,7 +48,7 @@ describe('formatErrorForClipboard', () => {
       context: undefined,
       stack: undefined,
       timestamp: undefined,
-    } as unknown as ToastError
+    }
     const result = formatErrorForClipboard(error)
     expect(result).toContain('Error Report - ')
     expect(result).not.toContain('Message:')

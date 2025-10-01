@@ -6,6 +6,16 @@
 
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('~/shared/utils/logging', () => ({
+  logging: {
+    debug: vi.fn(),
+  },
+}))
+
+vi.mock('~/shared/config/env', () => ({
+  isDevelopment: vi.fn(() => false),
+}))
+
 import {
   showError,
   showInfo,
@@ -51,14 +61,13 @@ describe('toastManager (refactored)', () => {
       .mockImplementation((item) => item.id)
     const id = showSuccess('Operação concluída', {
       context: 'user-action',
-      audience: 'user',
     })
     expect(registerToast).toHaveBeenCalled()
     const toastArg = registerToast.mock.calls[0]?.[0]
     expect(toastArg).toBeDefined()
     expect(toastArg?.options.type).toBe('success')
     expect(toastArg?.options.context).toBe('user-action')
-    expect(toastArg?.options.audience).toBe('user')
+
     expect(id).toBe(toastArg?.id)
   })
 

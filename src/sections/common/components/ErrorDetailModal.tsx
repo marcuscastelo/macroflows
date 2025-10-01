@@ -160,9 +160,9 @@ export function ErrorDetailModal(props: ErrorDetailModalProps) {
                 <Show when={props.errorDetails.timestamp}>
                   <div class="text-sm text-gray-400">
                     Occurred at:{' '}
-                    {new Date(
-                      props.errorDetails.timestamp as number,
-                    ).toLocaleString()}
+                    {typeof props.errorDetails.timestamp === 'number'
+                      ? new Date(props.errorDetails.timestamp).toLocaleString()
+                      : 'Unknown'}
                   </div>
                 </Show>
               </div>

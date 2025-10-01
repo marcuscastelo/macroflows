@@ -19,7 +19,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
       }
 
@@ -31,7 +31,7 @@ describe('BodyMeasure Domain', () => {
         expect(result.data.waist).toBe(80.0)
         expect(result.data.hip).toBe(95.0)
         expect(result.data.neck).toBe(38.0)
-        expect(result.data.owner).toBe(42)
+        expect(result.data.user_id).toBe('42')
         expect(result.data.target_timestamp).toStrictEqual(
           new Date('2023-01-01'),
         )
@@ -46,7 +46,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: '2023-01-01T10:00:00Z',
       }
 
@@ -66,7 +66,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.5,
         waist: 80.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
       }
 
@@ -84,7 +84,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: null,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
       }
 
@@ -97,7 +97,7 @@ describe('BodyMeasure Domain', () => {
 
     it('should fail validation with missing required fields', () => {
       const invalidBodyMeasure = {
-        // Missing id, height, waist, neck, owner, target_timestamp
+        // Missing id, height, waist, neck, user_id, target_timestamp
       }
 
       const result = bodyMeasureSchema.safeParse(invalidBodyMeasure)
@@ -110,7 +110,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.5,
         waist: 80.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date(),
       }
 
@@ -126,7 +126,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
         __type: 'NewMeasure' as const,
       }
@@ -138,7 +138,7 @@ describe('BodyMeasure Domain', () => {
         expect(result.data.waist).toBe(80.0)
         expect(result.data.hip).toBe(95.0)
         expect(result.data.neck).toBe(38.0)
-        expect(result.data.owner).toBe(42)
+        expect(result.data.user_id).toBe('42')
         expect(result.data.target_timestamp).toStrictEqual(
           new Date('2023-01-01'),
         )
@@ -151,7 +151,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.5,
         waist: 80.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date(),
         __type: 'NewMeasure' as const,
         extraField: 'should be ignored',
@@ -170,7 +170,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.5,
         waist: 80.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date(),
         __type: 'NewMeasure' as const,
       }
@@ -199,7 +199,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
       }
 
@@ -209,7 +209,7 @@ describe('BodyMeasure Domain', () => {
       expect(newBodyMeasure.waist).toBe(80.0)
       expect(newBodyMeasure.hip).toBe(95.0)
       expect(newBodyMeasure.neck).toBe(38.0)
-      expect(newBodyMeasure.owner).toBe(42)
+      expect(newBodyMeasure.user_id).toBe('42')
       expect(newBodyMeasure.target_timestamp).toStrictEqual(
         new Date('2023-01-01'),
       )
@@ -228,7 +228,7 @@ describe('BodyMeasure Domain', () => {
           height,
           waist,
           neck,
-          owner: 1,
+          user_id: '1',
           target_timestamp: new Date(),
         })
 
@@ -247,11 +247,11 @@ describe('BodyMeasure Domain', () => {
           height: 175.0,
           waist: 80.0,
           neck: 38.0,
-          owner,
+          user_id: String(owner),
           target_timestamp: new Date(),
         })
 
-        expect(newBodyMeasure.owner).toBe(owner)
+        expect(newBodyMeasure.user_id).toBe(String(owner))
         expect(newBodyMeasure.__type).toBe('NewMeasure')
       })
     })
@@ -263,7 +263,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.0,
         waist: 80.0,
         neck: 38.0,
-        owner: 1,
+        user_id: '1',
         target_timestamp: exactTime,
       })
 
@@ -278,7 +278,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
         __type: 'NewMeasure',
       }
@@ -290,7 +290,7 @@ describe('BodyMeasure Domain', () => {
       expect(bodyMeasure.waist).toBe(80.0)
       expect(bodyMeasure.hip).toBe(95.0)
       expect(bodyMeasure.neck).toBe(38.0)
-      expect(bodyMeasure.owner).toBe(42)
+      expect(bodyMeasure.user_id).toBe('42')
       expect(bodyMeasure.target_timestamp).toStrictEqual(new Date('2023-01-01'))
     })
 
@@ -299,7 +299,7 @@ describe('BodyMeasure Domain', () => {
         height: 175.0,
         waist: 80.0,
         neck: 38.0,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
       })
 
@@ -320,7 +320,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.0,
         hip: 95.0,
         neck: 38.0,
-        owner: 42,
+        user_id: '42',
         target_timestamp: new Date('2023-01-01'),
         __type: 'Measure',
       }
@@ -331,7 +331,7 @@ describe('BodyMeasure Domain', () => {
       expect(newBodyMeasure.waist).toBe(80.0)
       expect(newBodyMeasure.hip).toBe(95.0)
       expect(newBodyMeasure.neck).toBe(38.0)
-      expect(newBodyMeasure.owner).toBe(42)
+      expect(newBodyMeasure.user_id).toBe('42')
       expect(newBodyMeasure.target_timestamp).toStrictEqual(
         new Date('2023-01-01'),
       )
@@ -347,7 +347,7 @@ describe('BodyMeasure Domain', () => {
         waist: 0.1,
         hip: 0.1,
         neck: 0.1,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
       }
 
@@ -364,7 +364,7 @@ describe('BodyMeasure Domain', () => {
         waist: 999.9,
         hip: 999.9,
         neck: 999.9,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
       }
 
@@ -381,7 +381,7 @@ describe('BodyMeasure Domain', () => {
         waist: 80.987654,
         hip: 95.555555,
         neck: 38.333333,
-        owner: 1,
+        user_id: '1',
         target_timestamp: new Date(),
       }
 

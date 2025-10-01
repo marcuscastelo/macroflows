@@ -1,9 +1,10 @@
 import { type Food, type NewFood } from '~/modules/diet/food/domain/food'
+import { type User } from '~/modules/user/domain/user'
 
 export type FoodSearchParams = {
   limit?: number
   allowedFoods?: number[]
-  userId?: number
+  userId?: User['uuid']
   isFavoritesSearch?: boolean
 }
 
@@ -19,7 +20,7 @@ export type FoodRepository = {
     params: FoodSearchParams,
   ) => Promise<readonly Food[]>
   fetchFoodByEan: (
-    ean: Required<Food>['ean'],
+    ean: NonNullable<Required<Food>['ean']>,
     params: Omit<FoodSearchParams, 'limit'>,
   ) => Promise<Food | null>
 

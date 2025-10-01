@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { createEffect, createSignal, onMount } from 'solid-js'
+import { createEffect, createSignal, onCleanup, onMount } from 'solid-js'
 
 import { vibrate } from '~/shared/utils/vibrate'
 
@@ -21,9 +21,11 @@ export function useHashTabs<T extends string>(options: UseHashTabsOptions<T>) {
   const getInitialTab = (): T => {
     if (typeof window !== 'undefined') {
       // Check URL hash first
-      const hash = window.location.hash.slice(1) as T
-      if (validTabs.includes(hash)) {
-        return hash
+      const hash = window.location.hash.slice(1)
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      if (validTabs.includes(hash as T)) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return hash as T
       }
 
       // Check localStorage if storageKey provided
@@ -32,8 +34,10 @@ export function useHashTabs<T extends string>(options: UseHashTabsOptions<T>) {
         if (
           stored !== null &&
           stored.length > 0 &&
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           validTabs.includes(stored as T)
         ) {
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           return stored as T
         }
       }
@@ -59,16 +63,17 @@ export function useHashTabs<T extends string>(options: UseHashTabsOptions<T>) {
   // Set initial hash and listen for hash changes from browser navigation
   onMount(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.slice(1) as T
-      const current = activeTab()
-      if (validTabs.includes(hash) && hash !== current) {
-        setActiveTab(() => hash)
+      const hash = window.location.hash.slice(1)
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      if (validTabs.includes(hash as T) && hash !== activeTab()) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        setActiveTab(() => hash as T)
       }
     }
 
     window.addEventListener('hashchange', handleHashChange)
 
-    return () => window.removeEventListener('hashchange', handleHashChange)
+    onCleanup(() => window.removeEventListener('hashchange', handleHashChange))
   })
 
   return [activeTab, setActiveTab] as const

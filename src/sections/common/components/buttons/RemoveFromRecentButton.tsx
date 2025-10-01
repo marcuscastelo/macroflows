@@ -4,19 +4,17 @@ import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { deleteRecentFoodByReference } from '~/modules/recent-food/application/recentFood'
-import { debouncedTab } from '~/modules/search/application/search'
+import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
-import { createErrorHandler } from '~/shared/error/errorHandler'
+import { logging } from '~/shared/utils/logging'
 
 type RemoveFromRecentButtonProps = {
   template: Template
   refetch: (info?: unknown) => unknown
 }
-
-const errorHandler = createErrorHandler('user', 'RemoveFromRecentButton')
 
 export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
   const handleClick = (e: MouseEvent) => {
@@ -32,7 +30,7 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
         loading: 'Removendo item da lista de recentes...',
         success: 'Item removido da lista de recentes com sucesso!',
         error: (err: unknown) => {
-          errorHandler.error(err, { operation: 'userAction' })
+          logging.error('RemoveFromRecentButton error:', err)
           return 'Erro ao remover item da lista de recentes.'
         },
       },

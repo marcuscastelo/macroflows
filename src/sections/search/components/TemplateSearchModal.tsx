@@ -3,7 +3,7 @@ import { createEffect, Suspense } from 'solid-js'
 import {
   currentDayDiet,
   targetDay,
-} from '~/modules/diet/day-diet/application/dayDiet'
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -21,18 +21,18 @@ import {
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import {
-  createRecentFoodInput,
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
   updateRecentFood,
-} from '~/modules/recent-food/application/recentFood'
+} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
 import {
   debouncedSearch,
   refetchTemplates,
   setTemplateSearchTab,
   templates,
   templateSearchTab,
-} from '~/modules/search/application/search'
+} from '~/modules/template-search/application/usecases/templateSearchState'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
@@ -45,7 +45,6 @@ import {
   availableTabs,
   TemplateSearchTabs,
 } from '~/sections/search/components/TemplateSearchTabs'
-import { createErrorHandler } from '~/shared/error/errorHandler'
 import { formatError } from '~/shared/formatError'
 import {
   closeModal,
@@ -54,6 +53,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 import { isOverflow } from '~/shared/utils/macroOverflow'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
@@ -67,8 +67,6 @@ export type TemplateSearchModalProps = {
   onFinish?: () => void
   onClose?: () => void
 }
-
-const errorHandler = createErrorHandler('user', 'Search')
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
   const handleTemplateSelected = (template: Template) => {
@@ -91,7 +89,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         handleNewUnifiedItem(unifiedItem, templateItem, () =>
           controller.close(),
         ).catch((err) => {
-          errorHandler.error(err, { operation: 'handleNewUnifiedItem' })
+          logging.error('TemplateSearchModal handleNewUnifiedItem error:', err)
           showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
         })
       },
@@ -150,11 +148,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         )
       }
 
-      const recentFoodInput = createRecentFoodInput({
-        ...(recentFood ?? {}),
+      const recentFoodInput = createNewRecentFood({
         user_id: currentUserId(),
         type,
         reference_id: originalAddedItem.reference.id,
+        last_used: new Date(),
+        times_used: (recentFood?.times_used ?? 0) + 1,
       })
 
       if (recentFood !== null) {
@@ -208,7 +207,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
                 closeEditModal()
               })
               .catch((err) => {
-                errorHandler.error(err, { operation: 'Adicionar mesmo assim' })
+                logging.error(
+                  'TemplateSearchModal Adicionar mesmo assim error:',
+                  err,
+                )
                 showError(err, {}, 'Erro ao adicionar item')
                 closeModal(overflowModalId)
               })
@@ -222,16 +224,17 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       try {
         await onConfirm()
       } catch (err) {
-        errorHandler.error(err, { operation: 'adicionar item' })
+        logging.error('TemplateSearchModal adicionar item error:', err)
         showError(err, {}, 'Erro ao adicionar item')
       }
     }
   }
 
   const handleEANModal = () => {
-    const modalId = openContentModal(
-      () => (
+    openContentModal(
+      (modalId) => (
         <EANInsertModal
+          modalId={modalId}
           onSelect={(template: Template) => {
             handleTemplateSelected(template)
             closeModal(modalId)
@@ -263,7 +266,7 @@ export function TemplateSearch(props: {
   onTemplateSelected: (template: Template) => void
   onEANModal: () => void
 }) {
-  // TODO:   Determine if user is on desktop or mobile to set autofocus
+  // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   createEffect(() => {

@@ -1,12 +1,13 @@
 import { type Accessor, createMemo, createResource, Show } from 'solid-js'
 
-import { fetchRecipeById } from '~/modules/diet/recipe/application/recipe'
+import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { compareUnifiedItemArrays } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   isRecipeItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { getItemTypeDisplay } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
+import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemNameProps = {
   item: Accessor<UnifiedItem>
@@ -24,7 +25,7 @@ export function UnifiedItemName(props: UnifiedItemNameProps) {
       try {
         return await fetchRecipeById(recipeId)
       } catch (error) {
-        console.warn('Failed to fetch recipe for comparison:', error)
+        logging.warn('Failed to fetch recipe for comparison:', { error })
         return null
       }
     },

@@ -1,5 +1,7 @@
 import { createSignal, onCleanup, onMount } from 'solid-js'
 
+import { logging } from '~/shared/utils/logging'
+
 /**
  * Hook for observing element visibility using Intersection Observer API.
  * @param options - Intersection observer options
@@ -24,7 +26,7 @@ export function useIntersectionObserver(
   let pendingElements: (Element | undefined)[] = []
 
   onMount(() => {
-    console.debug('useIntersectionObserver: Mounting observer with options:', {
+    logging.debug('useIntersectionObserver: Mounting observer with options:', {
       threshold,
       root,
     })

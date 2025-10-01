@@ -1,8 +1,9 @@
 import { createMemo, createSignal, onMount, Suspense } from 'solid-js'
+import { type Accessor } from 'solid-js'
 
-import { type userWeights } from '~/modules/weight/application/weight'
 import { type WeightChartType } from '~/modules/weight/application/weightChartSettings'
 import { buildChartData } from '~/modules/weight/application/weightChartUtils'
+import { type Weight } from '~/modules/weight/domain/weight'
 import {
   calculateMovingAverage,
   groupWeightsByPeriod,
@@ -15,7 +16,7 @@ import { buildWeightChartSeries } from '~/sections/weight/components/WeightChart
  * Props for the WeightChart component.
  */
 export type WeightChartProps = {
-  weights: typeof userWeights
+  weights: Accessor<readonly Weight[]>
   desiredWeight: number
   type: WeightChartType
 }
@@ -46,12 +47,13 @@ export function WeightChart(props: WeightChartProps) {
   })
 
   const weightsByPeriod = createMemo(() => {
-    return groupWeightsByPeriod(props.weights.latest, props.type)
+    return groupWeightsByPeriod(props.weights(), props.type, isMobile())
   })
 
   const data = createMemo(() => {
     const periods = weightsByPeriod()
     if (Object.keys(periods).length === 0) return []
+
     return buildChartData(periods)
   })
 
@@ -95,21 +97,20 @@ export function WeightChart(props: WeightChartProps) {
     return buildWeightChartOptions({
       min,
       max,
-      type: props.type,
-      weights: props.weights.latest,
       polishedData: polishedData(),
       isMobile: isMobile(),
+      weightsByPeriod: weightsByPeriod(),
     })
   })
 
   const series = createMemo(() => buildWeightChartSeries(polishedData()))
 
-  const chartHeight = () => (isMobile() ? 400 : 600)
+  const chartHeight = () => (isMobile() ? 500 : 600)
 
   return (
     <Suspense fallback={<div>Loading chart...</div>}>
       <Chart
-        type="candlestick"
+        type="line"
         options={options()}
         series={series()}
         height={chartHeight()}

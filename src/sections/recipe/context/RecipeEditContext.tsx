@@ -17,7 +17,6 @@ export type RecipeContext = {
   saveRecipe: () => void
 }
 
-const recipeContext = createContext<RecipeContext | null>(null)
 const unifiedRecipeContext = createContext<RecipeContext | null>(null)
 
 export function useRecipeEditContext() {

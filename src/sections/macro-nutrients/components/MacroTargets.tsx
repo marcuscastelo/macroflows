@@ -8,11 +8,10 @@ import {
   untrack,
 } from 'solid-js'
 
-import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   insertMacroProfile,
   updateMacroProfile,
-} from '~/modules/diet/macro-profile/application/macroProfile'
+} from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
 import {
   createNewMacroProfile,
   type MacroProfile,
@@ -23,6 +22,7 @@ import { type Weight } from '~/modules/weight/domain/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 import { calcCalories } from '~/shared/utils/macroMath'
 
 const CARBO_CALORIES = 4 as const
@@ -72,7 +72,7 @@ const calculateMacroRepresentation = (
   }
 }
 
-// TODO:   Enable changing target calories directly (and update macros accordingly)
+// TODO: Enable changing target calories directly (and update macros accordingly)
 // const calculateDifferenceInCarbs = (
 //   targetCalories: number,
 //   weight: number,
@@ -93,21 +93,21 @@ export type MacroTargetProps = {
 }
 
 const onSaveMacroProfile = (profile: MacroProfile) => {
-  console.log('[ProfilePage] Saving profile', profile)
+  logging.info('[ProfilePage] Saving profile', profile)
   if (profile.target_day.getTime() > new Date(getTodayYYYYMMDD()).getTime()) {
     showError('Data alvo não pode ser no futuro')
     return
   } else if (
-    profile.id !== -1 && // TODO:   Better typing system for new MacroProfile instead of -1.
+    profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
-    console.log('[ProfilePage] Updating profile', profile)
+    logging.info('[ProfilePage] Updating profile', profile)
 
     // Same day, update
     updateMacroProfile(
       profile.id,
       createNewMacroProfile({
-        owner: profile.owner,
+        user_id: profile.user_id,
         target_day: profile.target_day,
         gramsPerKgCarbs: profile.gramsPerKgCarbs,
         gramsPerKgProtein: profile.gramsPerKgProtein,
@@ -117,10 +117,10 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
       showError(error, {}, 'Erro ao atualizar perfil de macro')
     })
   } else if (
-    profile.id === -1 || // TODO:   Better typing system for new MacroProfile instead of -1.
+    profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
-    console.log('[ProfilePage] Inserting profile', profile)
+    logging.info('[ProfilePage] Inserting profile', profile)
 
     // Past day, insert with new date
     void insertMacroProfile(
@@ -156,7 +156,7 @@ export function MacroTarget(props: MacroTargetProps) {
           class="input text-center font-bold"
           style={{ width: '100%' }}
           placeholder="Insira a meta de calorias diárias"
-          disabled={true} // TODO:   Enable changing target calories directly (and update macros accordingly).
+          disabled={true} // TODO: Enable changing target calories directly (and update macros accordingly).
           required
         />
       </div>
@@ -267,7 +267,7 @@ function MacroTargetSetting(props: {
     })
   }
 
-  // TODO:   Allow changing percentage directly
+  // TODO: Allow changing percentage directly
   // const makeOnSetPercentage =
   //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   //   (macro: 'carbs' | 'protein' | 'fat') => (percentage: number) => {

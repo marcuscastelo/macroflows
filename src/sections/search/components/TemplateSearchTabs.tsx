@@ -42,8 +42,10 @@ export function TemplateSearchTabs(props: {
       <For each={tabKeys}>
         {(tabKey, i) => {
           const tabId = () =>
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             availableTabs[tabKey as keyof typeof availableTabs].id
           const tabTitle = () =>
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             availableTabs[tabKey as keyof typeof availableTabs].title
           const isActive = () => props.tab() === tabId()
 

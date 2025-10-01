@@ -38,7 +38,7 @@ describe('Recipe scaling operations', () => {
     return promoteRecipe(
       createNewRecipe({
         name: 'Test Recipe',
-        owner: 1,
+        user_id: '',
         items,
         prepared_multiplier,
       }),
