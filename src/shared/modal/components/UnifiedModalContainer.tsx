@@ -19,7 +19,7 @@ function resolveStringValue<T extends string>(
   value: T | Accessor<T> | undefined,
 ): T | undefined {
   if (value === undefined) return undefined
-  return typeof value === 'function' ? (value as Accessor<T>)() : value
+  return typeof value === 'function' ? value() : value
 }
 
 /**
@@ -118,7 +118,7 @@ function ModalRenderer(props: ModalState) {
             }}
           >
             {props.type === 'confirmation'
-              ? resolveStringValue(props.cancelText) ?? 'Cancel'
+              ? (resolveStringValue(props.cancelText) ?? 'Cancel')
               : 'Cancel'}
           </button>
           <button
@@ -132,7 +132,7 @@ function ModalRenderer(props: ModalState) {
             }}
           >
             {props.type === 'confirmation'
-              ? resolveStringValue(props.confirmText) ?? 'Confirm'
+              ? (resolveStringValue(props.confirmText) ?? 'Confirm')
               : 'Confirm'}
           </button>
         </Modal.Footer>
