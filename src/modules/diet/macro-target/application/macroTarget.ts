@@ -24,59 +24,7 @@ export const calculateMacroTarget = (
     fat: weight * savedMacroTarget.gramsPerKgFat,
   })
 
-class WeightNotFoundForDayError extends Error {
-  readonly day: Date
-  readonly userId: User['uuid']
-  readonly errorId: string
 
-  constructor(day: Date, userId: User['uuid']) {
-    super(
-      `Peso não encontrado para o dia ${day.toISOString()}, usuário ${userId}`,
-    )
-    this.name = 'WeightNotFoundForDayError'
-    this.day = day
-    this.userId = userId
-    this.errorId = `weight-not-found-${userId}-${day.toISOString()}`
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      day: this.day.toISOString(),
-      userId: this.userId,
-      errorId: this.errorId,
-      stack: this.stack,
-    }
-  }
-}
-
-class MacroTargetNotFoundForDayError extends Error {
-  readonly day: Date
-  readonly userId: User['uuid']
-  readonly errorId: string
-
-  constructor(day: Date, userId: User['uuid']) {
-    super(
-      `Meta de macros não encontrada para o dia ${day.toISOString()}, usuário ${userId}`,
-    )
-    this.name = 'MacroTargetNotFoundForDayError'
-    this.day = day
-    this.userId = userId
-    this.errorId = `macro-target-not-found-${userId}-${day.toISOString()}`
-  }
-
-  toJSON() {
-    return {
-      name: this.name,
-      message: this.message,
-      day: this.day.toISOString(),
-      userId: this.userId,
-      errorId: this.errorId,
-      stack: this.stack,
-    }
-  }
-}
 
 export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
   const targetDayWeight_ = inForceWeight(userWeights(), day)?.weight ?? null
@@ -85,12 +33,32 @@ export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
   const userId = currentUserId()
 
   if (targetDayWeight_ === null) {
-    showError(new WeightNotFoundForDayError(day, userId), {})
+    showError(
+      new Error(`Peso não encontrado para o dia ${day.toISOString()}`, {
+        cause: {
+          day: day.toISOString(),
+          userId,
+          operation: 'getMacroTargetForDay',
+          errorId: `weight-not-found-${userId}-${day.toISOString()}`,
+        },
+      }),
+      {},
+    )
     return null
   }
 
   if (targetDayMacroProfile_ === null) {
-    showError(new MacroTargetNotFoundForDayError(day, userId), {})
+    showError(
+      new Error(`Meta de macros não encontrada para o dia ${day.toISOString()}`, {
+        cause: {
+          day: day.toISOString(),
+          userId,
+          operation: 'getMacroTargetForDay',
+          errorId: `macro-target-not-found-${userId}-${day.toISOString()}`,
+        },
+      }),
+      {},
+    )
     return null
   }
 

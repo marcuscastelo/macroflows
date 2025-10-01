@@ -123,12 +123,12 @@ export async function createFood(food: NewFood): Promise<void> {
 **Purpose**: Pure business logic, no side effects
 - **Never import or use side-effect utilities** (e.g., `handleApiError`, logging, toasts, API calls).
 - **Only throw standard errors** (e.g., `throw new Error('descriptive message', { cause: { context } })`)
-- If you need to provide error context, use custom error classes with properties, but do not depend on external modules.
+- Provide error context using the `cause` property with relevant data (e.g., IDs, operation names).
 
 ```typescript
 // GOOD (domain):
 throw new Error('Group mismatch: cannot mix different groups', { 
-  cause: { groupId, recipeId } 
+  cause: { groupId, recipeId, operation: 'validateGroupConsistency' } 
 })
 
 // BAD (domain):
@@ -183,7 +183,9 @@ try {
 **Example:**
 ```typescript
 // Domain
-throw new GroupConflictError('Group mismatch', { groupId, recipeId })
+throw new Error('Group mismatch: cannot mix different groups', {
+  cause: { groupId, recipeId, operation: 'validateGroupConsistency' }
+})
 
 // Application
 try {
