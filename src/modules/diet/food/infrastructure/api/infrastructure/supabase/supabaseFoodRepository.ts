@@ -112,10 +112,10 @@ async function insertFood(newFood: NewFood): Promise<Food> {
  * @throws Error if not created or on API/validation error
  */
 async function upsertFood(newFood: NewFood): Promise<Food> {
-  const createDAO = supabaseFoodMapper.toInsertDTO(newFood)
+  const createDTO = supabaseFoodMapper.toInsertDTO(newFood)
   const { data: food, error } = await supabase
     .from(SUPABASE_TABLE_FOODS)
-    .upsert(createDAO)
+    .upsert(createDTO)
     .select()
     .single()
 

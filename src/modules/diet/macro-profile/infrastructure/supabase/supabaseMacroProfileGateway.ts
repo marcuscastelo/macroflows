@@ -38,10 +38,10 @@ async function fetchUserMacroProfiles(
 async function insertMacroProfile(
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  const createDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
+  const createDTO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
-    .insert(createDAO)
+    .insert(createDTO)
     .select()
     .single()
 
@@ -57,10 +57,10 @@ async function updateMacroProfile(
   profileId: MacroProfile['id'],
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  const updateDAO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
+  const updateDTO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
-    .update(updateDAO)
+    .update(updateDTO)
     .eq('id', profileId)
     .select()
     .single()

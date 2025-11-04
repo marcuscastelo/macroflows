@@ -58,11 +58,11 @@ const fetchUser = async (userId: User['uuid']): Promise<User | null> => {
 }
 
 const insertUser = async (newUser: NewUser): Promise<User | null> => {
-  const createDAO = subapaseUserMapper.toInsertDTO(newUser)
+  const createDTO = subapaseUserMapper.toInsertDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
-    .insert(createDAO)
+    .insert(createDTO)
     .select()
 
   if (error !== null) {
@@ -78,11 +78,11 @@ const updateUser = async (
   userId: User['uuid'],
   newUser: NewUser,
 ): Promise<User | null> => {
-  const updateDAO = subapaseUserMapper.toUpdateDTO(newUser)
+  const updateDTO = subapaseUserMapper.toUpdateDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
-    .update(updateDAO)
+    .update(updateDTO)
     .eq('uuid', userId)
     .select()
 

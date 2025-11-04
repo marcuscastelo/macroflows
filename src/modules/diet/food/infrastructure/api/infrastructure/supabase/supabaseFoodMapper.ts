@@ -10,11 +10,11 @@ export type FoodDTO = Database['public']['Tables']['foods']['Row']
 export type InsertFoodDTO = Database['public']['Tables']['foods']['Insert']
 export type UpdateFoodDTO = Database['public']['Tables']['foods']['Update']
 
-function toDomain(dao: FoodDTO): Food {
+function toDomain(dto: FoodDTO): Food {
   return parseWithStack(foodSchema, {
-    ...dao,
-    ean: dao.ean ?? null,
-    source: dao.source ?? undefined,
+    ...dto,
+    ean: dto.ean ?? null,
+    source: dto.source ?? undefined,
   })
 }
 
