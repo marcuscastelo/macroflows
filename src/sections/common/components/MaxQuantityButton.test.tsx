@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import type { MacroValues } from '~/sections/common/components/MaxQuantityButton'
 
 /**
- * Extracted logic from MaxQuantityButton for testing
- * Tests the calculation logic without rendering the component
+ * Extracted logic from MaxQuantityButton for testing.
+ * Tests the calculation logic without rendering the component.
+ *
+ * NOTE: This is a test-only copy of the logic for verification purposes.
+ * The actual implementation is in MaxQuantityButton.tsx
  */
 function calculateMaxQuantity(
   macroTargets: MacroValues,
@@ -26,7 +29,8 @@ function calculateMaxQuantity(
       per100g > 0 &&
       typeof availableMacro === 'number'
     ) {
-      // Calculate maximum quantity in grams (100g portions)
+      // Calculate how many 100g portions fit in available macro,
+      // then convert back to grams (multiply by 100)
       const allowed = Math.floor(availableMacro / per100g) * 100
 
       if (allowed < max) {
@@ -35,6 +39,7 @@ function calculateMaxQuantity(
     }
   }
 
+  // Apply 4% safety margin to prevent accidentally exceeding macro limits
   const result = max === Infinity ? 0 : max * 0.96
   return result
 }

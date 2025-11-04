@@ -51,7 +51,8 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
         per100g > 0 &&
         typeof availableMacro === 'number'
       ) {
-        // Calculate maximum quantity in grams (100g portions)
+        // Calculate how many 100g portions fit in available macro,
+        // then convert back to grams (multiply by 100)
         const allowed = Math.floor(availableMacro / per100g) * 100
 
         logging.debug(
@@ -71,6 +72,8 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
     }
 
     logging.debug('Final max:', { max })
+    // Apply 4% safety margin to prevent accidentally exceeding macro limits
+    // due to rounding or measurement errors
     const result = max === Infinity ? 0 : max * 0.96
 
     logging.debug('Returning:', { result })
