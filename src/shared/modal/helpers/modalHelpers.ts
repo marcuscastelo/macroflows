@@ -18,7 +18,7 @@ import { logging } from '~/shared/utils/logging'
 /**
  * Opens a confirmation modal with standardized styling and behavior.
  *
- * @param message The confirmation message to display (can be static string or Accessor<string>)
+ * @param message The confirmation message to display (can be static string or reactive via MaybeAccessor)
  * @param options Configuration for the confirmation modal
  * @returns The modal ID for tracking
  */
