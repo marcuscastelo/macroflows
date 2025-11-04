@@ -150,14 +150,10 @@ export function useCopyPasteActions<T>({
     }, 0)
   }
 
-  const hasValidPastableOnClipboard = async () =>
-    isClipboardValid(await readFromClipboard())
-
   return {
     writeToClipboard,
     clearClipboard,
     handleCopy,
     handlePaste,
-    hasValidPastableOnClipboard,
   }
 }
