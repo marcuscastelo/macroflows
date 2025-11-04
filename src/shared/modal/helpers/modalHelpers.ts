@@ -7,6 +7,7 @@ import type { Accessor } from 'solid-js'
 
 import { modalManager } from '~/shared/modal/core/modalManager'
 import type {
+  MaybeAccessor,
   ModalBody,
   ModalId,
   ModalPriority,
@@ -23,11 +24,11 @@ import { logging } from '~/shared/utils/logging'
  */
 
 export function openConfirmModal(
-  message: string | Accessor<string>,
+  message: MaybeAccessor<string>,
   options: {
-    title?: ModalTitle | Accessor<ModalTitle>
-    confirmText?: string | Accessor<string>
-    cancelText?: string | Accessor<string>
+    title?: MaybeAccessor<ModalTitle>
+    confirmText?: MaybeAccessor<string>
+    cancelText?: MaybeAccessor<string>
     onConfirm: () => void | Promise<void>
     onCancel?: () => void
     priority?: ModalPriority
@@ -63,12 +64,12 @@ export function openConfirmModal(
 export function openContentModal(
   content: ModalBody | ((modalId: ModalId) => ModalBody),
   options: {
-    title?: ModalTitle | Accessor<ModalTitle>
+    title?: MaybeAccessor<ModalTitle>
     priority?: ModalPriority
     closeOnOutsideClick?: boolean
     closeOnEscape?: boolean
     showCloseButton?: boolean
-    footer?: ModalBody | Accessor<ModalBody>
+    footer?: MaybeAccessor<ModalBody>
     onClose?: () => void
   } = {},
 ): ModalId {
@@ -100,7 +101,7 @@ export function openContentModal(
 export function openEditModal(
   content: ModalBody | ((modalId: ModalId) => ModalBody),
   options: {
-    title: ModalTitle | Accessor<ModalTitle>
+    title: MaybeAccessor<ModalTitle>
     targetName?: string
     onClose?: () => void
     onSave?: () => void
@@ -108,7 +109,7 @@ export function openEditModal(
   },
 ): ModalId {
   try {
-    let fullTitle: ModalTitle | Accessor<ModalTitle>
+    let fullTitle: MaybeAccessor<ModalTitle>
 
     if (options.targetName !== undefined && options.targetName.length > 0) {
       if (typeof options.title === 'function') {

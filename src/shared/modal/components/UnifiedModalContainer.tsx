@@ -3,20 +3,20 @@
  * Renders all active modals using the existing Modal component.
  */
 
-import { type Accessor, For, Show } from 'solid-js'
+import { For, Show } from 'solid-js'
 
 import { Modal } from '~/sections/common/components/Modal'
 import { ModalErrorBoundary } from '~/shared/modal/components/ModalErrorBoundary'
 import { modals } from '~/shared/modal/core/modalManager'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalState } from '~/shared/modal/types/modalTypes'
+import type { MaybeAccessor, ModalState } from '~/shared/modal/types/modalTypes'
 
 /**
  * Resolves a value that could be static or an Accessor.
  * For JSXElement types, this should NOT be used as JSXElement can be a function.
  */
 function resolveStringValue<T extends string>(
-  value: T | Accessor<T> | undefined,
+  value: MaybeAccessor<T> | undefined,
 ): T | undefined {
   if (value === undefined) return undefined
   return typeof value === 'function' ? value() : value

@@ -7,9 +7,15 @@ export type ModalPriority = 'low' | 'normal' | 'high' | 'critical'
 export type ModalTitle = string
 export type ModalBody = JSXElement
 
+/**
+ * Helper type for values that can be static or reactive (Accessor).
+ * Simplifies type definitions throughout the modal system.
+ */
+export type MaybeAccessor<T> = T | Accessor<T>
+
 export type BaseModalConfig = {
   id?: ModalId
-  title?: ModalTitle | Accessor<ModalTitle>
+  title?: MaybeAccessor<ModalTitle>
   priority?: ModalPriority
   closeOnOutsideClick?: boolean
   closeOnEscape?: boolean
@@ -27,14 +33,14 @@ export type ErrorModalConfig = BaseModalConfig & {
 export type ContentModalConfig = BaseModalConfig & {
   type: 'content'
   content: ModalBody | ((modalId: ModalId) => ModalBody)
-  footer?: ModalBody | Accessor<ModalBody>
+  footer?: MaybeAccessor<ModalBody>
 }
 
 export type ConfirmationModalConfig = BaseModalConfig & {
   type: 'confirmation'
-  message: string | Accessor<string>
-  confirmText?: string | Accessor<string>
-  cancelText?: string | Accessor<string>
+  message: MaybeAccessor<string>
+  confirmText?: MaybeAccessor<string>
+  cancelText?: MaybeAccessor<string>
   onConfirm?: () => void | Promise<void>
   onCancel?: () => void
 }
