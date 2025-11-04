@@ -29,6 +29,7 @@ import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedMo
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 import { calcRecipeCalories } from '~/shared/utils/macroMath'
+import { isUnifiedItem } from '~/shared/utils/typeUtils'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -64,16 +65,6 @@ export function RecipeEditHeader(props: {
     acceptedClipboardSchema,
     getDataToCopy: () => recipe(),
     onPaste: (data) => {
-      // Helper function to check if an object is a UnifiedItem
-      const isUnifiedItem = (obj: unknown): obj is UnifiedItem => {
-        return (
-          typeof obj === 'object' &&
-          obj !== null &&
-          '__type' in obj &&
-          obj.__type === 'UnifiedItem'
-        )
-      }
-
       // Check if data is array of UnifiedItems
       if (Array.isArray(data) && data.every(isUnifiedItem)) {
         const itemsToAdd = data
