@@ -239,7 +239,7 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
 
   return (
     <div class="flex flex-col h-full">
-      <div class="flex-1 p-4">
+      <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
         <Show
           when={
             isFoodItem(item()) || isRecipeItem(item()) || isGroupItem(item())

@@ -173,7 +173,7 @@ export function MealEditViewHeader(props: {
   return (
     <Show when={meal()}>
       {(mealSignal) => (
-        <div class="flex">
+        <div class="flex" tabindex={0} onPaste={(e) => handlePaste(e)}>
           <div class="my-2">
             <h5 class="text-3xl">{mealSignal().name}</h5>
             <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>

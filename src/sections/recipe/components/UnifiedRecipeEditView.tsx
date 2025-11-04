@@ -103,7 +103,11 @@ export function RecipeEditView(props: RecipeEditViewProps) {
   }
 
   return (
-    <div class="flex flex-col gap-2 w-full">
+    <div
+      class="flex flex-col gap-2 w-full"
+      tabindex={0}
+      onPaste={(e) => handlePaste(e)}
+    >
       {props.header}
       <ClipboardActionButtons
         canCopy={recipe().items.length > 0}
