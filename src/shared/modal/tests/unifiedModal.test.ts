@@ -82,8 +82,8 @@ describe('Unified Modal System', () => {
   })
 
   it('should support Accessor types for reactive values', () => {
-    const [title, setTitle] = createSignal('Initial Title')
-    const [message, setMessage] = createSignal('Initial Message')
+    const [title] = createSignal('Initial Title')
+    const [message] = createSignal('Initial Message')
 
     const modalId = modalManager.openModal({
       type: 'confirmation',
