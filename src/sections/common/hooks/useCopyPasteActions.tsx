@@ -4,7 +4,11 @@ import {
   createClipboardSchemaFilter,
   useClipboard,
 } from '~/sections/common/hooks/useClipboard'
-import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import {
+  closeModal,
+  openConfirmModal,
+  openContentModal,
+} from '~/shared/modal/helpers/modalHelpers'
 import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 
 export function useCopyPasteActions<T>({
@@ -88,13 +92,62 @@ export function useCopyPasteActions<T>({
       return
     }
 
-    // No event-provided clipboard data: use the previous flow (confirmation -> clipboard API)
-    openConfirmModal('Tem certeza que deseja colar os itens?', {
-      title: 'Colar itens',
-      confirmText: 'Colar',
-      cancelText: 'Cancelar',
-      onConfirm: handlePasteAfterConfirm,
-    })
+    const modalId = openContentModal((mid) => (
+      <div class="p-4">
+        <p class="mb-2">
+          Cole os itens agora (pressione <strong>Ctrl/Cmd+V</strong>)
+        </p>
+        <div
+          id={`paste-target-${mid}`}
+          tabindex={0}
+          class="w-full h-24 rounded bg-gray-800 border border-gray-700 p-2 overflow-auto"
+          onPaste={(e: ClipboardEvent) => {
+            try {
+              const text = e.clipboardData?.getData('text') ?? ''
+              void closeModal(mid)
+              void processClipboardText(text, false)
+            } catch {
+              // ignore and keep modal open
+            }
+          }}
+        >
+          <div class="text-sm text-gray-400">
+            Foco aqui — pressione Ctrl/Cmd+V
+          </div>
+        </div>
+
+        <div class="mt-4 flex gap-2 justify-end">
+          <button
+            class="btn btn-ghost"
+            onClick={() => {
+              void closeModal(mid)
+              openConfirmModal('Tem certeza que deseja colar os itens?', {
+                title: 'Colar itens',
+                confirmText: 'Colar',
+                cancelText: 'Cancelar',
+                onConfirm: handlePasteAfterConfirm,
+              })
+            }}
+          >
+            Colar do clipboard (fallback)
+          </button>
+          <button
+            class="btn btn-primary"
+            onClick={() => {
+              void closeModal(mid)
+            }}
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    ))
+
+    // Focus the paste target element so the user can immediately press Ctrl/Cmd+V
+    setTimeout(() => {
+      const el = document.getElementById(`paste-target-${modalId}`)
+      el?.focus()
+    }, 0)
   }
 
   const hasValidPastableOnClipboard = async () =>
