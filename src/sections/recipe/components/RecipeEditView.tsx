@@ -60,46 +60,45 @@ export function RecipeEditHeader(props: {
 
   const { recipe } = useRecipeEditContext()
 
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => recipe(),
-      onPaste: (data) => {
-        // Helper function to check if an object is a UnifiedItem
-        const isUnifiedItem = (obj: unknown): obj is UnifiedItem => {
-          return (
-            typeof obj === 'object' &&
-            obj !== null &&
-            '__type' in obj &&
-            obj.__type === 'UnifiedItem'
-          )
-        }
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema,
+    getDataToCopy: () => recipe(),
+    onPaste: (data) => {
+      // Helper function to check if an object is a UnifiedItem
+      const isUnifiedItem = (obj: unknown): obj is UnifiedItem => {
+        return (
+          typeof obj === 'object' &&
+          obj !== null &&
+          '__type' in obj &&
+          obj.__type === 'UnifiedItem'
+        )
+      }
 
-        // Check if data is array of UnifiedItems
-        if (Array.isArray(data) && data.every(isUnifiedItem)) {
-          const itemsToAdd = data
-            .filter((item) => item.reference.type === 'food') // Only food items in recipes
-            .map((item) => regenerateId(item))
-          const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
+      // Check if data is array of UnifiedItems
+      if (Array.isArray(data) && data.every(isUnifiedItem)) {
+        const itemsToAdd = data
+          .filter((item) => item.reference.type === 'food') // Only food items in recipes
+          .map((item) => regenerateId(item))
+        const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
+        props.onUpdateRecipe(newRecipe)
+        return
+      }
+
+      // Check if data is single UnifiedItem
+      if (isUnifiedItem(data)) {
+        if (data.reference.type === 'food') {
+          const item = data
+          const regeneratedItem = regenerateId(item)
+          const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
           props.onUpdateRecipe(newRecipe)
-          return
         }
+        return
+      }
 
-        // Check if data is single UnifiedItem
-        if (isUnifiedItem(data)) {
-          if (data.reference.type === 'food') {
-            const item = data
-            const regeneratedItem = regenerateId(item)
-            const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
-            props.onUpdateRecipe(newRecipe)
-          }
-          return
-        }
-
-        // Handle other supported clipboard formats
-        logging.warn('Unsupported paste format:', data)
-      },
-    })
+      // Handle other supported clipboard formats
+      logging.warn('Unsupported paste format:', data)
+    },
+  })
 
   const recipeCalories = calcRecipeCalories(recipe())
 
@@ -121,8 +120,8 @@ export function RecipeEditHeader(props: {
         <p class="italic text-gray-400">{recipeCalories.toFixed(0)}kcal</p>
       </div>
       <ClipboardActionButtons
-        canCopy={!hasValidPastableOnClipboard() && recipe().items.length > 0}
-        canPaste={hasValidPastableOnClipboard()}
+        canCopy={recipe().items.length > 0}
+        canPaste={true}
         canClear={recipe().items.length > 0}
         onCopy={handleCopy}
         onPaste={handlePaste}

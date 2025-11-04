@@ -31,7 +31,6 @@ export type UnifiedItemEditBodyProps = {
   clipboardActions?: {
     onCopy: () => void
     onPaste: () => void
-    hasValidPastableOnClipboard: boolean
   }
   onAddNewItem?: () => void
   showAddItemButton?: boolean

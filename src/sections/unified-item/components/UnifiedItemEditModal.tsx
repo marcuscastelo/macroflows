@@ -229,14 +229,13 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
   }
 
   // Clipboard functionality
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema: unifiedItemSchema,
-      getDataToCopy: () => item(),
-      onPaste: (data) => {
-        setItem(data)
-      },
-    })
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema: unifiedItemSchema,
+    getDataToCopy: () => item(),
+    onPaste: (data) => {
+      setItem(data)
+    },
+  })
 
   return (
     <div class="flex flex-col h-full">
@@ -327,7 +326,6 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
             clipboardActions={{
               onCopy: handleCopy,
               onPaste: handlePaste,
-              hasValidPastableOnClipboard: hasValidPastableOnClipboard(),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({

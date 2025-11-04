@@ -25,19 +25,22 @@ export function useCopyPasteActions<T>({
 }) {
   const isClipboardValid = createClipboardSchemaFilter(acceptedClipboardSchema)
   const {
-    clipboard: clipboardText,
+    read: readFromClipboard,
     write: writeToClipboard,
     clear: clearClipboard,
-  } = useClipboard({ filter: isClipboardValid })
+  } = useClipboard({
+    filter: isClipboardValid,
+  })
 
   const handleCopy = () => {
     writeToClipboard(JSON.stringify(getDataToCopy()))
   }
 
-  const handlePasteAfterConfirm = () => {
-    const data = deserializeClipboard(clipboardText(), acceptedClipboardSchema)
+  const handlePasteAfterConfirm = async () => {
+    const clipboardText = await readFromClipboard()
+    const data = deserializeClipboard(clipboardText, acceptedClipboardSchema)
     if (data === null) {
-      throw new Error('Invalid clipboard data: ' + clipboardText())
+      throw new Error('Invalid clipboard data: ' + clipboardText)
     }
     onPaste(data)
     clearClipboard()
@@ -52,10 +55,10 @@ export function useCopyPasteActions<T>({
     })
   }
 
-  const hasValidPastableOnClipboard = () => isClipboardValid(clipboardText())
+  const hasValidPastableOnClipboard = async () =>
+    isClipboardValid(await readFromClipboard())
 
   return {
-    clipboardText,
     writeToClipboard,
     clearClipboard,
     handleCopy,
