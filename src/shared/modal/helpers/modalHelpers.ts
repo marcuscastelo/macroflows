@@ -3,7 +3,7 @@
  * These provide convenient APIs for frequently used modal operations.
  */
 
-import type { Accessor, JSXElement } from 'solid-js'
+import type { Accessor } from 'solid-js'
 
 import { modalManager } from '~/shared/modal/core/modalManager'
 import type {
@@ -113,6 +113,7 @@ export function openEditModal(
     if (options.targetName !== undefined && options.targetName.length > 0) {
       if (typeof options.title === 'function') {
         fullTitle = () =>
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           `${(options.title as Accessor<ModalTitle>)()} - ${options.targetName}`
       } else {
         fullTitle = `${options.title} - ${options.targetName}`

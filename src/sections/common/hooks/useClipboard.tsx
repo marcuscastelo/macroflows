@@ -1,4 +1,3 @@
-import { createEffect, createSignal } from 'solid-js'
 import { type z } from 'zod/v4'
 
 import {
@@ -19,20 +18,16 @@ export function useClipboard(props?: {
   periodicRead?: boolean
 }) {
   const filter = () => props?.filter
-  const periodicRead = () => props?.periodicRead ?? true
-  const [clipboard, setClipboard] = createSignal('')
 
   const handleWrite = (text: string, onError?: (error: unknown) => void) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (window.navigator.clipboard === undefined) {
       showError(`Clipboard API not supported`)
-      setClipboard('')
       return
     }
     window.navigator.clipboard
       .writeText(text)
       .then(() => {
-        setClipboard(text)
         if (text.length > 0) {
           showSuccess(`Copiado com sucesso`)
         }
@@ -46,41 +41,23 @@ export function useClipboard(props?: {
       })
   }
 
-  const handleRead = () => {
-    const afterRead = (newClipboard: string) => {
-      const filter_ = filter()
-      if (filter_ !== undefined && !filter_(newClipboard)) {
-        setClipboard('')
-        return
-      }
-
-      setClipboard(newClipboard)
-    }
+  const handleRead = async () => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (window.navigator.clipboard === undefined) {
-      // Clipboard API not supported, set empty clipboard
-      setClipboard('')
-      return
+      return ''
     }
-    window.navigator.clipboard
+    const clipboardText = await window.navigator.clipboard
       .readText()
-      .then(afterRead)
-      .catch(() => {
-        // Do nothing. This is expected when the DOM is not focused
-      })
-  }
-  // Update clipboard periodically
-  createEffect(() => {
-    if (!periodicRead()) return
+      .catch(() => '')
 
-    const interval = setInterval(handleRead, 1000)
-    return () => {
-      clearInterval(interval)
+    if (filter()?.(clipboardText) ?? true) {
+      return clipboardText
     }
-  })
+
+    return ''
+  }
 
   return {
-    clipboard,
     write: handleWrite,
     read: handleRead,
     clear: () => {
