@@ -153,20 +153,17 @@ export function createZodEntity<TEntity extends keyof typeof ENTITY_NAMES>(
       shape: TShape,
       entityExtras?: TExtras,
     ) => {
-      // TODO: remove defaultExtras (maybe entire entityExtras?)
-      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1065
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const defaultExtras = {
-        id: z.number(
-          createFieldValidationMessages(TYPE_DESCRIPTIONS.number, entityName),
-        ),
-      } as const satisfies z.ZodRawShape as z.ZodRawShape as TExtras
-
-      const a: TExtras = entityExtras ?? defaultExtras
+      const extras =
+        entityExtras ??
+        ({
+          id: z.number(
+            createFieldValidationMessages(TYPE_DESCRIPTIONS.number, entityName),
+          ),
+        } as const satisfies z.ZodRawShape)
 
       const schema = z.object({
         ...shape,
-        ...a,
+        ...extras,
         __type: z
           .string()
           .nullish()
