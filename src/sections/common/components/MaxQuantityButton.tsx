@@ -1,7 +1,6 @@
 import type { JSX } from 'solid-js'
 
 import { logging } from '~/shared/utils/logging'
-import { latestWeight } from '~/shared/utils/weightUtils'
 
 export type MacroValues = {
   carbs: number
@@ -20,52 +19,43 @@ export type MaxQuantityButtonProps = {
 /**
  * Button to set the input to the maximum allowed quantity based on macro constraints.
  * @param currentValue - Current value in the input
- * @param macroTargets - Daily macro limits
- * @param itemMacros - Macro values per unit for the item
+ * @param macroTargets - Available macro amounts in grams (absolute values, not per-kg)
+ * @param itemMacros - Macro values per 100g for the item
  * @param onMaxSelected - Callback to set the input value
  * @param disabled - Disables the button if true
  * @returns JSX.Element
  */
 export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
   function calculateMaxQuantity(): number {
-    // DEBUG: Start calculation
-
     logging.debug('calculateMaxQuantity called')
     let max = Infinity
 
-    const userWeightKg = latestWeight()?.weight
-    if (typeof userWeightKg !== 'number' || userWeightKg <= 0) {
-      logging.debug('Invalid user weight:', { userWeightKg })
-      return 0
-    }
-
-    logging.debug('User weight (kg):', { userWeightKg })
     const macroKeys: (keyof MacroValues)[] = ['carbs', 'protein', 'fat']
     for (const macro of macroKeys) {
       const per100g = props.itemMacros[macro]
-      const macroTargetPerKg = props.macroTargets[macro]
-      if (typeof macroTargetPerKg !== 'number' || macroTargetPerKg <= 0) {
+      const availableMacro = props.macroTargets[macro]
+
+      if (typeof availableMacro !== 'number' || availableMacro <= 0) {
         logging.debug(
-          `Skipping macro ${macro}: macroTargetPerKg invalid (macroTargetPerKg: ${macroTargetPerKg})`,
+          `Skipping macro ${macro}: availableMacro invalid (availableMacro: ${availableMacro})`,
         )
         continue
       }
-      // macroTarget em g/kg, precisa multiplicar pelo peso do usuário
-      const macroTarget = macroTargetPerKg * userWeightKg
 
       logging.debug(
-        `Macro: ${macro}, per100g: ${per100g}, macroTarget (total): ${macroTarget}`,
+        `Macro: ${macro}, per100g: ${per100g}, availableMacro: ${availableMacro}`,
       )
+
       if (
         typeof per100g === 'number' &&
         per100g > 0 &&
-        typeof macroTarget === 'number'
+        typeof availableMacro === 'number'
       ) {
-        // Quantidade máxima em porções de 100g
-        const allowed = Math.floor(macroTarget / per100g)
+        // Calculate maximum quantity in grams (100g portions)
+        const allowed = Math.floor(availableMacro / per100g) * 100
 
         logging.debug(
-          `Allowed for macro ${macro}: Math.floor(${macroTarget} / ${per100g}) = ${allowed}`,
+          `Allowed for macro ${macro}: Math.floor(${availableMacro} / ${per100g}) * 100 = ${allowed}`,
         )
         if (allowed < max) {
           logging.debug(
@@ -75,7 +65,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
         }
       } else {
         logging.debug(
-          `Skipping macro ${macro}: per100g or macroTarget invalid (per100g: ${per100g}, macroTarget: ${macroTarget})`,
+          `Skipping macro ${macro}: per100g or availableMacro invalid (per100g: ${per100g}, availableMacro: ${availableMacro})`,
         )
       }
     }
