@@ -65,7 +65,7 @@ export function createClipboardEntry(
   options?: { pinned?: boolean },
 ): ClipboardEntry {
   return {
-    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
     payload,
     createdAt: Date.now(),
     pinned: options?.pinned ?? false,
