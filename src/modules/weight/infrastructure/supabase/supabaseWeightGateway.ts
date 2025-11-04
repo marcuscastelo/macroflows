@@ -29,10 +29,10 @@ async function fetchUserWeights(userId: User['uuid']) {
 }
 
 async function insertWeight(newWeight: NewWeight) {
-  const weightDAO = supabaseWeightMapper.toInsertDTO(newWeight)
+  const weightDTO = supabaseWeightMapper.toInsertDTO(newWeight)
   const { data: weight, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
-    .insert(weightDAO)
+    .insert(weightDTO)
     .select()
     .single()
 
@@ -44,10 +44,10 @@ async function insertWeight(newWeight: NewWeight) {
 }
 
 async function updateWeight(weightId: Weight['id'], weightUpdate: Weight) {
-  const weightDAO = supabaseWeightMapper.toUpdateDTO(weightUpdate)
+  const weightDTO = supabaseWeightMapper.toUpdateDTO(weightUpdate)
   const { data: weight, error } = await supabase
     .from(SUPABASE_TABLE_WEIGHTS)
-    .update(weightDAO)
+    .update(weightDTO)
     .eq('id', weightId)
     .select()
     .single()
