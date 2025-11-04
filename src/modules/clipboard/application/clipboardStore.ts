@@ -52,9 +52,7 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
         if (newEntries.length > maxEntries) {
           newEntries = [
             entry,
-            ...prev
-              .filter((e) => e.pinned)
-              .slice(0, maxEntries - 1),
+            ...prev.filter((e) => e.pinned).slice(0, maxEntries - 1),
           ]
         }
         return newEntries
@@ -69,7 +67,7 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
      */
     read(): ClipboardEntry | null {
       const allEntries = entries()
-      return allEntries.length > 0 ? allEntries[0] : null
+      return allEntries.length > 0 ? (allEntries[0] ?? null) : null
     },
 
     /**

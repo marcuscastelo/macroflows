@@ -5,10 +5,7 @@ import {
   createLocalStoragePersistence,
   createNoOpPersistence,
 } from '~/modules/clipboard/infrastructure/clipboardPersistence'
-import {
-  createNewMeal,
-  promoteMeal,
-} from '~/modules/diet/meal/domain/meal'
+import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 
 describe('ClipboardPersistence', () => {
   describe('NoOpPersistence', () => {
@@ -80,7 +77,7 @@ describe('ClipboardPersistence', () => {
 
     beforeEach(() => {
       // @ts-expect-error - mocking localStorage
-      global.localStorage = mockLocalStorage
+      globalThis.localStorage = mockLocalStorage
       mockLocalStorage.clear()
       vi.clearAllMocks()
     })
@@ -135,7 +132,7 @@ describe('ClipboardPersistence', () => {
 
       const loaded = persistence.load()
       expect(loaded).toHaveLength(1)
-      expect(loaded[0].id).toBe('1')
+      expect(loaded[0]!.id).toBe('1')
     })
 
     it('returns empty array when localStorage is empty', () => {
@@ -169,10 +166,9 @@ describe('ClipboardPersistence', () => {
         id: '1',
         payload: {
           __type: 'Meal',
-          value: promoteMeal(
-            createNewMeal({ name: 'Valid Meal', items: [] }),
-            { id: 1 },
-          ),
+          value: promoteMeal(createNewMeal({ name: 'Valid Meal', items: [] }), {
+            id: 1,
+          }),
         },
         createdAt: Date.now(),
         pinned: false,
@@ -193,7 +189,7 @@ describe('ClipboardPersistence', () => {
 
       // Only valid entry should be loaded
       expect(loaded).toHaveLength(1)
-      expect(loaded[0].id).toBe('1')
+      expect(loaded[0]!.id).toBe('1')
     })
 
     it('cleanExpired removes old entries', () => {
@@ -229,7 +225,7 @@ describe('ClipboardPersistence', () => {
       const cleaned = persistence.cleanExpired([oldEntry, recentEntry])
 
       expect(cleaned).toHaveLength(1)
-      expect(cleaned[0].id).toBe('2')
+      expect(cleaned[0]!.id).toBe('2')
     })
 
     it('cleanExpired preserves pinned entries', () => {
@@ -253,7 +249,7 @@ describe('ClipboardPersistence', () => {
       const cleaned = persistence.cleanExpired([oldPinnedEntry])
 
       expect(cleaned).toHaveLength(1)
-      expect(cleaned[0].pinned).toBe(true)
+      expect(cleaned[0]!.pinned).toBe(true)
     })
 
     it('clear removes data from localStorage', () => {

@@ -37,7 +37,8 @@ export function createLocalStoragePersistence(
           return []
         }
 
-        const parsed = JSON.parse(stored)
+        // eslint-disable-next-line no-restricted-syntax
+        const parsed: unknown = JSON.parse(stored)
         if (!Array.isArray(parsed)) {
           logging.warn('Invalid clipboard data in localStorage, clearing')
           localStorage.removeItem(STORAGE_KEY)

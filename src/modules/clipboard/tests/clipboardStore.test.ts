@@ -6,10 +6,8 @@ import {
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
 import { type ClipboardPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
-import {
-  createNewMeal,
-  promoteMeal,
-} from '~/modules/diet/meal/domain/meal'
+import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import {
   createNewRecipe,
   promoteRecipe,
@@ -19,8 +17,10 @@ import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedIte
 describe('ClipboardStore', () => {
   const mockPersistence: ClipboardPersistence = {
     save: vi.fn(),
-    load: vi.fn(() => []),
-    cleanExpired: vi.fn((entries) => entries),
+    load: vi.fn((): ClipboardEntry[] => []),
+    cleanExpired: vi.fn(
+      (entries: ClipboardEntry[]): ClipboardEntry[] => entries,
+    ),
     clear: vi.fn(),
   }
 
@@ -44,7 +44,7 @@ describe('ClipboardStore', () => {
           reference: {
             type: 'food',
             id: 1,
-            macros: { protein: 10, carbs: 20, fat: 5 },
+            macros: createMacroNutrients({ protein: 10, carbs: 20, fat: 5 }),
           },
         }),
       }
@@ -53,26 +53,30 @@ describe('ClipboardStore', () => {
 
       const entries = store.readAll()
       expect(entries).toHaveLength(1)
-      expect(entries[0].payload).toEqual(payload)
+      expect(entries[0]!.payload).toEqual(payload)
     })
 
     it('adds entry at the beginning', () => {
       const store = createClipboardStore()
       const payload1: ClipboardPayload = {
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       }
       const payload2: ClipboardPayload = {
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       }
 
       store.copy(payload1)
       store.copy(payload2)
 
       const entries = store.readAll()
-      expect(entries[0].payload).toEqual(payload2)
-      expect(entries[1].payload).toEqual(payload1)
+      expect(entries[0]!.payload).toEqual(payload2)
+      expect(entries[1]!.payload).toEqual(payload1)
     })
 
     it('respects maxEntries limit', () => {
@@ -81,7 +85,9 @@ describe('ClipboardStore', () => {
       for (let i = 0; i < 5; i++) {
         store.copy({
           __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), { id: 1 }),
+          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
+            id: 1,
+          }),
         })
       }
 
@@ -94,16 +100,20 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
       const entries = store.readAll()
-      store.togglePin(entries[0].id)
+      store.togglePin(entries[0]!.id)
 
       // Add more entries
       for (let i = 2; i <= 5; i++) {
         store.copy({
           __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), { id: 1 }),
+          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
+            id: 1,
+          }),
         })
       }
 
@@ -115,12 +125,15 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore({ persistence: mockPersistence })
       const payload: ClipboardPayload = {
         __type: 'Recipe',
-        value: createNewRecipe({
-          name: 'Test Recipe',
-          user_id: 'user1',
-          items: [],
-          prepared_multiplier: 1,
-        }),
+        value: promoteRecipe(
+          createNewRecipe({
+            name: 'Test Recipe',
+            user_id: 'user1',
+            items: [],
+            prepared_multiplier: 1,
+          }),
+          { id: 1 },
+        ),
       }
 
       store.copy(payload)
@@ -135,7 +148,9 @@ describe('ClipboardStore', () => {
 
       const payload: ClipboardPayload = {
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Test Meal', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Test Meal', items: [] }), {
+          id: 1,
+        }),
       }
 
       store.copy(payload)
@@ -150,11 +165,15 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
       const payload1: ClipboardPayload = {
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       }
       const payload2: ClipboardPayload = {
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       }
 
       store.copy(payload1)
@@ -176,11 +195,15 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       })
 
       expect(store.readAll()).toHaveLength(2)
@@ -198,11 +221,15 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       })
 
       store.clear()
@@ -215,21 +242,25 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       })
 
       const entries = store.readAll()
-      store.togglePin(entries[0].id)
+      store.togglePin(entries[0]!.id)
 
       store.clear()
 
       const remaining = store.readAll()
       expect(remaining).toHaveLength(1)
-      expect(remaining[0].pinned).toBe(true)
+      expect(remaining[0]!.pinned).toBe(true)
     })
 
     it('calls persistence save', () => {
@@ -245,15 +276,19 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+          id: 1,
+        }),
       })
 
       const entries = store.readAll()
-      store.remove(entries[0].id)
+      store.remove(entries[0]!.id)
 
       expect(store.readAll()).toHaveLength(1)
     })
@@ -265,19 +300,21 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
 
       const entries = store.readAll()
-      const entryId = entries[0].id
+      const entryId = entries[0]!.id
 
-      expect(entries[0].pinned).toBe(false)
-
-      store.togglePin(entryId)
-      expect(store.readAll()[0].pinned).toBe(true)
+      expect(entries[0]!.pinned).toBe(false)
 
       store.togglePin(entryId)
-      expect(store.readAll()[0].pinned).toBe(false)
+      expect(store.readAll()[0]!.pinned).toBe(true)
+
+      store.togglePin(entryId)
+      expect(store.readAll()[0]!.pinned).toBe(false)
     })
   })
 
@@ -290,7 +327,9 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
@@ -305,7 +344,9 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
 
       expect(subscriber).not.toHaveBeenCalled()
@@ -318,7 +359,9 @@ describe('ClipboardStore', () => {
 
       store.copy({
         __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), { id: 1 }),
+        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+          id: 1,
+        }),
       })
 
       store.cleanExpired()
@@ -331,7 +374,9 @@ describe('ClipboardStore', () => {
         id: '1',
         payload: {
           __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), { id: 1 }),
+          value: promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), {
+            id: 1,
+          }),
         },
         createdAt: Date.now() - 10 * 24 * 60 * 60 * 1000, // 10 days ago
         pinned: false,
@@ -339,8 +384,8 @@ describe('ClipboardStore', () => {
 
       const customPersistence: ClipboardPersistence = {
         save: vi.fn(),
-        load: vi.fn(() => [mockEntry]),
-        cleanExpired: vi.fn(() => []), // Simulate all expired
+        load: vi.fn((): ClipboardEntry[] => [mockEntry]),
+        cleanExpired: vi.fn((): ClipboardEntry[] => []), // Simulate all expired
         clear: vi.fn(),
       }
 
@@ -359,7 +404,10 @@ describe('ClipboardStore', () => {
         id: '1',
         payload: {
           __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: 'Persisted Meal', items: [] }), { id: 1 }),
+          value: promoteMeal(
+            createNewMeal({ name: 'Persisted Meal', items: [] }),
+            { id: 1 },
+          ),
         },
         createdAt: Date.now(),
         pinned: false,
@@ -367,15 +415,17 @@ describe('ClipboardStore', () => {
 
       const loadPersistence: ClipboardPersistence = {
         save: vi.fn(),
-        load: vi.fn(() => [mockEntry]),
-        cleanExpired: vi.fn((entries) => entries),
+        load: vi.fn((): ClipboardEntry[] => [mockEntry]),
+        cleanExpired: vi.fn(
+          (entries: ClipboardEntry[]): ClipboardEntry[] => entries,
+        ),
         clear: vi.fn(),
       }
 
       const store = createClipboardStore({ persistence: loadPersistence })
 
       expect(store.readAll()).toHaveLength(1)
-      expect(store.readAll()[0].payload.__type).toBe('Meal')
+      expect(store.readAll()[0]!.payload.__type).toBe('Meal')
     })
   })
 })
