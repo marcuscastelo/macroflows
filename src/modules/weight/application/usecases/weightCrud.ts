@@ -3,6 +3,7 @@ import { type User } from '~/modules/user/domain/user'
 import { type WeightStorageRepository } from '~/modules/weight/domain/storageRepository'
 import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
 import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
+import { weightCacheStore } from '~/modules/weight/infrastructure/signals/weightCacheStore'
 import { logging } from '~/shared/utils/logging'
 
 export function createWeightCrudService(deps: {
@@ -30,6 +31,7 @@ export function createWeightCrudService(deps: {
           error: 'Falha ao inserir peso',
         },
       )
+      weightCacheStore.upsertToCache(weight)
       return weight
     } catch (error) {
       logging.error('Weight operation error:', error)
@@ -47,6 +49,7 @@ export function createWeightCrudService(deps: {
           error: 'Falha ao atualizar peso',
         },
       )
+      weightCacheStore.upsertToCache(weight)
       return weight
     } catch (error) {
       logging.error('Weight operation error:', error)
@@ -61,6 +64,7 @@ export function createWeightCrudService(deps: {
         success: 'Peso deletado com sucesso',
         error: 'Falha ao deletar peso',
       })
+      weightCacheStore.removeFromCache({ by: 'id', value: weightId })
     } catch (error) {
       logging.error('Weight operation error:', error)
       throw error

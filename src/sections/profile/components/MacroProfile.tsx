@@ -18,19 +18,12 @@ export function MacroProfileSettings() {
         }
       >
         {(weight) => (
-          <Show
-            when={latestMacroProfile()}
-            fallback={<h1>Não há perfis de macro registrados</h1>}
-          >
-            {(macroProfile) => (
-              <MacroTarget
-                weight={() => weight().weight}
-                currentProfile={macroProfile}
-                previousMacroProfile={previousMacroProfile}
-                mode="edit"
-              />
-            )}
-          </Show>
+          <MacroTarget
+            weight={() => weight().weight}
+            currentProfile={latestMacroProfile}
+            previousMacroProfile={previousMacroProfile}
+            mode="edit"
+          />
         )}
       </Show>
     </div>

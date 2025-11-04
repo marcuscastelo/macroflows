@@ -275,7 +275,7 @@ export function openRestoreProfileModal(
   let controller: ModalController
 
   const previousProfileWeight = () =>
-    inForceWeight(userWeights.latest, config.previousMacroProfile.target_day)
+    inForceWeight(userWeights(), config.previousMacroProfile.target_day)
       ?.weight ??
     latestWeight()?.weight ??
     0
