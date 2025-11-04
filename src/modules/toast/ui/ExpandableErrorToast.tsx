@@ -14,7 +14,6 @@ import {
   type ToastItem,
   type ToastType,
 } from '~/modules/toast/domain/toastTypes'
-import { handleCopyErrorToClipboard } from '~/modules/toast/infrastructure/clipboardErrorUtils'
 import { modalManager } from '~/shared/modal/core/modalManager'
 
 /**
@@ -47,7 +46,6 @@ type ExpandableToastContentProps = {
   isTruncated: boolean
   originalMessage: string
   canExpand: boolean
-  onCopy: () => void
   errorDetails: ToastError
   type: ToastType
 }
@@ -63,12 +61,6 @@ export function ExpandableToast(props: ExpandableToastProps) {
     if (props.onDismiss) {
       props.onDismiss()
     }
-  }
-  const handleCopy = () => {
-    void handleCopyErrorToClipboard(props.errorDetails, {
-      component: 'ExpandableErrorToast',
-      operation: 'handleCopy',
-    })
   }
 
   return (
@@ -91,7 +83,6 @@ export function ExpandableToast(props: ExpandableToastProps) {
         isTruncated={props.isTruncated}
         originalMessage={props.originalMessage}
         canExpand={props.canExpand}
-        onCopy={handleCopy}
         errorDetails={props.errorDetails}
         type={props.type}
       />
@@ -328,14 +319,6 @@ function ExpandableToastContent(props: ExpandableToastContentProps) {
           aria-label="Show error details"
         >
           {TOAST_MESSAGES.SHOW_DETAILS}
-        </button>
-        <button
-          type="button"
-          class="px-2 py-1 rounded bg-gray-700 text-gray-100 text-xs hover:bg-gray-600 transition-colors"
-          onClick={() => props.onCopy()}
-          aria-label="Copy error details"
-        >
-          {TOAST_MESSAGES.COPY_ERROR}
         </button>
       </div>
     </div>
