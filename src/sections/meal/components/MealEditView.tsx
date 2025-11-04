@@ -28,6 +28,7 @@ import {
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 import { calcMealCalories } from '~/shared/utils/macroMath'
+import { isMeal, isUnifiedItem } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -90,73 +91,46 @@ export function MealEditViewHeader(props: {
     .or(unifiedItemSchema)
     .or(z.array(unifiedItemSchema))
 
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => meal(),
-      onPaste: (data) => {
-        // Check if data is already UnifiedItem(s) and handle directly
-        if (Array.isArray(data)) {
-          const firstItem = data[0]
-          if (firstItem && '__type' in firstItem) {
-            // Handle array of UnifiedItems - type is already validated by schema
-            const unifiedItemsToAdd = data.map((item) => ({
-              ...item,
-              id: regenerateId(item).id,
-            }))
-
-            // Update the meal with all items at once
-            const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
-            props.onUpdateMeal(updatedMeal)
-            return
-          }
-        }
-
-        if (
-          typeof data === 'object' &&
-          '__type' in data &&
-          data.__type === 'Meal'
-        ) {
-          // Handle pasted Meal - extract its items and add them to current meal
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          const mealData = data as Meal
-          logging.debug('Pasting meal with items:', { mealData })
-          const unifiedItemsToAdd = mealData.items.map((item) => ({
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema,
+    getDataToCopy: () => meal(),
+    onPaste: (data) => {
+      if (Array.isArray(data)) {
+        const firstItem = data[0]
+        if (firstItem && isUnifiedItem(firstItem)) {
+          const unifiedItemsToAdd = data.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
-          logging.debug('Items to add:', { unifiedItemsToAdd })
-
-          // Update the meal with all items at once
           const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
           props.onUpdateMeal(updatedMeal)
           return
         }
+      }
 
-        if (
-          typeof data === 'object' &&
-          '__type' in data &&
-          data.__type === 'UnifiedItem'
-        ) {
-          // Handle single UnifiedItem - type is already validated by schema
-          const regeneratedItem = {
-            ...data,
-            id: regenerateId(data).id,
-          }
+      if (isMeal(data)) {
+        const unifiedItemsToAdd = data.items.map((item) => ({
+          ...item,
+          id: regenerateId(item).id,
+        }))
+        const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+        props.onUpdateMeal(updatedMeal)
+        return
+      }
 
-          // Update the meal with the single item
-          const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
-          props.onUpdateMeal(updatedMeal)
-          return
+      if (isUnifiedItem(data)) {
+        const regeneratedItem = {
+          ...data,
+          id: regenerateId(data).id,
         }
+        const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
+        props.onUpdateMeal(updatedMeal)
+        return
+      }
 
-        // Handle other types supported by schema (recipes, etc.)
-        // Since schema validation passed, this should be a recipe
-        // For now, we'll skip unsupported formats in paste
-        // TODO: Add proper recipe-to-items conversion if needed
-        logging.warn('Unsupported paste format:', { data })
-      },
-    })
+      logging.warn('Unsupported paste format:', { data })
+    },
+  })
 
   const mealCalories = () => calcMealCalories(meal())
 
@@ -174,17 +148,15 @@ export function MealEditViewHeader(props: {
   return (
     <Show when={meal()}>
       {(mealSignal) => (
-        <div class="flex">
+        <div class="flex" tabindex={0} onPaste={(e) => handlePaste(e)}>
           <div class="my-2">
             <h5 class="text-3xl">{mealSignal().name}</h5>
             <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
           </div>
           {props.mode !== 'summary' && (
             <ClipboardActionButtons
-              canCopy={
-                !hasValidPastableOnClipboard() && mealSignal().items.length > 0
-              }
-              canPaste={hasValidPastableOnClipboard()}
+              canCopy={mealSignal().items.length > 0}
+              canPaste={true}
               canClear={mealSignal().items.length > 0}
               onCopy={handleCopy}
               onPaste={handlePaste}
