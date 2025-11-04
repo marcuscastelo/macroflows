@@ -9,9 +9,7 @@ export type Template = Food | Recipe
  * @returns True if Template is food
  */
 export function isTemplateFood(t: Template): t is Food {
-  // TODO: Replace property assertion as typeguard with a more reliable alternetive
-  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1062
-  return 'ean' in t && 'macros' in t && !('user_id' in t)
+  return t.__type === 'Food'
 }
 
 /**
@@ -20,7 +18,5 @@ export function isTemplateFood(t: Template): t is Food {
  * @returns True if Template is recipe
  */
 export function isTemplateRecipe(t: Template): t is Recipe {
-  // TODO: Replace property assertion as typeguard with a more reliable alternetive
-  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1061
-  return 'user_id' in t && 'items' in t && 'prepared_multiplier' in t
+  return t.__type === 'Recipe'
 }

@@ -1,5 +1,4 @@
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { inForceGeneric } from '~/shared/utils/generic/inForce'
 
 export function getLatestMacroProfile(
   macroProfiles: readonly MacroProfile[],
@@ -15,5 +14,11 @@ export function inForceMacroProfile(
   macroProfiles: readonly MacroProfile[],
   date: Date,
 ) {
-  return inForceGeneric(macroProfiles, 'target_day', date)
+  return [...macroProfiles]
+    .reverse()
+    .find(
+      (item) =>
+        item.target_day.getTime() <=
+        new Date(date.toISOString().split('T')[0] ?? 0).getTime(),
+    )
 }

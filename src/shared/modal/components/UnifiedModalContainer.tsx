@@ -3,7 +3,7 @@
  * Renders all active modals using the existing Modal component.
  */
 
-import { For, Show } from 'solid-js'
+import { type Accessor, For, Show } from 'solid-js'
 
 import { Modal } from '~/sections/common/components/Modal'
 import { ModalErrorBoundary } from '~/shared/modal/components/ModalErrorBoundary'
@@ -12,17 +12,30 @@ import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import type { ModalState } from '~/shared/modal/types/modalTypes'
 
 /**
+ * Resolves a value that could be static or an Accessor.
+ * For JSXElement types, this should NOT be used as JSXElement can be a function.
+ */
+function resolveStringValue<T extends string>(
+  value: T | Accessor<T> | undefined,
+): T | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'function' ? value() : value
+}
+
+/**
  * Renders individual modal content based on modal type.
  */
 function ModalRenderer(props: ModalState) {
+  const title = () => resolveStringValue(props.title)
+
   return (
     <Modal {...props}>
       <Show when={props.showCloseButton !== false}>
-        <Modal.Header {...props}> {props.title} </Modal.Header>
+        <Modal.Header {...props}> {title()} </Modal.Header>
       </Show>
       <Show when={props.showCloseButton === false}>
         <div class="flex gap-4 justify-between items-center">
-          <div class="flex-1">{props.title}</div>
+          <div class="flex-1">{title()}</div>
         </div>
       </Show>
 
@@ -73,7 +86,9 @@ function ModalRenderer(props: ModalState) {
           <Show when={props.type === 'confirmation'}>
             <div class="confirmation-modal">
               <p class="mb-6 text-gray-200">
-                {props.type === 'confirmation' ? props.message : ''}
+                {props.type === 'confirmation'
+                  ? resolveStringValue(props.message)
+                  : ''}
               </p>
             </div>
           </Show>
@@ -103,7 +118,7 @@ function ModalRenderer(props: ModalState) {
             }}
           >
             {props.type === 'confirmation'
-              ? (props.cancelText ?? 'Cancel')
+              ? (resolveStringValue(props.cancelText) ?? 'Cancel')
               : 'Cancel'}
           </button>
           <button
@@ -117,7 +132,7 @@ function ModalRenderer(props: ModalState) {
             }}
           >
             {props.type === 'confirmation'
-              ? (props.confirmText ?? 'Confirm')
+              ? (resolveStringValue(props.confirmText) ?? 'Confirm')
               : 'Confirm'}
           </button>
         </Modal.Footer>

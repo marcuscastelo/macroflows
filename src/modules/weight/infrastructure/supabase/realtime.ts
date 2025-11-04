@@ -1,4 +1,5 @@
 import { weightSchema } from '~/modules/weight/domain/weight'
+import { weightCacheStore } from '~/modules/weight/infrastructure/signals/weightCacheStore'
 import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
@@ -15,10 +16,33 @@ export function initializeWeightRealtime(): void {
     SUPABASE_TABLE_WEIGHTS,
     weightSchema,
     (event) => {
-      logging.debug(`Event:`, event)
+      logging.debug(`Weight realtime event ${event.eventType}:`, event)
 
-      // TODO: Integrate with weight cache store for real-time updates
-      // Similar to day-diet pattern: upsert/remove from cache based on event
+      switch (event.eventType) {
+        case 'INSERT': {
+          if (event.new !== undefined) {
+            weightCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'UPDATE': {
+          if (event.new) {
+            weightCacheStore.upsertToCache(event.new)
+          }
+          break
+        }
+
+        case 'DELETE': {
+          if (event.old) {
+            weightCacheStore.removeFromCache({
+              by: 'id',
+              value: event.old.id,
+            })
+          }
+          break
+        }
+      }
     },
   )
 }

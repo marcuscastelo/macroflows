@@ -229,18 +229,17 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
   }
 
   // Clipboard functionality
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema: unifiedItemSchema,
-      getDataToCopy: () => item(),
-      onPaste: (data) => {
-        setItem(data)
-      },
-    })
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema: unifiedItemSchema,
+    getDataToCopy: () => item(),
+    onPaste: (data) => {
+      setItem(data)
+    },
+  })
 
   return (
     <div class="flex flex-col h-full">
-      <div class="flex-1 p-4">
+      <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
         <Show
           when={
             isFoodItem(item()) || isRecipeItem(item()) || isGroupItem(item())
@@ -327,7 +326,6 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
             clipboardActions={{
               onCopy: handleCopy,
               onPaste: handlePaste,
-              hasValidPastableOnClipboard: hasValidPastableOnClipboard(),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({

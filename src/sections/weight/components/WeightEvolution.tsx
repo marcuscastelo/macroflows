@@ -31,7 +31,7 @@ export function WeightEvolution() {
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const weightProgress = () =>
     calculateWeightProgress(
-      userWeights.latest,
+      userWeights(),
       desiredWeight(),
       currentUser()?.diet ?? 'cut',
     )
@@ -131,7 +131,7 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...userWeights.latest].reverse().slice(0, 10)}
+              each={[...userWeights()].reverse().slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

@@ -91,26 +91,14 @@ export function MealEditViewHeader(props: {
     .or(unifiedItemSchema)
     .or(z.array(unifiedItemSchema))
 
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => meal(),
-      onPaste: (data) => {
-        if (Array.isArray(data)) {
-          const firstItem = data[0]
-          if (firstItem && isUnifiedItem(firstItem)) {
-            const unifiedItemsToAdd = data.map((item) => ({
-              ...item,
-              id: regenerateId(item).id,
-            }))
-            const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
-            props.onUpdateMeal(updatedMeal)
-            return
-          }
-        }
-
-        if (isMeal(data)) {
-          const unifiedItemsToAdd = data.items.map((item) => ({
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema,
+    getDataToCopy: () => meal(),
+    onPaste: (data) => {
+      if (Array.isArray(data)) {
+        const firstItem = data[0]
+        if (firstItem && isUnifiedItem(firstItem)) {
+          const unifiedItemsToAdd = data.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
@@ -118,20 +106,31 @@ export function MealEditViewHeader(props: {
           props.onUpdateMeal(updatedMeal)
           return
         }
+      }
 
-        if (isUnifiedItem(data)) {
-          const regeneratedItem = {
-            ...data,
-            id: regenerateId(data).id,
-          }
-          const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
-          props.onUpdateMeal(updatedMeal)
-          return
+      if (isMeal(data)) {
+        const unifiedItemsToAdd = data.items.map((item) => ({
+          ...item,
+          id: regenerateId(item).id,
+        }))
+        const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+        props.onUpdateMeal(updatedMeal)
+        return
+      }
+
+      if (isUnifiedItem(data)) {
+        const regeneratedItem = {
+          ...data,
+          id: regenerateId(data).id,
         }
+        const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
+        props.onUpdateMeal(updatedMeal)
+        return
+      }
 
-        logging.warn('Unsupported paste format:', { data })
-      },
-    })
+      logging.warn('Unsupported paste format:', { data })
+    },
+  })
 
   const mealCalories = () => calcMealCalories(meal())
 
@@ -149,17 +148,15 @@ export function MealEditViewHeader(props: {
   return (
     <Show when={meal()}>
       {(mealSignal) => (
-        <div class="flex">
+        <div class="flex" tabindex={0} onPaste={(e) => handlePaste(e)}>
           <div class="my-2">
             <h5 class="text-3xl">{mealSignal().name}</h5>
             <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
           </div>
           {props.mode !== 'summary' && (
             <ClipboardActionButtons
-              canCopy={
-                !hasValidPastableOnClipboard() && mealSignal().items.length > 0
-              }
-              canPaste={hasValidPastableOnClipboard()}
+              canCopy={mealSignal().items.length > 0}
+              canPaste={true}
               canClear={mealSignal().items.length > 0}
               onCopy={handleCopy}
               onPaste={handlePaste}

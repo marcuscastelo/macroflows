@@ -51,59 +51,58 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
   )
 
   // Clipboard actions for children
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => children(),
-      onPaste: (data) => {
-        const itemsToAdd = Array.isArray(data) ? data : [data]
+  const { handleCopy, handlePaste } = useCopyPasteActions({
+    acceptedClipboardSchema,
+    getDataToCopy: () => children(),
+    onPaste: (data) => {
+      const itemsToAdd = Array.isArray(data) ? data : [data]
 
-        let updatedItem = props.item()
+      let updatedItem = props.item()
 
-        // Check if we need to transform a food item into a group
-        if (isFoodItem(updatedItem) && itemsToAdd.length > 0) {
-          // Transform the food item into a group with the original food as the first child
-          const originalAsChild = createUnifiedItem({
-            id: generateId(), // New ID for the child
-            name: updatedItem.name,
-            quantity: updatedItem.quantity,
-            reference: updatedItem.reference, // Keep the food reference
-          })
+      // Check if we need to transform a food item into a group
+      if (isFoodItem(updatedItem) && itemsToAdd.length > 0) {
+        // Transform the food item into a group with the original food as the first child
+        const originalAsChild = createUnifiedItem({
+          id: generateId(), // New ID for the child
+          name: updatedItem.name,
+          quantity: updatedItem.quantity,
+          reference: updatedItem.reference, // Keep the food reference
+        })
 
-          // Create new group with the original food as first child
-          updatedItem = createUnifiedItem({
-            id: updatedItem.id, // Keep the same ID for the parent
-            name: updatedItem.name,
-            quantity: updatedItem.quantity,
-            reference: {
-              type: 'group',
-              children: [originalAsChild],
-            },
-          })
+        // Create new group with the original food as first child
+        updatedItem = createUnifiedItem({
+          id: updatedItem.id, // Keep the same ID for the parent
+          name: updatedItem.name,
+          quantity: updatedItem.quantity,
+          reference: {
+            type: 'group',
+            children: [originalAsChild],
+          },
+        })
+      }
+
+      for (const newChild of itemsToAdd) {
+        // Regenerate ID to avoid conflicts
+        const childWithNewId = {
+          ...newChild,
+          id: regenerateId(newChild).id,
         }
 
-        for (const newChild of itemsToAdd) {
-          // Regenerate ID to avoid conflicts
-          const childWithNewId = {
-            ...newChild,
-            id: regenerateId(newChild).id,
-          }
-
-          // Validate hierarchy to prevent circular references
-          const tempItem = addChildToItem(updatedItem, childWithNewId)
-          if (!validateItemHierarchy(tempItem)) {
-            logging.warn(
-              `Skipping item ${childWithNewId.name} - would create circular reference`,
-            )
-            continue
-          }
-
-          updatedItem = tempItem
+        // Validate hierarchy to prevent circular references
+        const tempItem = addChildToItem(updatedItem, childWithNewId)
+        if (!validateItemHierarchy(tempItem)) {
+          logging.warn(
+            `Skipping item ${childWithNewId.name} - would create circular reference`,
+          )
+          continue
         }
 
-        props.setItem(updatedItem)
-      },
-    })
+        updatedItem = tempItem
+      }
+
+      props.setItem(updatedItem)
+    },
+  })
 
   const updateChildQuantity = (childId: number, newQuantity: number) => {
     logging.debug('[GroupChildrenEditor] updateChildQuantity', {
@@ -193,7 +192,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
         {/* Clipboard Actions */}
         <ClipboardActionButtons
           canCopy={children().length > 0}
-          canPaste={hasValidPastableOnClipboard()}
+          canPaste={true}
           canClear={false} // We don't need clear functionality here
           onCopy={handleCopy}
           onPaste={handlePaste}
@@ -201,7 +200,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
         />
       </div>
 
-      <div class="mt-3 space-y-2">
+      <div class="mt-3 space-y-2" tabindex={0} onPaste={(e) => handlePaste(e)}>
         <For each={children()}>
           {(child) => (
             <GroupChildEditor
