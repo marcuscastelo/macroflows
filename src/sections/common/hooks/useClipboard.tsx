@@ -1,15 +1,13 @@
 import { type z } from 'zod/v4'
 
+import { useClipboardStore } from '~/modules/clipboard/application/useClipboardStore'
+import { clipboardPayloadSchema } from '~/modules/clipboard/domain/clipboardEntry'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
-
-// Utility to check if an error is a NotAllowedError DOMException
-function isClipboardNotAllowedError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'NotAllowedError'
-}
+import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export type ClipboardFilter = (clipboard: string) => boolean
 
@@ -17,41 +15,48 @@ export function useClipboard(props?: {
   filter?: ClipboardFilter
   periodicRead?: boolean
 }) {
+  const { copy, read, clear: clearStore } = useClipboardStore()
   const filter = () => props?.filter
 
   const handleWrite = (text: string, onError?: (error: unknown) => void) => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (window.navigator.clipboard === undefined) {
-      showError(`Clipboard API not supported`)
-      return
+    try {
+      // Treat empty string as a clear request for the clipboard store
+      if (text === '') {
+        clearStore()
+        return
+      }
+
+      // If the incoming text is JSON, parse it first so Zod receives an object
+      let parsed: unknown = text
+      try {
+        parsed = jsonParseWithStack(text)
+      } catch {
+        // If it's not valid JSON, leave as-is and let Zod validation fail
+      }
+
+      console.debug('Parsed clipboard payload:', parsed)
+      const payload = parseWithStack(clipboardPayloadSchema, parsed)
+      copy(payload)
+
+      if (text.length > 0) {
+        showSuccess(`Copiado com sucesso`)
+      }
+    } catch (err) {
+      showError(
+        `Failed to parse or copy using clipboard store: ${JSON.stringify(err)}`,
+      )
+      onError?.(err)
     }
-    window.navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        if (text.length > 0) {
-          showSuccess(`Copiado com sucesso`)
-        }
-      })
-      .catch((err) => {
-        if (isClipboardNotAllowedError(err)) {
-          // Ignore NotAllowedError (likely DOM not focused)
-          return
-        }
-        if (onError !== undefined) onError(err)
-      })
   }
 
   const handleRead = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (window.navigator.clipboard === undefined) {
-      return ''
-    }
-    const clipboardText = await window.navigator.clipboard
-      .readText()
-      .catch(() => '')
+    try {
+      const clipboard = read()
+      const clipboardText = JSON.stringify(clipboard?.payload)
 
-    if (filter()?.(clipboardText) ?? true) {
       return clipboardText
+    } catch (err) {
+      showError(`Failed to read using clipboard store: ${JSON.stringify(err)}`)
     }
 
     return ''

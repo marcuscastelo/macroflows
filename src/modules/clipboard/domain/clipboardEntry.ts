@@ -8,18 +8,9 @@ import { unifiedItemSchema } from '~/modules/diet/unified-item/schema/unifiedIte
  * Discriminated union for clipboard payload types
  */
 export const clipboardPayloadSchema = z.union([
-  z.object({
-    __type: z.literal('UnifiedItem'),
-    value: unifiedItemSchema,
-  }),
-  z.object({
-    __type: z.literal('Meal'),
-    value: mealSchema,
-  }),
-  z.object({
-    __type: z.literal('Recipe'),
-    value: recipeSchema,
-  }),
+  unifiedItemSchema,
+  mealSchema,
+  recipeSchema,
 ])
 
 export type ClipboardPayload = z.infer<typeof clipboardPayloadSchema>
