@@ -105,7 +105,7 @@ export function RecipeEditHeader(props: {
   }
 
   return (
-    <div class="flex" tabindex={0} onPaste={(e) => handlePaste(e)}>
+    <div class="flex" tabindex={0} onPaste={() => handlePaste()}>
       <div class="my-2">
         <h5 class="text-3xl text-blue-500">{recipe().name}</h5>
         <p class="italic text-gray-400">{recipeCalories.toFixed(0)}kcal</p>

@@ -97,7 +97,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
     <div
       class="flex flex-col gap-2 w-full"
       tabindex={0}
-      onPaste={(e) => handlePaste(e)}
+      onPaste={() => handlePaste()}
     >
       {props.header}
       <ClipboardActionButtons

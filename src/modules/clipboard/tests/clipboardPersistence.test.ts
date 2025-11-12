@@ -15,8 +15,7 @@ describe('ClipboardPersistence', () => {
         {
           id: '1',
           payload: {
-            __type: 'Meal',
-            value: promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
+            ...promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
               id: 1,
             }),
           },
@@ -39,8 +38,7 @@ describe('ClipboardPersistence', () => {
         {
           id: '1',
           payload: {
-            __type: 'Meal',
-            value: promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
+            ...promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
               id: 1,
             }),
           },
@@ -91,13 +89,10 @@ describe('ClipboardPersistence', () => {
       const entries: ClipboardEntry[] = [
         {
           id: '1',
-          payload: {
-            __type: 'Meal',
-            value: promoteMeal(
-              createNewMeal({ name: 'Test Meal', items: [] }),
-              { id: 1 },
-            ),
-          },
+          payload: promoteMeal(
+            createNewMeal({ name: 'Test Meal', items: [] }),
+            { id: 1 },
+          ),
           createdAt: Date.now(),
           pinned: false,
         },
@@ -115,13 +110,10 @@ describe('ClipboardPersistence', () => {
       const entries: ClipboardEntry[] = [
         {
           id: '1',
-          payload: {
-            __type: 'Meal',
-            value: promoteMeal(
-              createNewMeal({ name: 'Test Meal', items: [] }),
-              { id: 1 },
-            ),
-          },
+          payload: promoteMeal(
+            createNewMeal({ name: 'Test Meal', items: [] }),
+            { id: 1 },
+          ),
           createdAt: Date.now(),
           pinned: false,
         },
@@ -164,12 +156,9 @@ describe('ClipboardPersistence', () => {
     it('validates each entry when loading', () => {
       const validEntry: ClipboardEntry = {
         id: '1',
-        payload: {
-          __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: 'Valid Meal', items: [] }), {
-            id: 1,
-          }),
-        },
+        payload: promoteMeal(createNewMeal({ name: 'Valid Meal', items: [] }), {
+          id: 1,
+        }),
         createdAt: Date.now(),
         pinned: false,
       }
@@ -198,25 +187,19 @@ describe('ClipboardPersistence', () => {
 
       const oldEntry: ClipboardEntry = {
         id: '1',
-        payload: {
-          __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), {
-            id: 1,
-          }),
-        },
+        payload: promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), {
+          id: 1,
+        }),
         createdAt: now - ttl - 1000, // Older than TTL
         pinned: false,
       }
 
       const recentEntry: ClipboardEntry = {
         id: '2',
-        payload: {
-          __type: 'Meal',
-          value: promoteMeal(
-            createNewMeal({ name: 'Recent Meal', items: [] }),
-            { id: 2 },
-          ),
-        },
+        payload: promoteMeal(
+          createNewMeal({ name: 'Recent Meal', items: [] }),
+          { id: 2 },
+        ),
         createdAt: now - 1000, // Recent
         pinned: false,
       }
@@ -234,13 +217,10 @@ describe('ClipboardPersistence', () => {
 
       const oldPinnedEntry: ClipboardEntry = {
         id: '1',
-        payload: {
-          __type: 'Meal',
-          value: promoteMeal(
-            createNewMeal({ name: 'Old Pinned Meal', items: [] }),
-            { id: 1 },
-          ),
-        },
+        payload: promoteMeal(
+          createNewMeal({ name: 'Old Pinned Meal', items: [] }),
+          { id: 1 },
+        ),
         createdAt: now - ttl - 1000, // Older than TTL
         pinned: true, // But pinned
       }
@@ -258,8 +238,7 @@ describe('ClipboardPersistence', () => {
         {
           id: '1',
           payload: {
-            __type: 'Meal',
-            value: promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
+            ...promoteMeal(createNewMeal({ name: 'Test', items: [] }), {
               id: 1,
             }),
           },

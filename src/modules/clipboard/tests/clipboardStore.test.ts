@@ -35,19 +35,16 @@ describe('ClipboardStore', () => {
   describe('copy', () => {
     it('adds entry to the store', () => {
       const store = createClipboardStore()
-      const payload: ClipboardPayload = {
-        __type: 'UnifiedItem',
-        value: createUnifiedItem({
+      const payload: ClipboardPayload = createUnifiedItem({
+        id: 1,
+        name: 'Test Item',
+        quantity: 100,
+        reference: {
+          type: 'food',
           id: 1,
-          name: 'Test Item',
-          quantity: 100,
-          reference: {
-            type: 'food',
-            id: 1,
-            macros: createMacroNutrients({ protein: 10, carbs: 20, fat: 5 }),
-          },
-        }),
-      }
+          macros: createMacroNutrients({ protein: 10, carbs: 20, fat: 5 }),
+        },
+      })
 
       store.copy(payload)
 
@@ -58,18 +55,18 @@ describe('ClipboardStore', () => {
 
     it('adds entry at the beginning', () => {
       const store = createClipboardStore()
-      const payload1: ClipboardPayload = {
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+      const payload1: ClipboardPayload = promoteMeal(
+        createNewMeal({ name: 'Meal 1', items: [] }),
+        {
           id: 1,
-        }),
-      }
-      const payload2: ClipboardPayload = {
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        },
+      )
+      const payload2: ClipboardPayload = promoteMeal(
+        createNewMeal({ name: 'Meal 2', items: [] }),
+        {
           id: 1,
-        }),
-      }
+        },
+      )
 
       store.copy(payload1)
       store.copy(payload2)
@@ -83,12 +80,11 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore({ maxEntries: 3 })
 
       for (let i = 0; i < 5; i++) {
-        store.copy({
-          __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
+        store.copy(
+          promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
             id: 1,
           }),
-        })
+        )
       }
 
       const entries = store.readAll()
@@ -98,23 +94,21 @@ describe('ClipboardStore', () => {
     it('preserves pinned entries when exceeding maxEntries', () => {
       const store = createClipboardStore({ maxEntries: 3 })
 
-      store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+      store.copy(
+        promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
-      })
+      )
       const entries = store.readAll()
       store.togglePin(entries[0]!.id)
 
       // Add more entries
       for (let i = 2; i <= 5; i++) {
-        store.copy({
-          __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
+        store.copy(
+          promoteMeal(createNewMeal({ name: `Meal ${i}`, items: [] }), {
             id: 1,
           }),
-        })
+        )
       }
 
       const finalEntries = store.readAll()
@@ -123,19 +117,15 @@ describe('ClipboardStore', () => {
 
     it('calls persistence save', () => {
       const store = createClipboardStore({ persistence: mockPersistence })
-      const payload: ClipboardPayload = {
-        __type: 'Recipe',
-        value: promoteRecipe(
-          createNewRecipe({
-            name: 'Test Recipe',
-            user_id: 'user1',
-            items: [],
-            prepared_multiplier: 1,
-          }),
-          { id: 1 },
-        ),
-      }
-
+      const payload: ClipboardPayload = promoteRecipe(
+        createNewRecipe({
+          name: 'Test Recipe',
+          user_id: 'user1',
+          items: [],
+          prepared_multiplier: 1,
+        }),
+        { id: 1 },
+      )
       store.copy(payload)
 
       expect(mockPersistence.save).toHaveBeenCalledTimes(1)
@@ -146,12 +136,12 @@ describe('ClipboardStore', () => {
       const subscriber = vi.fn()
       store.subscribe(subscriber)
 
-      const payload: ClipboardPayload = {
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Test Meal', items: [] }), {
+      const payload: ClipboardPayload = promoteMeal(
+        createNewMeal({ name: 'Test Meal', items: [] }),
+        {
           id: 1,
-        }),
-      }
+        },
+      )
 
       store.copy(payload)
 
@@ -164,14 +154,12 @@ describe('ClipboardStore', () => {
     it('returns most recent entry', () => {
       const store = createClipboardStore()
       const payload1: ClipboardPayload = {
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       }
       const payload2: ClipboardPayload = {
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
           id: 1,
         }),
       }
@@ -194,14 +182,12 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
           id: 1,
         }),
       })
@@ -220,14 +206,12 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
           id: 1,
         }),
       })
@@ -241,14 +225,12 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
           id: 1,
         }),
       })
@@ -275,18 +257,15 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 2', items: [] }), {
           id: 1,
         }),
       })
-
       const entries = store.readAll()
       store.remove(entries[0]!.id)
 
@@ -299,8 +278,7 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
@@ -326,8 +304,7 @@ describe('ClipboardStore', () => {
       store.subscribe(subscriber)
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
@@ -343,8 +320,7 @@ describe('ClipboardStore', () => {
       unsubscribe()
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
@@ -358,8 +334,7 @@ describe('ClipboardStore', () => {
       const store = createClipboardStore({ persistence: mockPersistence })
 
       store.copy({
-        __type: 'Meal',
-        value: promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
+        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
           id: 1,
         }),
       })
@@ -373,8 +348,7 @@ describe('ClipboardStore', () => {
       const mockEntry: ClipboardEntry = {
         id: '1',
         payload: {
-          __type: 'Meal',
-          value: promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), {
+          ...promoteMeal(createNewMeal({ name: 'Old Meal', items: [] }), {
             id: 1,
           }),
         },
@@ -403,11 +377,9 @@ describe('ClipboardStore', () => {
       const mockEntry: ClipboardEntry = {
         id: '1',
         payload: {
-          __type: 'Meal',
-          value: promoteMeal(
-            createNewMeal({ name: 'Persisted Meal', items: [] }),
-            { id: 1 },
-          ),
+          ...promoteMeal(createNewMeal({ name: 'Persisted Meal', items: [] }), {
+            id: 1,
+          }),
         },
         createdAt: Date.now(),
         pinned: false,

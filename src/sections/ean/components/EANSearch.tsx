@@ -6,7 +6,6 @@ import {
   Show,
 } from 'solid-js'
 
-import { createUnifiedItemPayload } from '~/modules/clipboard/application/clipboardHelpers'
 import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalClipboardStore'
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
@@ -117,7 +116,7 @@ export function EANSearch(props: EANSearchProps) {
                         onCopy: (item) => {
                           // Copy to both system and in-app clipboard
                           clipboard.write(JSON.stringify(item))
-                          clipboardStore.copy(createUnifiedItemPayload(item))
+                          clipboardStore.copy(item)
                         },
                       }}
                       mode="read-only"

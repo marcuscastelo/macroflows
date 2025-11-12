@@ -200,7 +200,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
         />
       </div>
 
-      <div class="mt-3 space-y-2" tabindex={0} onPaste={(e) => handlePaste(e)}>
+      <div class="mt-3 space-y-2" tabindex={0} onPaste={() => handlePaste()}>
         <For each={children()}>
           {(child) => (
             <GroupChildEditor

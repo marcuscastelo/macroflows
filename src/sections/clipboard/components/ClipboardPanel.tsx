@@ -24,13 +24,13 @@ function ClipboardEntryPreview(props: { entry: ClipboardEntry }): JSXElement {
 
   const name = () => {
     if (isUnifiedItemPayload(payload())) {
-      return payload().value.name
+      return payload().name
     }
     if (isMealPayload(payload())) {
-      return payload().value.name
+      return payload().name
     }
     if (isRecipePayload(payload())) {
-      return payload().value.name
+      return payload().name
     }
     return 'Unknown'
   }
