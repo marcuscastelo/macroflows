@@ -2,9 +2,9 @@
  * Utilities for formatting and copying error details to clipboard.
  * Shared between ExpandableErrorToast and ErrorDetailModal.
  */
+import { useClipboard } from '~/modules/clipboard/application/useClipboardUnified'
 import { TOAST_MESSAGES } from '~/modules/toast/domain/toastMessages'
 import { type ToastError } from '~/modules/toast/domain/toastTypes'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { logging } from '~/shared/utils/logging'
 
 /**

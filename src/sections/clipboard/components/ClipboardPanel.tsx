@@ -1,6 +1,6 @@
 import { For, type JSXElement, Show } from 'solid-js'
 
-import { useClipboardStore } from '~/modules/clipboard/application/useClipboardStore'
+import { useClipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
 import {
   type ClipboardEntry,
   isMealPayload,

@@ -7,10 +7,10 @@ import {
 } from 'solid-js'
 
 import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalClipboardStore'
+import { useClipboard } from '~/modules/clipboard/application/useClipboardUnified'
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'

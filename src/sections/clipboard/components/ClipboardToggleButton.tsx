@@ -1,6 +1,6 @@
 import { type JSXElement } from 'solid-js'
 
-import { useClipboardStore } from '~/modules/clipboard/application/useClipboardStore'
+import { useClipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 

@@ -1,6 +1,10 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
+import {
+  useClipboard,
+  useCopyPasteActions,
+} from '~/modules/clipboard/application/useClipboardUnified'
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import {
@@ -21,8 +25,6 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'

@@ -9,6 +9,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { useCopyPasteActions } from '~/modules/clipboard/application/useClipboardUnified'
 import {
   deleteRecipe,
   fetchRecipeById,
@@ -33,7 +34,6 @@ import {
   unifiedItemSchema,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { UnifiedItemEditBody } from '~/sections/unified-item/components/UnifiedItemEditBody'
 import { UnsupportedItemMessage } from '~/sections/unified-item/components/UnsupportedItemMessage'

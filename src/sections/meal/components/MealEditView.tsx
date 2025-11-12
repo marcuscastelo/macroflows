@@ -1,6 +1,10 @@
 import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
+import {
+  useClipboard,
+  useCopyPasteActions,
+} from '~/modules/clipboard/application/useClipboardUnified'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
 import {
@@ -14,8 +18,6 @@ import {
   unifiedItemSchema,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import {
   MealContextProvider,
   useMealContext,

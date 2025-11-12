@@ -1,6 +1,10 @@
 import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 import { z } from 'zod/v4'
 
+import {
+  useClipboard,
+  useCopyPasteActions,
+} from '~/modules/clipboard/application/useClipboardUnified'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import {
@@ -18,8 +22,6 @@ import {
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
 import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
