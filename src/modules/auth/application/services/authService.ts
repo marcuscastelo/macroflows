@@ -91,7 +91,7 @@ export function createAuthService(
         if (session?.user.id !== undefined) {
           fetchUsers()
             .then(async (users) => {
-              console.debug(`Users: `, users)
+              logging.debug('Users: ', { users })
               const user = users.find((u) => u.uuid === session.user.id)
               if (user === undefined) {
                 logging.info(

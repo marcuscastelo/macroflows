@@ -28,7 +28,7 @@ export function initializeMacroProfileEffects() {
       }
 
       if (userId === undefined) {
-        console.error('User ID is undefined')
+        logging.error('User ID is undefined')
         return
       }
 

@@ -56,7 +56,7 @@ export function initializeDayEffects() {
       const userId = currentUserId()
       const currentTargetDay = targetDay()
       if (userId === undefined) {
-        console.error('User ID is undefined')
+        logging.error('User ID is undefined')
         return
       }
       runCacheManagement({ userId, currentTargetDay })
