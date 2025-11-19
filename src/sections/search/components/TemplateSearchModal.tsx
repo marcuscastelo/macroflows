@@ -120,6 +120,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     }
 
     const onConfirm = async () => {
+      const userId = currentUserId()
+      if (userId === undefined) {
+        showError('Usuário não autenticado')
+        return
+      }
+
       props.onNewUnifiedItem?.(newItem, originalAddedItem)
 
       let type: 'food' | 'recipe'
@@ -132,7 +138,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       }
 
       const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-        currentUserId(),
+        userId,
         type,
         originalAddedItem.reference.id,
       )
@@ -149,7 +155,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       }
 
       const recentFoodInput = createNewRecentFood({
-        user_id: currentUserId(),
+        user_id: userId,
         type,
         reference_id: originalAddedItem.reference.id,
         last_used: new Date(),

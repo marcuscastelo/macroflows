@@ -5,7 +5,7 @@ import { type User } from '~/modules/user/domain/user'
 import { UserInitialFallback } from '~/sections/common/components/icons/UserInitialFallback'
 
 export function UserIcon(props: {
-  userId: Accessor<User['uuid']>
+  userId: Accessor<User['uuid'] | undefined>
   userName: Accessor<string>
   class?: string
 }) {

@@ -109,6 +109,10 @@ export function WeightEvolution() {
                 return
               }
               const userId = currentUserId()
+              if (userId === undefined) {
+                showError('Usuário não autenticado')
+                return
+              }
               const afterInsert = () => {
                 weightField.setRawValue('')
               }

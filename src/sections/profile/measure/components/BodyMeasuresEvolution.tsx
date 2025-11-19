@@ -52,8 +52,13 @@ export function BodyMeasuresEvolution() {
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
             onClick={() => {
+              const userId = currentUserId()
+              if (userId === undefined) {
+                showError('Usuário não autenticado')
+                return
+              }
               handleAddMeasures({
-                user_id: currentUserId(),
+                user_id: userId,
                 height: heightField.value() ?? 0,
                 waist: waistField.value() ?? 0,
                 hip: hipField.value() ?? 0,

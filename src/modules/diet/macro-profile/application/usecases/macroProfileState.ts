@@ -13,6 +13,10 @@ export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 
 export const userMacroProfiles = () => {
   const userId = currentUserId()
+  if (userId === undefined) {
+    console.error('User ID is undefined')
+    return []
+  }
   return macroProfileCacheStore.getProfilesByUserId(userId)
 }
 
@@ -20,7 +24,12 @@ export const latestMacroProfile = () => {
   const profiles = userMacroProfiles()
   const latest = getLatestMacroProfile(profiles)
   if (latest === null) {
-    return createDefaultMacroProfile(currentUserId())
+    const userId = currentUserId()
+    if (userId === undefined) {
+      console.error('User ID is undefined')
+      return null
+    }
+    return createDefaultMacroProfile(userId)
   }
   return latest
 }

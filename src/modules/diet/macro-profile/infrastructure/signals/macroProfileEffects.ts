@@ -27,6 +27,11 @@ export function initializeMacroProfileEffects() {
         macroProfileCacheStore.clearCache()
       }
 
+      if (userId === undefined) {
+        console.error('User ID is undefined')
+        return
+      }
+
       macroProfileStateStore.setSelectedUserId(userId)
     })
 

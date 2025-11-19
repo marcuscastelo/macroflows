@@ -8,10 +8,6 @@ import {
   type User,
 } from '~/modules/user/domain/user'
 import {
-  loadUserIdFromLocalStorage,
-  saveUserIdToLocalStorage,
-} from '~/modules/user/infrastructure/localStorage/localStorageUserRepository'
-import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
@@ -23,15 +19,10 @@ export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-export const [_currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
-  'a141dbbd-d33b-4a90-918d-cbaddc769c73',
-)
-
 // Current user ID now is derived from auth
 export const currentUserId = () => getCurrentUser()?.id
 
 createEffect(() => {
-  setCurrentUserId(loadUserIdFromLocalStorage())
   void showPromise(
     fetchCurrentUser(),
     {
@@ -88,7 +79,7 @@ export async function fetchUsers(): Promise<readonly User[]> {
  */
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const user = await userRepository.fetchUser(currentUserId())
+    const user = await userRepository.fetchUser(currentUserId() ?? '')
     setCurrentUser(user)
 
     return user
@@ -191,11 +182,6 @@ export async function deleteUser(userId: User['uuid']): Promise<boolean> {
     logging.error('User application error:', error)
     return false
   }
-}
-
-export function changeToUser(userId: User['uuid']): void {
-  saveUserIdToLocalStorage(userId)
-  setCurrentUserId(userId)
 }
 
 // TODO: Create module for favorites

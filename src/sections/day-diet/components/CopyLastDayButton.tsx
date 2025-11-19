@@ -3,6 +3,7 @@ import { type Accessor } from 'solid-js'
 import { createCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
@@ -28,7 +29,13 @@ export function CopyLastDayButton(props: {
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
-          void loadPreviousDays(currentUserId(), props.selectedDay)
+          const userId = currentUserId()
+          if (userId === undefined) {
+            showError('Usuário não autenticado')
+            return
+          }
+
+          void loadPreviousDays(userId, props.selectedDay)
 
           openContentModal(
             (modalId) => (

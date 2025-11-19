@@ -6,11 +6,7 @@ import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  changeToUser,
-  fetchUsers,
-  insertUserSilently,
-} from '~/modules/user/application/user'
+import { fetchUsers, insertUserSilently } from '~/modules/user/application/user'
 import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
 import { logging } from '~/shared/utils/logging'
 
@@ -91,9 +87,7 @@ export function createAuthService(
             .then(async (users) => {
               console.debug(`Users: `, users)
               const user = users.find((u) => u.uuid === session.user.id)
-              if (user !== undefined) {
-                changeToUser(user.uuid)
-              } else {
+              if (user === undefined) {
                 logging.info(
                   'User profile not found, creating default profile for OAuth user',
                 )
@@ -101,12 +95,10 @@ export function createAuthService(
                 const createdUser = await insertUserSilently(newUser)
                 if (createdUser !== null) {
                   logging.info('User profile created successfully')
-                  changeToUser(createdUser.uuid)
                 } else {
                   showError(
                     `Couldn't create user profile for ${JSON.stringify(session.user)}`,
                   )
-                  changeToUser('')
                   signOut().catch(showError)
                 }
               }
