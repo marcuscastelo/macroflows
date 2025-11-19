@@ -20,6 +20,7 @@ import DayMacros from '~/sections/day-diet/components/DayMacros'
 import DayMeals from '~/sections/day-diet/components/DayMeals'
 import DayNotFound from '~/sections/day-diet/components/DayNotFound'
 import TopBar from '~/sections/day-diet/components/TopBar'
+import { AuthGuard } from '~/shared/guards/AuthGuard'
 import {
   closeModal,
   openContentModal,
@@ -63,35 +64,37 @@ export default function DietPage() {
   })
 
   return (
-    <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
-      <TopBar />
-      <span>{currentUserId()}</span>
-      <pre>{JSON.stringify(authState(), null, 2)}</pre>
-      <Show when={currentDayDiet()} fallback={<div />}>
-        {(currentDayDiet) => (
-          <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
+    <AuthGuard>
+      <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
+        <TopBar />
+        <span>{currentUserId()}</span>
+        <pre>{JSON.stringify(authState(), null, 2)}</pre>
+        <Show when={currentDayDiet()} fallback={<div />}>
+          {(currentDayDiet) => (
+            <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
+          )}
+        </Show>
+        {mode() !== 'edit' && (
+          <Alert class="mt-2" color="yellow">
+            Mostrando refeições do dia {targetDay()}!
+          </Alert>
         )}
-      </Show>
-      {mode() !== 'edit' && (
-        <Alert class="mt-2" color="yellow">
-          Mostrando refeições do dia {targetDay()}!
-        </Alert>
-      )}
-      <Show
-        when={currentDayDiet()}
-        fallback={<DayNotFound selectedDay={targetDay()} />}
-      >
-        {(currentDayDiet) => (
-          <Suspense fallback={<LoadingRing />}>
-            <DayMeals
-              dayDiet={currentDayDiet()}
-              selectedDay={targetDay()}
-              mode={mode()}
-              onRequestEditMode={handleRequestEditMode}
-            />
-          </Suspense>
-        )}
-      </Show>
-    </Suspense>
+        <Show
+          when={currentDayDiet()}
+          fallback={<DayNotFound selectedDay={targetDay()} />}
+        >
+          {(currentDayDiet) => (
+            <Suspense fallback={<LoadingRing />}>
+              <DayMeals
+                dayDiet={currentDayDiet()}
+                selectedDay={targetDay()}
+                mode={mode()}
+                onRequestEditMode={handleRequestEditMode}
+              />
+            </Suspense>
+          )}
+        </Show>
+      </Suspense>
+    </AuthGuard>
   )
 }
