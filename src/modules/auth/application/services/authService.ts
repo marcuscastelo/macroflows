@@ -17,9 +17,6 @@ import { logging } from '~/shared/utils/logging'
 export function createAuthService(
   authGateway: AuthGateway = createSupabaseAuthGateway(),
 ) {
-  /**
-   * Sign in with specified provider
-   */
   async function signIn(options: SignInOptions): Promise<void> {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }))

@@ -1,5 +1,6 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
+import { authState } from '~/modules/auth/infrastructure/signals/authState'
 import {
   acceptDayChange,
   dayChangeData,
@@ -10,6 +11,7 @@ import {
   currentToday,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { currentUserId } from '~/modules/user/application/user'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { PageLoading } from '~/sections/common/components/PageLoading'
@@ -63,6 +65,8 @@ export default function DietPage() {
   return (
     <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
       <TopBar />
+      <span>{currentUserId()}</span>
+      <pre>{JSON.stringify(authState(), null, 2)}</pre>
       <Show when={currentDayDiet()} fallback={<div />}>
         {(currentDayDiet) => (
           <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
