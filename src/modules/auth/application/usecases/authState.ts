@@ -27,6 +27,3 @@ export function isAuthenticated(): boolean {
 export function isAuthLoading(): boolean {
   return authState().isLoading
 }
-
-// Export the auth state signal for reactive components
-export { authState }

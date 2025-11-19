@@ -93,21 +93,6 @@ export function createSupabaseAuthGateway(): AuthGateway {
       }
     },
 
-    async refreshSession(): Promise<AuthSession | null> {
-      try {
-        const { data, error } = await supabase.auth.refreshSession()
-
-        if (error !== null) {
-          throw new Error('Failed to refresh session', { cause: error })
-        }
-
-        return supabaseAuthMapper.mapSessionToDomain(data.session)
-      } catch (error) {
-        logging.error('SupabaseAuthRepository refreshSession error:', error)
-        throw error
-      }
-    },
-
     onAuthStateChange(
       callback: (event: string, session: AuthSession | null) => void,
     ): () => void {

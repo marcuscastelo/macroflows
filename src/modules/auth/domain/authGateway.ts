@@ -10,7 +10,6 @@ export type AuthGateway = {
   getUser: () => Promise<AuthUser | null>
   signIn: (options: SignInOptions) => Promise<{ url?: string; error?: Error }>
   signOut: (options?: SignOutOptions) => Promise<{ error?: Error }>
-  refreshSession: () => Promise<AuthSession | null>
   onAuthStateChange: (
     callback: (event: string, session: AuthSession | null) => void,
   ) => () => void
