@@ -23,13 +23,6 @@ export function AuthGuard(props: AuthGuardProps) {
 
   createEffect(() => {
     if (!isAuthLoading() && !isAuthenticated()) {
-      setAuthState(() => ({
-        isLoading: false,
-        session: null,
-        user: null,
-        isAuthenticated: false,
-      }))
-      setCurrentUser(null)
       navigate(props.redirectTo ?? '/login')
     }
   })
