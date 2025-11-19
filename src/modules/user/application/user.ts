@@ -1,5 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
+import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import {
   demoteUserToNewUser,
@@ -22,9 +23,12 @@ export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-export const [currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
+export const [_currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
   'a141dbbd-d33b-4a90-918d-cbaddc769c73',
 )
+
+// Current user ID now is derived from auth
+export const currentUserId = () => getCurrentUser()?.id
 
 createEffect(() => {
   setCurrentUserId(loadUserIdFromLocalStorage())

@@ -6,11 +6,7 @@ import {
   isAuthLoading,
 } from '~/modules/auth/application/usecases/authState'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
-import {
-  changeToUser,
-  setCurrentUser,
-  setCurrentUserId,
-} from '~/modules/user/application/user'
+import { changeToUser, setCurrentUser } from '~/modules/user/application/user'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type AuthGuardProps = {
