@@ -145,6 +145,11 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
     }
 
     try {
+      const userId = currentUserId()
+      if (userId === undefined) {
+        showError('Usuário não autenticado')
+        return
+      }
       // Create new unified recipe directly from UnifiedItem children
       const newUnifiedRecipe = createNewRecipe({
         name:
@@ -152,7 +157,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
             ? `${item.name} (Receita)`
             : 'Nova receita (a partir de um grupo)',
         items: children(), // Use UnifiedItems directly
-        user_id: currentUserId(),
+        user_id: userId,
       })
 
       const insertedRecipe = await saveRecipe(newUnifiedRecipe)

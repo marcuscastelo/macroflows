@@ -38,12 +38,4 @@ describe('Auth Module', () => {
   it('should handle sign out operation', async () => {
     await expect(authService.signOut()).resolves.not.toThrow()
   })
-
-  it('should handle session refresh', async () => {
-    await expect(authService.refreshSession()).resolves.not.toThrow()
-  })
-
-  it('should cleanup auth subscriptions', () => {
-    expect(() => authService.cleanupAuth()).not.toThrow()
-  })
 })

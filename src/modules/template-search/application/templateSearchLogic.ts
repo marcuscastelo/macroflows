@@ -44,13 +44,16 @@ export type FetchTemplatesDeps = {
 export async function fetchTemplatesByTabLogic(
   tabId: string,
   search: string,
-  userId: User['uuid'],
+  userId: User['uuid'] | undefined,
   deps: FetchTemplatesDeps,
 ): Promise<readonly Template[]> {
   const lowerSearch = search.trim().toLowerCase()
   switch (tabId) {
     case availableTabs.Recentes.id: {
       // Use the refactored function that returns Template objects directly
+      if (userId === undefined) {
+        return []
+      }
       const templates = await deps.fetchUserRecentFoods(userId, search)
 
       // Apply additional client-side filtering if needed (for EAN search)
@@ -61,6 +64,9 @@ export async function fetchTemplatesByTabLogic(
       return templates
     }
     case availableTabs.Receitas.id: {
+      if (userId === undefined) {
+        return []
+      }
       if (lowerSearch === '') {
         return (await deps.fetchUserRecipes(userId)) ?? []
       } else {

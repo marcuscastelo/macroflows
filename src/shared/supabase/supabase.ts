@@ -22,6 +22,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
   auth: {
     persistSession: true,
+    storage: localStorage,
   },
 })
 
