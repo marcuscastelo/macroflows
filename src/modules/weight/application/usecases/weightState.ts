@@ -40,7 +40,7 @@ if (userId !== undefined) {
 onMount(() => {
   const userId = currentUserId()
   if (userId === undefined) {
-    console.error('User ID is undefined')
+    logging.error('User ID is undefined')
     return
   }
   void fetchUserWeights(userId)
@@ -49,7 +49,7 @@ onMount(() => {
 createEffect(() => {
   const userId = currentUserId()
   if (userId === undefined) {
-    console.error('User ID is undefined')
+    logging.error('User ID is undefined')
     return
   }
   void fetchUserWeights(userId)
@@ -66,7 +66,7 @@ export const userWeights = weightCacheStore.weights
 export function refetchUserWeights() {
   const userId = currentUserId()
   if (userId === undefined) {
-    console.error('User ID is undefined')
+    logging.error('User ID is undefined')
     return
   }
   void fetchUserWeights(userId)
