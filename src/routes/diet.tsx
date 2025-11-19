@@ -67,8 +67,6 @@ export default function DietPage() {
     <AuthGuard>
       <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
         <TopBar />
-        <span>{currentUserId()}</span>
-        <pre>{JSON.stringify(authState(), null, 2)}</pre>
         <Show when={currentDayDiet()} fallback={<div />}>
           {(currentDayDiet) => (
             <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
