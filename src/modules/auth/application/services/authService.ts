@@ -46,6 +46,12 @@ export function createAuthService(
       const result = await authGateway.signOut(options)
 
       if (result.error) {
+        setAuthState(() => ({
+          session: null,
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        }))
         throw result.error
       }
 
@@ -122,8 +128,7 @@ export function createAuthService(
     try {
       const session = await authGateway.getSession()
       logging.debug(`loadInitialSession session:`, { session })
-      setAuthState((prev) => ({
-        ...prev,
+      setAuthState(() => ({
         session,
         user: session?.user
           ? {
