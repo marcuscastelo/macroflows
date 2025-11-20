@@ -7,6 +7,7 @@ import {
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { logging } from '~/shared/utils/logging'
 
 /**
@@ -59,8 +60,8 @@ function _computeOverflow(
  * @returns true if the macro would exceed the target, false otherwise
  */
 
-export function isOverflow(
-  item: TemplateItem,
+function isOverflow(
+  item: UnifiedItem,
   property: keyof MacroNutrientsRecord,
   context: MacroOverflowContext,
   dayMacros?: MacroNutrients | null,
@@ -85,10 +86,10 @@ export function isOverflow(
     })
     return false
   }
-  const itemMacros = _calcTemplateItemMacros(item)
+  const itemMacros = ItemExt.macros(item)
   const originalItemMacros: MacroNutrients =
     macroOverflowOptions.originalItem !== undefined
-      ? _calcTemplateItemMacros(macroOverflowOptions.originalItem)
+      ? ItemExt.macros(macroOverflowOptions.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
   const current = (dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
     property
@@ -121,12 +122,4 @@ export function createMacroOverflowChecker(
     protein: () => isOverflow(item, 'protein', context, dayMacros),
     fat: () => isOverflow(item, 'fat', context, dayMacros),
   }
-}
-
-/**
- * Calculates macros for a TemplateItem, handling both UnifiedItem and legacy Item formats.
- * @private
- */
-function _calcTemplateItemMacros(item: TemplateItem): MacroNutrients {
-  return ItemExt.macros(item)
 }

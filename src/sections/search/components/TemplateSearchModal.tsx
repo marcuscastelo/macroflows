@@ -4,6 +4,7 @@ import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { createMacroOverflowChecker } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -54,7 +55,6 @@ import {
 import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { isOverflow } from '~/shared/utils/macroOverflow'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
@@ -116,7 +116,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
     // Helper function for checking individual macro properties on the unified item
     const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      return isOverflow(originalAddedItem, property, macroOverflowContext)
+      return createMacroOverflowChecker(
+        originalAddedItem,
+        macroOverflowContext,
+      )[property]() // Call the function to get boolean
     }
 
     const onConfirm = async () => {

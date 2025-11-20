@@ -1,16 +1,16 @@
 import { type Accessor, createMemo } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import {
+  createMacroOverflowChecker,
+  type MacroOverflowContext,
+} from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import {
-  createMacroOverflowChecker,
-  type MacroOverflowContext,
-} from '~/shared/utils/macroOverflow'
 
 export type UnifiedItemNutritionalInfoProps = {
   item: Accessor<UnifiedItem>
