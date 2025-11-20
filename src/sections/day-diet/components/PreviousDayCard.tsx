@@ -15,7 +15,7 @@ type PreviousDayCardProps = {
 
 export function PreviousDayCard(props: PreviousDayCardProps) {
   const macros = () => calcDayMacros(props.dayDiet)
-  const calories = () => MacroNutrientsExt.calcCalories(macros())
+  const calories = () => MacroNutrientsExt.calories(macros())
 
   const normalizedDate = () => {
     return new Date(props.dayDiet.target_day + 'T00:00:00') // Force UTC interpretation

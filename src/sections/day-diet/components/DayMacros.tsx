@@ -29,7 +29,7 @@ export default function DayMacros(props: {
     return {
       macroTarget: macroTarget_,
       macros: dayMacros,
-      targetCalories: MacroNutrientsExt.calcCalories(macroTarget_),
+      targetCalories: MacroNutrientsExt.calories(macroTarget_),
       error: null,
     }
   })
@@ -82,7 +82,7 @@ function Calories(props: {
   targetCalories: number
   class?: string
 }) {
-  const calories = () => MacroNutrientsExt.calcCalories(props.macros)
+  const calories = () => MacroNutrientsExt.calories(props.macros)
   return (
     <>
       <div class={`h-24 overflow-y-clip text-center ${props.class}`}>

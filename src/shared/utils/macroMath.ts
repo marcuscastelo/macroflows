@@ -7,13 +7,13 @@ import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 export const calcRecipeCalories = (recipe: Recipe) =>
-  MacroNutrientsExt.calcCalories(ItemExt.calcItemContainerMacros(recipe))
+  MacroNutrientsExt.calories(ItemExt.calcItemContainerMacros(recipe))
 
 export const calcUnifiedItemCalories = (item: UnifiedItem) =>
-  MacroNutrientsExt.calcCalories(ItemExt.calcUnifiedItemMacros(item))
+  MacroNutrientsExt.calories(ItemExt.calcUnifiedItemMacros(item))
 
 export const calcMealCalories = (meal: Meal) =>
-  MacroNutrientsExt.calcCalories(ItemExt.calcItemContainerMacros(meal))
+  MacroNutrientsExt.calories(ItemExt.calcItemContainerMacros(meal))
 
 export const calcDayCalories = (day: DayDiet) =>
-  MacroNutrientsExt.calcCalories(calcDayMacros(day))
+  MacroNutrientsExt.calories(calcDayMacros(day))

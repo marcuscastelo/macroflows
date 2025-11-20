@@ -52,7 +52,7 @@ function _createChartData(
       calories: dayCalories.toFixed(0),
       targetCalories:
         macroTarget !== null
-          ? MacroNutrientsExt.calcCalories(macroTarget)
+          ? MacroNutrientsExt.calories(macroTarget)
           : undefined,
       protein: dayMacros.protein.toFixed(0),
       targetProtein: macroTarget?.protein.toFixed(0),
