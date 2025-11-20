@@ -5,8 +5,9 @@ import {
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
+import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
 import { logging } from '~/shared/utils/logging'
-import { calcDayMacros, calcUnifiedItemMacros } from '~/shared/utils/macroMath'
+import { calcDayMacros } from '~/shared/utils/macroMath'
 
 /**
  * MacroOverflowOptions controls overflow logic for macro nutrients.

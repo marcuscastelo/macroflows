@@ -8,6 +8,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
 import {
   insertMacroProfile,
   updateMacroProfile,
@@ -23,7 +24,6 @@ import { Button } from '~/sections/common/components/buttons/Button'
 import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcCalories } from '~/shared/utils/macroMath'
 
 const CARBO_CALORIES = 4 as const
 const PROTEIN_CALORIES = 4 as const

@@ -6,6 +6,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
 import { scaleRecipeItemQuantity } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   isFoodItem,
@@ -19,7 +20,6 @@ import {
 } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { logging } from '~/shared/utils/logging'
-import { calcUnifiedItemMacros } from '~/shared/utils/macroMath'
 
 export type QuantityControlsProps = {
   item: Accessor<UnifiedItem>

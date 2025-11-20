@@ -1,17 +1,14 @@
 import { type Accessor } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import {
-  calcCalories,
-  calcDayCalories,
-  calcDayMacros,
-} from '~/shared/utils/macroMath'
+import { calcDayCalories, calcDayMacros } from '~/shared/utils/macroMath'
 import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 

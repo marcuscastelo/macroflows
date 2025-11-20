@@ -1,9 +1,10 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
 import { PreviousDayCardActions } from '~/sections/day-diet/components/PreviousDayCardActions'
 import PreviousDayDetailsModal from '~/sections/day-diet/components/PreviousDayDetailsModal'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
-import { calcCalories, calcDayMacros } from '~/shared/utils/macroMath'
+import { calcDayMacros } from '~/shared/utils/macroMath'
 
 type PreviousDayCardProps = {
   dayDiet: DayDiet

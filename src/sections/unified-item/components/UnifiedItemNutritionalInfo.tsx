@@ -2,14 +2,12 @@ import { type Accessor, createMemo } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import {
-  calcUnifiedItemCalories,
-  calcUnifiedItemMacros,
-} from '~/shared/utils/macroMath'
+import { calcUnifiedItemCalories } from '~/shared/utils/macroMath'
 import {
   createMacroOverflowChecker,
   type MacroOverflowContext,
