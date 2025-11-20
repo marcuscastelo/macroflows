@@ -1,6 +1,6 @@
 import { type Accessor, For, Show } from 'solid-js'
 
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import {
   isGroupItem,
   isRecipeItem,

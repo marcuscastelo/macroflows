@@ -1,9 +1,9 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import {
   asFoodItem,
   isGroupItem,

@@ -1,12 +1,12 @@
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { logging } from '~/shared/utils/logging'
 
 /**

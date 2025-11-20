@@ -1,6 +1,6 @@
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 
 export const RecipeExt = {
   macros(recipe: Recipe) {

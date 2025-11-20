@@ -1,4 +1,4 @@
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrients,

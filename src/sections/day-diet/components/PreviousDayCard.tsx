@@ -1,5 +1,5 @@
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { PreviousDayCardActions } from '~/sections/day-diet/components/PreviousDayCardActions'
 import PreviousDayDetailsModal from '~/sections/day-diet/components/PreviousDayDetailsModal'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'

@@ -2,8 +2,8 @@ import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { MealExt } from '~/modules/diet/meal/application/mealExt'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
   addItemsToMeal,
   clearMealItems,

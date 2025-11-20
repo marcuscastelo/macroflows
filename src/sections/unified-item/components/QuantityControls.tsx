@@ -6,7 +6,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { scaleRecipeItemQuantity } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   isFoodItem,

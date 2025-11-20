@@ -1,8 +1,8 @@
 import { type Accessor } from 'solid-js'
 
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'

@@ -1,10 +1,10 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 
 export const DayDietExt = {
   calcDayMacros(day: DayDiet): MacroNutrients {

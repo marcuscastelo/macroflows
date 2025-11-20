@@ -8,7 +8,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   insertMacroProfile,
   updateMacroProfile,

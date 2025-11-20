@@ -1,9 +1,9 @@
 import { createMemo, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
