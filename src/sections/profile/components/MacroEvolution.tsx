@@ -4,7 +4,7 @@ import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
+import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
@@ -41,7 +41,10 @@ function _createChartData(
     const currentMacroProfile = inForceMacroProfile(macroProfiles, dayDate)
     const macroTarget =
       currentMacroProfile !== undefined
-        ? calculateMacroTarget(currentWeight?.weight ?? 0, currentMacroProfile)
+        ? MacroTargetExt.forWeight(
+            currentMacroProfile,
+            currentWeight?.weight ?? 0,
+          )
         : null
 
     const dayMacros = DayDietExt.of(day).macros()
@@ -51,7 +54,7 @@ function _createChartData(
       calories: dayCalories.toFixed(0),
       targetCalories:
         macroTarget !== null
-          ? MacroNutrientsExt.calories(macroTarget)
+          ? MacroNutrientsExt.totalCalories(macroTarget)
           : undefined,
       protein: dayMacros.protein().toFixed(0),
       targetProtein: macroTarget?.protein.toFixed(0),

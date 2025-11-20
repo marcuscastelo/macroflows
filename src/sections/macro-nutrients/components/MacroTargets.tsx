@@ -8,7 +8,11 @@ import {
   untrack,
 } from 'solid-js'
 
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
+import {
+  CARBO_CALORIES,
+  FAT_CALORIES,
+  PROTEIN_CALORIES,
+} from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   insertMacroProfile,
   updateMacroProfile,
@@ -17,17 +21,13 @@ import {
   createNewMacroProfile,
   type MacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
+import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { showError } from '~/modules/toast/application/toastManager'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-
-const CARBO_CALORIES = 4 as const
-const PROTEIN_CALORIES = 4 as const
-const FAT_CALORIES = 9 as const
 
 export type MacroRepresentation = {
   name: string
@@ -44,28 +44,28 @@ const calculateMacroRepresentation = (
   >,
   weight: number,
 ) => {
-  const targetGrams = calculateMacroTarget(weight, profile)
-  const calories = MacroNutrientsExt.calories(targetGrams)
+  const targetMacros = MacroTargetExt.of(profile).forWeight(weight)
+  const caloriesPercentages = targetMacros.caloriesPercentages()
 
   return {
     carbs: {
       name: 'Carboidratos',
-      percentage: (targetGrams.carbs * 4) / calories,
-      grams: targetGrams.carbs,
+      percentage: caloriesPercentages.carbs,
+      grams: targetMacros.carbs(),
       gramsPerKg: profile.gramsPerKgCarbs,
       calorieMultiplier: CARBO_CALORIES,
     },
     protein: {
       name: 'Proteínas',
-      percentage: (targetGrams.protein * 4) / calories,
-      grams: targetGrams.protein,
+      percentage: caloriesPercentages.protein,
+      grams: targetMacros.protein(),
       gramsPerKg: profile.gramsPerKgProtein,
       calorieMultiplier: PROTEIN_CALORIES,
     },
     fat: {
       name: 'Gorduras',
-      percentage: (targetGrams.fat * 9) / calories,
-      grams: targetGrams.fat,
+      percentage: caloriesPercentages.fat,
+      grams: targetMacros.fat(),
       gramsPerKg: profile.gramsPerKgFat,
       calorieMultiplier: FAT_CALORIES,
     },
@@ -140,8 +140,10 @@ export function MacroTarget(props: MacroTargetProps) {
   )
 
   const targetCalories = createMemo(() => {
-    const grams = calculateMacroTarget(props.weight(), props.currentProfile())
-    const calories = Math.round(MacroNutrientsExt.calories(grams) * 100) / 100
+    const macros = MacroTargetExt.of(props.currentProfile()).forWeight(
+      props.weight(),
+    )
+    const calories = Math.round(macros.calories() * 100) / 100
     return calories.toString() + ' kcal'
   })
 
