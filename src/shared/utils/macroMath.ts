@@ -4,24 +4,13 @@ import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macr
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import {
-  calcItemContainerMacros,
-  calcUnifiedItemMacros,
-} from '~/modules/diet/unified-item/application/itemMacros'
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-
-export function calcRecipeMacros(recipe: Recipe): MacroNutrients {
-  return calcItemContainerMacros(recipe)
-}
-
-export function calcMealMacros(meal: Meal): MacroNutrients {
-  return calcItemContainerMacros(meal)
-}
 
 export function calcDayMacros(day: DayDiet): MacroNutrients {
   const result = day.meals.reduce(
     (acc, meal) => {
-      const mealMacros = calcMealMacros(meal)
+      const mealMacros = ItemExt.calcItemContainerMacros(meal)
       acc.carbs += mealMacros.carbs
       acc.fat += mealMacros.fat
       acc.protein += mealMacros.protein
@@ -33,13 +22,13 @@ export function calcDayMacros(day: DayDiet): MacroNutrients {
 }
 
 export const calcRecipeCalories = (recipe: Recipe) =>
-  calcCalories(calcRecipeMacros(recipe))
+  calcCalories(ItemExt.calcItemContainerMacros(recipe))
 
 export const calcUnifiedItemCalories = (item: UnifiedItem) =>
-  calcCalories(calcUnifiedItemMacros(item))
+  calcCalories(ItemExt.calcUnifiedItemMacros(item))
 
 export const calcMealCalories = (meal: Meal) =>
-  calcCalories(calcMealMacros(meal))
+  calcCalories(ItemExt.calcItemContainerMacros(meal))
 
 export const calcDayCalories = (day: DayDiet) =>
   calcCalories(calcDayMacros(day))

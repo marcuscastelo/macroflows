@@ -5,7 +5,7 @@ import {
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { logging } from '~/shared/utils/logging'
 import { calcDayMacros } from '~/shared/utils/macroMath'
 
@@ -126,5 +126,5 @@ export function createMacroOverflowChecker(
  * @private
  */
 function _calcTemplateItemMacros(item: TemplateItem): MacroNutrients {
-  return calcUnifiedItemMacros(item)
+  return ItemExt.calcUnifiedItemMacros(item)
 }

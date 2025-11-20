@@ -2,7 +2,7 @@ import { type Accessor, createMemo } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
-import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
@@ -35,7 +35,7 @@ export function UnifiedItemNutritionalInfo(
     // Force memo to update by depending on the full item structure
     const item = props.item()
     JSON.stringify(item) // Touch the full object to trigger on deep changes
-    return calcUnifiedItemMacros(item)
+    return ItemExt.calcUnifiedItemMacros(item)
   })
 
   // Create macro overflow checker if macroOverflow is enabled

@@ -6,7 +6,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { scaleRecipeItemQuantity } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   isFoodItem,
@@ -144,7 +144,7 @@ export function QuantityControls(props: QuantityControlsProps) {
               }
               if (isRecipeItem(props.item())) {
                 // For recipes, calculate macros from children (per 100g of prepared recipe)
-                const recipeMacros = calcUnifiedItemMacros(props.item())
+                const recipeMacros = ItemExt.calcUnifiedItemMacros(props.item())
                 const recipeQuantity = props.item().quantity || 1
                 // Convert to per-100g basis for the button
                 return {

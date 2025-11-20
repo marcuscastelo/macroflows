@@ -2,7 +2,7 @@ import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
-import { calcUnifiedItemMacros } from '~/modules/diet/unified-item/application/itemMacros'
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import {
   asFoodItem,
   isGroupItem,
@@ -49,9 +49,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
       return { carbs: 0, protein: 0, fat: 0 }
     }
     const dayMacros = calcDayMacros(dayDiet)
-    const originalMacros = originalItem
-      ? calcUnifiedItemMacros(originalItem)
-      : { carbs: 0, protein: 0, fat: 0 }
+    const originalMacros = ItemExt.calcUnifiedItemMacros(originalItem)
     return {
       carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
       protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
