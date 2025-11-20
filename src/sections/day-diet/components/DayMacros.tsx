@@ -1,5 +1,6 @@
 import { createMemo, Show } from 'solid-js'
 
+import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
@@ -10,7 +11,6 @@ import {
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
-import { calcDayMacros } from '~/shared/utils/macroMath'
 
 export default function DayMacros(props: {
   class?: string

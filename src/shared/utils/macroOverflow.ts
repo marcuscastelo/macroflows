@@ -1,3 +1,4 @@
+import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import {
   createMacroNutrients,
@@ -7,7 +8,6 @@ import {
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import { logging } from '~/shared/utils/logging'
-import { calcDayMacros } from '~/shared/utils/macroMath'
 
 /**
  * MacroOverflowOptions controls overflow logic for macro nutrients.
