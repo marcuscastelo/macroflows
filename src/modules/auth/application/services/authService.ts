@@ -6,20 +6,13 @@ import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  changeToUser,
-  fetchUsers,
-  insertUserSilently,
-} from '~/modules/user/application/user'
+import { fetchUsers, insertUserSilently } from '~/modules/user/application/user'
 import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
   authGateway: AuthGateway = createSupabaseAuthGateway(),
 ) {
-  /**
-   * Sign in with specified provider
-   */
   async function signIn(options: SignInOptions): Promise<void> {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }))
@@ -53,6 +46,12 @@ export function createAuthService(
       const result = await authGateway.signOut(options)
 
       if (result.error) {
+        setAuthState(() => ({
+          session: null,
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        }))
         throw result.error
       }
 
@@ -65,77 +64,54 @@ export function createAuthService(
   }
 
   /**
-   * Refresh current session
-   */
-  async function refreshSession(): Promise<void> {
-    try {
-      await authGateway.refreshSession()
-      // Session will be updated via the subscription
-    } catch (e) {
-      logging.error('Auth refreshSession error:', e)
-      throw e
-    }
-  }
-
-  // Auth state subscription cleanup function
-  let unsubscribeAuthState: (() => void) | null = null
-
-  /**
    * Initialize authentication system
    */
   function initializeAuth(): void {
     try {
-      // Set up auth state change subscription
-      unsubscribeAuthState = authGateway.onAuthStateChange(
-        (_event, session) => {
-          setAuthState((prev) => ({
-            ...prev,
-            session,
-            user: session?.user
-              ? {
-                  id: session.user.id,
-                  email: session.user.email,
-                  emailConfirmedAt: session.user.email_confirmed_at,
-                  lastSignInAt: session.user.last_sign_in_at,
-                  createdAt: session.user.created_at,
-                  updatedAt: session.user.updated_at,
-                  userMetadata: session.user.user_metadata,
-                  appMetadata: session.user.app_metadata,
-                }
-              : null,
-            isAuthenticated: !!session,
-            isLoading: false,
-          }))
+      authGateway.onAuthStateChange((_event, session) => {
+        setAuthState((prev) => ({
+          ...prev,
+          session,
+          user: session?.user
+            ? {
+                id: session.user.id,
+                email: session.user.email,
+                emailConfirmedAt: session.user.email_confirmed_at,
+                lastSignInAt: session.user.last_sign_in_at,
+                createdAt: session.user.created_at,
+                updatedAt: session.user.updated_at,
+                userMetadata: session.user.user_metadata,
+                appMetadata: session.user.app_metadata,
+              }
+            : null,
+          isAuthenticated: !!session,
+          isLoading: false,
+        }))
 
-          if (session?.user.id !== undefined) {
-            fetchUsers()
-              .then(async (users) => {
-                console.debug(`Users: `, users)
-                const user = users.find((u) => u.uuid === session.user.id)
-                if (user !== undefined) {
-                  changeToUser(user.uuid)
+        if (session?.user.id !== undefined) {
+          fetchUsers()
+            .then(async (users) => {
+              logging.debug('Users: ', { users })
+              const user = users.find((u) => u.uuid === session.user.id)
+              if (user === undefined) {
+                logging.info(
+                  'User profile not found, creating default profile for OAuth user',
+                )
+                const newUser = createDefaultUserFromAuthSession(session)
+                const createdUser = await insertUserSilently(newUser)
+                if (createdUser !== null) {
+                  logging.info('User profile created successfully')
                 } else {
-                  logging.info(
-                    'User profile not found, creating default profile for OAuth user',
+                  showError(
+                    `Couldn't create user profile for ${JSON.stringify(session.user)}`,
                   )
-                  const newUser = createDefaultUserFromAuthSession(session)
-                  const createdUser = await insertUserSilently(newUser)
-                  if (createdUser !== null) {
-                    logging.info('User profile created successfully')
-                    changeToUser(createdUser.uuid)
-                  } else {
-                    showError(
-                      `Couldn't create user profile for ${JSON.stringify(session.user)}`,
-                    )
-                    changeToUser('')
-                    signOut().catch(showError)
-                  }
+                  signOut().catch(showError)
                 }
-              })
-              .catch(showError)
-          }
-        },
-      )
+              }
+            })
+            .catch(showError)
+        }
+      })
 
       // Load initial session
       void loadInitialSession()
@@ -152,8 +128,7 @@ export function createAuthService(
     try {
       const session = await authGateway.getSession()
       logging.debug(`loadInitialSession session:`, { session })
-      setAuthState((prev) => ({
-        ...prev,
+      setAuthState(() => ({
         session,
         user: session?.user
           ? {
@@ -176,23 +151,12 @@ export function createAuthService(
       throw e
     }
   }
-  /**
-   * Cleanup auth subscriptions
-   */
-  function cleanupAuth(): void {
-    if (unsubscribeAuthState) {
-      unsubscribeAuthState()
-      unsubscribeAuthState = null
-    }
-  }
 
   return {
     signIn,
     signOut,
-    refreshSession,
     initializeAuth,
     loadInitialSession,
-    cleanupAuth,
   }
 }
 
@@ -200,14 +164,8 @@ export function createAuthService(
 const defaultAuthService = createAuthService()
 
 // Export individual functions for easier importing
-export const {
-  signIn,
-  signOut,
-  refreshSession,
-  initializeAuth,
-  loadInitialSession,
-  cleanupAuth,
-} = defaultAuthService
+export const { signIn, signOut, initializeAuth, loadInitialSession } =
+  defaultAuthService
 
 // Also export the default instance
 export default defaultAuthService

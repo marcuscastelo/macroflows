@@ -26,20 +26,32 @@ async function fetchUserWeights(userId: User['uuid']) {
   }
 }
 
-const cachedWeights = parseWithStack(
-  weightSchema.array(),
-  storageRepository.getCachedWeights(currentUserId()),
-)
-if (cachedWeights.length > 0) {
-  weightCacheStore.setWeights(cachedWeights)
+const userId = currentUserId()
+if (userId !== undefined) {
+  const cachedWeights = parseWithStack(
+    weightSchema.array(),
+    storageRepository.getCachedWeights(userId),
+  )
+  if (cachedWeights.length > 0) {
+    weightCacheStore.setWeights(cachedWeights)
+  }
 }
 
 onMount(() => {
-  void fetchUserWeights(currentUserId())
+  const userId = currentUserId()
+  if (userId === undefined) {
+    logging.error('User ID is undefined')
+    return
+  }
+  void fetchUserWeights(userId)
 })
 
 createEffect(() => {
   const userId = currentUserId()
+  if (userId === undefined) {
+    logging.error('User ID is undefined')
+    return
+  }
   void fetchUserWeights(userId)
 })
 
@@ -52,7 +64,12 @@ export const weightCrudService = createWeightCrudService({
 export const userWeights = weightCacheStore.weights
 
 export function refetchUserWeights() {
-  void fetchUserWeights(currentUserId())
+  const userId = currentUserId()
+  if (userId === undefined) {
+    logging.error('User ID is undefined')
+    return
+  }
+  void fetchUserWeights(userId)
 }
 
 // Initialize realtime subscription
