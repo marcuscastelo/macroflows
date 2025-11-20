@@ -11,27 +11,11 @@ import {
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 export function calcRecipeMacros(recipe: Recipe): MacroNutrients {
-  return calcItemContainerMacros({
-    items: recipe.items,
-  })
-}
-
-export function calcUnifiedRecipeMacros(recipe: Recipe): MacroNutrients {
   return calcItemContainerMacros(recipe)
 }
 
 export function calcMealMacros(meal: Meal): MacroNutrients {
-  const result = meal.items.reduce(
-    (acc, item) => {
-      const itemMacros = calcUnifiedItemMacros(item)
-      acc.carbs += itemMacros.carbs
-      acc.fat += itemMacros.fat
-      acc.protein += itemMacros.protein
-      return acc
-    },
-    { carbs: 0, fat: 0, protein: 0 },
-  )
-  return createMacroNutrients(result)
+  return calcItemContainerMacros(meal)
 }
 
 export function calcDayMacros(day: DayDiet): MacroNutrients {
@@ -50,9 +34,6 @@ export function calcDayMacros(day: DayDiet): MacroNutrients {
 
 export const calcRecipeCalories = (recipe: Recipe) =>
   calcCalories(calcRecipeMacros(recipe))
-
-export const calcUnifiedRecipeCalories = (recipe: Recipe) =>
-  calcCalories(calcUnifiedRecipeMacros(recipe))
 
 export const calcUnifiedItemCalories = (item: UnifiedItem) =>
   calcCalories(calcUnifiedItemMacros(item))
