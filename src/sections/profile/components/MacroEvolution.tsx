@@ -2,7 +2,7 @@ import { type Accessor } from 'solid-js'
 
 import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
@@ -51,7 +51,9 @@ function _createChartData(
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
       targetCalories:
-        macroTarget !== null ? calcCalories(macroTarget) : undefined,
+        macroTarget !== null
+          ? MacroNutrientsExt.calcCalories(macroTarget)
+          : undefined,
       protein: dayMacros.protein.toFixed(0),
       targetProtein: macroTarget?.protein.toFixed(0),
       fat: dayMacros.fat.toFixed(0),

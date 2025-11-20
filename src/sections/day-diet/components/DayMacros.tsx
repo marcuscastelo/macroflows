@@ -3,7 +3,7 @@ import { createMemo, Show } from 'solid-js'
 import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
@@ -29,7 +29,7 @@ export default function DayMacros(props: {
     return {
       macroTarget: macroTarget_,
       macros: dayMacros,
-      targetCalories: calcCalories(macroTarget_),
+      targetCalories: MacroNutrientsExt.calcCalories(macroTarget_),
       error: null,
     }
   })
@@ -82,7 +82,7 @@ function Calories(props: {
   targetCalories: number
   class?: string
 }) {
-  const calories = () => calcCalories(props.macros)
+  const calories = () => MacroNutrientsExt.calcCalories(props.macros)
   return (
     <>
       <div class={`h-24 overflow-y-clip text-center ${props.class}`}>

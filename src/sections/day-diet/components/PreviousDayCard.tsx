@@ -1,6 +1,6 @@
 import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import { PreviousDayCardActions } from '~/sections/day-diet/components/PreviousDayCardActions'
 import PreviousDayDetailsModal from '~/sections/day-diet/components/PreviousDayDetailsModal'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
@@ -15,7 +15,7 @@ type PreviousDayCardProps = {
 
 export function PreviousDayCard(props: PreviousDayCardProps) {
   const macros = () => calcDayMacros(props.dayDiet)
-  const calories = () => calcCalories(macros())
+  const calories = () => MacroNutrientsExt.calcCalories(macros())
 
   const normalizedDate = () => {
     return new Date(props.dayDiet.target_day + 'T00:00:00') // Force UTC interpretation

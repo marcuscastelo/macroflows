@@ -8,7 +8,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { calcCalories } from '~/modules/diet/macro-nutrients/application/macroMath'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import {
   insertMacroProfile,
   updateMacroProfile,
@@ -45,7 +45,7 @@ const calculateMacroRepresentation = (
   weight: number,
 ) => {
   const targetGrams = calculateMacroTarget(weight, profile)
-  const calories = calcCalories(targetGrams)
+  const calories = MacroNutrientsExt.calcCalories(targetGrams)
 
   return {
     carbs: {
@@ -141,7 +141,8 @@ export function MacroTarget(props: MacroTargetProps) {
 
   const targetCalories = createMemo(() => {
     const grams = calculateMacroTarget(props.weight(), props.currentProfile())
-    const calories = Math.round(calcCalories(grams) * 100) / 100
+    const calories =
+      Math.round(MacroNutrientsExt.calcCalories(grams) * 100) / 100
     return calories.toString() + ' kcal'
   })
 
