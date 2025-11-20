@@ -7,7 +7,6 @@ import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItem
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcUnifiedItemCalories } from '~/shared/utils/macroMath'
 import {
   createMacroOverflowChecker,
   type MacroOverflowContext,
@@ -24,19 +23,8 @@ export type UnifiedItemNutritionalInfoProps = {
 export function UnifiedItemNutritionalInfo(
   props: UnifiedItemNutritionalInfoProps,
 ) {
-  const calories = createMemo(() => {
-    // Force memo to update by depending on the full item structure
-    const item = props.item()
-    JSON.stringify(item) // Touch the full object to trigger on deep changes
-    return calcUnifiedItemCalories(item)
-  })
-
-  const macros = createMemo(() => {
-    // Force memo to update by depending on the full item structure
-    const item = props.item()
-    JSON.stringify(item) // Touch the full object to trigger on deep changes
-    return ItemExt.macros(item)
-  })
+  const macros = () => ItemExt.of(props.item()).macros()
+  const calories = () => macros().calories()
 
   // Create macro overflow checker if macroOverflow is enabled
   const isMacroOverflowing = createMemo(() => {
@@ -90,7 +78,7 @@ export function UnifiedItemNutritionalInfo(
     <div class="flex justify-between">
       <div class="flex">
         <MacroNutrientsView
-          macros={macros()}
+          macros={macros().value}
           isMacroOverflowing={isMacroOverflowing()}
         />
       </div>

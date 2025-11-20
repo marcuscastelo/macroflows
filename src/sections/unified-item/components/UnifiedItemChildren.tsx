@@ -1,11 +1,11 @@
 import { type Accessor, For, Show } from 'solid-js'
 
+import { ItemExt } from '~/modules/diet/unified-item/application/itemExt'
 import {
   isGroupItem,
   isRecipeItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { calcUnifiedItemCalories } from '~/shared/utils/macroMath'
 
 export type UnifiedItemChildrenProps = {
   item: Accessor<UnifiedItem>
@@ -37,6 +37,7 @@ export function UnifiedItemChildren(props: UnifiedItemChildrenProps) {
             {(child, index) => {
               const isLast = () => index() === getChildren().length - 1
               const isFirst = () => index() === 0
+              const calories = () => ItemExt.of(child).macros().calories()
               return (
                 <div class="relative flex items-center py-1">
                   {/* Vertical line segment */}
@@ -76,7 +77,7 @@ export function UnifiedItemChildren(props: UnifiedItemChildrenProps) {
                       {child.name} ({child.quantity}g)
                     </span>
                     <span class="text-gray-400">
-                      {calcUnifiedItemCalories(child).toFixed(0)}kcal
+                      {calories().toFixed(0)}kcal
                     </span>
                   </div>
                 </div>
