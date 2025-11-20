@@ -4,12 +4,12 @@ import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import { getEffectiveMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { getEffectiveWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
@@ -40,7 +40,7 @@ function _createChartData(
     const currentWeight = getEffectiveWeight(weights, dayDate)
     const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
     const macroTarget =
-      currentMacroProfile !== undefined
+      currentMacroProfile !== null
         ? MacroTargetExt.forWeight(
             currentMacroProfile,
             currentWeight?.weight ?? 0,
