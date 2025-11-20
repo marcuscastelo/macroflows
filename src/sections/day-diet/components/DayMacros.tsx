@@ -4,10 +4,7 @@ import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/day
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
-import {
-  createMacroNutrients,
-  type MacroNutrients,
-} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
@@ -40,7 +37,14 @@ export default function DayMacros(props: {
         macroSignals().error === null &&
         macroSignals().macros !== undefined &&
         macroSignals().macroTarget !== undefined &&
-        macroSignals().targetCalories !== undefined
+        macroSignals().targetCalories !== undefined &&
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        (macroSignals() as {
+          macros: MacroNutrients
+          macroTarget: MacroNutrients
+          targetCalories: number
+          error: null
+        })
       }
       fallback={
         <div class="text-red-500 text-sm">
@@ -48,31 +52,24 @@ export default function DayMacros(props: {
         </div>
       }
     >
-      <div class={`flex pt-3 ${props.class} flex-col xs:flex-row `}>
-        <div class="shrink">
-          <Calories
-            class="w-full"
-            macros={
-              macroSignals().macros ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-            targetCalories={macroSignals().targetCalories ?? 0}
-          />
+      {(macroSignals) => (
+        <div class={`flex pt-3 ${props.class} flex-col xs:flex-row `}>
+          <div class="shrink">
+            <Calories
+              class="w-full"
+              macros={macroSignals().macros}
+              targetCalories={macroSignals().targetCalories}
+            />
+          </div>
+          <div class="flex-1">
+            <Macros
+              class="mt-3 text-xl xs:mt-0"
+              macros={macroSignals().macros}
+              targetMacros={macroSignals().macroTarget}
+            />
+          </div>
         </div>
-        <div class="flex-1">
-          <Macros
-            class="mt-3 text-xl xs:mt-0"
-            macros={
-              macroSignals().macros ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-            targetMacros={
-              macroSignals().macroTarget ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-          />
-        </div>
-      </div>
+      )}
     </Show>
   )
 }
