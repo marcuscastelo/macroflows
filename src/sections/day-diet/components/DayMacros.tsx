@@ -1,7 +1,7 @@
 import { createMemo, Show } from 'solid-js'
 
-import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import {
@@ -25,7 +25,7 @@ export default function DayMacros(props: {
     if (macroTarget_ === null) {
       return { error: 'Peso ou meta de macros não encontrada para o dia.' }
     }
-    const dayMacros = calcDayMacros(day)
+    const dayMacros = DayDietExt.calcDayMacros(day)
     return {
       macroTarget: macroTarget_,
       macros: dayMacros,

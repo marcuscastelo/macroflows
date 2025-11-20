@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
@@ -9,7 +9,6 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import { calcDayCalories } from '~/shared/utils/macroMath'
 import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
@@ -45,8 +44,8 @@ function _createChartData(
         ? calculateMacroTarget(currentWeight?.weight ?? 0, currentMacroProfile)
         : null
 
-    const dayMacros = calcDayMacros(day)
-    const dayCalories = calcDayCalories(day)
+    const dayMacros = DayDietExt.of(day).macros()
+    const dayCalories = dayMacros.calories()
     return {
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
@@ -54,11 +53,11 @@ function _createChartData(
         macroTarget !== null
           ? MacroNutrientsExt.calories(macroTarget)
           : undefined,
-      protein: dayMacros.protein.toFixed(0),
+      protein: dayMacros.protein().toFixed(0),
       targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat.toFixed(0),
+      fat: dayMacros.fat().toFixed(0),
       targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs.toFixed(0),
+      carbs: dayMacros.carbs().toFixed(0),
       targetCarbs: macroTarget?.carbs.toFixed(0),
       targetGrams:
         (macroTarget?.protein ?? NaN) +

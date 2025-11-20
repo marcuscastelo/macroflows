@@ -1,4 +1,4 @@
-import { calcDayMacros } from '~/modules/diet/day-diet/application/usecases/dayMacros'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDayExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import {
   createMacroNutrients,
@@ -90,7 +90,9 @@ export function isOverflow(
     macroOverflowOptions.originalItem !== undefined
       ? _calcTemplateItemMacros(macroOverflowOptions.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-  const current = (dayMacros ?? calcDayMacros(currentDayDiet))[property]
+  const current = (dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
+    property
+  ]
   const target = macroTarget[property]
   return _computeOverflow(
     current,
@@ -112,7 +114,7 @@ export function createMacroOverflowChecker(
 ) {
   // Memoization: dayMacros is computed once for all checks in this object.
   const dayMacros = context.currentDayDiet
-    ? calcDayMacros(context.currentDayDiet)
+    ? DayDietExt.calcDayMacros(context.currentDayDiet)
     : null
   return {
     carbs: () => isOverflow(item, 'carbs', context, dayMacros),
