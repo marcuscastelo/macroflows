@@ -209,7 +209,7 @@ export function calculateWeightProgress(
  * @param date - Date to check
  * @returns The Weight in force or undefined
  */
-export function inForceWeight(
+export function getEffectiveWeight(
   weights: readonly Weight[],
   date: Date,
 ): Weight | undefined {

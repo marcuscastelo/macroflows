@@ -9,8 +9,8 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
-import { inForceWeight } from '~/shared/utils/weightUtils'
+import { getEffectiveMacroProfile } from '~/shared/utils/macroProfileUtils'
+import { getEffectiveWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
   return (
@@ -37,8 +37,8 @@ function _createChartData(
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
 
-    const currentWeight = inForceWeight(weights, dayDate)
-    const currentMacroProfile = inForceMacroProfile(macroProfiles, dayDate)
+    const currentWeight = getEffectiveWeight(weights, dayDate)
+    const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
     const macroTarget =
       currentMacroProfile !== undefined
         ? MacroTargetExt.forWeight(

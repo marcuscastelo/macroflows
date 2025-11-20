@@ -31,7 +31,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import type { ModalId } from '~/shared/modal/types/modalTypes'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
-import { inForceWeight, latestWeight } from '~/shared/utils/weightUtils'
+import { getEffectiveWeight, latestWeight } from '~/shared/utils/weightUtils'
 
 export type ModalController = {
   modalId: ModalId
@@ -275,7 +275,7 @@ export function openRestoreProfileModal(
   let controller: ModalController
 
   const previousProfileWeight = () =>
-    inForceWeight(userWeights(), config.previousMacroProfile.target_day)
+    getEffectiveWeight(userWeights(), config.previousMacroProfile.target_day)
       ?.weight ??
     latestWeight()?.weight ??
     0
