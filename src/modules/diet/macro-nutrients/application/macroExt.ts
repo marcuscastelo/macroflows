@@ -12,7 +12,7 @@ export const MacroNutrientsExt = {
   of(macroNutrients: MacroNutrients) {
     return {
       // Self reference
-      macros: () => macroNutrients,
+      value: macroNutrients,
       // Props
       carbs: () => macroNutrients.carbs,
       protein: () => macroNutrients.protein,

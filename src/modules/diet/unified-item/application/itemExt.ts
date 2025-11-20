@@ -89,7 +89,7 @@ export const ItemExt = {
   of(item: UnifiedItem) {
     return {
       // Self reference
-      item: () => item,
+      value: item,
       // Props
       quantity: () => item.quantity,
       reference: () => item.reference,

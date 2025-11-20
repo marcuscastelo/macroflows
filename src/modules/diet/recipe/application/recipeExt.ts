@@ -10,7 +10,7 @@ export const RecipeExt = {
   of(recipe: Recipe) {
     return {
       // Self reference
-      recipe: () => recipe,
+      value: recipe,
       // Props
       id: () => recipe.id,
       name: () => recipe.name,

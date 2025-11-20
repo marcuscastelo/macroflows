@@ -10,7 +10,7 @@ export const MealExt = {
   of(meal: Meal) {
     return {
       // Self reference
-      meal: () => meal,
+      value: meal,
       // Props
       items: () => meal.items,
       // Derived props
