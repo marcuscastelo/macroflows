@@ -141,8 +141,7 @@ export function MacroTarget(props: MacroTargetProps) {
 
   const targetCalories = createMemo(() => {
     const grams = calculateMacroTarget(props.weight(), props.currentProfile())
-    const calories =
-      Math.round(MacroNutrientsExt.calories(grams) * 100) / 100
+    const calories = Math.round(MacroNutrientsExt.calories(grams) * 100) / 100
     return calories.toString() + ' kcal'
   })
 

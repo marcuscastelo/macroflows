@@ -8,4 +8,17 @@ export const MacroNutrientsExt = {
       macroNutrients.fat * 9
     )
   },
+
+  of(macroNutrients: MacroNutrients) {
+    return {
+      // Self reference
+      macros: () => macroNutrients,
+      // Props
+      carbs: () => macroNutrients.carbs,
+      protein: () => macroNutrients.protein,
+      fat: () => macroNutrients.fat,
+      // Derived props
+      calories: () => MacroNutrientsExt.calories(macroNutrients),
+    } as const
+  },
 }

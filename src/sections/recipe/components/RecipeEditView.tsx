@@ -4,6 +4,7 @@ import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
+import { RecipeExt } from '~/modules/diet/recipe/application/recipeExt'
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import {
   addItemsToRecipe,
@@ -28,7 +29,6 @@ import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedI
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcRecipeCalories } from '~/shared/utils/macroMath'
 import { isUnifiedItem } from '~/shared/utils/typeUtils'
 
 export type RecipeEditViewProps = {
@@ -91,7 +91,7 @@ export function RecipeEditHeader(props: {
     },
   })
 
-  const recipeCalories = calcRecipeCalories(recipe())
+  const recipeCalories = RecipeExt.of(recipe()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
     e.preventDefault()

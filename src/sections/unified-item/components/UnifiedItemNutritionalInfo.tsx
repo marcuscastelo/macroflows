@@ -35,7 +35,7 @@ export function UnifiedItemNutritionalInfo(
     // Force memo to update by depending on the full item structure
     const item = props.item()
     JSON.stringify(item) // Touch the full object to trigger on deep changes
-    return ItemExt.calcUnifiedItemMacros(item)
+    return ItemExt.macros(item)
   })
 
   // Create macro overflow checker if macroOverflow is enabled

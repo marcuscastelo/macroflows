@@ -126,5 +126,5 @@ export function createMacroOverflowChecker(
  * @private
  */
 function _calcTemplateItemMacros(item: TemplateItem): MacroNutrients {
-  return ItemExt.calcUnifiedItemMacros(item)
+  return ItemExt.macros(item)
 }

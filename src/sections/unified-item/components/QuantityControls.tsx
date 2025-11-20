@@ -144,7 +144,7 @@ export function QuantityControls(props: QuantityControlsProps) {
               }
               if (isRecipeItem(props.item())) {
                 // For recipes, calculate macros from children (per 100g of prepared recipe)
-                const recipeMacros = ItemExt.calcUnifiedItemMacros(props.item())
+                const recipeMacros = ItemExt.macros(props.item())
                 const recipeQuantity = props.item().quantity || 1
                 // Convert to per-100g basis for the button
                 return {

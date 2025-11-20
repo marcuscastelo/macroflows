@@ -49,7 +49,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
       return { carbs: 0, protein: 0, fat: 0 }
     }
     const dayMacros = calcDayMacros(dayDiet)
-    const originalMacros = ItemExt.calcUnifiedItemMacros(originalItem)
+    const originalMacros = ItemExt.macros(originalItem)
     return {
       carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
       protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,

@@ -1,13 +1,57 @@
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/application/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
+  type FoodItem,
+  type GroupItem,
   isFoodItem,
   isGroupItem,
   isRecipeItem,
+  type RecipeItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+
+function calcFoodItemMacros(item: FoodItem) {
+  // For food items, calculate proportionally from stored macros in reference
+  return createMacroNutrients({
+    carbs: (item.reference.macros.carbs * item.quantity) / 100,
+    fat: (item.reference.macros.fat * item.quantity) / 100,
+    protein: (item.reference.macros.protein * item.quantity) / 100,
+  })
+}
+
+function calcItemContainerMacros(item: RecipeItem | GroupItem): MacroNutrients {
+  // For recipe and group items, sum the macros from children
+  // The quantity field represents the total prepared amount, not a scaling factor
+  const defaultQuantity = item.reference.children.reduce(
+    (acc, child) => acc + child.quantity,
+    0,
+  )
+
+  if (defaultQuantity === 0) {
+    return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+  }
+
+  const defaultMacros = item.reference.children.reduce(
+    (acc, child) => {
+      const childMacros = ItemExt.macros(child)
+      return createMacroNutrients({
+        carbs: acc.carbs + childMacros.carbs,
+        fat: acc.fat + childMacros.fat,
+        protein: acc.protein + childMacros.protein,
+      })
+    },
+    createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
+  )
+
+  return createMacroNutrients({
+    carbs: (item.quantity / defaultQuantity) * defaultMacros.carbs,
+    fat: (item.quantity / defaultQuantity) * defaultMacros.fat,
+    protein: (item.quantity / defaultQuantity) * defaultMacros.protein,
+  })
+}
 
 export const ItemExt = {
   calcItemContainerMacros<T extends { items: readonly UnifiedItem[] }>(
@@ -15,7 +59,7 @@ export const ItemExt = {
   ): MacroNutrients {
     const result = container.items.reduce(
       (acc, item) => {
-        const itemMacros = ItemExt.calcUnifiedItemMacros(item)
+        const itemMacros = ItemExt.macros(item)
         acc.carbs += itemMacros.carbs
         acc.fat += itemMacros.fat
         acc.protein += itemMacros.protein
@@ -26,49 +70,31 @@ export const ItemExt = {
     return createMacroNutrients(result)
   },
 
-  /**
-   * Calculates macros for a UnifiedItem, handling all reference types
-   */
-  calcUnifiedItemMacros(item: UnifiedItem | undefined): MacroNutrients {
+  macros(item: UnifiedItem | undefined): MacroNutrients {
     if (item === undefined) {
       return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
     }
 
     if (isFoodItem(item)) {
-      // For food items, calculate proportionally from stored macros in reference
-      return createMacroNutrients({
-        carbs: (item.reference.macros.carbs * item.quantity) / 100,
-        fat: (item.reference.macros.fat * item.quantity) / 100,
-        protein: (item.reference.macros.protein * item.quantity) / 100,
-      })
+      return calcFoodItemMacros(item)
     } else if (isRecipeItem(item) || isGroupItem(item)) {
-      // For recipe and group items, sum the macros from children
-      // The quantity field represents the total prepared amount, not a scaling factor
-      const defaultQuantity = item.reference.children.reduce(
-        (acc, child) => acc + child.quantity,
-        0,
-      )
-      const defaultMacros = item.reference.children.reduce(
-        (acc, child) => {
-          const childMacros = ItemExt.calcUnifiedItemMacros(child)
-          return createMacroNutrients({
-            carbs: acc.carbs + childMacros.carbs,
-            fat: acc.fat + childMacros.fat,
-            protein: acc.protein + childMacros.protein,
-          })
-        },
-        createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
-      )
-
-      return createMacroNutrients({
-        carbs: (item.quantity / defaultQuantity) * defaultMacros.carbs,
-        fat: (item.quantity / defaultQuantity) * defaultMacros.fat,
-        protein: (item.quantity / defaultQuantity) * defaultMacros.protein,
-      })
+      return calcItemContainerMacros(item)
     }
 
     // Fallback for unknown types
     item satisfies never
     return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+  },
+
+  of(item: UnifiedItem) {
+    return {
+      // Self reference
+      item: () => item,
+      // Props
+      quantity: () => item.quantity,
+      reference: () => item.reference,
+      // Derived props
+      macros: () => MacroNutrientsExt.of(ItemExt.macros(item)),
+    } as const
   },
 }
