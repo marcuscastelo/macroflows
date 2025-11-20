@@ -4,15 +4,15 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUser, currentUserId } from '~/modules/user/application/user'
 import {
-  userWeights,
-  weightCrudService,
-} from '~/modules/weight/application/usecases/weightState'
-import {
   setWeightChartType,
   WEIGHT_CHART_OPTIONS,
   weightChartType,
-} from '~/modules/weight/application/weightChartSettings'
-import { createNewWeight } from '~/modules/weight/domain/weight'
+} from '~/modules/weight/application/chart/weightChartSettings'
+import {
+  userWeights,
+  weightCrudService,
+} from '~/modules/weight/application/weight/weightState'
+import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
 import { FloatInput } from '~/sections/common/components/FloatInput'

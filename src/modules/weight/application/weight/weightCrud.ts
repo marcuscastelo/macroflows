@@ -1,19 +1,22 @@
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { type WeightStorageRepository } from '~/modules/weight/domain/storageRepository'
-import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
-import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
-import { weightCacheStore } from '~/modules/weight/infrastructure/signals/weightCacheStore'
+import {
+  type NewWeight,
+  type Weight,
+} from '~/modules/weight/domain/weight/weight'
+import { type WeightCacheRepository } from '~/modules/weight/domain/weight/weightCacheRepository'
+import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
+import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
 import { logging } from '~/shared/utils/logging'
 
 export function createWeightCrudService(deps: {
   weightRepository: WeightRepository
-  storageRepository: WeightStorageRepository
+  weightCacheRepository: WeightCacheRepository
 }) {
   async function fetchUserWeights(userId: User['uuid']) {
     try {
       const weights = await deps.weightRepository.fetchUserWeights(userId)
-      deps.storageRepository.setCachedWeights(userId, weights)
+      deps.weightCacheRepository.setCachedWeights(userId, weights)
       return weights
     } catch (error) {
       logging.error('Weight operation error:', error)

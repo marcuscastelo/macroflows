@@ -2,16 +2,16 @@ import { createEffect, onMount } from 'solid-js'
 
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
-import { createWeightCrudService } from '~/modules/weight/application/usecases/weightCrud'
-import { weightSchema } from '~/modules/weight/domain/weight'
-import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
-import { weightCacheStore } from '~/modules/weight/infrastructure/signals/weightCacheStore'
-import { initializeWeightRealtime } from '~/modules/weight/infrastructure/supabase/realtime'
-import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/supabase/supabaseWeightGateway'
+import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
+import { weightSchema } from '~/modules/weight/domain/weight/weight'
+import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
+import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
+import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
+import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
-const storageRepository = createLocalStorageWeightRepository()
+const storageRepository = createLocalStorageWeightCacheRepository()
 const weightRepository = createSupabaseWeightGateway()
 
 async function fetchUserWeights(userId: User['uuid']) {
@@ -58,7 +58,7 @@ createEffect(() => {
 // CRUD operations service - temporary until fully migrated
 export const weightCrudService = createWeightCrudService({
   weightRepository,
-  storageRepository,
+  weightCacheRepository: storageRepository,
 })
 
 export const userWeights = weightCacheStore.weights

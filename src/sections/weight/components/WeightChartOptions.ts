@@ -1,9 +1,9 @@
 import { type ApexOptions } from 'apexcharts'
 
 import ptBrLocale from '~/assets/locales/apex/pt-br.json'
-import { getYAxisConfig } from '~/modules/weight/application/weightChartUtils'
-import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
-import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
+import { getYAxisConfig } from '~/modules/weight/application/chart/weightChartUtils'
+import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
+import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/chart/weightEvolutionDomain'
 import { WeightChartTooltip } from '~/sections/weight/components/WeightChartTooltip'
 
 /**

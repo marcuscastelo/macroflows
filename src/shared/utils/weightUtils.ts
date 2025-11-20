@@ -1,5 +1,5 @@
-import { userWeights } from '~/modules/weight/application/usecases/weightState'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { userWeights } from '~/modules/weight/application/weight/weightState'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 
 function sortWeightsByDate(weights: readonly Weight[]): readonly Weight[] {
   return [...weights].sort(

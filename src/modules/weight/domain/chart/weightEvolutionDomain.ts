@@ -1,6 +1,6 @@
 // Pure domain logic for weight evolution (no side effects)
 // All functions here must be pure and not reference application or UI code
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 
 /**
  * Type for grouped weights by period.

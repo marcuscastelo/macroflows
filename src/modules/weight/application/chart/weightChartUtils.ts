@@ -1,6 +1,6 @@
 // Application-level chart utilities for weight evolution
 import { type OHLC } from '~/modules/measure/domain/ohlc'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { getFirstWeight, getLatestWeight } from '~/shared/utils/weightUtils'
 
 /**

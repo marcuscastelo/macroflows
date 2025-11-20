@@ -1,6 +1,6 @@
-import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
-import { type Weight } from '~/modules/weight/domain/weight'
-import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
+import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
+import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/chart/weightEvolutionDomain'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { calculateWeightProgress } from '~/shared/utils/weightUtils'
 
 /**

@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { createLocalStorageWeightRepository } from '~/modules/weight/infrastructure/localStorage/localStorageRepository'
+import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
 
 /**
  * Chart type options for weight evolution visualization
@@ -20,7 +20,7 @@ export const WEIGHT_CHART_OPTIONS = [
   { value: 'all', label: 'Todo o período' },
 ] as const
 
-const storageRepository = createLocalStorageWeightRepository()
+const storageRepository = createLocalStorageWeightChartPreferenceRepository()
 
 /**
  * Gets the stored chart type from localStorage or returns default

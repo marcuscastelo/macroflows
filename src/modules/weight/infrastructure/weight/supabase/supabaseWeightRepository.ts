@@ -1,7 +1,10 @@
 import { type User } from '~/modules/user/domain/user'
-import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
-import { type WeightRepository } from '~/modules/weight/domain/weightRepository'
-import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/supabase/supabaseWeightGateway'
+import {
+  type NewWeight,
+  type Weight,
+} from '~/modules/weight/domain/weight/weight'
+import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
+import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
 
 const supabaseWeightGateway = createSupabaseWeightGateway()
 

@@ -1,8 +1,11 @@
 import { type User } from '~/modules/user/domain/user'
-import { type NewWeight, type Weight } from '~/modules/weight/domain/weight'
-import { type WeightGateway } from '~/modules/weight/domain/weightGateway'
-import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/supabase/constants'
-import { supabaseWeightMapper } from '~/modules/weight/infrastructure/supabase/supabaseWeightMapper'
+import {
+  type NewWeight,
+  type Weight,
+} from '~/modules/weight/domain/weight/weight'
+import { type WeightGateway } from '~/modules/weight/domain/weight/weightGateway'
+import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/weight/supabase/constants'
+import { supabaseWeightMapper } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightMapper'
 import { supabase } from '~/shared/supabase/supabase'
 
 export function createSupabaseWeightGateway(): WeightGateway {

@@ -1,6 +1,6 @@
 import { createEffect, createSignal, untrack } from 'solid-js'
 
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { logging } from '~/shared/utils/logging'
 
 const [weights, setWeights] = createSignal<readonly Weight[]>([])

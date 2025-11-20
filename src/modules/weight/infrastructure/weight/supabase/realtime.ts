@@ -1,6 +1,6 @@
-import { weightSchema } from '~/modules/weight/domain/weight'
-import { weightCacheStore } from '~/modules/weight/infrastructure/signals/weightCacheStore'
-import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/supabase/constants'
+import { weightSchema } from '~/modules/weight/domain/weight/weight'
+import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
+import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/weight/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 

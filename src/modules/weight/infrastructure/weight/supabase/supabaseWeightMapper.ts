@@ -2,7 +2,7 @@ import {
   type NewWeight,
   type Weight,
   weightSchema,
-} from '~/modules/weight/domain/weight'
+} from '~/modules/weight/domain/weight/weight'
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

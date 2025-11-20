@@ -18,7 +18,7 @@ import {
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
 import { showError } from '~/modules/toast/application/toastManager'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'

@@ -8,7 +8,7 @@ import {
   promoteToWeight,
   type Weight,
   weightSchema,
-} from '~/modules/weight/domain/weight'
+} from '~/modules/weight/domain/weight/weight'
 
 describe('Weight Domain', () => {
   describe('weightSchema', () => {

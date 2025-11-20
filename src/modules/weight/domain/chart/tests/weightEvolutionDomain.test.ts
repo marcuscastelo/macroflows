@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  getCandlePeriod,
+  groupWeightsByPeriod,
+} from '~/modules/weight/domain/chart/weightEvolutionDomain'
+import {
   createNewWeight,
   promoteToWeight,
   type Weight,
-} from '~/modules/weight/domain/weight'
-import {
-  getCandlePeriod,
-  groupWeightsByPeriod,
-} from '~/modules/weight/domain/weightEvolutionDomain'
+} from '~/modules/weight/domain/weight/weight'
 
 /**
  * Creates test weight data spanning multiple days

@@ -8,7 +8,7 @@ import { inForceMacroProfile } from '~/modules/diet/macro-profile/domain/macroPr
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
-import { userWeights } from '~/modules/weight/application/usecases/weightState'
+import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export const calculateMacroTarget = (
