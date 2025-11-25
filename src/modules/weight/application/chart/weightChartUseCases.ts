@@ -101,7 +101,7 @@ export type WeightProgressResult =
  * @param diet - Diet type ('cut', 'normo', 'bulk')
  * @returns WeightProgressResult or null if invalid input
  */
-export function calculateWeightProgress(
+function calculateWeightProgress(
   weights: readonly Weight[],
   desiredWeight: number,
   diet: 'cut' | 'normo' | 'bulk',
@@ -173,4 +173,8 @@ export function calculateWeightProgress(
     currentChange,
     goalWeightChange,
   }
+}
+
+export const weightChartUseCases = {
+  calculateWeightProgress,
 }

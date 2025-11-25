@@ -8,6 +8,7 @@ import {
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
+import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
 import {
   userWeights,
   weightCrudService,
@@ -20,7 +21,6 @@ import { useFloatField } from '~/sections/common/hooks/useField'
 import { WeightChart } from '~/sections/weight/components/WeightChart'
 import { WeightProgress } from '~/sections/weight/components/WeightProgress'
 import { WeightView } from '~/sections/weight/components/WeightView'
-import { calculateWeightProgress } from '~/shared/utils/weightUtils'
 
 /**
  * Renders the weight evolution view, including progress, chart, and entry form.
@@ -30,7 +30,7 @@ export function WeightEvolution() {
   const desiredWeight = () => currentUser()?.desired_weight ?? 0
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const weightProgress = () =>
-    calculateWeightProgress(
+    weightChartUseCases.calculateWeightProgress(
       userWeights(),
       desiredWeight(),
       currentUser()?.diet ?? 'cut',
