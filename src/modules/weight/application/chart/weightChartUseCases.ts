@@ -1,3 +1,5 @@
+import { currentUser } from '~/modules/user/application/user'
+import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
@@ -175,6 +177,54 @@ function calculateWeightProgress(
   }
 }
 
+function desiredWeight(): number {
+  return currentUser()?.desired_weight ?? 0
+}
+
+function weightProgress() {
+  return calculateWeightProgress(
+    userWeights(),
+    desiredWeight(),
+    currentUser()?.diet ?? 'cut',
+  )
+}
+
+const weightProgressText = () => {
+  const progress = weightProgress()
+  if (progress === null) return 'N/A'
+
+  switch (progress.type) {
+    case 'no_weights':
+      return 'Nenhum peso registrado'
+    case 'progress':
+      if (progress.progress >= 100) {
+        return `100% 🎉`
+      } else {
+        return `${progress.progress.toFixed(1)}%`
+      }
+    case 'exceeded':
+      return `100% + ${progress.exceeded.toFixed(1)}kg 🎉`
+    case 'no_change':
+      return 'Sem mudança'
+    case 'reversal': {
+      const signal = progress.currentChange.direction === 'gain' ? '+' : '-'
+      return `Diverge ${signal}${progress.reversal.toFixed(1)}kg`
+    }
+    case 'normo':
+      if (progress.difference === 0) {
+        return 'Peso ideal atingido 🎉'
+      } else {
+        const signal = progress.direction === 'gain' ? '+' : '-'
+        return `Variação: ${signal}${progress.difference.toFixed(1)}kg`
+      }
+    default:
+      progress satisfies never // Ensure all cases are handled
+  }
+}
+
 export const weightChartUseCases = {
   calculateWeightProgress,
+  weightProgress,
+  desiredWeight,
+  weightProgressText,
 }
