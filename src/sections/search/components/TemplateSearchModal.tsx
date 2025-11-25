@@ -4,7 +4,6 @@ import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
   isOverflow,
   type MacroOverflowContext,
@@ -136,14 +135,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
     // Helper function for checking individual macro properties on the unified item
     const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      // Memoization: dayMacros is computed once for all checks in this object.
-      const dayMacros = DayDietExt.calcDayMacros(
-        macroOverflowContext.currentDayDiet,
-      )
       const obj = isOverflow({
         item: originalAddedItem,
         context: macroOverflowContext,
-        dayMacros,
       })
 
       return obj[property]()

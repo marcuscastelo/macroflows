@@ -51,7 +51,6 @@ export function isOverflow(args: {
   item: UnifiedItem
   originalItem?: UnifiedItem
   context: MacroOverflowContext
-  dayMacros?: MacroNutrients | null
 }): Record<keyof MacroNutrientsRecord, () => boolean> {
   const { currentDayDiet, macroTarget } = args.context
 
@@ -62,8 +61,7 @@ export function isOverflow(args: {
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
 
   const func = (property: keyof MacroNutrientsRecord) => {
-    const current = (args.dayMacros ??
-      DayDietExt.calcDayMacros(currentDayDiet))[property]
+    const current = DayDietExt.calcDayMacros(currentDayDiet)[property]
     const target = macroTarget[property]
 
     return _computeOverflow(

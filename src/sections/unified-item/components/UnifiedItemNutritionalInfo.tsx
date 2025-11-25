@@ -1,7 +1,6 @@
 import { type Accessor, createMemo } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
   isOverflow,
   type MacroOverflowContext,
@@ -69,13 +68,11 @@ export function UnifiedItemNutritionalInfo(
     logging.debug('currentDayDiet_=', { currentDayDiet_ })
     logging.debug('macroTarget=', { macroTarget })
     logging.debug('Creating macro overflow checker for item:', templateItem)
-    const dayMacros = DayDietExt.calcDayMacros(context.currentDayDiet)
 
     return isOverflow({
       item: templateItem,
       context,
       originalItem: originalTemplateItem,
-      dayMacros,
     })
   })
 
