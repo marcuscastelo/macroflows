@@ -1,15 +1,9 @@
 import { type Accessor, createMemo } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import {
-  isOverflow,
-  type MacroOverflowContext,
-} from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
-import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemNutritionalInfoProps = {
@@ -44,31 +38,9 @@ export function UnifiedItemNutritionalInfo(
     const item = props.item()
     const originalItem = overflow.originalItem
 
-    // Get context for overflow checking
-    const currentDayDiet_ = currentDayDiet()
-    if (currentDayDiet_ === null) {
-      logging.warn('No current day diet available for overflow check')
-      return fallback
-    }
-
-    const macroTarget = macroTargetUseCases.macroTargetAt(
-      stringToDate(currentDayDiet_.target_day),
-    )
-    if (macroTarget === null) {
-      logging.warn('No macro target set for the day')
-      return fallback
-    }
-
-    const context: MacroOverflowContext = {
-      currentDayDiet: currentDayDiet_,
-      macroTarget,
-    }
-
-    logging.debug('currentDayDiet_=', { currentDayDiet_ })
-    logging.debug('macroTarget=', { macroTarget })
     logging.debug('Creating macro overflow checker for item:', item)
 
-    return isOverflow({ item, context, originalItem })
+    return isOverflow({ item, originalItem })
   })
 
   return (

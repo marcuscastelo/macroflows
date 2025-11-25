@@ -1,38 +1,54 @@
-import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import {
+  currentDayDiet,
+  targetDay,
+} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
   createMacroNutrients,
   type MacroNutrients,
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { stringToDate } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 
-/**
- * MacroOverflowContext provides context for macro overflow checks.
- * @property currentDayDiet - The current day diet or null
- * @property macroTarget - The macro nutrient targets or null
- * @property macroOverflowOptions - Overflow options
- */
-export type MacroOverflowContext = {
-  currentDayDiet: DayDiet
-  macroTarget: MacroNutrients
+function getContext() {
+  const currentDayDiet_ = currentDayDiet()
+  if (currentDayDiet_ === null) {
+    logging.warn('No current day diet available for overflow check')
+    return null
+  }
+
+  const macroTarget_ = macroTargetUseCases.macroTargetAt(
+    stringToDate(targetDay()),
+  )
+  if (macroTarget_ === null) {
+    logging.warn('No macro target set for the day')
+    return null
+  }
+
+  return {
+    currentDayDiet: currentDayDiet_,
+    macroTarget: macroTarget_,
+  }
 }
-
-/**
- * Checks if adding/editing an item would cause a macro nutrient to exceed the target.
- * @param item - The item being added or edited
- * @param property - The macro nutrient property to check ('carbs', 'protein', 'fat')
- * @param context - Context containing current day diet, macro target, and overflow options
- * @returns true if the macro would exceed the target, false otherwise
- */
 
 export function isOverflow(args: {
   item: UnifiedItem
   originalItem?: UnifiedItem
-  context: MacroOverflowContext
 }): Record<keyof MacroNutrientsRecord, () => boolean> {
-  const { currentDayDiet, macroTarget } = args.context
+  const context = getContext()
+  if (context === null) {
+    return {
+      carbs: () => false,
+      protein: () => false,
+      fat: () => false,
+    }
+  }
+
+  const { currentDayDiet, macroTarget } = context
 
   const itemMacros = ItemExt.macros(args.item)
   const originalItemMacros: MacroNutrients =
@@ -56,4 +72,8 @@ export function isOverflow(args: {
     protein: () => checkOverflowOf('protein'),
     fat: () => checkOverflowOf('fat'),
   }
+}
+
+export const macroOverflowUseCases = {
+  isOverflow,
 }
