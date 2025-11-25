@@ -4,12 +4,10 @@ import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/ma
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
-import { getEffectiveWeight } from '~/shared/utils/weightUtils'
+import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
 
 export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
-  const targetDayWeight_ =
-    getEffectiveWeight(userWeights(), day)?.weight ?? null
+  const targetDayWeight_ = weightUseCases.effectiveAt(day)?.weight ?? null
   const targetDayMacroProfile_ = getEffectiveMacroProfile(
     userMacroProfiles(),
     day,

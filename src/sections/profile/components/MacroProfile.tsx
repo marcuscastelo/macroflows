@@ -5,14 +5,14 @@ import {
   previousMacroProfile,
 } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
+import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
-import { latestWeight } from '~/shared/utils/weightUtils'
 
 export function MacroProfileSettings() {
   return (
     <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE}`}>
       <Show
-        when={latestWeight()}
+        when={weightUseCases.latest()}
         fallback={
           <h1>Não há pesos registrados, o perfil não pode ser calculado</h1>
         }

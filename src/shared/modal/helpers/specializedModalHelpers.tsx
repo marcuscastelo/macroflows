@@ -9,7 +9,7 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
+import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   RecipeEditModal,
@@ -31,7 +31,6 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import type { ModalId } from '~/shared/modal/types/modalTypes'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
-import { getEffectiveWeight, latestWeight } from '~/shared/utils/weightUtils'
 
 export type ModalController = {
   modalId: ModalId
@@ -275,9 +274,9 @@ export function openRestoreProfileModal(
   let controller: ModalController
 
   const previousProfileWeight = () =>
-    getEffectiveWeight(userWeights(), config.previousMacroProfile.target_day)
+    weightUseCases.effectiveAt(config.previousMacroProfile.target_day)
       ?.weight ??
-    latestWeight()?.weight ??
+    weightUseCases.latest()?.weight ??
     0
 
   const modalId = openContentModal(

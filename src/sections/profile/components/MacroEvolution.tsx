@@ -9,8 +9,8 @@ import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetEx
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
+import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import { getEffectiveWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
   return (
@@ -37,7 +37,7 @@ function _createChartData(
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
 
-    const currentWeight = getEffectiveWeight(weights, dayDate)
+    const currentWeight = WeightsExt.effectiveAt(weights, dayDate)
     const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
     const macroTarget =
       currentMacroProfile !== null

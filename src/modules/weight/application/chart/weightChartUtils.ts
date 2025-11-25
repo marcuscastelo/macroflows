@@ -1,7 +1,7 @@
 // Application-level chart utilities for weight evolution
 import { type OHLC } from '~/modules/measure/domain/ohlc'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
-import { getFirstWeight, getLatestWeight } from '~/shared/utils/weightUtils'
+import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
 /**
  * Type for chart data with OHLC and date, used in buildChartData.
@@ -23,17 +23,17 @@ export function buildChartData(
   let firstNonEmptyIdx = entries.findIndex(([, ws]) => ws.length > 0)
   let firstNonEmptyValue: number | undefined =
     firstNonEmptyIdx !== -1 && entries[firstNonEmptyIdx]
-      ? getFirstWeight(entries[firstNonEmptyIdx][1])?.weight
+      ? WeightsExt.oldest(entries[firstNonEmptyIdx][1])?.weight
       : undefined
   while (i < entries.length) {
     const entry = entries[i]
     if (!entry) break
     const [period, weights] = entry
     if (weights.length > 0) {
-      const open = getFirstWeight(weights)?.weight ?? 0
+      const open = WeightsExt.oldest(weights)?.weight ?? 0
       const low = Math.min(...weights.map((w) => w.weight))
       const high = Math.max(...weights.map((w) => w.weight))
-      const close = getLatestWeight(weights)?.weight ?? 0
+      const close = WeightsExt.latest(weights)?.weight ?? 0
       lastValue = close
       filled.push({ date: period, open, close, high, low })
       i++
@@ -50,7 +50,7 @@ export function buildChartData(
       const nextWeights = nextEntry ? nextEntry[1] : undefined
       let nextValue: number | undefined = lastValue
       if (nextWeights && nextWeights.length > 0)
-        nextValue = getFirstWeight(nextWeights)?.weight
+        nextValue = WeightsExt.oldest(nextWeights)?.weight
       const steps = nextIdx - i + 1
       for (let j = 0; j < nextIdx - i; j++) {
         let interp = lastValue

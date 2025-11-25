@@ -1,34 +1,5 @@
-import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
-
-function sortWeightsByDate(weights: readonly Weight[]): readonly Weight[] {
-  return [...weights].sort(
-    (a, b) => a.target_timestamp.getTime() - b.target_timestamp.getTime(),
-  )
-}
-
-export function getFirstWeight(weights: readonly Weight[]): Weight | null {
-  /**
-   * Returns the first weight entry from a sorted list.
-   * @param weights - Array of Weight objects
-   * @returns The first Weight or null if empty
-   */
-
-  const sorted = sortWeightsByDate(weights)
-  return sorted[0] ?? null
-}
-
-export const latestWeight = () => getLatestWeight(userWeights())
-export function getLatestWeight(weights: readonly Weight[]): Weight | null {
-  /**
-   * Returns the latest weight entry from a sorted list.
-   * @param weights - Array of Weight objects
-   * @returns The latest Weight or null if empty
-   */
-
-  const sorted = sortWeightsByDate(weights)
-  return sorted[sorted.length - 1] ?? null
-}
+import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
 function floatEqual(a: number, b: number, epsilon = 1e-3): boolean {
   return Math.abs(a - b) < epsilon
@@ -140,8 +111,9 @@ export function calculateWeightProgress(
       type: 'no_weights' as const,
     }
   }
-  const first = getFirstWeight(weights)
-  const latest = getLatestWeight(weights)
+  const weightPipe = WeightsExt.of(weights)
+  const first = weightPipe.oldest()
+  const latest = weightPipe.latest()
   if (!first || !latest) return null
   const { goalWeightChange, currentChange } = getTotalAndChange(
     first.weight,
@@ -201,19 +173,4 @@ export function calculateWeightProgress(
     currentChange,
     goalWeightChange,
   }
-}
-
-/**
- * Returns the weight entry in force for a given date.
- * @param weights - Array of Weight objects
- * @param date - Date to check
- * @returns The Weight in force or undefined
- */
-export function getEffectiveWeight(
-  weights: readonly Weight[],
-  date: Date,
-): Weight | undefined {
-  return [...weights]
-    .reverse()
-    .find((item) => item.target_timestamp.getTime() <= date.getTime())
 }
