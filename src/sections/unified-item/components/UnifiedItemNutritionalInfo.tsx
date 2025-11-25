@@ -1,8 +1,9 @@
 import { type Accessor, createMemo } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
-  createMacroOverflowChecker,
+  isOverflow,
   type MacroOverflowContext,
 } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
@@ -73,7 +74,15 @@ export function UnifiedItemNutritionalInfo(
     }
 
     logging.debug('Creating macro overflow checker for item:', templateItem)
-    return createMacroOverflowChecker(templateItem, context)
+    const dayMacros = context.currentDayDiet
+      ? DayDietExt.calcDayMacros(context.currentDayDiet)
+      : null
+
+    return {
+      carbs: () => isOverflow(templateItem, 'carbs', context, dayMacros),
+      protein: () => isOverflow(templateItem, 'protein', context, dayMacros),
+      fat: () => isOverflow(templateItem, 'fat', context, dayMacros),
+    }
   })
 
   return (

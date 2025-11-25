@@ -4,7 +4,8 @@ import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { createMacroOverflowChecker } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -118,10 +119,30 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
     // Helper function for checking individual macro properties on the unified item
     const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      return createMacroOverflowChecker(
-        originalAddedItem,
-        macroOverflowContext,
-      )[property]() // Call the function to get boolean
+      // Memoization: dayMacros is computed once for all checks in this object.
+      const dayMacros = macroOverflowContext.currentDayDiet
+        ? DayDietExt.calcDayMacros(macroOverflowContext.currentDayDiet)
+        : null
+      const obj = {
+        carbs: () =>
+          isOverflow(
+            originalAddedItem,
+            'carbs',
+            macroOverflowContext,
+            dayMacros,
+          ),
+        protein: () =>
+          isOverflow(
+            originalAddedItem,
+            'protein',
+            macroOverflowContext,
+            dayMacros,
+          ),
+        fat: () =>
+          isOverflow(originalAddedItem, 'fat', macroOverflowContext, dayMacros),
+      }
+
+      return obj[property]()
     }
 
     const onConfirm = async () => {
