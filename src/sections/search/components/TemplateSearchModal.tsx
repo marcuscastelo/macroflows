@@ -140,29 +140,11 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       const dayMacros = DayDietExt.calcDayMacros(
         macroOverflowContext.currentDayDiet,
       )
-      const obj = {
-        carbs: () =>
-          isOverflow({
-            item: originalAddedItem,
-            context: macroOverflowContext,
-            property: 'carbs',
-            dayMacros,
-          }),
-        protein: () =>
-          isOverflow({
-            item: originalAddedItem,
-            context: macroOverflowContext,
-            property: 'protein',
-            dayMacros,
-          }),
-        fat: () =>
-          isOverflow({
-            item: originalAddedItem,
-            context: macroOverflowContext,
-            property: 'fat',
-            dayMacros,
-          }),
-      }
+      const obj = isOverflow({
+        item: originalAddedItem,
+        context: macroOverflowContext,
+        dayMacros,
+      })
 
       return obj[property]()
     }

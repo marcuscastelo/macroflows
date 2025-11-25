@@ -50,26 +50,33 @@ function _computeOverflow(
 export function isOverflow(args: {
   item: UnifiedItem
   originalItem?: UnifiedItem
-  property: keyof MacroNutrientsRecord
   context: MacroOverflowContext
   dayMacros?: MacroNutrients | null
-}): boolean {
+}): Record<keyof MacroNutrientsRecord, () => boolean> {
   const { currentDayDiet, macroTarget } = args.context
-  // Type assertions for safety (defensive, in case of untyped input)
 
   const itemMacros = ItemExt.macros(args.item)
   const originalItemMacros: MacroNutrients =
     args.originalItem !== undefined
       ? ItemExt.macros(args.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-  const current = (args.dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
-    args.property
-  ]
-  const target = macroTarget[args.property]
-  return _computeOverflow(
-    current,
-    itemMacros[args.property],
-    originalItemMacros[args.property],
-    target,
-  )
+
+  const func = (property: keyof MacroNutrientsRecord) => {
+    const current = (args.dayMacros ??
+      DayDietExt.calcDayMacros(currentDayDiet))[property]
+    const target = macroTarget[property]
+
+    return _computeOverflow(
+      current,
+      itemMacros[property],
+      originalItemMacros[property],
+      target,
+    )
+  }
+
+  return {
+    carbs: () => func('carbs'),
+    protein: () => func('protein'),
+    fat: () => func('fat'),
+  }
 }

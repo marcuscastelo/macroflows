@@ -71,32 +71,12 @@ export function UnifiedItemNutritionalInfo(
     logging.debug('Creating macro overflow checker for item:', templateItem)
     const dayMacros = DayDietExt.calcDayMacros(context.currentDayDiet)
 
-    return {
-      carbs: () =>
-        isOverflow({
-          item: templateItem,
-          property: 'carbs',
-          context,
-          originalItem: originalTemplateItem,
-          dayMacros,
-        }),
-      protein: () =>
-        isOverflow({
-          item: templateItem,
-          property: 'protein',
-          context,
-          originalItem: originalTemplateItem,
-          dayMacros,
-        }),
-      fat: () =>
-        isOverflow({
-          item: templateItem,
-          property: 'fat',
-          context,
-          originalItem: originalTemplateItem,
-          dayMacros,
-        }),
-    }
+    return isOverflow({
+      item: templateItem,
+      context,
+      originalItem: originalTemplateItem,
+      dayMacros,
+    })
   })
 
   return (
