@@ -20,30 +20,10 @@ export type MacroOverflowContext = {
 }
 
 /**
- * Computes the difference and overflow status for a macro nutrient property.
- * @private
- * @param current - The current macro value for the day
- * @param itemValue - The macro value for the item or group
- * @param originalValue - The macro value for the original item (if editing)
- * @param target - The macro target value
- * @returns true if overflow, false otherwise
- */
-function _computeOverflow(
-  current: number,
-  itemValue: number,
-  originalValue: number,
-  target: number,
-): boolean {
-  const difference = itemValue - originalValue
-  return current + difference > target
-}
-
-/**
  * Checks if adding/editing an item would cause a macro nutrient to exceed the target.
  * @param item - The item being added or edited
  * @param property - The macro nutrient property to check ('carbs', 'protein', 'fat')
  * @param context - Context containing current day diet, macro target, and overflow options
- * @param dayMacros - (Optional) Precomputed day macros to avoid redundant calculation
  * @returns true if the macro would exceed the target, false otherwise
  */
 
@@ -60,21 +40,20 @@ export function isOverflow(args: {
       ? ItemExt.macros(args.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
 
-  const func = (property: keyof MacroNutrientsRecord) => {
+  const checkOverflowOf = (property: keyof MacroNutrientsRecord) => {
     const current = DayDietExt.calcDayMacros(currentDayDiet)[property]
     const target = macroTarget[property]
 
-    return _computeOverflow(
-      current,
-      itemMacros[property],
-      originalItemMacros[property],
-      target,
-    )
+    const delta = itemMacros[property] - originalItemMacros[property]
+    const newTotal = current + delta
+
+    const doesOverflow = newTotal > target
+    return doesOverflow
   }
 
   return {
-    carbs: () => func('carbs'),
-    protein: () => func('protein'),
-    fat: () => func('fat'),
+    carbs: () => checkOverflowOf('carbs'),
+    protein: () => checkOverflowOf('protein'),
+    fat: () => checkOverflowOf('fat'),
   }
 }
