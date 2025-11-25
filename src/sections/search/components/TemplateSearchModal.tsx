@@ -146,9 +146,6 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
             item: originalAddedItem,
             context: macroOverflowContext,
             property: 'carbs',
-            macroOverflowOptions: {
-              enable: true,
-            },
             dayMacros,
           }),
         protein: () =>
@@ -156,9 +153,6 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
             item: originalAddedItem,
             context: macroOverflowContext,
             property: 'protein',
-            macroOverflowOptions: {
-              enable: true,
-            },
             dayMacros,
           }),
         fat: () =>
@@ -166,9 +160,6 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
             item: originalAddedItem,
             context: macroOverflowContext,
             property: 'fat',
-            macroOverflowOptions: {
-              enable: true,
-            },
             dayMacros,
           }),
       }

@@ -77,9 +77,6 @@ export function UnifiedItemNutritionalInfo(
           item: templateItem,
           property: 'carbs',
           context,
-          macroOverflowOptions: {
-            enable: true,
-          },
           originalItem: originalTemplateItem,
           dayMacros,
         }),
@@ -88,9 +85,6 @@ export function UnifiedItemNutritionalInfo(
           item: templateItem,
           property: 'protein',
           context,
-          macroOverflowOptions: {
-            enable: true,
-          },
           originalItem: originalTemplateItem,
           dayMacros,
         }),
@@ -99,9 +93,6 @@ export function UnifiedItemNutritionalInfo(
           item: templateItem,
           property: 'fat',
           context,
-          macroOverflowOptions: {
-            enable: true,
-          },
           originalItem: originalTemplateItem,
           dayMacros,
         }),

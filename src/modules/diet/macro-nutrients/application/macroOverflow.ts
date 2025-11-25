@@ -5,19 +5,8 @@ import {
   type MacroNutrients,
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-
-/**
- * MacroOverflowOptions controls overflow logic for macro nutrients.
- * @property enable - Whether overflow checks are enabled
- * @property originalItem - (Optional) The original item for edit scenarios
- */
-type MacroOverflowOptions = {
-  enable: boolean
-  originalItem?: TemplateItem
-}
 
 /**
  * MacroOverflowContext provides context for macro overflow checks.
@@ -63,7 +52,6 @@ export function isOverflow(args: {
   originalItem?: UnifiedItem
   property: keyof MacroNutrientsRecord
   context: MacroOverflowContext
-  macroOverflowOptions: MacroOverflowOptions
   dayMacros?: MacroNutrients | null
 }): boolean {
   const { currentDayDiet, macroTarget } = args.context
@@ -71,8 +59,8 @@ export function isOverflow(args: {
 
   const itemMacros = ItemExt.macros(args.item)
   const originalItemMacros: MacroNutrients =
-    args.macroOverflowOptions.originalItem !== undefined
-      ? ItemExt.macros(args.macroOverflowOptions.originalItem)
+    args.originalItem !== undefined
+      ? ItemExt.macros(args.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
   const current = (args.dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
     args.property
