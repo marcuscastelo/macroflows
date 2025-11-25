@@ -8,7 +8,6 @@ import {
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { logging } from '~/shared/utils/logging'
 
 /**
  * MacroOverflowOptions controls overflow logic for macro nutrients.
@@ -27,8 +26,8 @@ type MacroOverflowOptions = {
  * @property macroOverflowOptions - Overflow options
  */
 export type MacroOverflowContext = {
-  currentDayDiet: DayDiet | null
-  macroTarget: MacroNutrients | null
+  currentDayDiet: DayDiet
+  macroTarget: MacroNutrients
   macroOverflowOptions: MacroOverflowOptions
 }
 
@@ -72,20 +71,7 @@ export function isOverflow(
   if (!macroOverflowOptions.enable) {
     return false
   }
-  if (currentDayDiet === null) {
-    logging.error('MacroOverflow isOverflow - currentDayDiet is undefined:', {
-      property,
-      itemName: item.name,
-    })
-    return false
-  }
-  if (macroTarget === null) {
-    logging.error('MacroOverflow isOverflow - macroTarget is undefined:', {
-      property,
-      itemName: item.name,
-    })
-    return false
-  }
+
   const itemMacros = ItemExt.macros(item)
   const originalItemMacros: MacroNutrients =
     macroOverflowOptions.originalItem !== undefined

@@ -29,14 +29,16 @@ export function UnifiedItemNutritionalInfo(
 
   // Create macro overflow checker if macroOverflow is enabled
   const isMacroOverflowing = createMemo(() => {
+    const fallback = {
+      carbs: () => false,
+      protein: () => false,
+      fat: () => false,
+    }
+
     const overflow = props.macroOverflow?.()
     if (!overflow || !overflow.enable) {
       logging.debug('Macro overflow is not enabled')
-      return {
-        carbs: () => false,
-        protein: () => false,
-        fat: () => false,
-      }
+      return fallback
     }
 
     // Convert UnifiedItem to TemplateItem format for overflow check
@@ -46,11 +48,18 @@ export function UnifiedItemNutritionalInfo(
 
     // Get context for overflow checking
     const currentDayDiet_ = currentDayDiet()
-    const macroTarget = currentDayDiet_
-      ? macroTargetUseCases.macroTargetAt(
-          stringToDate(currentDayDiet_.target_day),
-        )
-      : null
+    if (currentDayDiet_ === null) {
+      logging.warn('No current day diet available for overflow check')
+      return fallback
+    }
+
+    const macroTarget = macroTargetUseCases.macroTargetAt(
+      stringToDate(currentDayDiet_.target_day),
+    )
+    if (macroTarget === null) {
+      logging.warn('No macro target set for the day')
+      return fallback
+    }
 
     const context: MacroOverflowContext = {
       currentDayDiet: currentDayDiet_,
@@ -63,20 +72,8 @@ export function UnifiedItemNutritionalInfo(
 
     logging.debug('currentDayDiet_=', { currentDayDiet_ })
     logging.debug('macroTarget=', { macroTarget })
-
-    // If we don't have the context, return false for all
-    if (currentDayDiet_ === null || macroTarget === null) {
-      return {
-        carbs: () => false,
-        protein: () => false,
-        fat: () => false,
-      }
-    }
-
     logging.debug('Creating macro overflow checker for item:', templateItem)
-    const dayMacros = context.currentDayDiet
-      ? DayDietExt.calcDayMacros(context.currentDayDiet)
-      : null
+    const dayMacros = DayDietExt.calcDayMacros(context.currentDayDiet)
 
     return {
       carbs: () => isOverflow(templateItem, 'carbs', context, dayMacros),

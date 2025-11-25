@@ -106,9 +106,24 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     // For UnifiedItem, we need to check macro overflow
 
     const currentDayDiet_ = currentDayDiet()
+    if (currentDayDiet_ === null) {
+      logging.warn('No current day diet available for overflow check')
+      // Proceed to add item without overflow check
+      props.onNewUnifiedItem?.(newItem, originalAddedItem)
+      closeEditModal()
+      return
+    }
+
     const macroTarget_ = macroTargetUseCases.macroTargetAt(
       stringToDate(targetDay()),
     )
+    if (macroTarget_ === null) {
+      logging.warn('No macro target set for the day')
+      // Proceed to add item without overflow check
+      props.onNewUnifiedItem?.(newItem, originalAddedItem)
+      closeEditModal()
+      return
+    }
 
     // Create context object once
     const macroOverflowContext = {
@@ -120,9 +135,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     // Helper function for checking individual macro properties on the unified item
     const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
       // Memoization: dayMacros is computed once for all checks in this object.
-      const dayMacros = macroOverflowContext.currentDayDiet
-        ? DayDietExt.calcDayMacros(macroOverflowContext.currentDayDiet)
-        : null
+      const dayMacros = DayDietExt.calcDayMacros(
+        macroOverflowContext.currentDayDiet,
+      )
       const obj = {
         carbs: () =>
           isOverflow(
