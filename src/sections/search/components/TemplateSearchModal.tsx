@@ -5,7 +5,10 @@ import {
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import {
+  isOverflow,
+  type MacroOverflowContext,
+} from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -126,10 +129,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     }
 
     // Create context object once
-    const macroOverflowContext = {
+    const macroOverflowContext: MacroOverflowContext = {
       currentDayDiet: currentDayDiet_,
       macroTarget: macroTarget_,
-      macroOverflowOptions: { enable: true },
     }
 
     // Helper function for checking individual macro properties on the unified item
@@ -140,21 +142,35 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
       const obj = {
         carbs: () =>
-          isOverflow(
-            originalAddedItem,
-            'carbs',
-            macroOverflowContext,
+          isOverflow({
+            item: originalAddedItem,
+            context: macroOverflowContext,
+            property: 'carbs',
+            macroOverflowOptions: {
+              enable: true,
+            },
             dayMacros,
-          ),
+          }),
         protein: () =>
-          isOverflow(
-            originalAddedItem,
-            'protein',
-            macroOverflowContext,
+          isOverflow({
+            item: originalAddedItem,
+            context: macroOverflowContext,
+            property: 'protein',
+            macroOverflowOptions: {
+              enable: true,
+            },
             dayMacros,
-          ),
+          }),
         fat: () =>
-          isOverflow(originalAddedItem, 'fat', macroOverflowContext, dayMacros),
+          isOverflow({
+            item: originalAddedItem,
+            context: macroOverflowContext,
+            property: 'fat',
+            macroOverflowOptions: {
+              enable: true,
+            },
+            dayMacros,
+          }),
       }
 
       return obj[property]()

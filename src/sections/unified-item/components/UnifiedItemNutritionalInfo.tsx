@@ -64,10 +64,6 @@ export function UnifiedItemNutritionalInfo(
     const context: MacroOverflowContext = {
       currentDayDiet: currentDayDiet_,
       macroTarget,
-      macroOverflowOptions: {
-        enable: true,
-        originalItem: originalTemplateItem,
-      },
     }
 
     logging.debug('currentDayDiet_=', { currentDayDiet_ })
@@ -76,9 +72,39 @@ export function UnifiedItemNutritionalInfo(
     const dayMacros = DayDietExt.calcDayMacros(context.currentDayDiet)
 
     return {
-      carbs: () => isOverflow(templateItem, 'carbs', context, dayMacros),
-      protein: () => isOverflow(templateItem, 'protein', context, dayMacros),
-      fat: () => isOverflow(templateItem, 'fat', context, dayMacros),
+      carbs: () =>
+        isOverflow({
+          item: templateItem,
+          property: 'carbs',
+          context,
+          macroOverflowOptions: {
+            enable: true,
+          },
+          originalItem: originalTemplateItem,
+          dayMacros,
+        }),
+      protein: () =>
+        isOverflow({
+          item: templateItem,
+          property: 'protein',
+          context,
+          macroOverflowOptions: {
+            enable: true,
+          },
+          originalItem: originalTemplateItem,
+          dayMacros,
+        }),
+      fat: () =>
+        isOverflow({
+          item: templateItem,
+          property: 'fat',
+          context,
+          macroOverflowOptions: {
+            enable: true,
+          },
+          originalItem: originalTemplateItem,
+          dayMacros,
+        }),
     }
   })
 

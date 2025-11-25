@@ -28,7 +28,6 @@ type MacroOverflowOptions = {
 export type MacroOverflowContext = {
   currentDayDiet: DayDiet
   macroTarget: MacroNutrients
-  macroOverflowOptions: MacroOverflowOptions
 }
 
 /**
@@ -59,32 +58,30 @@ function _computeOverflow(
  * @returns true if the macro would exceed the target, false otherwise
  */
 
-export function isOverflow(
-  item: UnifiedItem,
-  property: keyof MacroNutrientsRecord,
-  context: MacroOverflowContext,
-  dayMacros?: MacroNutrients | null,
-): boolean {
-  const { currentDayDiet, macroTarget, macroOverflowOptions } = context
+export function isOverflow(args: {
+  item: UnifiedItem
+  originalItem?: UnifiedItem
+  property: keyof MacroNutrientsRecord
+  context: MacroOverflowContext
+  macroOverflowOptions: MacroOverflowOptions
+  dayMacros?: MacroNutrients | null
+}): boolean {
+  const { currentDayDiet, macroTarget } = args.context
   // Type assertions for safety (defensive, in case of untyped input)
 
-  if (!macroOverflowOptions.enable) {
-    return false
-  }
-
-  const itemMacros = ItemExt.macros(item)
+  const itemMacros = ItemExt.macros(args.item)
   const originalItemMacros: MacroNutrients =
-    macroOverflowOptions.originalItem !== undefined
-      ? ItemExt.macros(macroOverflowOptions.originalItem)
+    args.macroOverflowOptions.originalItem !== undefined
+      ? ItemExt.macros(args.macroOverflowOptions.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-  const current = (dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
-    property
+  const current = (args.dayMacros ?? DayDietExt.calcDayMacros(currentDayDiet))[
+    args.property
   ]
-  const target = macroTarget[property]
+  const target = macroTarget[args.property]
   return _computeOverflow(
     current,
-    itemMacros[property],
-    originalItemMacros[property],
+    itemMacros[args.property],
+    originalItemMacros[args.property],
     target,
   )
 }
