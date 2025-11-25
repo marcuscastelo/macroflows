@@ -115,7 +115,6 @@ function Macros(props: {
   targetMacros: MacroNutrients
   class?: string
 }) {
-  // TODO: Add Progress component
   return (
     <div class={`mx-2 ${props.class}`}>
       <Progress
