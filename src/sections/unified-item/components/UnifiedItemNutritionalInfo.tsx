@@ -41,9 +41,8 @@ export function UnifiedItemNutritionalInfo(
     }
 
     // Convert UnifiedItem to TemplateItem format for overflow check
-    const templateItem = props.item()
-
-    const originalTemplateItem = overflow.originalItem
+    const item = props.item()
+    const originalItem = overflow.originalItem
 
     // Get context for overflow checking
     const currentDayDiet_ = currentDayDiet()
@@ -67,13 +66,9 @@ export function UnifiedItemNutritionalInfo(
 
     logging.debug('currentDayDiet_=', { currentDayDiet_ })
     logging.debug('macroTarget=', { macroTarget })
-    logging.debug('Creating macro overflow checker for item:', templateItem)
+    logging.debug('Creating macro overflow checker for item:', item)
 
-    return isOverflow({
-      item: templateItem,
-      context,
-      originalItem: originalTemplateItem,
-    })
+    return isOverflow({ item, context, originalItem })
   })
 
   return (

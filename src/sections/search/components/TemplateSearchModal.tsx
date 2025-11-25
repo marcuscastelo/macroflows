@@ -8,7 +8,6 @@ import {
   isOverflow,
   type MacroOverflowContext,
 } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createUnifiedItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
@@ -102,7 +101,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
   const handleNewUnifiedItem = async (
     newItem: UnifiedItem,
-    originalAddedItem: TemplateItem,
+    originalAddedItem: UnifiedItem,
     closeEditModal: () => void,
   ) => {
     // For UnifiedItem, we need to check macro overflow
@@ -131,16 +130,6 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     const macroOverflowContext: MacroOverflowContext = {
       currentDayDiet: currentDayDiet_,
       macroTarget: macroTarget_,
-    }
-
-    // Helper function for checking individual macro properties on the unified item
-    const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      const obj = isOverflow({
-        item: originalAddedItem,
-        context: macroOverflowContext,
-      })
-
-      return obj[property]()
     }
 
     const onConfirm = async () => {
@@ -216,11 +205,16 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
+    const overflowResults = isOverflow({
+      item: originalAddedItem,
+      context: macroOverflowContext,
+    })
+
     // Check if any macro nutrient would overflow
     const isOverflowing =
-      checkMacroOverflow('carbs') ||
-      checkMacroOverflow('protein') ||
-      checkMacroOverflow('fat')
+      overflowResults['carbs']() ||
+      overflowResults['protein']() ||
+      overflowResults['fat']()
 
     if (isOverflowing) {
       // Prompt if user wants to add item even if it overflows
