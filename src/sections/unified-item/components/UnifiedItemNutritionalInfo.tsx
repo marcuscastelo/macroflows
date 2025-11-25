@@ -5,7 +5,7 @@ import {
   createMacroOverflowChecker,
   type MacroOverflowContext,
 } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
@@ -46,7 +46,9 @@ export function UnifiedItemNutritionalInfo(
     // Get context for overflow checking
     const currentDayDiet_ = currentDayDiet()
     const macroTarget = currentDayDiet_
-      ? getMacroTargetForDay(stringToDate(currentDayDiet_.target_day))
+      ? macroTargetUseCases.macroTargetAt(
+          stringToDate(currentDayDiet_.target_day),
+        )
       : null
 
     const context: MacroOverflowContext = {

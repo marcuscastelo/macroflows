@@ -2,7 +2,7 @@ import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import {
   asFoodItem,
@@ -42,7 +42,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
     logging.debug('getAvailableMacros')
     const dayDiet = currentDayDiet()
     const macroTarget = dayDiet
-      ? getMacroTargetForDay(new Date(dayDiet.target_day))
+      ? macroTargetUseCases.macroTargetAt(new Date(dayDiet.target_day))
       : null
     const originalItem = props.macroOverflow().originalItem
     if (!dayDiet || !macroTarget) {

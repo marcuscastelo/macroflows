@@ -5,7 +5,7 @@ import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
@@ -18,7 +18,9 @@ export default function DayMacros(props: {
     if (!day) {
       return { error: 'Dia atual não encontrado' }
     }
-    const macroTarget_ = getMacroTargetForDay(stringToDate(day.target_day))
+    const macroTarget_ = macroTargetUseCases.macroTargetAt(
+      stringToDate(day.target_day),
+    )
     if (macroTarget_ === null) {
       return { error: 'Peso ou meta de macros não encontrada para o dia.' }
     }

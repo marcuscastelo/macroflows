@@ -6,7 +6,7 @@ import {
 } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { createMacroOverflowChecker } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createUnifiedItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -105,7 +105,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     // For UnifiedItem, we need to check macro overflow
 
     const currentDayDiet_ = currentDayDiet()
-    const macroTarget_ = getMacroTargetForDay(stringToDate(targetDay()))
+    const macroTarget_ = macroTargetUseCases.macroTargetAt(
+      stringToDate(targetDay()),
+    )
 
     // Create context object once
     const macroOverflowContext = {

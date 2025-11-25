@@ -6,7 +6,7 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
 
-export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
+const macroTargetAt = (day: Date): MacroNutrients | null => {
   const targetDayWeight_ = weightUseCases.effectiveAt(day)?.weight ?? null
   const targetDayMacroProfile_ = getEffectiveMacroProfile(
     userMacroProfiles(),
@@ -42,4 +42,8 @@ export const getMacroTargetForDay = (day: Date): MacroNutrients | null => {
   }
 
   return MacroTargetExt.forWeight(targetDayMacroProfile_, targetDayWeight_)
+}
+
+export const macroTargetUseCases = {
+  macroTargetAt,
 }
