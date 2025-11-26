@@ -32,6 +32,8 @@ type MacroOption = {
   readonly color: string
 }
 
+const LONG_PRESS_DURATION_MS = 500
+
 const MACRO_OPTIONS: readonly MacroOption[] = [
   {
     mode: 'balanced',
@@ -188,7 +190,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
     // Start long press timer for mobile
     longPressTimer = setTimeout(() => {
       setIsOpen(true)
-    }, 500)
+    }, LONG_PRESS_DURATION_MS)
   }
 
   function handleTouchEnd() {
@@ -247,7 +249,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
           aria-label="Escolher macro para maximizar"
         >
           {/* Header */}
-          <div class="px-3 py-2 bg-gray-750 border-b border-gray-700">
+          <div class="px-3 py-2 bg-gray-900 border-b border-gray-700">
             <span class="text-xs text-gray-400 font-medium">
               Maximizar por:
             </span>
@@ -299,7 +301,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
 
           {/* Preview Section */}
           <Show when={selectedMode() !== null}>
-            <div class="px-3 py-2 bg-gray-750 border-t border-gray-700">
+            <div class="px-3 py-2 bg-gray-900 border-t border-gray-700">
               <PreviewPanel
                 result={getResult(selectedMode()!)}
                 macroTargets={props.macroTargets}
