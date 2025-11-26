@@ -3,16 +3,6 @@ applyTo: "**"
 ---
 # Copilot Instructions (short version)
 
-At the start of every session, always run:
-
-```
-export GIT_PAGER=cat
-```
-
-This disables pagers for all git and gh commands, preventing interactive output issues.
-
----
-
 # Barrel File Ban
 
 - Barrel index.ts files (files that re-export multiple modules from a directory) are strictly forbidden in this codebase.

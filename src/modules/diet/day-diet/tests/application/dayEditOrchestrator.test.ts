@@ -22,8 +22,8 @@ vi.mock('~/shared/utils/date/dateUtils', () => ({
   stringToDate: vi.fn(() => new Date('2023-01-01')),
 }))
 
-const { getMacroTargetForDay } = await import(
-  '~/modules/diet/macro-target/application/macroTarget'
+const { macroTargetUseCases } = await import(
+  '~/modules/diet/macro-target/application/macroTargetUseCases'
 )
 const { updateMeal } = await import('~/modules/diet/meal/application/meal')
 
@@ -98,7 +98,9 @@ describe('DayEditOrchestrator', () => {
         protein: 50,
         fat: 30,
       })
-      vi.mocked(getMacroTargetForDay).mockReturnValue(mockMacroTarget)
+      vi.spyOn(macroTargetUseCases, 'macroTargetAt').mockReturnValue(
+        mockMacroTarget,
+      )
 
       const orchestrator = createDayEditOrchestrator()
       const dayDiet = makeTestDayDiet()
@@ -111,7 +113,7 @@ describe('DayEditOrchestrator', () => {
     })
 
     it('should disable macro overflow when no macro target exists', () => {
-      vi.mocked(getMacroTargetForDay).mockReturnValue(null)
+      vi.spyOn(macroTargetUseCases, 'macroTargetAt').mockReturnValue(null)
 
       const orchestrator = createDayEditOrchestrator()
       const dayDiet = makeTestDayDiet()

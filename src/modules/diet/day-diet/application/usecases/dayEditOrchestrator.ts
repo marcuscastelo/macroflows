@@ -1,5 +1,5 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
 import {
@@ -66,7 +66,7 @@ export function createDayEditOrchestrator() {
   ): MacroOverflowConfig {
     try {
       const dayDate = stringToDate(dayDiet.target_day)
-      const macroTarget = getMacroTargetForDay(dayDate)
+      const macroTarget = macroTargetUseCases.macroTargetAt(dayDate)
 
       if (!macroTarget) {
         return {

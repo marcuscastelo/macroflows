@@ -311,7 +311,6 @@ Be aware of the following technical debt and future plans:
 ## 8. Final Reminders
 - **TODOs:** Never remove `TODO` comments from the codebase.
 - **Labels:** When creating issues, use the labels defined in `docs/labels-usage.md`.
-- **Session Start:** Always run `export GIT_PAGER=cat` at the beginning of a session to prevent interactive pager issues with `git`.
 
 # QA Workflow for Macroflows 
 
