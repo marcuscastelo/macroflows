@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { createItem, type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   createNewRecipe,
@@ -12,13 +13,9 @@ import {
   getRecipeRawQuantity,
   scaleRecipeByPreparedQuantity,
 } from '~/modules/diet/recipe/domain/recipeOperations'
-import {
-  createUnifiedItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
-function makeItem(id: number, name = 'Arroz'): UnifiedItem {
-  return createUnifiedItem({
+function makeItem(id: number, name = 'Arroz'): Item {
+  return createItem({
     id,
     name,
     quantity: 100,
@@ -31,10 +28,7 @@ function makeItem(id: number, name = 'Arroz'): UnifiedItem {
 }
 
 describe('Recipe scaling operations', () => {
-  const makeRecipe = (
-    items: UnifiedItem[],
-    prepared_multiplier = 1,
-  ): Recipe => {
+  const makeRecipe = (items: Item[], prepared_multiplier = 1): Recipe => {
     return promoteRecipe(
       createNewRecipe({
         name: 'Test Recipe',

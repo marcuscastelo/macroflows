@@ -1,6 +1,7 @@
 import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 import { z } from 'zod/v4'
 
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
@@ -12,22 +13,18 @@ import {
   updateRecipePreparedMultiplier,
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
+import { ItemListView } from '~/sections/item/components/ItemListView'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isUnifiedItem } from '~/shared/utils/typeUtils'
+import { isItem } from '~/shared/utils/typeUtils'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -47,8 +44,8 @@ export function RecipeEditView(props: RecipeEditViewProps) {
   const setRecipe = untrack(() => props.setRecipe)
 
   const acceptedClipboardSchema = z.union([
-    unifiedItemSchema,
-    unifiedItemSchema.array(),
+    itemSchema,
+    itemSchema.array(),
     mealSchema,
   ])
 
@@ -56,8 +53,8 @@ export function RecipeEditView(props: RecipeEditViewProps) {
     acceptedClipboardSchema,
     getDataToCopy: () => [...recipe().items],
     onPaste: (data) => {
-      // Check if data is array of UnifiedItems
-      if (Array.isArray(data) && data.every(isUnifiedItem)) {
+      // Check if data is array of Items
+      if (Array.isArray(data) && data.every(isItem)) {
         const itemsToAdd = data
           .filter((item) => item.reference.type === 'food') // Only food items in recipes
           .map((item) => regenerateId(item))
@@ -66,8 +63,8 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         return
       }
 
-      // Check if data is single UnifiedItem
-      if (isUnifiedItem(data)) {
+      // Check if data is single Item
+      if (isItem(data)) {
         if (data.reference.type === 'food') {
           const regeneratedItem = regenerateId(data)
           const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
@@ -123,18 +120,18 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         }}
         value={recipe().name}
       />
-      <UnifiedItemListView
+      <ItemListView
         items={() => [...recipe().items]}
         mode="edit"
         handlers={{
-          onEdit: (unifiedItem: UnifiedItem) => {
-            props.onEditItem(unifiedItem)
+          onEdit: (Item: Item) => {
+            props.onEditItem(Item)
           },
-          onCopy: (unifiedItem: UnifiedItem) => {
-            clipboard.write(JSON.stringify(unifiedItem))
+          onCopy: (Item: Item) => {
+            clipboard.write(JSON.stringify(Item))
           },
-          onDelete: (unifiedItem: UnifiedItem) => {
-            setRecipe(removeItemFromRecipe(recipe(), unifiedItem.id))
+          onDelete: (Item: Item) => {
+            setRecipe(removeItemFromRecipe(recipe(), Item.id))
           },
         }}
       />

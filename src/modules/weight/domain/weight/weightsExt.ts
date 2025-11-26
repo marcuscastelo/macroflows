@@ -16,9 +16,9 @@ export const WeightsExt = {
   },
 
   effectiveAt(weights: readonly Weight[], date: Date): Weight | undefined {
-    return [...weights]
-      .reverse()
-      .find((item) => item.target_timestamp.getTime() <= date.getTime())
+    return WeightsExt.sortedByDate(weights).findLast(
+      (item) => item.target_timestamp.getTime() <= date.getTime(),
+    )
   },
 
   of(weights: readonly Weight[]) {

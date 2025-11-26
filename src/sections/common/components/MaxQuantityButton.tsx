@@ -7,14 +7,14 @@ import {
   Show,
 } from 'solid-js'
 
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   calculateMaxQuantity,
   getDominantMacro,
   type MacroType,
   type MaxQuantityMode,
   type MaxQuantityResult,
-} from '~/modules/diet/unified-item/domain/maxQuantityCalculations'
+} from '~/modules/diet/item/domain/maxQuantityCalculations'
+import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { cn } from '~/shared/cn'
 import { logging } from '~/shared/utils/logging'
 

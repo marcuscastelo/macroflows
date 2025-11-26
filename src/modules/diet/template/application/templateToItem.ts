@@ -1,27 +1,27 @@
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { generateId } from '~/shared/utils/idUtils'
 
 export const DEFAULT_QUANTITY = 100
 
 /**
- * Converts a Template to a UnifiedItem directly (unified approach).
+ * Converts a Template to a Item directly (unified approach).
  * This is the new preferred method for converting templates.
  *
  * @param template - The Template to convert
  * @param desiredQuantity - The desired quantity in grams (defaults to 100g)
- * @returns The corresponding UnifiedItem
+ * @returns The corresponding Item
  */
-export function templateToUnifiedItem(
+export function templateToItem(
   template: Template,
   desiredQuantity: number = DEFAULT_QUANTITY,
 ): TemplateItem {
   if (isTemplateFood(template)) {
-    return createUnifiedItem({
+    return createItem({
       id: generateId(),
       name: template.name,
       quantity: desiredQuantity,
@@ -29,18 +29,16 @@ export function templateToUnifiedItem(
     })
   }
 
-  // For recipes, we don't store macros directly in UnifiedItems
+  // For recipes, we don't store macros directly in Items
   // They will be calculated from children
-  return createUnifiedItem({
+  return createItem({
     id: generateId(),
     name: template.name,
     quantity: desiredQuantity,
     reference: {
       type: 'recipe',
       id: template.id,
-      children: template.items.map((item) => {
-        return item
-      }),
+      children: template.items,
     },
   })
 }

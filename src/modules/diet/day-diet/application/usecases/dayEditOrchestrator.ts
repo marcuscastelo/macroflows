@@ -1,4 +1,5 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
@@ -6,7 +7,6 @@ import {
   addItemToMeal,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -24,16 +24,16 @@ export type EditPermissionResult =
 
 export type MacroOverflowConfig =
   | { enable: false; originalItem: undefined }
-  | { enable: true; originalItem: UnifiedItem }
+  | { enable: true; originalItem: Item }
 
 /**
  * Orchestrates day editing operations, handling permissions, validations, and business logic
  */
-export function createDayEditOrchestrator() {
+export const dayUseCases = {
   /**
    * Checks if a day can be edited based on the current mode
    */
-  function checkEditPermission(mode: EditMode): EditPermissionResult {
+  checkEditPermission(mode: EditMode): EditPermissionResult {
     if (mode === 'summary') {
       return {
         canEdit: false,
@@ -55,14 +55,14 @@ export function createDayEditOrchestrator() {
     }
 
     return { canEdit: true }
-  }
+  },
 
   /**
    * Prepares macro overflow configuration for item editing
    */
-  function prepareMacroOverflowConfig(
+  prepareMacroOverflowConfig(
     dayDiet: DayDiet,
-    item: UnifiedItem,
+    item: Item,
   ): MacroOverflowConfig {
     try {
       const dayDate = stringToDate(dayDiet.target_day)
@@ -90,15 +90,15 @@ export function createDayEditOrchestrator() {
         originalItem: undefined,
       }
     }
-  }
+  },
 
   /**
    * Orchestrates the update of an item in a meal
    */
-  async function updateItemInMealOrchestrated(
+  async updateItemInMealOrchestrated(
     meal: Meal,
-    _item: UnifiedItem,
-    updatedItem: UnifiedItem,
+    _item: Item,
+    updatedItem: Item,
   ): Promise<void> {
     try {
       const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
@@ -110,15 +110,12 @@ export function createDayEditOrchestrator() {
       )
       throw error
     }
-  }
+  },
 
   /**
    * Orchestrates adding a new item to a meal
    */
-  async function addItemToMealOrchestrated(
-    meal: Meal,
-    newItem: UnifiedItem,
-  ): Promise<void> {
+  async addItemToMealOrchestrated(meal: Meal, newItem: Item): Promise<void> {
     try {
       const updatedMeal = addItemToMeal(meal, newItem)
       await updateMeal(meal.id, updatedMeal)
@@ -129,25 +126,17 @@ export function createDayEditOrchestrator() {
       )
       throw error
     }
-  }
+  },
 
   /**
    * Orchestrates updating a meal
    */
-  async function updateMealOrchestrated(meal: Meal): Promise<void> {
+  async updateMealOrchestrated(meal: Meal): Promise<void> {
     try {
       await updateMeal(meal.id, meal)
     } catch (error) {
       logging.error('DayEditOrchestrator updateMealOrchestrated error:', error)
       throw error
     }
-  }
-
-  return {
-    checkEditPermission,
-    prepareMacroOverflowConfig,
-    updateItemInMealOrchestrated,
-    addItemToMealOrchestrated,
-    updateMealOrchestrated,
-  }
+  },
 }
