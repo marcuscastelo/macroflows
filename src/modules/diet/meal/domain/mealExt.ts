@@ -1,6 +1,6 @@
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 
 export const MealExt = {
   macros(meal: Meal) {

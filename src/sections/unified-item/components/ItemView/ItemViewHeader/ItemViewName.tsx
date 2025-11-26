@@ -1,7 +1,7 @@
 import { type Accessor, createMemo, createResource, Show } from 'solid-js'
 
 import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import {
   isRecipeItem,
   type UnifiedItem,

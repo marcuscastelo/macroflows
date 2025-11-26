@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { Items } from '~/modules/diet/unified-item/domain/itemsExt'
+import { Items } from '~/modules/diet/unified-item/domain/ext/itemsExt'
 import {
   scaleRecipeItemQuantity,
   synchronizeRecipeItemWithOriginal,

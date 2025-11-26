@@ -10,7 +10,7 @@ import {
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'

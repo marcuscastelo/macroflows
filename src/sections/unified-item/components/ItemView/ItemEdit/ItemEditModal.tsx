@@ -19,7 +19,7 @@ import {
   addChildToItem,
   updateChildInItem,
 } from '~/modules/diet/unified-item/domain/childOperations'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import { synchronizeRecipeItemWithOriginal } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   asGroupItem,

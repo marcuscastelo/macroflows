@@ -3,7 +3,7 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { Items } from '~/modules/diet/unified-item/domain/itemsExt'
+import { Items } from '~/modules/diet/unified-item/domain/ext/itemsExt'
 import {
   type FoodItem,
   type GroupItem,
