@@ -13,7 +13,7 @@ export function isItem(obj: unknown): obj is Item {
     typeof obj === 'object' &&
     obj !== null &&
     '__type' in obj &&
-    obj.__type === 'Item'
+    obj.__type === 'UnifiedItem'
   )
 }
 
