@@ -28,7 +28,6 @@ export default function DayMacros(props: {
     return {
       macroTarget: macroTarget_,
       macros: dayMacros,
-      targetCalories: MacroNutrientsExt.totalCalories(macroTarget_),
       error: null,
     }
   })
@@ -39,12 +38,10 @@ export default function DayMacros(props: {
         macroSignals().error === null &&
         macroSignals().macros !== undefined &&
         macroSignals().macroTarget !== undefined &&
-        macroSignals().targetCalories !== undefined &&
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         (macroSignals() as {
           macros: MacroNutrients
           macroTarget: MacroNutrients
-          targetCalories: number
           error: null
         })
       }
@@ -60,7 +57,7 @@ export default function DayMacros(props: {
             <Calories
               class="w-full"
               macros={macroSignals().macros}
-              targetCalories={macroSignals().targetCalories}
+              targetMacros={macroSignals().macroTarget}
             />
           </div>
           <div class="flex-1">
@@ -78,17 +75,19 @@ export default function DayMacros(props: {
 
 function Calories(props: {
   macros: MacroNutrients
-  targetCalories: number
+  targetMacros: MacroNutrients
   class?: string
 }) {
-  const calories = () => MacroNutrientsExt.totalCalories(props.macros)
+  const calories = () => MacroNutrientsExt.of(props.macros).calories()
+  const targetCalories = () =>
+    MacroNutrientsExt.of(props.targetMacros).calories()
   return (
     <>
       <div class={`h-24 overflow-y-clip text-center ${props.class}`}>
         <div
           class="radial-progress text-blue-600"
           style={{
-            '--value': (100 * (calories() / props.targetCalories)) / 2,
+            '--value': (100 * (calories() / targetCalories())) / 2,
             '--size': '12rem',
             '--thickness': '0.7rem',
             transform: 'rotate(90deg) scale(-1, -1)',
@@ -102,7 +101,7 @@ function Calories(props: {
             }}
           >
             {Math.round(calories()).toFixed(2)}/
-            {Math.round(props.targetCalories).toFixed(2)}kcal
+            {Math.round(targetCalories()).toFixed(2)}kcal
           </span>
         </div>
       </div>
