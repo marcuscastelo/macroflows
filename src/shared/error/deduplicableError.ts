@@ -64,9 +64,13 @@ export function isDeduplicableError(
   if (error instanceof DeduplicableError) {
     return true
   }
-  if (error instanceof Error && 'errorId' in error) {
-    const errorWithId = error
-    return typeof errorWithId.errorId === 'string'
+  // Check for duck-typed DeduplicableError (e.g., across module boundaries)
+  if (
+    error instanceof Error &&
+    'errorId' in error &&
+    typeof error.errorId === 'string'
+  ) {
+    return true
   }
   return false
 }

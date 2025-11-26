@@ -142,6 +142,28 @@ export function killToast(id: ToastItem['id']): void {
 }
 
 /**
+ * Checks if two toasts are duplicates based on deduplication key or message + type.
+ */
+function areToastsDuplicates(
+  toast: ToastItem,
+  newToast: ToastItem,
+  newDeduplicationKey: string | null,
+): boolean {
+  // If both toasts have deduplication keys, use those for comparison
+  if (newDeduplicationKey !== null && toast.options.deduplicationKey !== null) {
+    return (
+      toast.options.deduplicationKey === newDeduplicationKey &&
+      toast.options.type === newToast.options.type
+    )
+  }
+  // Otherwise, fall back to message + type comparison
+  return (
+    toast.message === newToast.message &&
+    toast.options.type === newToast.options.type
+  )
+}
+
+/**
  * Check for duplicate messages to avoid spam.
  * Uses deduplicationKey when available, otherwise falls back to message + type comparison.
  */
@@ -150,46 +172,18 @@ function isDuplicateToast(newToast: ToastItem): boolean {
 
   // Check if a toast with the same deduplication key or message+type is currently visible
   if (
-    visibleToasts().some((toast) => {
-      // If both toasts have deduplication keys, use those for comparison
-      if (
-        newDeduplicationKey !== null &&
-        toast.options.deduplicationKey !== null
-      ) {
-        return (
-          toast.options.deduplicationKey === newDeduplicationKey &&
-          toast.options.type === newToast.options.type
-        )
-      }
-      // Otherwise, fall back to message + type comparison
-      return (
-        toast.message === newToast.message &&
-        toast.options.type === newToast.options.type
-      )
-    })
+    visibleToasts().some((toast) =>
+      areToastsDuplicates(toast, newToast, newDeduplicationKey),
+    )
   ) {
     return true
   }
 
   // Check if a toast with the same deduplication key or message+type is already in the queue
   if (
-    queue().some((toast) => {
-      // If both toasts have deduplication keys, use those for comparison
-      if (
-        newDeduplicationKey !== null &&
-        toast.options.deduplicationKey !== null
-      ) {
-        return (
-          toast.options.deduplicationKey === newDeduplicationKey &&
-          toast.options.type === newToast.options.type
-        )
-      }
-      // Otherwise, fall back to message + type comparison
-      return (
-        toast.message === newToast.message &&
-        toast.options.type === newToast.options.type
-      )
-    })
+    queue().some((toast) =>
+      areToastsDuplicates(toast, newToast, newDeduplicationKey),
+    )
   ) {
     return true
   }
