@@ -112,6 +112,7 @@ export function EANSearch(props: EANSearchProps) {
                     <ItemView
                       handlers={{
                         // TODO : default handlers for ItemView
+                        // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
                           clipboard.write(JSON.stringify(item))
                         },
