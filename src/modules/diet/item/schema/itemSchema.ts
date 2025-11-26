@@ -17,7 +17,7 @@ export const itemSchema: z.ZodType<Item> = z.lazy(() =>
         id: z.number(),
         macros: macroNutrientsSchema,
       }),
-      __type: z.literal('Item'),
+      __type: z.literal('UnifiedItem'),
     }),
     // Recipe items don't have macros (inferred from children)
     z.object({
@@ -29,7 +29,7 @@ export const itemSchema: z.ZodType<Item> = z.lazy(() =>
         id: z.number(),
         children: z.array(itemSchema),
       }),
-      __type: z.literal('Item'),
+      __type: z.literal('UnifiedItem'),
     }),
     // Group items don't have macros (inferred from children)
     z.object({
@@ -40,7 +40,7 @@ export const itemSchema: z.ZodType<Item> = z.lazy(() =>
         type: z.literal('group'),
         children: z.array(itemSchema),
       }),
-      __type: z.literal('Item'),
+      __type: z.literal('UnifiedItem'),
     }),
   ]),
 )
@@ -49,7 +49,7 @@ type ItemBase = {
   id: number
   name: string
   quantity: number
-  __type: 'Item'
+  __type: 'UnifiedItem'
 }
 
 type FoodReference = { type: 'food'; id: number; macros: MacroNutrients }
@@ -93,7 +93,7 @@ function createBaseItem({
     id,
     name,
     quantity: Math.round(quantity * 100) / 100, // Round to 2 decimal places
-    __type: 'Item',
+    __type: 'UnifiedItem',
   }
 }
 
