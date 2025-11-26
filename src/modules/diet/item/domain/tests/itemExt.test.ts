@@ -18,7 +18,7 @@ const makeFoodItem = (
     id,
     macros: createMacroNutrients(macros),
   },
-  __type: 'Item' as const,
+  __type: 'UnifiedItem' as const,
 })
 
 const makeRecipeItem = (
@@ -35,7 +35,7 @@ const makeRecipeItem = (
     id,
     children,
   },
-  __type: 'Item' as const,
+  __type: 'UnifiedItem' as const,
 })
 
 describe('ItemExt macros and of()', () => {
