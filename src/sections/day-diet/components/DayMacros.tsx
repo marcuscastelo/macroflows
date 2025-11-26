@@ -18,23 +18,21 @@ export default function DayMacros(props: { dayDiet: DayDiet; class?: string }) {
     if (macroTarget_ === null) {
       return { error: 'Peso ou meta de macros não encontrada para o dia.' }
     }
-    const dayMacros = DayDietExt.calcDayMacros(day)
     return {
       macroTarget: macroTarget_,
-      macros: dayMacros,
       error: null,
     }
   })
+
+  const macros = createMemo(() => DayDietExt.calcDayMacros(props.dayDiet))
 
   return (
     <Show
       when={
         macroSignals().error === null &&
-        macroSignals().macros !== undefined &&
         macroSignals().macroTarget !== undefined &&
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         (macroSignals() as {
-          macros: MacroNutrients
           macroTarget: MacroNutrients
           error: null
         })
@@ -50,14 +48,14 @@ export default function DayMacros(props: { dayDiet: DayDiet; class?: string }) {
           <div class="shrink">
             <Calories
               class="w-full"
-              macros={macroSignals().macros}
+              macros={macros()}
               targetMacros={macroSignals().macroTarget}
             />
           </div>
           <div class="flex-1">
             <Macros
               class="mt-3 text-xl xs:mt-0"
-              macros={macroSignals().macros}
+              macros={macros()}
               targetMacros={macroSignals().macroTarget}
             />
           </div>
@@ -115,9 +113,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="green"
-        textLabel={`Carboidrato (${
-          Math.round(props.macros.carbs * 100) / 100
-        }/${Math.round(props.targetMacros.carbs * 100) / 100}g)`}
+        textLabel={`Carboidrato (${props.macros.carbs.toFixed(2)}/${props.targetMacros.carbs.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.carbs) / props.targetMacros.carbs}
       />
@@ -126,9 +122,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="red"
-        textLabel={`Proteína (${Math.round(props.macros.protein * 100) / 100}/${
-          Math.round(props.targetMacros.protein * 100) / 100
-        }g)`}
+        textLabel={`Proteína (${props.macros.protein.toFixed(2)}/${props.targetMacros.protein.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.protein) / props.targetMacros.protein}
       />
@@ -137,9 +131,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="yellow"
-        textLabel={`Gordura (${Math.round(props.macros.fat * 100) / 100}/${
-          Math.round(props.targetMacros.fat * 100) / 100
-        }g)`}
+        textLabel={`Gordura (${props.macros.fat.toFixed(2)}/${props.targetMacros.fat.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.fat) / props.targetMacros.fat}
       />
