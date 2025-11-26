@@ -5,6 +5,7 @@ import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/applicatio
 import {
   asFoodItem,
   isGroupItem,
+  type ParentItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
@@ -17,8 +18,9 @@ import { logging } from '~/shared/utils/logging'
 
 export type ItemEditBodyProps = {
   canApply: boolean
-  item: Accessor<UnifiedItem>
-  setItem: Setter<UnifiedItem>
+  itemDraft: Accessor<UnifiedItem>
+  groupifiedItemDraft: Accessor<ParentItem>
+  setItemDraft: Setter<UnifiedItem>
   macroOverflow: () => {
     enable: boolean
     originalItem?: UnifiedItem | undefined
@@ -47,11 +49,11 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         handlers={{
           onCopy: props.clipboardActions?.onCopy,
         }}
-        item={props.item}
+        item={props.itemDraft}
         macroOverflow={props.macroOverflow}
         class="mt-4"
         primaryActions={
-          <Show when={asFoodItem(props.item())} fallback={null}>
+          <Show when={asFoodItem(props.itemDraft())} fallback={null}>
             {(foodItem) => (
               <UnifiedItemFavorite foodId={foodItem().reference.id} />
             )}
@@ -62,7 +64,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       {/* For foods and recipes (normal mode): normal quantity controls */}
       <Show
         when={
-          !isGroupItem(props.item()) &&
+          !isGroupItem(props.itemDraft()) &&
           props.viewMode !== 'group' &&
           currentDayDiet()
         }
@@ -70,8 +72,8 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         {(currentDayDiet) => (
           <>
             <ItemQuantityControls
-              item={props.item}
-              setItem={props.setItem}
+              item={props.itemDraft}
+              setItem={props.setItemDraft}
               canApply={props.canApply}
               getAvailableMacros={() =>
                 macroOverflowUseCases.getAvailableMacros({
@@ -88,10 +90,10 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       </Show>
 
       {/* For groups or recipes in group mode: children editor */}
-      <Show when={isGroupItem(props.item()) || props.viewMode === 'group'}>
+      <Show when={isGroupItem(props.itemDraft()) || props.viewMode === 'group'}>
         <ItemChildrenEditor
-          item={props.item}
-          setItem={props.setItem}
+          item={props.groupifiedItemDraft}
+          setItem={props.setItemDraft}
           onEditChild={props.onEditChild}
           onAddNewItem={props.onAddNewItem}
           showAddButton={props.showAddItemButton}

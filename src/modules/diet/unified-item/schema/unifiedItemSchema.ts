@@ -59,6 +59,7 @@ type GroupReference = { type: 'group'; children: UnifiedItem[] }
 export type FoodItem = UnifiedItemBase & { reference: FoodReference }
 export type RecipeItem = UnifiedItemBase & { reference: RecipeReference }
 export type GroupItem = UnifiedItemBase & { reference: GroupReference }
+export type ParentItem = RecipeItem | GroupItem
 
 export type UnifiedItem = FoodItem | RecipeItem | GroupItem
 

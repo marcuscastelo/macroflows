@@ -21,6 +21,7 @@ import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItem
 import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   asGroupItem,
+  createGroupItem,
   createUnifiedItem,
   isFoodItem,
   isGroupItem,
@@ -62,36 +63,40 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
   const handleClose = () => props.onClose?.()
 
-  const [item, setItem] = createSignal(untrack(() => props.item()))
-  createEffect(() => setItem(props.item()))
+  const [itemDraft, setItemDraft] = createSignal(untrack(() => props.item()))
+  createEffect(() => setItemDraft(props.item()))
+
+  const groupifiedItemDraft = createMemo(
+    () =>
+      asGroupItem(itemDraft()) ??
+      createGroupItem({
+        id: itemDraft().id,
+        name: itemDraft().name,
+        quantity: itemDraft().quantity,
+        reference: {
+          type: 'group',
+          children: [
+            createUnifiedItem({
+              id: generateId(), // New ID for the child
+              name: itemDraft().name,
+              quantity: itemDraft().quantity,
+              reference: itemDraft().reference,
+            }),
+          ],
+        },
+      }),
+  )
 
   const [viewMode, setViewMode] = createSignal<'normal' | 'group'>('normal')
 
   createEffect(() => {
     if (viewMode() === 'group') {
-      const currentItem = untrack(item)
+      const currentItem = untrack(itemDraft)
       if (isFoodItem(currentItem)) {
-        // Create a copy of the original item with a new ID for the child
-        const originalAsChild = createUnifiedItem({
-          id: generateId(), // New ID for the child
-          name: currentItem.name,
-          quantity: currentItem.quantity,
-          reference: currentItem.reference, // Keep the food reference
-        })
-
-        const groupItem = createUnifiedItem({
-          id: currentItem.id, // Keep the same ID for the parent
-          name: currentItem.name,
-          quantity: currentItem.quantity,
-          reference: {
-            type: 'group',
-            children: [originalAsChild],
-          },
-        })
-        setItem(groupItem)
+        setItemDraft(groupifiedItemDraft())
       }
     } else if (viewMode() === 'normal') {
-      const currentItem = untrack(item)
+      const currentItem = untrack(itemDraft)
       if (!isGroupItem(currentItem)) {
         return
       }
@@ -104,7 +109,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         isGroupItem(currentItem) &&
         currentItem.reference.children.length === 1
       ) {
-        setItem(createUnifiedItem({ ...firstChild }))
+        setItemDraft(createUnifiedItem({ ...firstChild }))
       }
     }
   })
@@ -112,7 +117,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   // Recipe synchronization
   const [originalRecipe] = createResource(
     () => {
-      const currentItem = item()
+      const currentItem = itemDraft()
       return isRecipeItem(currentItem) ? currentItem.reference.id : null
     },
     async (recipeId: number) => {
@@ -122,7 +127,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
   // Check if the recipe was manually edited
   const isManuallyEdited = createMemo(() => {
-    const currentItem = item()
+    const currentItem = itemDraft()
     const recipe = originalRecipe()
 
     if (recipe === null || recipe === undefined || originalRecipe.loading) {
@@ -135,36 +140,36 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   })
 
   const quantitySignal = () =>
-    item().quantity === 0 ? undefined : item().quantity
+    itemDraft().quantity === 0 ? undefined : itemDraft().quantity
 
   const quantityField = useFloatField(quantitySignal, {
     decimalPlaces: 0,
     // eslint-disable-next-line solid/reactivity
-    defaultValue: item().quantity,
+    defaultValue: itemDraft().quantity,
     minValue: 0.01,
   })
 
   const canApply = () => {
     logging.debug('[UnifiedItemEditModal] canApply', {
-      quantity: item().quantity,
+      quantity: itemDraft().quantity,
     })
-    return item().quantity > 0
+    return itemDraft().quantity > 0
   }
 
   const handleEditChild = (child: UnifiedItem) => {
     openUnifiedItemEditModal({
-      targetMealName: `${props.targetMealName} > ${item().name}`,
+      targetMealName: `${props.targetMealName} > ${itemDraft().name}`,
       targetNameColor: 'text-orange-400',
       item: () => child,
       macroOverflow: () => ({ enable: false }),
       onApply: (updatedChild) => {
-        const currentItem = item()
+        const currentItem = itemDraft()
         const updatedItem = updateChildInItem(
           currentItem,
           updatedChild.id,
           updatedChild,
         )
-        setItem(updatedItem)
+        setItemDraft(updatedItem)
       },
       title: 'Editar item filho',
       targetName: child.name,
@@ -175,7 +180,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     const recipe = originalRecipe()
     if (!recipe) return
 
-    const currentItem = item()
+    const currentItem = itemDraft()
     if (!isRecipeItem(currentItem)) {
       throw new Error('Can only synchronize recipe items')
     }
@@ -184,7 +189,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     const syncedItem = RecipeItemExt.syncWithOriginal(currentItem, recipe.items)
 
     // Force reactivity by creating a new reference
-    setItem({ ...syncedItem })
+    setItemDraft({ ...syncedItem })
   }
 
   // Recipe edit handlers
@@ -192,7 +197,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     const result = await updateRecipe(updatedRecipe.id, updatedRecipe)
     if (result) {
       // Update the current item to reflect the changes
-      const currentItem = item()
+      const currentItem = itemDraft()
       if (isRecipeItem(currentItem)) {
         // Automatically synchronize with the updated recipe
         const syncedItem = RecipeItemExt.syncWithOriginal(
@@ -201,7 +206,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         )
 
         // Force reactivity by creating a new reference
-        setItem({ ...syncedItem })
+        setItemDraft({ ...syncedItem })
       }
     }
   }
@@ -214,9 +219,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   // Clipboard functionality
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema: unifiedItemSchema,
-    getDataToCopy: () => item(),
+    getDataToCopy: () => itemDraft(),
     onPaste: (data) => {
-      setItem(data)
+      setItemDraft(data)
     },
   })
 
@@ -225,15 +230,17 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
         <Show
           when={
-            isFoodItem(item()) || isRecipeItem(item()) || isGroupItem(item())
+            isFoodItem(itemDraft()) ||
+            isRecipeItem(itemDraft()) ||
+            isGroupItem(itemDraft())
           }
         >
           {/* Toggle button for recipes */}
           <Show
             when={
-              isRecipeItem(item()) ||
-              isFoodItem(item()) ||
-              asGroupItem(item())?.reference.children.length === 1
+              isRecipeItem(itemDraft()) ||
+              isFoodItem(itemDraft()) ||
+              asGroupItem(itemDraft())?.reference.children.length === 1
             }
           >
             <div class="mb-4 flex justify-center items-center gap-3 ">
@@ -246,8 +253,8 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                   }`}
                   onClick={() => setViewMode('normal')}
                 >
-                  <Show when={isRecipeItem(item())}>📖 Receita</Show>
-                  <Show when={!isRecipeItem(item())}>🍽️ Alimento</Show>
+                  <Show when={isRecipeItem(itemDraft())}>📖 Receita</Show>
+                  <Show when={!isRecipeItem(itemDraft())}>🍽️ Alimento</Show>
                 </button>
                 <button
                   class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
@@ -273,7 +280,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
               </Show>
 
               {/* Edit recipe button - only show for recipe items */}
-              <Show when={isRecipeItem(item()) && originalRecipe()}>
+              <Show when={isRecipeItem(itemDraft()) && originalRecipe()}>
                 {(originalRecipe) => (
                   <button
                     class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
@@ -300,8 +307,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
           <ItemEditBody
             canApply={canApply()}
-            item={item}
-            setItem={setItem}
+            itemDraft={itemDraft}
+            groupifiedItemDraft={groupifiedItemDraft}
+            setItemDraft={setItemDraft}
             macroOverflow={props.macroOverflow}
             quantityField={quantityField}
             onEditChild={handleEditChild}
@@ -312,10 +320,10 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({
-                targetName: item().name,
-                title: `Adicionar novo subitem ao item "${item().name}"`,
+                targetName: itemDraft().name,
+                title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
                 onNewUnifiedItem: (newUnifiedItem) => {
-                  const item_ = item()
+                  const item_ = itemDraft()
                   if (isGroupItem(item_)) {
                     const updatedItem = ParentItemExt.addChildToParentItem(
                       item_,
@@ -324,9 +332,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                         id: generateId(),
                       },
                     )
-                    setItem(updatedItem)
+                    setItemDraft(updatedItem)
                   } else {
-                    const currentItem = item()
+                    const currentItem = itemDraft()
                     const groupItem = createUnifiedItem({
                       id: currentItem.id,
                       name: currentItem.name,
@@ -345,7 +353,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                         ],
                       },
                     })
-                    setItem(groupItem)
+                    setItemDraft(groupItem)
                   }
                 },
               })
@@ -355,7 +363,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         </Show>
         <Show
           when={
-            !isFoodItem(item()) && !isRecipeItem(item()) && !isGroupItem(item())
+            !isFoodItem(itemDraft()) &&
+            !isRecipeItem(itemDraft()) &&
+            !isGroupItem(itemDraft())
           }
         >
           <UnsupportedItemMessage />
@@ -379,13 +389,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
           class="btn cursor-pointer uppercase"
           disabled={
             !canApply() ||
-            (!isFoodItem(item()) &&
-              !isRecipeItem(item()) &&
-              !isGroupItem(item()))
+            (!isFoodItem(itemDraft()) &&
+              !isRecipeItem(itemDraft()) &&
+              !isGroupItem(itemDraft()))
           }
           onClick={(e) => {
             e.preventDefault()
-            props.onApply(item())
+            props.onApply(itemDraft())
           }}
         >
           Aplicar

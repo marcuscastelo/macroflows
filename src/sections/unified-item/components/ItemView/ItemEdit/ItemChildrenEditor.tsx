@@ -15,6 +15,7 @@ import {
   createUnifiedItem,
   isGroupItem,
   isRecipeItem,
+  type ParentItem,
   type UnifiedItem,
   unifiedItemSchema,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
@@ -29,7 +30,7 @@ import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemChildrenEditorProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<ParentItem>
   setItem: Setter<UnifiedItem>
   onEditChild?: (child: UnifiedItem) => void
   onAddNewItem?: () => void
