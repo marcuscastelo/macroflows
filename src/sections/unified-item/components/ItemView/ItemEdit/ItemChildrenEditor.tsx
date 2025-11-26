@@ -30,8 +30,8 @@ import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemChildrenEditorProps = {
-  item: Accessor<ParentItem>
-  setItem: Setter<UnifiedItem>
+  itemDraft: Accessor<ParentItem>
+  setItemDraft: Setter<UnifiedItem>
   onEditChild?: (child: UnifiedItem) => void
   onAddNewItem?: () => void
   showAddButton?: boolean
@@ -41,7 +41,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   const clipboard = useClipboard()
 
   const children = () => {
-    const item = props.item()
+    const item = props.itemDraft()
     return isGroupItem(item) || isRecipeItem(item)
       ? item.reference.children
       : []
@@ -61,24 +61,24 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
 
       const itemAsChildOfSingletonGroup = () =>
         createGroupItem({
-          id: props.item().id,
-          name: props.item().name,
-          quantity: props.item().quantity,
+          id: props.itemDraft().id,
+          name: props.itemDraft().name,
+          quantity: props.itemDraft().quantity,
           reference: {
             type: 'group',
             children: [
               createUnifiedItem({
                 id: generateId(),
-                name: props.item().name,
-                quantity: props.item().quantity,
-                reference: props.item().reference,
+                name: props.itemDraft().name,
+                quantity: props.itemDraft().quantity,
+                reference: props.itemDraft().reference,
               }),
             ],
           },
         })
 
       let groupItem =
-        asParentItem(props.item()) ?? itemAsChildOfSingletonGroup()
+        asParentItem(props.itemDraft()) ?? itemAsChildOfSingletonGroup()
 
       for (const newChild of itemsToAdd) {
         // Regenerate ID to avoid conflicts
@@ -102,7 +102,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         groupItem = tempItem
       }
 
-      props.setItem(groupItem)
+      props.setItemDraft(groupItem)
     },
   })
 
@@ -112,17 +112,17 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       newQuantity,
     })
 
-    const updatedItem = updateChildInItem(props.item(), childId, {
+    const updatedItem = updateChildInItem(props.itemDraft(), childId, {
       quantity: newQuantity,
     })
 
-    props.setItem(updatedItem)
+    props.setItemDraft(updatedItem)
   }
 
   const applyMultiplierToAll = (multiplier: number) => {
     logging.debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
 
-    let updatedItem: UnifiedItem = props.item()
+    let updatedItem: UnifiedItem = props.itemDraft()
 
     for (const child of children()) {
       const newQuantity = child.quantity * multiplier
@@ -131,14 +131,14 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       })
     }
 
-    props.setItem(updatedItem)
+    props.setItemDraft(updatedItem)
   }
 
   /**
    * Converts the current group to a recipe
    */
   const handleConvertToRecipe = async () => {
-    const item = props.item()
+    const item = props.itemDraft()
 
     // Only groups can be converted to recipes
     if (!isGroupItem(item) || children().length === 0) {
@@ -181,7 +181,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         },
       })
 
-      props.setItem(recipeUnifiedItem)
+      props.setItemDraft(recipeUnifiedItem)
     } catch (err) {
       logging.error('GroupChildrenEditor handleConvertToRecipe error:', err)
       showError(err, undefined, 'Falha ao criar receita a partir do grupo')
@@ -223,10 +223,10 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
                 const updatedItem = removeChildFromItem(
-                  props.item(),
+                  props.itemDraft(),
                   childToDelete.id,
                 )
-                props.setItem(updatedItem)
+                props.setItemDraft(updatedItem)
               }}
             />
           )}
@@ -276,7 +276,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       </Show>
 
       {/* Convert to Recipe button - only visible when there are multiple children */}
-      <Show when={children().length > 1 && !isRecipeItem(props.item())}>
+      <Show when={children().length > 1 && !isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
             class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white w-full flex items-center justify-center gap-2"
@@ -290,21 +290,21 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       </Show>
 
       {/* Unlink Recipe button - only visible when the item is a recipe */}
-      <Show when={isRecipeItem(props.item())}>
+      <Show when={isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
             class="btn btn-sm bg-red-600 hover:bg-red-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => {
               const updatedItem = createUnifiedItem({
-                id: props.item().id,
-                name: props.item().name,
-                quantity: props.item().quantity,
+                id: props.itemDraft().id,
+                name: props.itemDraft().name,
+                quantity: props.itemDraft().quantity,
                 reference: {
                   type: 'group',
                   children: children(),
                 },
               })
-              props.setItem(updatedItem)
+              props.setItemDraft(updatedItem)
             }}
             title="Desvincular receita do grupo"
           >

@@ -20,8 +20,8 @@ import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemQuantityControlsProps = {
-  item: Accessor<UnifiedItem>
-  setItem: Setter<UnifiedItem>
+  itemDraft: Accessor<UnifiedItem>
+  setItemDraft: Setter<UnifiedItem>
   canApply: boolean
   getAvailableMacros: () => MacroNutrientsRecord
   quantityField: UseFieldReturn<number>
@@ -30,7 +30,7 @@ export type ItemQuantityControlsProps = {
 export function ItemQuantityControls(props: ItemQuantityControlsProps) {
   createEffect(() => {
     const newQuantity = props.quantityField.value() ?? 0.1
-    const currentItem = untrack(props.item)
+    const currentItem = untrack(props.itemDraft)
 
     logging.debug(
       '[QuantityControls] Update unified item quantity from field',
@@ -44,18 +44,18 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
           currentItem,
           newQuantity,
         )
-        props.setItem({ ...scaledItem })
+        props.setItemDraft({ ...scaledItem })
       } catch (error) {
         logging.debug('[QuantityControls] Error scaling recipe:', { error })
         // Fallback to simple quantity update if scaling fails
-        props.setItem({
+        props.setItemDraft({
           ...currentItem,
           quantity: newQuantity,
         })
       }
     } else {
       // For food items, just update quantity
-      props.setItem({
+      props.setItemDraft({
         ...currentItem,
         quantity: newQuantity,
       })
@@ -117,7 +117,9 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
               value,
             })
             if (value === undefined) {
-              props.quantityField.setRawValue(props.item().quantity.toString())
+              props.quantityField.setRawValue(
+                props.itemDraft().quantity.toString(),
+              )
             }
           }}
           tabIndex={-1}
@@ -134,19 +136,23 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
             !props.canApply ? 'input-error border-red-500' : ''
           }`}
         />
-        <Show when={isFoodItem(props.item()) || isRecipeItem(props.item())}>
+        <Show
+          when={
+            isFoodItem(props.itemDraft()) || isRecipeItem(props.itemDraft())
+          }
+        >
           <MaxQuantityButton
             currentValue={props.quantityField.value() ?? 0}
             macroTargets={props.getAvailableMacros()}
             itemMacros={(() => {
-              const item = props.item()
+              const item = props.itemDraft()
               if (isFoodItem(item)) {
                 return item.reference.macros
               }
-              if (isRecipeItem(props.item())) {
+              if (isRecipeItem(props.itemDraft())) {
                 // For recipes, calculate macros from children (per 100g of prepared recipe)
-                const recipeMacros = ItemExt.macros(props.item())
-                const recipeQuantity = props.item().quantity || 1
+                const recipeMacros = ItemExt.macros(props.itemDraft())
+                const recipeQuantity = props.itemDraft().quantity || 1
                 // Convert to per-100g basis for the button
                 return {
                   carbs: (recipeMacros.carbs * 100) / recipeQuantity,

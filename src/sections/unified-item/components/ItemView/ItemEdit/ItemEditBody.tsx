@@ -72,8 +72,8 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         {(currentDayDiet) => (
           <>
             <ItemQuantityControls
-              item={props.itemDraft}
-              setItem={props.setItemDraft}
+              itemDraft={props.itemDraft}
+              setItemDraft={props.setItemDraft}
               canApply={props.canApply}
               getAvailableMacros={() =>
                 macroOverflowUseCases.getAvailableMacros({
@@ -92,8 +92,8 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       {/* For groups or recipes in group mode: children editor */}
       <Show when={isGroupItem(props.itemDraft()) || props.viewMode === 'group'}>
         <ItemChildrenEditor
-          item={props.groupifiedItemDraft}
-          setItem={props.setItemDraft}
+          itemDraft={props.groupifiedItemDraft}
+          setItemDraft={props.setItemDraft}
           onEditChild={props.onEditChild}
           onAddNewItem={props.onAddNewItem}
           showAddButton={props.showAddItemButton}
