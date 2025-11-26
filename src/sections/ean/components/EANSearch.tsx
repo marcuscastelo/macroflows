@@ -11,7 +11,7 @@ import { type Food } from '~/modules/diet/food/domain/food'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -109,7 +109,7 @@ export function EANSearch(props: EANSearchProps) {
                 <div class="flex-1">
                   <p class="font-bold">{food().name}</p>
                   <p class="text-sm">
-                    <UnifiedItemView
+                    <ItemView
                       handlers={{
                         // TODO : default handlers for UnifiedItemView
                         onCopy: (item) => {

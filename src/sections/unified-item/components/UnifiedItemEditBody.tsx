@@ -12,7 +12,7 @@ import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemChild
 import { QuantityControls } from '~/sections/unified-item/components/QuantityControls'
 import { QuantityShortcuts } from '~/sections/unified-item/components/QuantityShortcuts'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemEditBodyProps = {
@@ -42,7 +42,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
 
   return (
     <>
-      <UnifiedItemView
+      <ItemView
         mode="edit"
         handlers={{
           onCopy: props.clipboardActions?.onCopy,

@@ -16,7 +16,7 @@ import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -76,7 +76,7 @@ export function TemplateSearchResults(props: {
 
               return (
                 <>
-                  <UnifiedItemView
+                  <ItemView
                     mode="read-only"
                     item={createUnifiedItemFromTemplate}
                     class="mt-1"

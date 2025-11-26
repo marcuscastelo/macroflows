@@ -23,7 +23,7 @@ import { ClipboardActionButtons } from '~/sections/common/components/ClipboardAc
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -347,7 +347,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
   }
 
   return (
-    <UnifiedItemView
+    <ItemView
       item={() => props.child}
       handlers={{
         onEdit: handleEditChild,

@@ -41,7 +41,7 @@ import { Datepicker } from '~/sections/datepicker/components/Datepicker'
 import { type DateValueType } from '~/sections/datepicker/types'
 import DayMacros from '~/sections/day-diet/components/DayMacros'
 import { TemplateSearchModal } from '~/sections/search/components/TemplateSearchModal'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import {
   openConfirmModal,
   openContentModal,
@@ -110,7 +110,7 @@ function UserInfo() {
 export default function TestApp() {
   const [_, setUnifiedItemEditModalVisible] = createSignal(false)
 
-  const [item] = createSignal<UnifiedItem>(
+  const [item1] = createSignal<UnifiedItem>(
     createUnifiedItem({
       id: generateId(),
       name: 'Teste',
@@ -127,7 +127,7 @@ export default function TestApp() {
     }),
   )
 
-  const [group, setGroup] = createSignal<UnifiedItem>(
+  const [item2, setItem2] = createSignal<UnifiedItem>(
     createUnifiedItem({
       id: generateId(),
       name: 'Teste',
@@ -140,11 +140,11 @@ export default function TestApp() {
   )
 
   createEffect(() => {
-    setGroup({
-      ...untrack(group),
+    setItem2({
+      ...untrack(item2),
       reference: {
         type: 'group',
-        children: [item()],
+        children: [item1()],
       },
     })
   })
@@ -268,8 +268,8 @@ export default function TestApp() {
               }}
             /> */}
             <h1>UnifiedItemView (ItemGroup test)</h1>
-            <UnifiedItemView
-              item={() => group()}
+            <ItemView
+              item={item2}
               handlers={{
                 onEdit: () => {
                   setUnifiedItemEditModalVisible(true)

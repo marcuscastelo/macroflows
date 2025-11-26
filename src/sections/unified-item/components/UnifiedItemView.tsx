@@ -1,4 +1,4 @@
-import { type Accessor, type JSXElement } from 'solid-js'
+import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { UnifiedItemActions } from '~/sections/unified-item/components/UnifiedItemActions'
@@ -8,7 +8,7 @@ import { UnifiedItemNutritionalInfo } from '~/sections/unified-item/components/U
 import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 import { cn } from '~/shared/cn'
 
-export type UnifiedItemViewProps = {
+export type ItemViewProps = {
   item: Accessor<UnifiedItem>
   class?: string
   mode?: 'edit' | 'read-only' | 'summary'
@@ -26,7 +26,7 @@ export type UnifiedItemViewProps = {
   }
 }
 
-export function UnifiedItemView(props: UnifiedItemViewProps) {
+export function ItemView(props: ItemViewProps) {
   const isInteractive = () => props.mode !== 'summary'
 
   return (
@@ -45,9 +45,9 @@ export function UnifiedItemView(props: UnifiedItemViewProps) {
         primaryActions={props.primaryActions}
         secondaryActions={props.secondaryActions}
       >
-        {isInteractive() && (
+        <Show when={isInteractive()}>
           <UnifiedItemActions item={props.item} handlers={props.handlers} />
-        )}
+        </Show>
       </UnifiedItemHeader>
 
       <UnifiedItemChildren item={props.item} />

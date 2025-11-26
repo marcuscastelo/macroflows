@@ -2,14 +2,14 @@ import { type Accessor, For } from 'solid-js'
 
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import {
-  UnifiedItemView,
-  type UnifiedItemViewProps,
+  ItemView,
+  type ItemViewProps,
 } from '~/sections/unified-item/components/UnifiedItemView'
 import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemListViewProps = {
   items: Accessor<UnifiedItem[]>
-} & Omit<UnifiedItemViewProps, 'item' | 'header' | 'nutritionalInfo'>
+} & Omit<ItemViewProps, 'item' | 'header' | 'nutritionalInfo'>
 
 export function UnifiedItemListView(props: UnifiedItemListViewProps) {
   logging.debug('[UnifiedItemListView] - Rendering')
@@ -17,7 +17,7 @@ export function UnifiedItemListView(props: UnifiedItemListViewProps) {
     <For each={props.items()}>
       {(item) => (
         <div class="mt-2">
-          <UnifiedItemView item={() => item} {...props} />
+          <ItemView item={() => item} {...props} />
         </div>
       )}
     </For>
