@@ -8,7 +8,7 @@ import { ContextMenuEditItem } from '~/sections/common/components/contextMenuIte
 import { MoreVertIcon } from '~/sections/common/components/icons/MoreVertIcon'
 import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 
-export type UnifiedItemActionsProps = {
+export type ItemActionsProps = {
   item: Accessor<UnifiedItem>
   handlers: {
     onEdit?: (item: UnifiedItem) => void
@@ -17,7 +17,7 @@ export type UnifiedItemActionsProps = {
   }
 }
 
-export function UnifiedItemActions(props: UnifiedItemActionsProps) {
+export function ItemActions(props: ItemActionsProps) {
   const getHandlers = () => ({
     onEdit: createEventHandler(props.handlers.onEdit, props.item()),
     onCopy: createEventHandler(props.handlers.onCopy, props.item()),

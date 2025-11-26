@@ -1,7 +1,7 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { UnifiedItemActions } from '~/sections/unified-item/components/UnifiedItemActions'
+import { ItemActions } from '~/sections/unified-item/components/ItemView/ItemActions'
 import { UnifiedItemChildren } from '~/sections/unified-item/components/UnifiedItemChildren'
 import { UnifiedItemHeader } from '~/sections/unified-item/components/UnifiedItemHeader'
 import { UnifiedItemNutritionalInfo } from '~/sections/unified-item/components/UnifiedItemNutritionalInfo'
@@ -46,7 +46,7 @@ export function ItemView(props: ItemViewProps) {
         secondaryActions={props.secondaryActions}
       >
         <Show when={isInteractive()}>
-          <UnifiedItemActions item={props.item} handlers={props.handlers} />
+          <ItemActions item={props.item} handlers={props.handlers} />
         </Show>
       </UnifiedItemHeader>
 
