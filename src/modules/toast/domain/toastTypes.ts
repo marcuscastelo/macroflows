@@ -38,6 +38,7 @@ export type ToastType = 'success' | 'loading' | 'error' | 'info'
  * @property truncationSuffix Suffix to append to truncated error messages
  * @property includeStack Whether to include stack trace in error details
  * @property expandableErrorData Data for expandable error toasts
+ * @property deduplicationKey Optional stable key for deduplication (prevents repeated toasts with same key)
  */
 export type ToastOptions = {
   context: ToastContext
@@ -51,6 +52,7 @@ export type ToastOptions = {
   truncationSuffix: string
   includeStack: boolean
   expandableErrorData: ToastExpandableErrorData | null
+  deduplicationKey: string | null
 }
 
 /**
@@ -90,6 +92,7 @@ export const DEFAULT_TOAST_OPTIONS: Record<ToastContext, ToastOptions> = {
     truncationSuffix: '...',
     includeStack: true,
     expandableErrorData: null,
+    deduplicationKey: null,
   },
   background: {
     showLoading: false,
@@ -103,6 +106,7 @@ export const DEFAULT_TOAST_OPTIONS: Record<ToastContext, ToastOptions> = {
     truncationSuffix: '...',
     includeStack: true,
     expandableErrorData: null,
+    deduplicationKey: null,
   },
 }
 

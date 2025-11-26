@@ -18,6 +18,7 @@ import {
   type ToastOptions,
 } from '~/modules/toast/domain/toastTypes'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
+import { isDeduplicableError } from '~/shared/error/deduplicableError'
 import { isBackendOutageError } from '~/shared/utils/errorUtils'
 import { isNonEmptyString } from '~/shared/utils/isNonEmptyString'
 import { logging } from '~/shared/utils/logging'
@@ -114,6 +115,9 @@ export function show(
  * Uses createExpandableErrorData and DEFAULT_ERROR_OPTIONS to ensure consistent error formatting, truncation, and stack display.
  * Error display options can be overridden via providedOptions.
  *
+ * If the error is a DeduplicableError, its errorId is used as the deduplicationKey
+ * to prevent repeated toast notifications for the same error condition.
+ *
  * @param error - The error to display.
  * @param providedOptions - Partial toast options (except type). Error display options are merged with defaults from errorMessageHandler.ts.
  * @returns The toast ID.
@@ -142,7 +146,15 @@ export function showError(
       },
     )
   }
-  const options = mergeToastOptions({ ...providedOptions, type: 'error' })
+
+  // Extract deduplicationKey from DeduplicableError if available
+  const deduplicationKey = isDeduplicableError(error) ? error.errorId : null
+
+  const options = mergeToastOptions({
+    ...providedOptions,
+    type: 'error',
+    deduplicationKey,
+  })
 
   // Pass the original error object to preserve stack/context
   const expandableErrorData = createExpandableErrorData(

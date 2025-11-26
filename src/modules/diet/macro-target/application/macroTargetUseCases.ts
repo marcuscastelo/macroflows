@@ -5,6 +5,10 @@ import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetEx
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import {
+  MacroTargetNotFoundForDayError,
+  WeightNotFoundForDayError,
+} from '~/shared/error/deduplicableError'
 
 const macroTargetAt = (day: Date): MacroNutrients | null => {
   const targetDayWeight_ = weightUseCases.effectiveAt(day)?.weight ?? null
@@ -20,10 +24,7 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
       console.error('User ID is undefined')
       return null
     }
-    showError(
-      new Error(`Peso não encontrado para o dia ${day.toISOString()}`),
-      {},
-    )
+    showError(new WeightNotFoundForDayError(day), {})
     return null
   }
 
@@ -32,12 +33,7 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
       console.error('User ID is undefined')
       return null
     }
-    showError(
-      new Error(
-        `Meta de macros não encontrada para o dia ${day.toISOString()}`,
-      ),
-      {},
-    )
+    showError(new MacroTargetNotFoundForDayError(day), {})
     return null
   }
 

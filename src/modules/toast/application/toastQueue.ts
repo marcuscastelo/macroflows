@@ -142,29 +142,58 @@ export function killToast(id: ToastItem['id']): void {
 }
 
 /**
- * Check for duplicate messages to avoid spam
+ * Check for duplicate messages to avoid spam.
+ * Uses deduplicationKey when available, otherwise falls back to message + type comparison.
  */
 function isDuplicateToast(newToast: ToastItem): boolean {
-  // Check if a toast with the same message and type is currently visible
+  const newDeduplicationKey = newToast.options.deduplicationKey
+
+  // Check if a toast with the same deduplication key or message+type is currently visible
   if (
-    visibleToasts().some(
-      (toast) =>
+    visibleToasts().some((toast) => {
+      // If both toasts have deduplication keys, use those for comparison
+      if (
+        newDeduplicationKey !== null &&
+        toast.options.deduplicationKey !== null
+      ) {
+        return (
+          toast.options.deduplicationKey === newDeduplicationKey &&
+          toast.options.type === newToast.options.type
+        )
+      }
+      // Otherwise, fall back to message + type comparison
+      return (
         toast.message === newToast.message &&
-        toast.options.type === newToast.options.type,
-    )
+        toast.options.type === newToast.options.type
+      )
+    })
   ) {
     return true
   }
-  // Check if a toast with the same message and type is already in the queue
+
+  // Check if a toast with the same deduplication key or message+type is already in the queue
   if (
-    queue().some(
-      (toast) =>
+    queue().some((toast) => {
+      // If both toasts have deduplication keys, use those for comparison
+      if (
+        newDeduplicationKey !== null &&
+        toast.options.deduplicationKey !== null
+      ) {
+        return (
+          toast.options.deduplicationKey === newDeduplicationKey &&
+          toast.options.type === newToast.options.type
+        )
+      }
+      // Otherwise, fall back to message + type comparison
+      return (
         toast.message === newToast.message &&
-        toast.options.type === newToast.options.type,
-    )
+        toast.options.type === newToast.options.type
+      )
+    })
   ) {
     return true
   }
+
   return false
 }
 
