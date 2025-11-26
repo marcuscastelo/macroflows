@@ -289,7 +289,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
 
                     {/* Limiting info */}
                     <Show when={isLimited() && !isDisabled()}>
-                      <div class="text-xs text-orange-400 mt-0.5">
+                      <div class="text-xs font-extralight text-orange-400 mt-0.5">
                         Limitado por {getMacroLabel(result().limitedBy)}
                       </div>
                     </Show>
