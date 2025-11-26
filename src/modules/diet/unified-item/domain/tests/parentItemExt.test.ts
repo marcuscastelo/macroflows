@@ -4,11 +4,11 @@ import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macr
 import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import {
   createGroupItem,
-  createUnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  createItem,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 describe('parentItemExt', () => {
-  const childA = createUnifiedItem({
+  const childA = createItem({
     id: 11,
     name: 'A',
     quantity: 1,
@@ -18,7 +18,7 @@ describe('parentItemExt', () => {
       macros: createMacroNutrients({ protein: 1, carbs: 1, fat: 1 }),
     },
   })
-  const childB = createUnifiedItem({
+  const childB = createItem({
     id: 12,
     name: 'B',
     quantity: 2,
@@ -28,7 +28,7 @@ describe('parentItemExt', () => {
       macros: createMacroNutrients({ protein: 2, carbs: 2, fat: 2 }),
     },
   })
-  const baseGroup = createUnifiedItem({
+  const baseGroup = createItem({
     id: 10,
     name: 'Group',
     quantity: 1,

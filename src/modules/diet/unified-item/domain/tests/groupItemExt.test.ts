@@ -5,15 +5,15 @@ import { GroupItemExt } from '~/modules/diet/unified-item/domain/ext/groupItemEx
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import type {
   GroupItem,
-  UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
   macros: { protein: number; carbs: number; fat: number },
-): UnifiedItem => ({
+): Item => ({
   id,
   name,
   quantity,
@@ -29,7 +29,7 @@ const makeGroupItem = (
   id: number,
   name: string,
   quantity: number,
-  children: UnifiedItem[] = [],
+  children: Item[] = [],
 ): GroupItem => ({
   id,
   name,

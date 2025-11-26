@@ -3,16 +3,16 @@ import { describe, expect, it } from 'vitest'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import type {
+  Item,
   RecipeItem,
-  UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
   macros: { protein: number; carbs: number; fat: number },
-): UnifiedItem => ({
+): Item => ({
   id,
   name,
   quantity,
@@ -28,7 +28,7 @@ const makeRecipeItem = (
   id: number,
   name: string,
   quantity: number,
-  children: UnifiedItem[] = [],
+  children: Item[] = [],
 ): RecipeItem => ({
   id,
   name,
@@ -43,22 +43,17 @@ const makeRecipeItem = (
 
 describe('RecipeItemExt', () => {
   it('syncWithOriginal replaces children with originals and updates parent quantity', () => {
-    const original: UnifiedItem = makeFoodItem(100, 'Original Apple', 200, {
+    const original: Item = makeFoodItem(100, 'Original Apple', 200, {
       protein: 2,
       carbs: 50,
       fat: 0,
     })
 
-    const modifiedChild: UnifiedItem = makeFoodItem(
-      100,
-      'Modified Apple',
-      150,
-      {
-        protein: 2,
-        carbs: 37.5,
-        fat: 0,
-      },
-    )
+    const modifiedChild: Item = makeFoodItem(100, 'Modified Apple', 150, {
+      protein: 2,
+      carbs: 37.5,
+      fat: 0,
+    })
 
     const recipe = makeRecipeItem(1, 'Apple Recipe', 1, [modifiedChild])
 

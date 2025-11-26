@@ -5,7 +5,7 @@ import {
   macroNutrientsSchema,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
-export const unifiedItemSchema: z.ZodType<UnifiedItem> = z.lazy(() =>
+export const itemSchema: z.ZodType<Item> = z.lazy(() =>
   z.union([
     // Food items have macros in their reference
     z.object({
@@ -27,7 +27,7 @@ export const unifiedItemSchema: z.ZodType<UnifiedItem> = z.lazy(() =>
       reference: z.object({
         type: z.literal('recipe'),
         id: z.number(),
-        children: z.array(unifiedItemSchema),
+        children: z.array(itemSchema),
       }),
       __type: z.literal('UnifiedItem'),
     }),
@@ -38,14 +38,14 @@ export const unifiedItemSchema: z.ZodType<UnifiedItem> = z.lazy(() =>
       quantity: z.number(),
       reference: z.object({
         type: z.literal('group'),
-        children: z.array(unifiedItemSchema),
+        children: z.array(itemSchema),
       }),
       __type: z.literal('UnifiedItem'),
     }),
   ]),
 )
 
-type UnifiedItemBase = {
+type ItemBase = {
   id: number
   name: string
   quantity: number
@@ -53,45 +53,42 @@ type UnifiedItemBase = {
 }
 
 type FoodReference = { type: 'food'; id: number; macros: MacroNutrients }
-type RecipeReference = { type: 'recipe'; id: number; children: UnifiedItem[] }
-type GroupReference = { type: 'group'; children: UnifiedItem[] }
+type RecipeReference = { type: 'recipe'; id: number; children: Item[] }
+type GroupReference = { type: 'group'; children: Item[] }
 
-export type FoodItem = UnifiedItemBase & { reference: FoodReference }
-export type RecipeItem = UnifiedItemBase & { reference: RecipeReference }
-export type GroupItem = UnifiedItemBase & { reference: GroupReference }
+export type FoodItem = ItemBase & { reference: FoodReference }
+export type RecipeItem = ItemBase & { reference: RecipeReference }
+export type GroupItem = ItemBase & { reference: GroupReference }
 export type ParentItem = RecipeItem | GroupItem
 
-export type UnifiedItem = FoodItem | RecipeItem | GroupItem
+export type Item = FoodItem | RecipeItem | GroupItem
 
-export const isFoodItem = (item: UnifiedItem): item is FoodItem =>
+export const isFoodItem = (item: Item): item is FoodItem =>
   item.reference.type === 'food'
 
-export const isRecipeItem = (item: UnifiedItem): item is RecipeItem =>
+export const isRecipeItem = (item: Item): item is RecipeItem =>
   item.reference.type === 'recipe'
 
-export const isGroupItem = (item: UnifiedItem): item is GroupItem =>
+export const isGroupItem = (item: Item): item is GroupItem =>
   item.reference.type === 'group'
 
-export const isParentItem = (
-  item: UnifiedItem,
-): item is RecipeItem | GroupItem => isRecipeItem(item) || isGroupItem(item)
+export const isParentItem = (item: Item): item is RecipeItem | GroupItem =>
+  isRecipeItem(item) || isGroupItem(item)
 
-export const asFoodItem = (item: UnifiedItem): FoodItem | undefined =>
+export const asFoodItem = (item: Item): FoodItem | undefined =>
   isFoodItem(item) ? item : undefined
-export const asRecipeItem = (item: UnifiedItem): RecipeItem | undefined =>
+export const asRecipeItem = (item: Item): RecipeItem | undefined =>
   isRecipeItem(item) ? item : undefined
-export const asGroupItem = (item: UnifiedItem): GroupItem | undefined =>
+export const asGroupItem = (item: Item): GroupItem | undefined =>
   isGroupItem(item) ? item : undefined
-export const asParentItem = (
-  item: UnifiedItem,
-): RecipeItem | GroupItem | undefined =>
+export const asParentItem = (item: Item): RecipeItem | GroupItem | undefined =>
   isRecipeItem(item) || isGroupItem(item) ? item : undefined
 
 function createBaseItem({
   id,
   name,
   quantity,
-}: Omit<UnifiedItem, 'reference' | '__type'>): Omit<UnifiedItem, 'reference'> {
+}: Omit<Item, 'reference' | '__type'>): Omit<Item, 'reference'> {
   return {
     id,
     name,
@@ -132,7 +129,7 @@ export function createRecipeItem({
       type: 'recipe',
       id: reference.id,
       children: reference.children.map((child) => {
-        return createUnifiedItem(child)
+        return createItem(child)
       }),
     } satisfies RecipeReference,
   }
@@ -151,18 +148,18 @@ export function createGroupItem({
     reference: {
       type: 'group',
       children: reference.children.map((child) => {
-        return createUnifiedItem(child)
+        return createItem(child)
       }),
     } satisfies GroupReference,
   }
 }
 
-export function createUnifiedItem({
+export function createItem({
   id,
   name,
   quantity,
   reference,
-}: Omit<UnifiedItem, '__type'>): UnifiedItem {
+}: Omit<Item, '__type'>): Item {
   switch (reference.type) {
     case 'food':
       return createFoodItem({ id, name, quantity, reference })

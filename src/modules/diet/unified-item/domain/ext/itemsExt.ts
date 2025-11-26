@@ -1,8 +1,8 @@
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 function equals(
-  originalItems: readonly UnifiedItem[],
-  currentItems: readonly UnifiedItem[],
+  originalItems: readonly Item[],
+  currentItems: readonly Item[],
 ): boolean {
   // If lengths are different, items were added/removed
   if (originalItems.length !== currentItems.length) {
@@ -10,7 +10,7 @@ function equals(
   }
 
   // Compare each item by sorting both arrays by ID first to handle reordering
-  const sortById = (items: readonly UnifiedItem[]) =>
+  const sortById = (items: readonly Item[]) =>
     [...items].sort((a, b) => a.id - b.id)
 
   const sortedOriginal = sortById(originalItems)

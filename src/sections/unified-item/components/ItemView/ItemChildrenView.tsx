@@ -4,11 +4,11 @@ import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import {
   isGroupItem,
   isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 export type ItemChildrenViewProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
 }
 
 export function ItemChildrenView(props: ItemChildrenViewProps) {

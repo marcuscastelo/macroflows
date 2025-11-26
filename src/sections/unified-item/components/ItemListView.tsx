@@ -1,6 +1,6 @@
 import { type Accessor, For } from 'solid-js'
 
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import {
   ItemView,
   type ItemViewProps,
@@ -8,7 +8,7 @@ import {
 import { logging } from '~/shared/utils/logging'
 
 export type ItemListViewProps = {
-  items: Accessor<UnifiedItem[]>
+  items: Accessor<Item[]>
 } & Omit<ItemViewProps, 'item'>
 
 export function ItemListView(props: ItemListViewProps) {

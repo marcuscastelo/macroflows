@@ -1,13 +1,13 @@
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import {
+  type Item,
   type RecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 export const RecipeItemExt = {
   syncWithOriginal(
     recipeItem: RecipeItem,
-    originalRecipeItems: readonly UnifiedItem[],
+    originalRecipeItems: readonly Item[],
   ): RecipeItem {
     // Use original items directly - no need to regenerate IDs
     const syncedChildren = [...originalRecipeItems]
@@ -78,7 +78,7 @@ export const RecipeItemExt = {
     return {
       ...itemExt,
       value: item,
-      syncWithOriginal: (originalRecipeItems: readonly UnifiedItem[]) =>
+      syncWithOriginal: (originalRecipeItems: readonly Item[]) =>
         RecipeItemExt.syncWithOriginal(item, originalRecipeItems),
       scaleQuantityAndChildren: (newQuantity: number) =>
         RecipeItemExt.scaleQuantityAndChildren(item, newQuantity),

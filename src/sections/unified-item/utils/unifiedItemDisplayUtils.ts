@@ -1,4 +1,4 @@
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export type ItemTypeDisplay = {
   icon: string
@@ -6,7 +6,7 @@ export type ItemTypeDisplay = {
   label: string
 }
 
-export function getItemTypeDisplay(item: UnifiedItem): ItemTypeDisplay {
+export function getItemTypeDisplay(item: Item): ItemTypeDisplay {
   switch (item.reference.type) {
     case 'food':
       return {

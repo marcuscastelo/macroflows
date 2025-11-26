@@ -12,16 +12,16 @@ import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItem
 import {
   isFoodItem,
   isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { MaxQuantityButton } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemQuantityControlsProps = {
-  itemDraft: Accessor<UnifiedItem>
-  setItemDraft: Setter<UnifiedItem>
+  itemDraft: Accessor<Item>
+  setItemDraft: Setter<Item>
   canApply: boolean
   getAvailableMacros: () => MacroNutrientsRecord
   quantityField: UseFieldReturn<number>

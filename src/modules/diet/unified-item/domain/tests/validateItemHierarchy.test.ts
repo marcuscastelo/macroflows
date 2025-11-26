@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 describe('validateItemHierarchy', () => {
-  const unifiedFood: UnifiedItem = createUnifiedItem({
+  const unifiedFood: Item = createItem({
     id: 1,
     name: 'Chicken',
     quantity: 100,
@@ -16,7 +16,7 @@ describe('validateItemHierarchy', () => {
       macros: createMacroNutrients({ protein: 20, carbs: 0, fat: 2 }),
     },
   })
-  const unifiedGroup: UnifiedItem = createUnifiedItem({
+  const unifiedGroup: Item = createItem({
     id: 2,
     name: 'Lunch',
     quantity: 100,
@@ -26,7 +26,7 @@ describe('validateItemHierarchy', () => {
     expect(validateItemHierarchy(unifiedGroup)).toBe(true)
   })
   it('detects circular references', () => {
-    const circular: UnifiedItem = {
+    const circular: Item = {
       ...unifiedGroup,
       reference: { type: 'group', children: [unifiedGroup] },
     }

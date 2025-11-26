@@ -5,9 +5,9 @@ import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/applicatio
 import {
   asFoodItem,
   isGroupItem,
+  type Item,
   type ParentItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemChildrenEditor'
@@ -18,15 +18,15 @@ import { logging } from '~/shared/utils/logging'
 
 export type ItemEditBodyProps = {
   canApply: boolean
-  itemDraft: Accessor<UnifiedItem>
+  itemDraft: Accessor<Item>
   parentifiedItemDraft: Accessor<ParentItem>
-  setItemDraft: Setter<UnifiedItem>
+  setItemDraft: Setter<Item>
   macroOverflow: () => {
     enable: boolean
-    originalItem?: UnifiedItem | undefined
+    originalItem?: Item | undefined
   }
   quantityField: UseFieldReturn<number>
-  onEditChild?: (child: UnifiedItem) => void
+  onEditChild?: (child: Item) => void
   viewMode?: 'normal' | 'group'
   clipboardActions?: {
     onCopy: () => void

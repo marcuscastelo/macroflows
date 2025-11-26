@@ -1,9 +1,9 @@
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export const ParentItemExt = {
-  addChildToParentItem<T extends { reference: { children: UnifiedItem[] } }>(
+  addChildToParentItem<T extends { reference: { children: Item[] } }>(
     parentItem: T,
-    childItem: UnifiedItem,
+    childItem: Item,
   ): T {
     return {
       ...parentItem,
@@ -14,9 +14,10 @@ export const ParentItemExt = {
     }
   },
 
-  removeChildFromParentItem<
-    T extends { reference: { children: UnifiedItem[] } },
-  >(parentItem: T, childId: number): T {
+  removeChildFromParentItem<T extends { reference: { children: Item[] } }>(
+    parentItem: T,
+    childId: number,
+  ): T {
     return {
       ...parentItem,
       reference: {
@@ -28,10 +29,10 @@ export const ParentItemExt = {
     }
   },
 
-  updateChildInParentItem<T extends { reference: { children: UnifiedItem[] } }>(
+  updateChildInParentItem<T extends { reference: { children: Item[] } }>(
     parentItem: T,
     childId: number,
-    updates: Partial<Pick<UnifiedItem, 'id' | 'name' | 'quantity'>>,
+    updates: Partial<Pick<Item, 'id' | 'name' | 'quantity'>>,
   ): T {
     return {
       ...parentItem,
@@ -44,16 +45,16 @@ export const ParentItemExt = {
     }
   },
 
-  of<T extends { reference: { children: UnifiedItem[] } }>(item: T) {
+  of<T extends { reference: { children: Item[] } }>(item: T) {
     return {
       value: item,
-      addChild: (childItem: UnifiedItem) =>
+      addChild: (childItem: Item) =>
         ParentItemExt.addChildToParentItem(item, childItem),
       removeChild: (childId: number) =>
         ParentItemExt.removeChildFromParentItem(item, childId),
       updateChild: (
         childId: number,
-        updates: Partial<Pick<UnifiedItem, 'id' | 'name' | 'quantity'>>,
+        updates: Partial<Pick<Item, 'id' | 'name' | 'quantity'>>,
       ) => ParentItemExt.updateChildInParentItem(item, childId, updates),
     }
   },

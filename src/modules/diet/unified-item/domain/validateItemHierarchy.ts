@@ -1,4 +1,4 @@
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 /**
  * Validates that the UnifiedItem hierarchy does not contain circular references.
@@ -7,7 +7,7 @@ import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItem
  * @returns boolean
  */
 export function validateItemHierarchy(
-  item: UnifiedItem,
+  item: Item,
   visited: Set<number> = new Set(),
 ): boolean {
   if (typeof item.id !== 'number') return false

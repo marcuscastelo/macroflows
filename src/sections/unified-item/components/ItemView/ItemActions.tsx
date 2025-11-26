@@ -1,6 +1,6 @@
 import { type Accessor, Show } from 'solid-js'
 
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { ContextMenu } from '~/sections/common/components/ContextMenu'
 import { ContextMenuCopyItem } from '~/sections/common/components/contextMenuItems/ContextMenuCopyItem'
 import { ContextMenuDeleteItem } from '~/sections/common/components/contextMenuItems/ContextMenuDeleteItem'
@@ -9,11 +9,11 @@ import { MoreVertIcon } from '~/sections/common/components/icons/MoreVertIcon'
 import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 
 export type ItemActionsProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
   handlers: {
-    onEdit?: (item: UnifiedItem) => void
-    onCopy?: (item: UnifiedItem) => void
-    onDelete?: (item: UnifiedItem) => void
+    onEdit?: (item: Item) => void
+    onCopy?: (item: Item) => void
+    onDelete?: (item: Item) => void
   }
 }
 

@@ -11,7 +11,7 @@ import {
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -37,8 +37,8 @@ function getContext() {
 }
 
 export function isOverflow(args: {
-  item: UnifiedItem
-  originalItem?: UnifiedItem
+  item: Item
+  originalItem?: Item
 }): Record<keyof MacroNutrientsRecord, () => boolean> {
   const context = getContext()
   if (context === null) {
@@ -79,7 +79,7 @@ export function isOverflow(args: {
 
 function getAvailableMacros(args: {
   dayDiet: DayDiet
-  originalItem?: UnifiedItem | undefined
+  originalItem?: Item | undefined
 }): MacroNutrientsRecord {
   logging.debug('getAvailableMacros')
   const dayDiet = args.dayDiet

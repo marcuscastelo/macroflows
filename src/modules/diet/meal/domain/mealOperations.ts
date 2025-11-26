@@ -1,17 +1,14 @@
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
-export function addItemToMeal(meal: Meal, item: UnifiedItem): Meal {
+export function addItemToMeal(meal: Meal, item: Item): Meal {
   return {
     ...meal,
     items: [...meal.items, item],
   }
 }
 
-export function addItemsToMeal(
-  meal: Meal,
-  items: readonly UnifiedItem[],
-): Meal {
+export function addItemsToMeal(meal: Meal, items: readonly Item[]): Meal {
   return {
     ...meal,
     items: [...meal.items, ...items],
@@ -20,8 +17,8 @@ export function addItemsToMeal(
 
 export function updateItemInMeal(
   meal: Meal,
-  itemId: UnifiedItem['id'],
-  updatedItem: UnifiedItem,
+  itemId: Item['id'],
+  updatedItem: Item,
 ): Meal {
   return {
     ...meal,
@@ -29,17 +26,14 @@ export function updateItemInMeal(
   }
 }
 
-export function removeItemFromMeal(
-  meal: Meal,
-  itemId: UnifiedItem['id'],
-): Meal {
+export function removeItemFromMeal(meal: Meal, itemId: Item['id']): Meal {
   return {
     ...meal,
     items: meal.items.filter((item) => item.id !== itemId),
   }
 }
 
-export function setMealItems(meal: Meal, items: UnifiedItem[]): Meal {
+export function setMealItems(meal: Meal, items: Item[]): Meal {
   return {
     ...meal,
     items,

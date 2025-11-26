@@ -6,7 +6,7 @@ import {
   addItemToMeal,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -24,7 +24,7 @@ export type EditPermissionResult =
 
 export type MacroOverflowConfig =
   | { enable: false; originalItem: undefined }
-  | { enable: true; originalItem: UnifiedItem }
+  | { enable: true; originalItem: Item }
 
 /**
  * Orchestrates day editing operations, handling permissions, validations, and business logic
@@ -62,7 +62,7 @@ export const dayUseCases = {
    */
   prepareMacroOverflowConfig(
     dayDiet: DayDiet,
-    item: UnifiedItem,
+    item: Item,
   ): MacroOverflowConfig {
     try {
       const dayDate = stringToDate(dayDiet.target_day)
@@ -97,8 +97,8 @@ export const dayUseCases = {
    */
   async updateItemInMealOrchestrated(
     meal: Meal,
-    _item: UnifiedItem,
-    updatedItem: UnifiedItem,
+    _item: Item,
+    updatedItem: Item,
   ): Promise<void> {
     try {
       const updatedMeal = updateItemInMeal(meal, updatedItem.id, updatedItem)
@@ -115,10 +115,7 @@ export const dayUseCases = {
   /**
    * Orchestrates adding a new item to a meal
    */
-  async addItemToMealOrchestrated(
-    meal: Meal,
-    newItem: UnifiedItem,
-  ): Promise<void> {
+  async addItemToMealOrchestrated(meal: Meal, newItem: Item): Promise<void> {
     try {
       const updatedMeal = addItemToMeal(meal, newItem)
       await updateMeal(meal.id, updatedMeal)

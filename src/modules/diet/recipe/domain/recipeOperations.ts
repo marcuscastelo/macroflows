@@ -1,5 +1,5 @@
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export function updateRecipeName(recipe: Recipe, name: string): Recipe {
   return {
@@ -18,7 +18,7 @@ export function updateRecipePreparedMultiplier(
   }
 }
 
-export function addItemToRecipe(recipe: Recipe, item: UnifiedItem): Recipe {
+export function addItemToRecipe(recipe: Recipe, item: Item): Recipe {
   return {
     ...recipe,
     items: [...recipe.items, item],
@@ -27,7 +27,7 @@ export function addItemToRecipe(recipe: Recipe, item: UnifiedItem): Recipe {
 
 export function addItemsToRecipe(
   recipe: Recipe,
-  items: readonly UnifiedItem[],
+  items: readonly Item[],
 ): Recipe {
   return {
     ...recipe,
@@ -37,8 +37,8 @@ export function addItemsToRecipe(
 
 export function updateItemInRecipe(
   recipe: Recipe,
-  itemId: UnifiedItem['id'],
-  updatedItem: UnifiedItem,
+  itemId: Item['id'],
+  updatedItem: Item,
 ): Recipe {
   return {
     ...recipe,
@@ -50,7 +50,7 @@ export function updateItemInRecipe(
 
 export function removeItemFromRecipe(
   recipe: Recipe,
-  itemId: UnifiedItem['id'],
+  itemId: Item['id'],
 ): Recipe {
   return {
     ...recipe,
@@ -100,7 +100,7 @@ export function getRecipePreparedQuantity(recipe: Recipe): number {
 export function scaleRecipeByPreparedQuantity(
   recipe: Recipe,
   desiredPreparedQuantity: number,
-): { scaledItems: UnifiedItem[]; scalingFactor: number } {
+): { scaledItems: Item[]; scalingFactor: number } {
   const preparedQuantity = getRecipePreparedQuantity(recipe)
 
   if (preparedQuantity <= 0) {
@@ -114,7 +114,7 @@ export function scaleRecipeByPreparedQuantity(
   const scalingFactor = desiredPreparedQuantity / preparedQuantity
 
   const scaledItems = recipe.items.map(
-    (item): UnifiedItem => ({
+    (item): Item => ({
       ...item,
       quantity: item.quantity * scalingFactor,
     }),

@@ -8,7 +8,7 @@ import {
 
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
@@ -92,7 +92,7 @@ export function EANSearch(props: EANSearchProps) {
         {(food) => {
           // Create UnifiedItem from food
           const createUnifiedItemFromFood = () =>
-            createUnifiedItem({
+            createItem({
               id: food().id,
               name: food().name,
               quantity: 100,

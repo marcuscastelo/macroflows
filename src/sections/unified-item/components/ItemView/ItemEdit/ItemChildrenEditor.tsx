@@ -8,13 +8,13 @@ import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/valida
 import {
   asParentItem,
   createGroupItem,
-  createUnifiedItem,
+  createItem,
   isGroupItem,
   isRecipeItem,
+  type Item,
+  itemSchema,
   type ParentItem,
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
@@ -27,8 +27,8 @@ import { logging } from '~/shared/utils/logging'
 
 export type ItemChildrenEditorProps = {
   itemDraft: Accessor<ParentItem>
-  setItemDraft: Setter<UnifiedItem>
-  onEditChild?: (child: UnifiedItem) => void
+  setItemDraft: Setter<Item>
+  onEditChild?: (child: Item) => void
   onAddNewItem?: () => void
   showAddButton?: boolean
 }
@@ -44,9 +44,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   }
 
   // Clipboard schema accepts UnifiedItem or array of UnifiedItems
-  const acceptedClipboardSchema = unifiedItemSchema.or(
-    z.array(unifiedItemSchema),
-  )
+  const acceptedClipboardSchema = itemSchema.or(z.array(itemSchema))
 
   // Clipboard actions for children
   const { handleCopy, handlePaste } = useCopyPasteActions({
@@ -63,7 +61,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           reference: {
             type: 'group',
             children: [
-              createUnifiedItem({
+              createItem({
                 id: generateId(),
                 name: props.itemDraft().name,
                 quantity: props.itemDraft().quantity,
@@ -122,7 +120,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   const applyMultiplierToAll = (multiplier: number) => {
     logging.debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
 
-    let updatedItem: UnifiedItem = props.itemDraft()
+    let updatedItem: Item = props.itemDraft()
 
     for (const child of children()) {
       const newQuantity = child.quantity * multiplier
@@ -174,7 +172,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       }
 
       // Transform the group into a recipe item
-      const recipeUnifiedItem = createUnifiedItem({
+      const recipeUnifiedItem = createItem({
         id: item.id, // Keep the same ID
         name: insertedRecipe.name,
         quantity: item.quantity,
@@ -299,7 +297,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           <button
             class="btn btn-sm bg-red-600 hover:bg-red-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => {
-              const updatedItem = createUnifiedItem({
+              const updatedItem = createItem({
                 id: props.itemDraft().id,
                 name: props.itemDraft().name,
                 quantity: props.itemDraft().quantity,
@@ -321,11 +319,11 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
 }
 
 type GroupChildEditorProps = {
-  child: UnifiedItem
+  child: Item
   onQuantityChange: (newQuantity: number) => void
-  onEditChild?: (child: UnifiedItem) => void
-  onCopyChild?: (child: UnifiedItem) => void
-  onDeleteChild?: (child: UnifiedItem) => void
+  onEditChild?: (child: Item) => void
+  onCopyChild?: (child: Item) => void
+  onDeleteChild?: (child: Item) => void
 }
 
 function GroupChildEditor(props: GroupChildEditorProps) {

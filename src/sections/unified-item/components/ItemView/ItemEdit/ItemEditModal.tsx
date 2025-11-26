@@ -22,13 +22,13 @@ import {
   asGroupItem,
   asParentItem,
   createGroupItem,
-  createUnifiedItem,
+  createItem,
   isFoodItem,
   isGroupItem,
   isRecipeItem,
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+  itemSchema,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
@@ -45,12 +45,12 @@ import { logging } from '~/shared/utils/logging'
 export type ItemEditModalProps = {
   targetMealName: string
   targetNameColor?: string
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
   macroOverflow: () => {
     enable: boolean
-    originalItem?: UnifiedItem | undefined
+    originalItem?: Item | undefined
   }
-  onApply: (item: UnifiedItem) => void
+  onApply: (item: Item) => void
   onCancel?: () => void
   onAddNewItem?: () => void
   showAddItemButton?: boolean
@@ -76,7 +76,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         reference: {
           type: 'group',
           children: [
-            createUnifiedItem({
+            createItem({
               id: generateId(), // New ID for the child
               name: itemDraft().name,
               quantity: itemDraft().quantity,
@@ -109,7 +109,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         isGroupItem(currentItem) &&
         currentItem.reference.children.length === 1
       ) {
-        setItemDraft(createUnifiedItem({ ...firstChild }))
+        setItemDraft(createItem({ ...firstChild }))
       }
     }
   })
@@ -156,7 +156,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     return itemDraft().quantity > 0
   }
 
-  const handleEditChild = (child: UnifiedItem) => {
+  const handleEditChild = (child: Item) => {
     openUnifiedItemEditModal({
       targetMealName: `${props.targetMealName} > ${itemDraft().name}`,
       targetNameColor: 'text-orange-400',
@@ -218,7 +218,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
   // Clipboard functionality
   const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema: unifiedItemSchema,
+    acceptedClipboardSchema: itemSchema,
     getDataToCopy: () => itemDraft(),
     onPaste: (data) => {
       setItemDraft(data)
@@ -335,14 +335,14 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                     setItemDraft(updatedItem)
                   } else {
                     const currentItem = itemDraft()
-                    const groupItem = createUnifiedItem({
+                    const groupItem = createItem({
                       id: currentItem.id,
                       name: currentItem.name,
                       quantity: currentItem.quantity,
                       reference: {
                         type: 'group',
                         children: [
-                          createUnifiedItem({
+                          createItem({
                             ...currentItem,
                             id: generateId(),
                           }),

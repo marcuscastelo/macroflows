@@ -13,9 +13,9 @@ import {
   isFoodItem,
   isGroupItem,
   isRecipeItem,
+  type Item,
   type RecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
 
 function calcFoodItemMacros(item: FoodItem) {
   // For food items, calculate proportionally from stored macros in reference
@@ -58,7 +58,7 @@ function calcItemContainerMacros(item: RecipeItem | GroupItem): MacroNutrients {
 }
 
 export const ItemExt = {
-  calcItemContainerMacros<T extends { items: readonly UnifiedItem[] }>(
+  calcItemContainerMacros<T extends { items: readonly Item[] }>(
     container: T,
   ): MacroNutrients {
     const result = container.items.reduce(
@@ -74,7 +74,7 @@ export const ItemExt = {
     return createMacroNutrients(result)
   },
 
-  macros(item: UnifiedItem | undefined): MacroNutrients {
+  macros(item: Item | undefined): MacroNutrients {
     if (item === undefined) {
       return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
     }
@@ -90,10 +90,7 @@ export const ItemExt = {
     return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
   },
 
-  isInSyncWithRecipe(
-    item: UnifiedItem,
-    recipeItems: readonly UnifiedItem[],
-  ): boolean {
+  isInSyncWithRecipe(item: Item, recipeItems: readonly Item[]): boolean {
     if (!isRecipeItem(item)) {
       throw new Error('isInSyncWithRecipe can only be called on RecipeItem')
     }
@@ -101,7 +98,7 @@ export const ItemExt = {
     return Items.equals(recipeItems, item.reference.children)
   },
 
-  of(item: UnifiedItem) {
+  of(item: Item) {
     return {
       // Self reference
       value: item,
@@ -110,7 +107,7 @@ export const ItemExt = {
       reference: () => item.reference,
       // Derived props
       macros: () => MacroNutrientsExt.of(ItemExt.macros(item)),
-      isInSyncWithRecipe: (recipeItems: readonly UnifiedItem[]) =>
+      isInSyncWithRecipe: (recipeItems: readonly Item[]) =>
         ItemExt.isInSyncWithRecipe(item, recipeItems),
       // Type guards
       isFoodItem: () => isFoodItem(item),

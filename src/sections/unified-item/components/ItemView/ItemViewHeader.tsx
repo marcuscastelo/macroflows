@@ -1,10 +1,10 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { ItemViewName } from '~/sections/unified-item/components/ItemView/ItemViewHeader/ItemViewName'
 
 export type ItemViewHeaderProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
   children?: JSXElement
   primaryActions?: JSXElement
   secondaryActions?: JSXElement

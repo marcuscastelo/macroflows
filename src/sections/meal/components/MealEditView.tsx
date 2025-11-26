@@ -11,9 +11,9 @@ import {
 } from '~/modules/diet/meal/domain/mealOperations'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+  itemSchema,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
@@ -88,8 +88,8 @@ export function MealEditViewHeader(props: {
   const { meal } = useMealContext()
   const acceptedClipboardSchema = mealSchema
     .or(recipeSchema)
-    .or(unifiedItemSchema)
-    .or(z.array(unifiedItemSchema))
+    .or(itemSchema)
+    .or(z.array(itemSchema))
 
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema,
@@ -170,7 +170,7 @@ export function MealEditViewHeader(props: {
 }
 
 export function MealEditViewContent(props: {
-  onEditItem: (item: UnifiedItem) => void
+  onEditItem: (item: Item) => void
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {

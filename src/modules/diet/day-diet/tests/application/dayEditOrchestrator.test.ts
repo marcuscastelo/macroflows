@@ -7,7 +7,7 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 // Mock dependencies
 vi.mock('~/modules/diet/macro-target/application/macroTarget', () => ({
@@ -28,7 +28,7 @@ const { macroTargetUseCases } = await import(
 const { updateMeal } = await import('~/modules/diet/meal/application/meal')
 
 function makeTestItem(id = 1) {
-  return createUnifiedItem({
+  return createItem({
     id,
     name: 'Test Item',
     quantity: 100,
@@ -163,7 +163,7 @@ describe('DayEditdayUseCases', () => {
 
       const meal = makeTestMeal()
       const originalItem = meal.items[0]!
-      const updatedItem = createUnifiedItem({
+      const updatedItem = createItem({
         ...originalItem,
         name: 'Updated Item',
       })

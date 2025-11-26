@@ -2,15 +2,15 @@ import { type Accessor, createMemo } from 'solid-js'
 
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemViewMacrosProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
   macroOverflow?: () => {
     enable: boolean
-    originalItem?: UnifiedItem | undefined
+    originalItem?: Item | undefined
   }
 }
 

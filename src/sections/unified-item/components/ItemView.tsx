@@ -1,6 +1,6 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { ItemActions } from '~/sections/unified-item/components/ItemView/ItemActions'
 import { ItemChildrenView } from '~/sections/unified-item/components/ItemView/ItemChildrenView'
 import { ItemViewHeader } from '~/sections/unified-item/components/ItemView/ItemViewHeader'
@@ -9,20 +9,20 @@ import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDis
 import { cn } from '~/shared/cn'
 
 export type ItemViewProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
   class?: string
   mode?: 'edit' | 'read-only' | 'summary'
   primaryActions?: JSXElement
   secondaryActions?: JSXElement
   macroOverflow?: () => {
     enable: boolean
-    originalItem?: UnifiedItem | undefined
+    originalItem?: Item | undefined
   }
   handlers: {
-    onClick?: (item: UnifiedItem) => void
-    onEdit?: (item: UnifiedItem) => void
-    onCopy?: (item: UnifiedItem) => void
-    onDelete?: (item: UnifiedItem) => void
+    onClick?: (item: Item) => void
+    onEdit?: (item: Item) => void
+    onCopy?: (item: Item) => void
+    onDelete?: (item: Item) => void
   }
 }
 

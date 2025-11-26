@@ -13,8 +13,8 @@ import { type TemplateItem } from '~/modules/diet/template-item/domain/templateI
 import {
   isFoodItem,
   isRecipeItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+} from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import {
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
@@ -53,10 +53,7 @@ const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
 export type TemplateSearchModalProps = {
   targetName: string
-  onNewUnifiedItem?: (
-    item: UnifiedItem,
-    originalAddedItem: TemplateItem,
-  ) => void
+  onNewUnifiedItem?: (item: Item, originalAddedItem: TemplateItem) => void
   onFinish?: () => void
   onClose?: () => void
 }
@@ -91,8 +88,8 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
   }
 
   const handleNewUnifiedItem = async (
-    newItem: UnifiedItem,
-    originalAddedItem: UnifiedItem,
+    newItem: Item,
+    originalAddedItem: Item,
     closeEditModal: () => void,
   ) => {
     const handleConfirm = async () => {

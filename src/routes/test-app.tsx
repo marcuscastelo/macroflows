@@ -25,9 +25,9 @@ import {
   promoteMeal,
 } from '~/modules/diet/meal/domain/meal'
 import {
-  createUnifiedItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  createItem,
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { TestChart } from '~/sections/common/components/charts/TestChart'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -110,8 +110,8 @@ function UserInfo() {
 export default function TestApp() {
   const [_, setUnifiedItemEditModalVisible] = createSignal(false)
 
-  const [item1] = createSignal<UnifiedItem>(
-    createUnifiedItem({
+  const [item1] = createSignal<Item>(
+    createItem({
       id: generateId(),
       name: 'Teste',
       quantity: 100,
@@ -127,8 +127,8 @@ export default function TestApp() {
     }),
   )
 
-  const [item2, setItem2] = createSignal<UnifiedItem>(
-    createUnifiedItem({
+  const [item2, setItem2] = createSignal<Item>(
+    createItem({
       id: generateId(),
       name: 'Teste',
       quantity: 100,

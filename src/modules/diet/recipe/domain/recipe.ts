@@ -1,6 +1,6 @@
 import { type z } from 'zod/v4'
 
-import { unifiedItemSchema } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { itemSchema } from '~/modules/diet/unified-item/schema/itemSchema'
 import { createZodEntity } from '~/shared/domain/validation'
 
 const ze = createZodEntity('Recipe')
@@ -13,7 +13,7 @@ export const {
 } = ze.create({
   name: ze.string(),
   user_id: ze.string(),
-  items: ze.array(unifiedItemSchema),
+  items: ze.array(itemSchema),
   prepared_multiplier: ze.number().default(1),
 })
 

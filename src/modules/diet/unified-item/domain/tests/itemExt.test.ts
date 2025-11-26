@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import type { UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import type { Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
   macros: { protein: number; carbs: number; fat: number },
-): UnifiedItem => ({
+): Item => ({
   id,
   name,
   quantity,
@@ -25,8 +25,8 @@ const makeRecipeItem = (
   id: number,
   name: string,
   quantity: number,
-  children: UnifiedItem[] = [],
-): UnifiedItem => ({
+  children: Item[] = [],
+): Item => ({
   id,
   name,
   quantity,

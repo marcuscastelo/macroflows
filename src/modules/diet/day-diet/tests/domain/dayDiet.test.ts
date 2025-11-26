@@ -9,10 +9,10 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 function makeTestMeal() {
-  const item = createUnifiedItem({
+  const item = createItem({
     id: 1,
     name: 'Arroz',
     quantity: 100,

@@ -8,10 +8,10 @@ import {
   setMealItems,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 function makeUnifiedItem(id: number, name = 'Arroz') {
-  return createUnifiedItem({
+  return createItem({
     id,
     name,
     quantity: 100,
@@ -38,7 +38,7 @@ describe('mealOperations', () => {
   })
 
   it('updateItemInMeal updates an item', () => {
-    const updatedItem = createUnifiedItem({
+    const updatedItem = createItem({
       ...baseUnifiedItem,
       name: 'Arroz Integral',
     })

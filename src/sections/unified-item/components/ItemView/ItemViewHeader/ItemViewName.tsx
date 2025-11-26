@@ -4,13 +4,13 @@ import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/reci
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import {
   isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { getItemTypeDisplay } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemViewNameProps = {
-  item: Accessor<UnifiedItem>
+  item: Accessor<Item>
 }
 
 export function ItemViewName(props: ItemViewNameProps) {

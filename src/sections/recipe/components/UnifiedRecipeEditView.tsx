@@ -13,9 +13,9 @@ import {
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+  itemSchema,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
@@ -47,8 +47,8 @@ export function RecipeEditView(props: RecipeEditViewProps) {
   const setRecipe = untrack(() => props.setRecipe)
 
   const acceptedClipboardSchema = z.union([
-    unifiedItemSchema,
-    unifiedItemSchema.array(),
+    itemSchema,
+    itemSchema.array(),
     mealSchema,
   ])
 
@@ -127,13 +127,13 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         items={() => [...recipe().items]}
         mode="edit"
         handlers={{
-          onEdit: (unifiedItem: UnifiedItem) => {
+          onEdit: (unifiedItem: Item) => {
             props.onEditItem(unifiedItem)
           },
-          onCopy: (unifiedItem: UnifiedItem) => {
+          onCopy: (unifiedItem: Item) => {
             clipboard.write(JSON.stringify(unifiedItem))
           },
-          onDelete: (unifiedItem: UnifiedItem) => {
+          onDelete: (unifiedItem: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), unifiedItem.id))
           },
         }}

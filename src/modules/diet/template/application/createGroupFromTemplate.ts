@@ -5,11 +5,11 @@ import {
   type Template,
 } from '~/modules/diet/template/domain/template'
 import {
-  createUnifiedItem,
+  createItem,
   isFoodItem,
   isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { generateId } from '~/shared/utils/idUtils'
 
 /**
@@ -22,8 +22,8 @@ import { generateId } from '~/shared/utils/idUtils'
  */
 export function createUnifiedItemFromTemplate(
   template: Template,
-  protoItem: UnifiedItem,
-): UnifiedItem {
+  protoItem: Item,
+): Item {
   if (isFoodItem(protoItem)) {
     return templateToUnifiedItem(template, protoItem.quantity)
   }
@@ -36,7 +36,7 @@ export function createUnifiedItemFromTemplate(
     )
 
     // Create a UnifiedItem with recipe reference containing scaled items
-    return createUnifiedItem({
+    return createItem({
       id: generateId(),
       name: protoItem.name,
       quantity: protoItem.quantity,

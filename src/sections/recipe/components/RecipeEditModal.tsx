@@ -7,10 +7,10 @@ import {
   updateItemInRecipe,
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import {
-  createUnifiedItem,
+  createItem,
   isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+  type Item,
+} from '~/modules/diet/unified-item/schema/itemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
@@ -41,7 +41,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
     setRecipe(props.recipe())
   })
 
-  const handleNewUnifiedItem = (newItem: UnifiedItem) => {
+  const handleNewUnifiedItem = (newItem: Item) => {
     logging.debug('onNewUnifiedItem', newItem)
 
     // Convert UnifiedItem to Item for adding to recipe
@@ -108,7 +108,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
 
             // Use unified modal system instead of legacy pattern
             openUnifiedItemEditModal({
-              item: () => createUnifiedItem(item),
+              item: () => createItem(item),
               targetMealName: recipe().name,
               macroOverflow: () => ({ enable: false }),
               onApply: (item) => {

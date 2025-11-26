@@ -6,7 +6,7 @@ import {
 } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
 import { DeleteDayButton } from '~/sections/day-diet/components/DeleteDayButton'
@@ -25,7 +25,7 @@ import { logging } from '~/shared/utils/logging'
 
 const handleEditUnifiedItem = (
   meal: Meal,
-  item: UnifiedItem,
+  item: Item,
   props: {
     dayDiet: DayDiet
     mode: EditMode
@@ -97,7 +97,7 @@ const handleUpdateMeal = async (
 
 const handleNewUnifiedItem = (
   meal: Meal,
-  newItem: UnifiedItem,
+  newItem: Item,
   props: {
     mode: EditMode
     onRequestEditMode?: () => void
