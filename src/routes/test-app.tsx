@@ -9,6 +9,7 @@ import {
   isAuthenticated,
 } from '~/modules/auth/application/usecases/authState'
 import {
+  currentDayDiet,
   setTargetDay,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
@@ -188,8 +189,19 @@ export default function TestApp() {
   return (
     <>
       <Providers>
-        <DayMacros />
-
+        <DayMacros
+          dayDiet={
+            currentDayDiet() ??
+            promoteDayDiet(
+              createNewDayDiet({
+                meals: [],
+                user_id: '3',
+                target_day: '2023-11-02',
+              }),
+              { id: 1 },
+            )
+          }
+        />
         {/* Auth */}
         <details open>
           <summary class="text-lg cursor-pointer select-none">Auth</summary>
@@ -311,7 +323,19 @@ export default function TestApp() {
             <EANIcon />
             <TestChart />
             <TestField />
-            <DayMacros />
+            <DayMacros
+              dayDiet={
+                currentDayDiet() ??
+                promoteDayDiet(
+                  createNewDayDiet({
+                    meals: [],
+                    user_id: '3',
+                    target_day: '2023-11-02',
+                  }),
+                  { id: 1 },
+                )
+              }
+            />
             <LoadingRing />
             <PageLoading message="Carregando bugigangas" />
           </div>

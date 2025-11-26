@@ -1,6 +1,5 @@
 import { createMemo, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
@@ -9,15 +8,10 @@ import { macroTargetUseCases } from '~/modules/diet/macro-target/application/mac
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
-export default function DayMacros(props: {
-  class?: string
-  dayDiet?: DayDiet
-}) {
+export default function DayMacros(props: { dayDiet: DayDiet; class?: string }) {
   const macroSignals = createMemo(() => {
-    const day = props.dayDiet ?? currentDayDiet()
-    if (!day) {
-      return { error: 'Dia atual não encontrado' }
-    }
+    const day = props.dayDiet
+
     const macroTarget_ = macroTargetUseCases.macroTargetAt(
       stringToDate(day.target_day),
     )
