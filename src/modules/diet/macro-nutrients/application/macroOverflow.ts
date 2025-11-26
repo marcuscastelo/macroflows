@@ -2,15 +2,16 @@ import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import {
   createMacroNutrients,
   type MacroNutrients,
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -36,8 +37,8 @@ function getContext() {
 }
 
 export function isOverflow(args: {
-  item: UnifiedItem
-  originalItem?: UnifiedItem
+  item: Item
+  originalItem?: Item
 }): Record<keyof MacroNutrientsRecord, () => boolean> {
   const context = getContext()
   if (context === null) {
@@ -76,6 +77,31 @@ export function isOverflow(args: {
   }
 }
 
+function getAvailableMacros(args: {
+  dayDiet: DayDiet
+  originalItem?: Item | undefined
+}): MacroNutrientsRecord {
+  logging.debug('getAvailableMacros')
+  const dayDiet = args.dayDiet
+  const dayMacros = DayDietExt.calcDayMacros(dayDiet)
+
+  const macroTarget = macroTargetUseCases.macroTargetAt(
+    new Date(dayDiet.target_day),
+  )
+  if (!macroTarget) {
+    return { carbs: 0, protein: 0, fat: 0 }
+  }
+
+  const originalItem = args.originalItem
+  const originalMacros = ItemExt.macros(originalItem)
+  return {
+    carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
+    protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
+    fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
+  }
+}
+
 export const macroOverflowUseCases = {
   isOverflow,
+  getAvailableMacros,
 }

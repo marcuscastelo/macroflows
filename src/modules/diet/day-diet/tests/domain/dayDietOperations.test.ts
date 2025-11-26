@@ -6,12 +6,12 @@ import {
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
-function makeUnifiedItem(id: number, name = 'Arroz') {
-  return createUnifiedItem({
+function makeItem(id: number, name = 'Arroz') {
+  return createItem({
     id,
     name,
     quantity: 100,
@@ -23,11 +23,11 @@ function makeUnifiedItem(id: number, name = 'Arroz') {
   })
 }
 
-function makeMeal(id: number, name = 'Almoço', items = [makeUnifiedItem(1)]) {
+function makeMeal(id: number, name = 'Almoço', items = [makeItem(1)]) {
   return promoteMeal(createNewMeal({ name, items }), { id })
 }
 
-const baseItem = makeUnifiedItem(1)
+const baseItem = makeItem(1)
 const baseMeal = makeMeal(1, 'Almoço', [baseItem])
 const baseDayDiet: DayDiet = promoteDayDiet(
   createNewDayDiet({
@@ -58,7 +58,7 @@ describe('dayDietOperations', () => {
     })
 
     it('should preserve other meals in the DayDiet', () => {
-      const meal2 = makeMeal(2, 'Café da Manhã', [makeUnifiedItem(2)])
+      const meal2 = makeMeal(2, 'Café da Manhã', [makeItem(2)])
       const dayDietWithTwoMeals = promoteDayDiet(
         createNewDayDiet({
           target_day: '2023-01-01',

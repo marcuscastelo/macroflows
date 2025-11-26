@@ -2,7 +2,7 @@ import { For, Show } from 'solid-js'
 
 import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
+import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import {
   isTemplateFood,
   isTemplateRecipe,
@@ -14,9 +14,9 @@ import {
 } from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
+import { ItemView } from '~/sections/item/components/ItemView'
+import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
-import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -52,7 +52,7 @@ export function TemplateSearchResults(props: {
           <For each={props.filteredTemplates}>
             {(template) => {
               // Calculate appropriate display quantity for each template
-              const getDisplayQuantity = () => {
+              const displayQuantity = () => {
                 if (isTemplateFood(template)) {
                   return 100 // Standard 100g for foods
                 } else {
@@ -65,20 +65,11 @@ export function TemplateSearchResults(props: {
                 }
               }
 
-              const displayQuantity = getDisplayQuantity()
-
-              // Convert template to UnifiedItem using shared utility
-              const createUnifiedItemFromTemplate = () => {
-                const result = templateToUnifiedItem(template, displayQuantity)
-                logging.debug('createUnifiedItemFromTemplate', result)
-                return result
-              }
-
               return (
                 <>
-                  <UnifiedItemView
+                  <ItemView
                     mode="read-only"
-                    item={createUnifiedItemFromTemplate}
+                    item={() => templateToItem(template, displayQuantity())}
                     class="mt-1"
                     handlers={{
                       onClick: () => {
@@ -99,9 +90,7 @@ export function TemplateSearchResults(props: {
                           }
                         : undefined,
                     }}
-                    primaryActions={
-                      <UnifiedItemFavorite foodId={template.id} />
-                    }
+                    primaryActions={<ItemFavorite foodId={template.id} />}
                     secondaryActions={
                       <RemoveFromRecentButton
                         template={template}

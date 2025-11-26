@@ -1,16 +1,16 @@
 import { type Accessor, createEffect, createSignal } from 'solid-js'
 import { untrack } from 'solid-js'
 
+import {
+  createItem,
+  isRecipeItem,
+  type Item,
+} from '~/modules/diet/item/schema/itemSchema'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addItemToRecipe,
   updateItemInRecipe,
 } from '~/modules/diet/recipe/domain/recipeOperations'
-import {
-  createUnifiedItem,
-  isRecipeItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
@@ -20,8 +20,8 @@ import {
 import { RecipeEditContextProvider } from '~/sections/recipe/context/RecipeEditContext'
 import {
   openDeleteConfirmModal,
+  openItemEditModal,
   openTemplateSearchModal,
-  openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -41,15 +41,15 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
     setRecipe(props.recipe())
   })
 
-  const handleNewUnifiedItem = (newItem: UnifiedItem) => {
-    logging.debug('onNewUnifiedItem', newItem)
+  const handleNewItem = (newItem: Item) => {
+    logging.debug('onNewItem', newItem)
 
-    // Convert UnifiedItem to Item for adding to recipe
+    // Convert Item to Item for adding to recipe
     try {
       // Only food items can be directly converted to Items for recipes
       if (newItem.reference.type !== 'food') {
         logging.error(
-          'RecipeEditModal handleNewUnifiedItem error:',
+          'RecipeEditModal handleNewItem error:',
           new Error('Cannot add non-food items to recipes'),
         )
         showError(
@@ -61,11 +61,11 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
       const item = newItem
       const updatedRecipe = addItemToRecipe(recipe(), item)
 
-      logging.debug('handleNewUnifiedItem: applying', { updatedRecipe })
+      logging.debug('handleNewItem: applying', { updatedRecipe })
 
       setRecipe(updatedRecipe)
     } catch (error) {
-      logging.error('RecipeEditModal convert UnifiedItem to Item error:', error)
+      logging.error('RecipeEditModal convert Item to Item error:', error)
       showError('Erro ao adicionar item à receita.')
     }
   }
@@ -88,7 +88,7 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
           onNewItem={() => {
             openTemplateSearchModal({
               targetName: recipe().name,
-              onNewUnifiedItem: handleNewUnifiedItem,
+              onNewItem: handleNewItem,
               onFinish: () => {
                 props.onRefetch()
               },
@@ -107,8 +107,8 @@ export function RecipeEditModal(props: RecipeEditModalProps) {
             }
 
             // Use unified modal system instead of legacy pattern
-            openUnifiedItemEditModal({
-              item: () => createUnifiedItem(item),
+            openItemEditModal({
+              item: () => createItem(item),
               targetMealName: recipe().name,
               macroOverflow: () => ({ enable: false }),
               onApply: (item) => {

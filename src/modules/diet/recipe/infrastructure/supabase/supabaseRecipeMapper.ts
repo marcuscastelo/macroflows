@@ -1,9 +1,9 @@
+import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import {
   type NewRecipe,
   type Recipe,
   recipeSchema,
 } from '~/modules/diet/recipe/domain/recipe'
-import { unifiedItemSchema } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -33,7 +33,7 @@ function toUpdateDTO(recipe: Recipe): UpdateRecipeDTO {
 function toDomain(dto: RecipeDTO): Recipe {
   return parseWithStack(recipeSchema, {
     ...dto,
-    items: [...parseWithStack(unifiedItemSchema.array(), dto.items)],
+    items: [...parseWithStack(itemSchema.array(), dto.items)],
   })
 }
 

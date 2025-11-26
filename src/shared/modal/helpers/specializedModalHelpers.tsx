@@ -10,6 +10,10 @@ import {
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import {
+  ItemEditModal,
+  type ItemEditModalProps,
+} from '~/sections/item/components/ItemView/ItemEdit/ItemEditModal'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   RecipeEditModal,
@@ -19,10 +23,6 @@ import {
   TemplateSearchModal,
   type TemplateSearchModalProps,
 } from '~/sections/search/components/TemplateSearchModal'
-import {
-  UnifiedItemEditModal,
-  type UnifiedItemEditModalProps,
-} from '~/sections/unified-item/components/UnifiedItemEditModal'
 import {
   closeModal,
   openConfirmModal,
@@ -37,13 +37,13 @@ export type ModalController = {
   close: () => void
 }
 
-export type UnifiedItemEditModalConfig = UnifiedItemEditModalProps & {
+export type ItemEditModalConfig = ItemEditModalProps & {
   title?: string
   targetName?: string
 }
 
-export function openUnifiedItemEditModal(
-  config: UnifiedItemEditModalConfig,
+export function openItemEditModal(
+  config: ItemEditModalConfig,
 ): ModalController {
   const title = config.title ?? 'Editar Item'
 
@@ -51,7 +51,7 @@ export function openUnifiedItemEditModal(
 
   const modalId = openEditModal(
     () => (
-      <UnifiedItemEditModal
+      <ItemEditModal
         targetMealName={config.targetMealName}
         targetNameColor={config.targetNameColor}
         item={config.item}
@@ -104,7 +104,7 @@ export function openTemplateSearchModal(
     () => (
       <TemplateSearchModal
         targetName={config.targetName}
-        onNewUnifiedItem={config.onNewUnifiedItem}
+        onNewItem={config.onNewItem}
         onFinish={() => {
           config.onFinish?.()
           controller.close()
