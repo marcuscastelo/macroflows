@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
-  addChildToItem,
   removeChildFromItem,
   updateChildInItem,
 } from '~/modules/diet/unified-item/domain/childOperations'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
+import {
+  createGroupItem,
+  createUnifiedItem,
+} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 describe('childOperations', () => {
   const childA = createUnifiedItem({
@@ -36,16 +39,14 @@ describe('childOperations', () => {
     reference: { type: 'group' as const, children: [] },
   })
   it('addChildToItem adds a child', () => {
-    const group = createUnifiedItem({
+    const group = createGroupItem({
       ...baseGroup,
       reference: { type: 'group' as const, children: [] },
     })
-    const updated = addChildToItem(group, childA)
+    const updated = ParentItemExt.addChildToParentItem(group, childA)
     expect(updated.reference.type).toBe('group')
-    if (updated.reference.type === 'group') {
-      expect(updated.reference.children.length).toBe(1)
-      expect(updated.reference.children[0]?.id).toBe(childA.id)
-    }
+    expect(updated.reference.children.length).toBe(1)
+    expect(updated.reference.children[0]?.id).toBe(childA.id)
   })
   it('removeChildFromItem removes a child by id', () => {
     const group = createUnifiedItem({

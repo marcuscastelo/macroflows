@@ -6,6 +6,7 @@ export const FoodItemExt = {
     const itemExt = ItemExt.of(item)
     return {
       ...itemExt,
+      value: item,
     }
   },
 }

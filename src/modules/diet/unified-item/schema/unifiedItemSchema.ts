@@ -71,12 +71,90 @@ export const isRecipeItem = (item: UnifiedItem): item is RecipeItem =>
 export const isGroupItem = (item: UnifiedItem): item is GroupItem =>
   item.reference.type === 'group'
 
+export const isParentItem = (
+  item: UnifiedItem,
+): item is RecipeItem | GroupItem => isRecipeItem(item) || isGroupItem(item)
+
 export const asFoodItem = (item: UnifiedItem): FoodItem | undefined =>
   isFoodItem(item) ? item : undefined
 export const asRecipeItem = (item: UnifiedItem): RecipeItem | undefined =>
   isRecipeItem(item) ? item : undefined
 export const asGroupItem = (item: UnifiedItem): GroupItem | undefined =>
   isGroupItem(item) ? item : undefined
+export const asParentItem = (
+  item: UnifiedItem,
+): RecipeItem | GroupItem | undefined =>
+  isRecipeItem(item) || isGroupItem(item) ? item : undefined
+
+function createBaseItem({
+  id,
+  name,
+  quantity,
+}: Omit<UnifiedItem, 'reference' | '__type'>): Omit<UnifiedItem, 'reference'> {
+  return {
+    id,
+    name,
+    quantity: Math.round(quantity * 100) / 100, // Round to 2 decimal places
+    __type: 'UnifiedItem',
+  }
+}
+
+export function createFoodItem({
+  id,
+  name,
+  quantity,
+  reference,
+}: Omit<FoodItem, '__type'>): FoodItem {
+  const baseItem = createBaseItem({ id, name, quantity })
+
+  return {
+    ...baseItem,
+    reference: {
+      type: 'food',
+      id: reference.id,
+      macros: reference.macros,
+    } satisfies FoodReference,
+  }
+}
+
+export function createRecipeItem({
+  id,
+  name,
+  quantity,
+  reference,
+}: Omit<RecipeItem, '__type'>): RecipeItem {
+  const baseItem = createBaseItem({ id, name, quantity })
+
+  return {
+    ...baseItem,
+    reference: {
+      type: 'recipe',
+      id: reference.id,
+      children: reference.children.map((child) => {
+        return createUnifiedItem(child)
+      }),
+    } satisfies RecipeReference,
+  }
+}
+
+export function createGroupItem({
+  id,
+  name,
+  quantity,
+  reference,
+}: Omit<GroupItem, '__type'>): GroupItem {
+  const baseItem = createBaseItem({ id, name, quantity })
+
+  return {
+    ...baseItem,
+    reference: {
+      type: 'group',
+      children: reference.children.map((child) => {
+        return createUnifiedItem(child)
+      }),
+    } satisfies GroupReference,
+  }
+}
 
 export function createUnifiedItem({
   id,
@@ -84,47 +162,18 @@ export function createUnifiedItem({
   quantity,
   reference,
 }: Omit<UnifiedItem, '__type'>): UnifiedItem {
-  const itemWithoutReference: Omit<UnifiedItem, 'reference'> = {
-    id,
-    name,
-    quantity: Math.round(quantity * 100) / 100, // Round to 2 decimal places
-    __type: 'UnifiedItem',
-  }
-
-  if (reference.type === 'food') {
-    return {
-      ...itemWithoutReference,
-      reference: {
-        type: 'food',
-        id: reference.id,
-        macros: reference.macros,
-      } satisfies FoodReference,
-    }
-  }
-
-  if (reference.type === 'recipe') {
-    return {
-      ...itemWithoutReference,
-      reference: {
-        type: 'recipe',
-        id: reference.id,
-        children: reference.children.map((child) => {
-          return createUnifiedItem(child)
-        }),
-      },
-    }
-  }
-
-  reference satisfies GroupReference
-
-  // TypeScript has already narrowed this to 'group' type
-  return {
-    ...itemWithoutReference,
-    reference: {
-      type: 'group',
-      children: reference.children.map((child) => {
-        return createUnifiedItem(child)
-      }),
-    },
+  switch (reference.type) {
+    case 'food':
+      return createFoodItem({ id, name, quantity, reference })
+    case 'recipe':
+      return createRecipeItem({ id, name, quantity, reference })
+    case 'group':
+      return createGroupItem({ id, name, quantity, reference })
+    default:
+      reference satisfies never
+      throw new Error(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/consistent-type-assertions
+        `Unknown reference type: ${(reference as Record<string, unknown>).type}`,
+      )
   }
 }

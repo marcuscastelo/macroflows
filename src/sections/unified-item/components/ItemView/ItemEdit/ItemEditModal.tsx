@@ -15,11 +15,9 @@ import {
   updateRecipe,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import {
-  addChildToItem,
-  updateChildInItem,
-} from '~/modules/diet/unified-item/domain/childOperations'
+import { updateChildInItem } from '~/modules/diet/unified-item/domain/childOperations'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
+import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   asGroupItem,
@@ -317,11 +315,15 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                 targetName: item().name,
                 title: `Adicionar novo subitem ao item "${item().name}"`,
                 onNewUnifiedItem: (newUnifiedItem) => {
-                  if (isGroupItem(item())) {
-                    const updatedItem = addChildToItem(item(), {
-                      ...newUnifiedItem,
-                      id: generateId(),
-                    })
+                  const item_ = item()
+                  if (isGroupItem(item_)) {
+                    const updatedItem = ParentItemExt.addChildToParentItem(
+                      item_,
+                      {
+                        ...newUnifiedItem,
+                        id: generateId(),
+                      },
+                    )
                     setItem(updatedItem)
                   } else {
                     const currentItem = item()

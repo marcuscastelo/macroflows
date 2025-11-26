@@ -77,6 +77,7 @@ export const RecipeItemExt = {
     const itemExt = ItemExt.of(item)
     return {
       ...itemExt,
+      value: item,
       syncWithOriginal: (originalRecipeItems: readonly UnifiedItem[]) =>
         RecipeItemExt.syncWithOriginal(item, originalRecipeItems),
       scaleQuantityAndChildren: (newQuantity: number) =>

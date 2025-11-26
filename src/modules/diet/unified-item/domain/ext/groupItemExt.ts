@@ -6,6 +6,7 @@ export const GroupItemExt = {
     const itemExt = ItemExt.of(item)
     return {
       ...itemExt,
+      value: item,
     }
   },
 }

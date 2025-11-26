@@ -6,40 +6,6 @@ import {
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 /**
- * Adds a child to a UnifiedItem (recipe or group).
- */
-export function addChildToItem(
-  item: UnifiedItem,
-  child: UnifiedItem,
-): UnifiedItem {
-  if (
-    (item.reference.type === 'recipe' || item.reference.type === 'group') &&
-    Array.isArray(item.reference.children)
-  ) {
-    if (isFoodItem(item)) {
-      throw new Error('Cannot add child to food item')
-    } else if (isRecipeItem(item)) {
-      return {
-        ...item,
-        reference: {
-          ...item.reference,
-          children: [...item.reference.children, child],
-        },
-      }
-    } else if (isGroupItem(item)) {
-      return {
-        ...item,
-        reference: {
-          ...item.reference,
-          children: [...item.reference.children, child],
-        },
-      }
-    }
-  }
-  return item
-}
-
-/**
  * Removes a child by id from a UnifiedItem (recipe or group).
  */
 export function removeChildFromItem(

@@ -4,14 +4,15 @@ import { z } from 'zod/v4'
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import {
-  addChildToItem,
   removeChildFromItem,
   updateChildInItem,
 } from '~/modules/diet/unified-item/domain/childOperations'
+import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
 import {
+  asParentItem,
+  createGroupItem,
   createUnifiedItem,
-  isFoodItem,
   isGroupItem,
   isRecipeItem,
   type UnifiedItem,
@@ -57,29 +58,26 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     onPaste: (data) => {
       const itemsToAdd = Array.isArray(data) ? data : [data]
 
-      let updatedItem: UnifiedItem = props.item()
-
-      // Check if we need to transform a food item into a group
-      if (isFoodItem(updatedItem) && itemsToAdd.length > 0) {
-        // Transform the food item into a group with the original food as the first child
-        const originalAsChild = createUnifiedItem({
-          id: generateId(), // New ID for the child
-          name: updatedItem.name,
-          quantity: updatedItem.quantity,
-          reference: updatedItem.reference, // Keep the food reference
-        })
-
-        // Create new group with the original food as first child
-        updatedItem = createUnifiedItem({
-          id: updatedItem.id, // Keep the same ID for the parent
-          name: updatedItem.name,
-          quantity: updatedItem.quantity,
+      const itemAsChildOfSingletonGroup = () =>
+        createGroupItem({
+          id: props.item().id,
+          name: props.item().name,
+          quantity: props.item().quantity,
           reference: {
             type: 'group',
-            children: [originalAsChild],
+            children: [
+              createUnifiedItem({
+                id: generateId(),
+                name: props.item().name,
+                quantity: props.item().quantity,
+                reference: props.item().reference,
+              }),
+            ],
           },
         })
-      }
+
+      let groupItem =
+        asParentItem(props.item()) ?? itemAsChildOfSingletonGroup()
 
       for (const newChild of itemsToAdd) {
         // Regenerate ID to avoid conflicts
@@ -89,7 +87,10 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         }
 
         // Validate hierarchy to prevent circular references
-        const tempItem = addChildToItem(updatedItem, childWithNewId)
+        const tempItem = ParentItemExt.addChildToParentItem(
+          groupItem,
+          childWithNewId,
+        )
         if (!validateItemHierarchy(tempItem)) {
           logging.warn(
             `Skipping item ${childWithNewId.name} - would create circular reference`,
@@ -97,10 +98,10 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           continue
         }
 
-        updatedItem = tempItem
+        groupItem = tempItem
       }
 
-      props.setItem(updatedItem)
+      props.setItem(groupItem)
     },
   })
 
