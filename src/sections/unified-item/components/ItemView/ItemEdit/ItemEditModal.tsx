@@ -20,7 +20,7 @@ import {
   updateChildInItem,
 } from '~/modules/diet/unified-item/domain/childOperations'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { synchronizeRecipeItemWithOriginal } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
+import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   asGroupItem,
   createUnifiedItem,
@@ -183,10 +183,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     }
 
     // Synchronize with original recipe items
-    const syncedItem = synchronizeRecipeItemWithOriginal(
-      currentItem,
-      recipe.items,
-    )
+    const syncedItem = RecipeItemExt.syncWithOriginal(currentItem, recipe.items)
 
     // Force reactivity by creating a new reference
     setItem({ ...syncedItem })
@@ -200,7 +197,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       const currentItem = item()
       if (isRecipeItem(currentItem)) {
         // Automatically synchronize with the updated recipe
-        const syncedItem = synchronizeRecipeItemWithOriginal(
+        const syncedItem = RecipeItemExt.syncWithOriginal(
           currentItem,
           updatedRecipe.items,
         )

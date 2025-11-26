@@ -1,0 +1,67 @@
+import { describe, expect, it } from 'vitest'
+
+import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { GroupItemExt } from '~/modules/diet/unified-item/domain/ext/groupItemExt'
+import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
+import type {
+  GroupItem,
+  UnifiedItem,
+} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+
+const makeFoodItem = (
+  id: number,
+  name: string,
+  quantity: number,
+  macros: { protein: number; carbs: number; fat: number },
+): UnifiedItem => ({
+  id,
+  name,
+  quantity,
+  reference: {
+    type: 'food',
+    id,
+    macros: createMacroNutrients(macros),
+  },
+  __type: 'UnifiedItem' as const,
+})
+
+const makeGroupItem = (
+  id: number,
+  name: string,
+  quantity: number,
+  children: UnifiedItem[] = [],
+): GroupItem => ({
+  id,
+  name,
+  quantity,
+  reference: {
+    type: 'group',
+    children,
+  },
+  __type: 'UnifiedItem' as const,
+})
+
+describe('GroupItemExt', () => {
+  it('of() returns the item extension and ItemExt macros works for group', () => {
+    const child = makeFoodItem(1, 'Flour', 100, {
+      protein: 5,
+      carbs: 70,
+      fat: 1,
+    })
+    const group = makeGroupItem(10, 'Mix', 200, [child])
+
+    const ext = GroupItemExt.of(group)
+
+    // ext should expose same helpers as ItemExt.of
+    expect(ext.quantity()).toBe(group.quantity)
+    expect(ext.isGroupItem()).toBe(true)
+
+    // ItemExt.macros should sum children and scale to group quantity
+    const macros = ItemExt.macros(group)
+    const childMacros = ItemExt.macros(child)
+
+    expect(macros.protein).toBeCloseTo(
+      (group.quantity / child.quantity) * childMacros.protein,
+    )
+  })
+})

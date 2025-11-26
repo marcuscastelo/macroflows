@@ -8,7 +8,7 @@ import {
 
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { scaleRecipeItemQuantity } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
+import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   isFoodItem,
   isRecipeItem,
@@ -40,7 +40,10 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
     if (isRecipeItem(currentItem)) {
       // For recipe items, scale children proportionally
       try {
-        const scaledItem = scaleRecipeItemQuantity(currentItem, newQuantity)
+        const scaledItem = RecipeItemExt.scaleQuantityAndChildren(
+          currentItem,
+          newQuantity,
+        )
         props.setItem({ ...scaledItem })
       } catch (error) {
         logging.debug('[QuantityControls] Error scaling recipe:', { error })
