@@ -8,7 +8,7 @@ import {
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
-import { GroupChildrenEditor } from '~/sections/unified-item/components/GroupChildrenEditor'
+import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemChildrenEditor'
 import { QuantityControls } from '~/sections/unified-item/components/QuantityControls'
 import { QuantityShortcuts } from '~/sections/unified-item/components/QuantityShortcuts'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
@@ -89,7 +89,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
 
       {/* For groups or recipes in group mode: children editor */}
       <Show when={isGroupItem(props.item()) || props.viewMode === 'group'}>
-        <GroupChildrenEditor
+        <ItemChildrenEditor
           item={props.item}
           setItem={props.setItem}
           onEditChild={props.onEditChild}

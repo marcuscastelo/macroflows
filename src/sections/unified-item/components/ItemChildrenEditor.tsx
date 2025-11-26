@@ -27,7 +27,7 @@ import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemV
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
-export type GroupChildrenEditorProps = {
+export type ItemChildrenEditorProps = {
   item: Accessor<UnifiedItem>
   setItem: Setter<UnifiedItem>
   onEditChild?: (child: UnifiedItem) => void
@@ -35,7 +35,7 @@ export type GroupChildrenEditorProps = {
   showAddButton?: boolean
 }
 
-export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
+export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   const clipboard = useClipboard()
 
   const children = () => {
@@ -57,7 +57,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
     onPaste: (data) => {
       const itemsToAdd = Array.isArray(data) ? data : [data]
 
-      let updatedItem = props.item()
+      let updatedItem: UnifiedItem = props.item()
 
       // Check if we need to transform a food item into a group
       if (isFoodItem(updatedItem) && itemsToAdd.length > 0) {
@@ -120,7 +120,7 @@ export function GroupChildrenEditor(props: GroupChildrenEditorProps) {
   const applyMultiplierToAll = (multiplier: number) => {
     logging.debug('[GroupChildrenEditor] applyMultiplierToAll', { multiplier })
 
-    let updatedItem = props.item()
+    let updatedItem: UnifiedItem = props.item()
 
     for (const child of children()) {
       const newQuantity = child.quantity * multiplier
