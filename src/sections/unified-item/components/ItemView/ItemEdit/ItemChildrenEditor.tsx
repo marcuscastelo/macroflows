@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
-import { updateChildInItem } from '~/modules/diet/unified-item/domain/childOperations'
 import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
 import {
@@ -109,9 +108,13 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       newQuantity,
     })
 
-    const updatedItem = updateChildInItem(props.itemDraft(), childId, {
-      quantity: newQuantity,
-    })
+    const updatedItem = ParentItemExt.updateChildInParentItem(
+      props.itemDraft(),
+      childId,
+      {
+        quantity: newQuantity,
+      },
+    )
 
     props.setItemDraft(updatedItem)
   }
@@ -123,9 +126,13 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
 
     for (const child of children()) {
       const newQuantity = child.quantity * multiplier
-      updatedItem = updateChildInItem(updatedItem, child.id, {
-        quantity: newQuantity,
-      })
+      updatedItem = ParentItemExt.updateChildInParentItem(
+        updatedItem,
+        child.id,
+        {
+          quantity: newQuantity,
+        },
+      )
     }
 
     props.setItemDraft(updatedItem)

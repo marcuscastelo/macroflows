@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { updateChildInItem } from '~/modules/diet/unified-item/domain/childOperations'
 import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import {
   createGroupItem,
   createUnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
-describe('childOperations', () => {
+describe('parentItemExt', () => {
   const childA = createUnifiedItem({
     id: 11,
     name: 'A',
@@ -56,14 +55,14 @@ describe('childOperations', () => {
     expect(updated.reference.children[0]?.id).toBe(childB.id)
   })
   it('updateChildInItem updates a child by id', () => {
-    const group = createUnifiedItem({
+    const group = createGroupItem({
       ...baseGroup,
       reference: { type: 'group' as const, children: [childA] },
     })
-    const updated = updateChildInItem(group, childA.id, { name: 'Updated' })
+    const updated = ParentItemExt.updateChildInParentItem(group, childA.id, {
+      name: 'Updated',
+    })
     expect(updated.reference.type).toBe('group')
-    if (updated.reference.type === 'group') {
-      expect(updated.reference.children[0]?.name).toBe('Updated')
-    }
+    expect(updated.reference.children[0]?.name).toBe('Updated')
   })
 })

@@ -15,7 +15,6 @@ import {
   updateRecipe,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { updateChildInItem } from '~/modules/diet/unified-item/domain/childOperations'
 import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
@@ -164,8 +163,8 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       item: () => child,
       macroOverflow: () => ({ enable: false }),
       onApply: (updatedChild) => {
-        const currentItem = itemDraft()
-        const updatedItem = updateChildInItem(
+        const currentItem = parentifiedItemDraft()
+        const updatedItem = ParentItemExt.updateChildInParentItem(
           currentItem,
           updatedChild.id,
           updatedChild,

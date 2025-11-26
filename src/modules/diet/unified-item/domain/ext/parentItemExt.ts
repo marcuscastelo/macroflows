@@ -28,6 +28,22 @@ export const ParentItemExt = {
     }
   },
 
+  updateChildInParentItem<T extends { reference: { children: UnifiedItem[] } }>(
+    parentItem: T,
+    childId: number,
+    updates: Partial<Pick<UnifiedItem, 'id' | 'name' | 'quantity'>>,
+  ): T {
+    return {
+      ...parentItem,
+      reference: {
+        ...parentItem.reference,
+        children: parentItem.reference.children.map((child) =>
+          child.id === childId ? { ...child, ...updates } : child,
+        ),
+      },
+    }
+  },
+
   of<T extends { reference: { children: UnifiedItem[] } }>(item: T) {
     return {
       value: item,
@@ -35,6 +51,10 @@ export const ParentItemExt = {
         ParentItemExt.addChildToParentItem(item, childItem),
       removeChild: (childId: number) =>
         ParentItemExt.removeChildFromParentItem(item, childId),
+      updateChild: (
+        childId: number,
+        updates: Partial<Pick<UnifiedItem, 'id' | 'name' | 'quantity'>>,
+      ) => ParentItemExt.updateChildInParentItem(item, childId, updates),
     }
   },
 }
