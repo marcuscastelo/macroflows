@@ -23,6 +23,140 @@ import {
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
+const handleEditUnifiedItem = (
+  meal: Meal,
+  item: UnifiedItem,
+  props: {
+    dayDiet: DayDiet
+    mode: EditMode
+    onRequestEditMode?: () => void
+  },
+) => {
+  const orchestrator = createDayEditOrchestrator()
+  const permission = orchestrator.checkEditPermission(props.mode)
+
+  if (!permission.canEdit) {
+    if (permission.confirmText && props.onRequestEditMode) {
+      openConfirmModal(permission.reason, {
+        title: permission.title,
+        confirmText: permission.confirmText,
+        cancelText: permission.cancelText,
+        onConfirm: () => {
+          props.onRequestEditMode?.()
+        },
+      })
+    }
+    return
+  }
+
+  const macroOverflow = orchestrator.prepareMacroOverflowConfig(
+    props.dayDiet,
+    item,
+  )
+  logging.debug('macroOverflow:', macroOverflow)
+
+  openUnifiedItemEditModal({
+    targetMealName: meal.name,
+    item: () => item,
+    macroOverflow: () => macroOverflow,
+    onApply: (updatedItem) => {
+      orchestrator
+        .updateItemInMealOrchestrated(meal, item, updatedItem)
+        .catch((e) => {
+          showError(e, {}, 'Erro ao atualizar item')
+        })
+    },
+    targetName: meal.name,
+    showAddItemButton: true,
+  })
+}
+const handleUpdateMeal = async (
+  meal: Meal,
+  props: {
+    mode: EditMode
+    onRequestEditMode?: () => void
+  },
+) => {
+  const orchestrator = createDayEditOrchestrator()
+  const permission = orchestrator.checkEditPermission(props.mode)
+
+  if (!permission.canEdit) {
+    if (permission.confirmText && props.onRequestEditMode) {
+      openConfirmModal(permission.reason, {
+        title: permission.title,
+        confirmText: permission.confirmText,
+        cancelText: permission.cancelText,
+        onConfirm: () => {
+          props.onRequestEditMode?.()
+        },
+      })
+    }
+    return
+  }
+
+  await orchestrator.updateMealOrchestrated(meal)
+}
+
+const handleNewUnifiedItem = (
+  meal: Meal,
+  newItem: UnifiedItem,
+  props: {
+    mode: EditMode
+    onRequestEditMode?: () => void
+  },
+) => {
+  const orchestrator = createDayEditOrchestrator()
+  const permission = orchestrator.checkEditPermission(props.mode)
+
+  if (!permission.canEdit) {
+    if (permission.confirmText && props.onRequestEditMode) {
+      openConfirmModal(permission.reason, {
+        title: permission.title,
+        confirmText: permission.confirmText,
+        cancelText: permission.cancelText,
+        onConfirm: () => {
+          props.onRequestEditMode?.()
+        },
+      })
+    }
+    return
+  }
+
+  orchestrator.addItemToMealOrchestrated(meal, newItem).catch((e) => {
+    showError(e, {}, 'Erro ao adicionar item')
+  })
+}
+
+const handleNewItemButton = (
+  meal: Meal,
+  props: {
+    mode: EditMode
+    onRequestEditMode?: () => void
+  },
+) => {
+  const orchestrator = createDayEditOrchestrator()
+  const permission = orchestrator.checkEditPermission(props.mode)
+
+  if (!permission.canEdit) {
+    if (permission.confirmText && props.onRequestEditMode) {
+      openConfirmModal(permission.reason, {
+        title: permission.title,
+        confirmText: permission.confirmText,
+        cancelText: permission.cancelText,
+        onConfirm: () => {
+          props.onRequestEditMode?.()
+        },
+      })
+    }
+    return
+  }
+
+  openTemplateSearchModal({
+    targetName: meal.name,
+    onNewUnifiedItem: (newItem) => handleNewUnifiedItem(meal, newItem, props),
+  })
+}
+
 /**
  * Displays and manages the meals for a given day.
  * If dayDiet is provided, uses it; otherwise, uses the currentDayDiet from application state.
@@ -36,111 +170,6 @@ export default function DayMeals(props: {
   mode: EditMode
   onRequestEditMode?: () => void
 }) {
-  const orchestrator = createDayEditOrchestrator()
-  const handleEditUnifiedItem = (meal: Meal, item: UnifiedItem) => {
-    const permission = orchestrator.checkEditPermission(props.mode)
-
-    if (!permission.canEdit) {
-      if (permission.confirmText && props.onRequestEditMode) {
-        openConfirmModal(permission.reason, {
-          title: permission.title,
-          confirmText: permission.confirmText,
-          cancelText: permission.cancelText,
-          onConfirm: () => {
-            props.onRequestEditMode?.()
-          },
-        })
-      }
-      return
-    }
-
-    const macroOverflow = orchestrator.prepareMacroOverflowConfig(
-      props.dayDiet,
-      item,
-    )
-    logging.debug('macroOverflow:', macroOverflow)
-
-    openUnifiedItemEditModal({
-      targetMealName: meal.name,
-      item: () => item,
-      macroOverflow: () => macroOverflow,
-      onApply: (updatedItem) => {
-        orchestrator
-          .updateItemInMealOrchestrated(meal, item, updatedItem)
-          .catch((e) => {
-            showError(e, {}, 'Erro ao atualizar item')
-          })
-      },
-      targetName: meal.name,
-      showAddItemButton: true,
-    })
-  }
-
-  const handleUpdateMeal = async (meal: Meal) => {
-    const permission = orchestrator.checkEditPermission(props.mode)
-
-    if (!permission.canEdit) {
-      if (permission.confirmText && props.onRequestEditMode) {
-        openConfirmModal(permission.reason, {
-          title: permission.title,
-          confirmText: permission.confirmText,
-          cancelText: permission.cancelText,
-          onConfirm: () => {
-            props.onRequestEditMode?.()
-          },
-        })
-      }
-      return
-    }
-
-    await orchestrator.updateMealOrchestrated(meal)
-  }
-
-  const handleNewItemButton = (meal: Meal) => {
-    const permission = orchestrator.checkEditPermission(props.mode)
-
-    if (!permission.canEdit) {
-      if (permission.confirmText && props.onRequestEditMode) {
-        openConfirmModal(permission.reason, {
-          title: permission.title,
-          confirmText: permission.confirmText,
-          cancelText: permission.cancelText,
-          onConfirm: () => {
-            props.onRequestEditMode?.()
-          },
-        })
-      }
-      return
-    }
-
-    openTemplateSearchModal({
-      targetName: meal.name,
-      onNewUnifiedItem: (newItem) => handleNewUnifiedItem(meal, newItem),
-    })
-  }
-
-  const handleNewUnifiedItem = (meal: Meal, newItem: UnifiedItem) => {
-    const permission = orchestrator.checkEditPermission(props.mode)
-
-    if (!permission.canEdit) {
-      if (permission.confirmText && props.onRequestEditMode) {
-        openConfirmModal(permission.reason, {
-          title: permission.title,
-          confirmText: permission.confirmText,
-          cancelText: permission.cancelText,
-          onConfirm: () => {
-            props.onRequestEditMode?.()
-          },
-        })
-      }
-      return
-    }
-
-    orchestrator.addItemToMealOrchestrated(meal, newItem).catch((e) => {
-      showError(e, {}, 'Erro ao adicionar item')
-    })
-  }
-
   return (
     <>
       <For each={props.dayDiet.meals}>
@@ -152,7 +181,7 @@ export default function DayMeals(props: {
             header={
               <MealEditViewHeader
                 onUpdateMeal={(meal) => {
-                  handleUpdateMeal(meal).catch((e) => {
+                  handleUpdateMeal(meal, props).catch((e) => {
                     showError(e, {}, 'Erro ao atualizar refeição')
                   })
                 }}
@@ -162,9 +191,9 @@ export default function DayMeals(props: {
             content={
               <MealEditViewContent
                 onEditItem={(item) => {
-                  handleEditUnifiedItem(meal, item)
+                  handleEditUnifiedItem(meal, item, props)
                 }}
-                onUpdateMeal={(meal) => void handleUpdateMeal(meal)}
+                onUpdateMeal={(meal) => void handleUpdateMeal(meal, props)}
                 mode={props.mode}
               />
             }
@@ -172,7 +201,7 @@ export default function DayMeals(props: {
               props.mode === 'summary' ? undefined : (
                 <MealEditViewActions
                   onNewItem={() => {
-                    handleNewItemButton(meal)
+                    handleNewItemButton(meal, props)
                   }}
                 />
               )
