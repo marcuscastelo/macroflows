@@ -1,8 +1,3 @@
-import {
-  CARBO_CALORIES,
-  FAT_CALORIES,
-  PROTEIN_CALORIES,
-} from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 /**

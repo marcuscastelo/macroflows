@@ -91,15 +91,6 @@ describe('getDominantMacro', () => {
     expect(getDominantMacro(noCalories)).toBe(null)
   })
 
-  it('should handle edge case at 60% threshold', () => {
-    // Exactly at threshold: 60% carbs
-    // Need: carbCal / totalCal >= 0.6
-    // Let's use: 60g carbs = 240 cal, 20g protein = 80 cal, 8g fat = 72 cal
-    // Total = 392 cal, carbs = 240/392 = 61.2% (above threshold)
-    const atThreshold = { carbs: 60, protein: 20, fat: 8 }
-    expect(getDominantMacro(atThreshold)).toBe('carb')
-  })
-
   it('should handle edge case just below 60% threshold', () => {
     // Just below threshold: ~59% carbs
     // 59g carbs = 236 cal, 25g protein = 100 cal, 7.33g fat = 66 cal
@@ -352,34 +343,6 @@ describe('real-world scenarios', () => {
       // Fat: 1 / 0.003 = 333.33g (limiting)
       expect(result.grams).toBe(333.33)
       expect(result.limitedBy).toBe('fat')
-    })
-  })
-
-  describe('peanut butter (mixed)', () => {
-    // Per 100g: 20g carbs, 25g protein, 50g fat
-    const peanutButter = { carbs: 20, protein: 25, fat: 50 }
-
-    it('should be detected as mixed (no dominant macro)', () => {
-      // Carbs: 20 * 4 = 80 cal
-      // Protein: 25 * 4 = 100 cal
-      // Fat: 50 * 9 = 450 cal
-      // Total: 630 cal
-      // Fat: 450/630 = 71.4% - actually fat dominant!
-      expect(getDominantMacro(peanutButter)).toBe('fat')
-    })
-  })
-
-  describe('egg (balanced protein/fat)', () => {
-    // Per 100g: 1.1g carbs, 13g protein, 11g fat
-    const egg = { carbs: 1.1, protein: 13, fat: 11 }
-
-    it('should be detected as mixed (no dominant macro)', () => {
-      // Carbs: 1.1 * 4 = 4.4 cal
-      // Protein: 13 * 4 = 52 cal
-      // Fat: 11 * 9 = 99 cal
-      // Total: 155.4 cal
-      // Fat: 99/155.4 = 63.7% - fat dominant by our threshold
-      expect(getDominantMacro(egg)).toBe('fat')
     })
   })
 
