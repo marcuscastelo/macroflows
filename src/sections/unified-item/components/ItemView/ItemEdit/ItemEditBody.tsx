@@ -19,7 +19,7 @@ import { logging } from '~/shared/utils/logging'
 export type ItemEditBodyProps = {
   canApply: boolean
   itemDraft: Accessor<UnifiedItem>
-  groupifiedItemDraft: Accessor<ParentItem>
+  parentifiedItemDraft: Accessor<ParentItem>
   setItemDraft: Setter<UnifiedItem>
   macroOverflow: () => {
     enable: boolean
@@ -92,7 +92,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       {/* For groups or recipes in group mode: children editor */}
       <Show when={isGroupItem(props.itemDraft()) || props.viewMode === 'group'}>
         <ItemChildrenEditor
-          itemDraft={props.groupifiedItemDraft}
+          itemDraft={props.parentifiedItemDraft}
           setItemDraft={props.setItemDraft}
           onEditChild={props.onEditChild}
           onAddNewItem={props.onAddNewItem}

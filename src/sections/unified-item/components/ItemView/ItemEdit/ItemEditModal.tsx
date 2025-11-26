@@ -21,6 +21,7 @@ import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItem
 import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   asGroupItem,
+  asParentItem,
   createGroupItem,
   createUnifiedItem,
   isFoodItem,
@@ -66,9 +67,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   const [itemDraft, setItemDraft] = createSignal(untrack(() => props.item()))
   createEffect(() => setItemDraft(props.item()))
 
-  const groupifiedItemDraft = createMemo(
+  const parentifiedItemDraft = createMemo(
     () =>
-      asGroupItem(itemDraft()) ??
+      asParentItem(itemDraft()) ??
       createGroupItem({
         id: itemDraft().id,
         name: itemDraft().name,
@@ -93,7 +94,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     if (viewMode() === 'group') {
       const currentItem = untrack(itemDraft)
       if (isFoodItem(currentItem)) {
-        setItemDraft(groupifiedItemDraft())
+        setItemDraft(parentifiedItemDraft())
       }
     } else if (viewMode() === 'normal') {
       const currentItem = untrack(itemDraft)
@@ -308,7 +309,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
           <ItemEditBody
             canApply={canApply()}
             itemDraft={itemDraft}
-            groupifiedItemDraft={groupifiedItemDraft}
+            parentifiedItemDraft={parentifiedItemDraft}
             setItemDraft={setItemDraft}
             macroOverflow={props.macroOverflow}
             quantityField={quantityField}
