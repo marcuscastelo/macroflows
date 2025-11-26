@@ -223,32 +223,32 @@ export function getMaxBalanced(
 }
 
 /**
- * Threshold for considering a macro as dominant (60% of total calories)
+ * Threshold for considering a macro as dominant
  */
-const DOMINANT_THRESHOLD = 0.6
+const DOMINANT_THRESHOLD = 0.7
 
 /**
- * Detects if an item has a dominant macro (≥60% of calories)
+ * Detects if an item has a dominant macro
  * @param itemMacrosPer100g - The macros per 100g of the item
  * @returns The dominant macro type, or null if mixed
  */
 export function getDominantMacro(
   itemMacrosPer100g: MacroNutrientsRecord,
 ): MacroType | null {
-  const carbCalories = itemMacrosPer100g.carbs * CARBO_CALORIES
-  const proteinCalories = itemMacrosPer100g.protein * PROTEIN_CALORIES
-  const fatCalories = itemMacrosPer100g.fat * FAT_CALORIES
+  const carbGrams = itemMacrosPer100g.carbs
+  const proteinGrams = itemMacrosPer100g.protein
+  const fatGrams = itemMacrosPer100g.fat
 
-  const totalCalories = carbCalories + proteinCalories + fatCalories
+  const totalGrams = carbGrams + proteinGrams + fatGrams
 
   // If item has no calories, return null
-  if (totalCalories <= 0) {
+  if (totalGrams <= 0) {
     return null
   }
 
-  const carbPercentage = carbCalories / totalCalories
-  const proteinPercentage = proteinCalories / totalCalories
-  const fatPercentage = fatCalories / totalCalories
+  const carbPercentage = carbGrams / totalGrams
+  const proteinPercentage = proteinGrams / totalGrams
+  const fatPercentage = fatGrams / totalGrams
 
   if (proteinPercentage >= DOMINANT_THRESHOLD) {
     return 'protein'
