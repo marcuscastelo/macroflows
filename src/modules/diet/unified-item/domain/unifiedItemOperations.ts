@@ -1,4 +1,7 @@
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import {
+  type RecipeItem,
+  type UnifiedItem,
+} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 /**
  * Compares two arrays of UnifiedItems to detect differences
@@ -77,13 +80,9 @@ export function compareUnifiedItemArrays(
  * the current children with the original recipe items
  */
 export function synchronizeRecipeItemWithOriginal(
-  recipeItem: UnifiedItem,
+  recipeItem: RecipeItem,
   originalRecipeItems: readonly UnifiedItem[],
 ): UnifiedItem {
-  if (recipeItem.reference.type !== 'recipe') {
-    throw new Error('Can only synchronize recipe items')
-  }
-
   // Use original items directly - no need to regenerate IDs
   const syncedChildren = [...originalRecipeItems]
 

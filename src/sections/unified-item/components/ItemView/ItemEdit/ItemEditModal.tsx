@@ -190,7 +190,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     if (!recipe) return
 
     const currentItem = item()
-    if (currentItem.reference.type !== 'recipe') {
+    if (!isRecipeItem(currentItem)) {
       throw new Error('Can only synchronize recipe items')
     }
 
