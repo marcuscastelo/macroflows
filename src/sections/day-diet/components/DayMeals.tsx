@@ -1,7 +1,7 @@
 import { For } from 'solid-js'
 
 import {
-  createDayEditOrchestrator,
+  dayUseCases,
   type EditMode,
 } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
@@ -32,8 +32,7 @@ const handleEditUnifiedItem = (
     onRequestEditMode?: () => void
   },
 ) => {
-  const orchestrator = createDayEditOrchestrator()
-  const permission = orchestrator.checkEditPermission(props.mode)
+  const permission = dayUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -49,7 +48,7 @@ const handleEditUnifiedItem = (
     return
   }
 
-  const macroOverflow = orchestrator.prepareMacroOverflowConfig(
+  const macroOverflow = dayUseCases.prepareMacroOverflowConfig(
     props.dayDiet,
     item,
   )
@@ -60,7 +59,7 @@ const handleEditUnifiedItem = (
     item: () => item,
     macroOverflow: () => macroOverflow,
     onApply: (updatedItem) => {
-      orchestrator
+      dayUseCases
         .updateItemInMealOrchestrated(meal, item, updatedItem)
         .catch((e) => {
           showError(e, {}, 'Erro ao atualizar item')
@@ -77,8 +76,7 @@ const handleUpdateMeal = async (
     onRequestEditMode?: () => void
   },
 ) => {
-  const orchestrator = createDayEditOrchestrator()
-  const permission = orchestrator.checkEditPermission(props.mode)
+  const permission = dayUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -94,7 +92,7 @@ const handleUpdateMeal = async (
     return
   }
 
-  await orchestrator.updateMealOrchestrated(meal)
+  await dayUseCases.updateMealOrchestrated(meal)
 }
 
 const handleNewUnifiedItem = (
@@ -105,8 +103,7 @@ const handleNewUnifiedItem = (
     onRequestEditMode?: () => void
   },
 ) => {
-  const orchestrator = createDayEditOrchestrator()
-  const permission = orchestrator.checkEditPermission(props.mode)
+  const permission = dayUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -122,7 +119,7 @@ const handleNewUnifiedItem = (
     return
   }
 
-  orchestrator.addItemToMealOrchestrated(meal, newItem).catch((e) => {
+  dayUseCases.addItemToMealOrchestrated(meal, newItem).catch((e) => {
     showError(e, {}, 'Erro ao adicionar item')
   })
 }
@@ -134,8 +131,7 @@ const handleNewItemButton = (
     onRequestEditMode?: () => void
   },
 ) => {
-  const orchestrator = createDayEditOrchestrator()
-  const permission = orchestrator.checkEditPermission(props.mode)
+  const permission = dayUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {

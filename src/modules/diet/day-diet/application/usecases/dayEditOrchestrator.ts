@@ -29,11 +29,11 @@ export type MacroOverflowConfig =
 /**
  * Orchestrates day editing operations, handling permissions, validations, and business logic
  */
-export function createDayEditOrchestrator() {
+export const dayUseCases = {
   /**
    * Checks if a day can be edited based on the current mode
    */
-  function checkEditPermission(mode: EditMode): EditPermissionResult {
+  checkEditPermission(mode: EditMode): EditPermissionResult {
     if (mode === 'summary') {
       return {
         canEdit: false,
@@ -55,12 +55,12 @@ export function createDayEditOrchestrator() {
     }
 
     return { canEdit: true }
-  }
+  },
 
   /**
    * Prepares macro overflow configuration for item editing
    */
-  function prepareMacroOverflowConfig(
+  prepareMacroOverflowConfig(
     dayDiet: DayDiet,
     item: UnifiedItem,
   ): MacroOverflowConfig {
@@ -90,12 +90,12 @@ export function createDayEditOrchestrator() {
         originalItem: undefined,
       }
     }
-  }
+  },
 
   /**
    * Orchestrates the update of an item in a meal
    */
-  async function updateItemInMealOrchestrated(
+  async updateItemInMealOrchestrated(
     meal: Meal,
     _item: UnifiedItem,
     updatedItem: UnifiedItem,
@@ -110,12 +110,12 @@ export function createDayEditOrchestrator() {
       )
       throw error
     }
-  }
+  },
 
   /**
    * Orchestrates adding a new item to a meal
    */
-  async function addItemToMealOrchestrated(
+  async addItemToMealOrchestrated(
     meal: Meal,
     newItem: UnifiedItem,
   ): Promise<void> {
@@ -129,25 +129,17 @@ export function createDayEditOrchestrator() {
       )
       throw error
     }
-  }
+  },
 
   /**
    * Orchestrates updating a meal
    */
-  async function updateMealOrchestrated(meal: Meal): Promise<void> {
+  async updateMealOrchestrated(meal: Meal): Promise<void> {
     try {
       await updateMeal(meal.id, meal)
     } catch (error) {
       logging.error('DayEditOrchestrator updateMealOrchestrated error:', error)
       throw error
     }
-  }
-
-  return {
-    checkEditPermission,
-    prepareMacroOverflowConfig,
-    updateItemInMealOrchestrated,
-    addItemToMealOrchestrated,
-    updateMealOrchestrated,
-  }
+  },
 }
