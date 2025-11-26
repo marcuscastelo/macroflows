@@ -52,7 +52,7 @@ export function TemplateSearchResults(props: {
           <For each={props.filteredTemplates}>
             {(template) => {
               // Calculate appropriate display quantity for each template
-              const getDisplayQuantity = () => {
+              const displayQuantity = () => {
                 if (isTemplateFood(template)) {
                   return 100 // Standard 100g for foods
                 } else {
@@ -65,20 +65,13 @@ export function TemplateSearchResults(props: {
                 }
               }
 
-              const displayQuantity = getDisplayQuantity()
-
-              // Convert template to UnifiedItem using shared utility
-              const createUnifiedItemFromTemplate = () => {
-                const result = templateToUnifiedItem(template, displayQuantity)
-                logging.debug('createUnifiedItemFromTemplate', result)
-                return result
-              }
-
               return (
                 <>
                   <ItemView
                     mode="read-only"
-                    item={createUnifiedItemFromTemplate}
+                    item={() =>
+                      templateToUnifiedItem(template, displayQuantity())
+                    }
                     class="mt-1"
                     handlers={{
                       onClick: () => {
