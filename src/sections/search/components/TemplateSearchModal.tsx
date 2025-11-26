@@ -1,11 +1,6 @@
 import { createEffect, Suspense } from 'solid-js'
 
-import {
-  currentDayDiet,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createUnifiedItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -52,9 +47,7 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { isOverflow } from '~/shared/utils/macroOverflow'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
@@ -99,27 +92,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
   const handleNewUnifiedItem = async (
     newItem: UnifiedItem,
-    originalAddedItem: TemplateItem,
+    originalAddedItem: UnifiedItem,
     closeEditModal: () => void,
   ) => {
-    // For UnifiedItem, we need to check macro overflow
-
-    const currentDayDiet_ = currentDayDiet()
-    const macroTarget_ = getMacroTargetForDay(stringToDate(targetDay()))
-
-    // Create context object once
-    const macroOverflowContext = {
-      currentDayDiet: currentDayDiet_,
-      macroTarget: macroTarget_,
-      macroOverflowOptions: { enable: true },
-    }
-
-    // Helper function for checking individual macro properties on the unified item
-    const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      return isOverflow(originalAddedItem, property, macroOverflowContext)
-    }
-
-    const onConfirm = async () => {
+    const handleConfirm = async () => {
       const userId = currentUserId()
       if (userId === undefined) {
         showError('Usuário não autenticado')
@@ -192,11 +168,15 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
+    const overflowResults = isOverflow({
+      item: originalAddedItem,
+    })
+
     // Check if any macro nutrient would overflow
     const isOverflowing =
-      checkMacroOverflow('carbs') ||
-      checkMacroOverflow('protein') ||
-      checkMacroOverflow('fat')
+      overflowResults['carbs']() ||
+      overflowResults['protein']() ||
+      overflowResults['fat']()
 
     if (isOverflowing) {
       // Prompt if user wants to add item even if it overflows
@@ -207,7 +187,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
           confirmText: 'Adicionar mesmo assim',
           cancelText: 'Cancelar',
           onConfirm: () => {
-            onConfirm()
+            handleConfirm()
               .then(() => {
                 closeModal(overflowModalId)
                 closeEditModal()
@@ -228,7 +208,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     } else {
       try {
-        await onConfirm()
+        await handleConfirm()
       } catch (err) {
         logging.error('TemplateSearchModal adicionar item error:', err)
         showError(err, {}, 'Erro ao adicionar item')

@@ -1,8 +1,8 @@
 import { Show } from 'solid-js'
 
+import { type WeightProgressResult } from '~/modules/weight/application/chart/weightChartUseCases'
 import { Progress } from '~/sections/common/components/Progress'
 import { logging } from '~/shared/utils/logging'
-import { type calculateWeightProgress } from '~/shared/utils/weightUtils'
 
 /**
  * Displays the user's weight progress as a progress bar and summary text.
@@ -11,7 +11,7 @@ import { type calculateWeightProgress } from '~/shared/utils/weightUtils'
  * @returns SolidJS component
  */
 export function WeightProgress(props: {
-  weightProgress: ReturnType<typeof calculateWeightProgress> | null
+  weightProgress: WeightProgressResult | null
   weightProgressText: () => string | undefined
 }) {
   const showProgressBar = () => props.weightProgress?.type !== 'normo'

@@ -1,7 +1,7 @@
-import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
-import { type Weight } from '~/modules/weight/domain/weight'
-import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/weightEvolutionDomain'
-import { calculateWeightProgress } from '~/shared/utils/weightUtils'
+import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
+import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
+import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/chart/weightEvolutionDomain'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 
 /**
  * Renders the custom tooltip HTML for the weight chart.
@@ -93,7 +93,7 @@ export function WeightChartTooltip({
           .currentUser?.diet
         if (d === 'cut' || d === 'normo' || d === 'bulk') diet = d
       }
-      const progressResult = calculateWeightProgress(
+      const progressResult = weightChartUseCases.calculateWeightProgress(
         periodWeights,
         desired,
         diet,

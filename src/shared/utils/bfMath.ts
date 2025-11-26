@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 
 import { type BodyMeasure } from '~/modules/measure/domain/measure'
 import { type User } from '~/modules/user/domain/user'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export type BodyFatInput<T extends User['gender']> = {

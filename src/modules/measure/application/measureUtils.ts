@@ -1,5 +1,5 @@
 import type { BodyMeasure } from '~/modules/measure/domain/measure'
-import type { Weight } from '~/modules/weight/domain/weight'
+import type { Weight } from '~/modules/weight/domain/weight/weight'
 import type { BodyFatInput } from '~/shared/utils/bfMath'
 import { calculateBodyFat } from '~/shared/utils/bfMath'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'

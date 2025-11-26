@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
   addItemsToMeal,
   clearMealItems,
@@ -27,7 +28,6 @@ import {
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcMealCalories } from '~/shared/utils/macroMath'
 import { isMeal, isUnifiedItem } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
@@ -132,7 +132,7 @@ export function MealEditViewHeader(props: {
     },
   })
 
-  const mealCalories = () => calcMealCalories(meal())
+  const mealCalories = () => MealExt.of(meal()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
     e.preventDefault()

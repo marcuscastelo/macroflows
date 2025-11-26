@@ -1,13 +1,16 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import {
   asFoodItem,
   isGroupItem,
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { type MacroValues } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { GroupChildrenEditor } from '~/sections/unified-item/components/GroupChildrenEditor'
 import { QuantityControls } from '~/sections/unified-item/components/QuantityControls'
@@ -15,7 +18,6 @@ import { QuantityShortcuts } from '~/sections/unified-item/components/QuantitySh
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { logging } from '~/shared/utils/logging'
-import { calcDayMacros, calcUnifiedItemMacros } from '~/shared/utils/macroMath'
 
 export type UnifiedItemEditBodyProps = {
   canApply: boolean
@@ -36,28 +38,31 @@ export type UnifiedItemEditBodyProps = {
   showAddItemButton?: boolean
 }
 
-export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
-  function getAvailableMacros(): MacroValues {
-    logging.debug('getAvailableMacros')
-    const dayDiet = currentDayDiet()
-    const macroTarget = dayDiet
-      ? getMacroTargetForDay(new Date(dayDiet.target_day))
-      : null
-    const originalItem = props.macroOverflow().originalItem
-    if (!dayDiet || !macroTarget) {
-      return { carbs: 0, protein: 0, fat: 0 }
-    }
-    const dayMacros = calcDayMacros(dayDiet)
-    const originalMacros = originalItem
-      ? calcUnifiedItemMacros(originalItem)
-      : { carbs: 0, protein: 0, fat: 0 }
-    return {
-      carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
-      protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
-      fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
-    }
+function getAvailableMacros(args: {
+  dayDiet: DayDiet
+  originalItem?: UnifiedItem | undefined
+}): MacroNutrientsRecord {
+  logging.debug('getAvailableMacros')
+  const dayDiet = args.dayDiet
+  const dayMacros = DayDietExt.calcDayMacros(dayDiet)
+
+  const macroTarget = macroTargetUseCases.macroTargetAt(
+    new Date(dayDiet.target_day),
+  )
+  if (!macroTarget) {
+    return { carbs: 0, protein: 0, fat: 0 }
   }
 
+  const originalItem = args.originalItem
+  const originalMacros = ItemExt.macros(originalItem)
+  return {
+    carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
+    protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
+    fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
+  }
+}
+
+export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
@@ -83,16 +88,31 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
       />
 
       {/* Para alimentos e receitas (modo normal): controles de quantidade normal */}
-      <Show when={!isGroupItem(props.item()) && props.viewMode !== 'group'}>
-        <QuantityControls
-          item={props.item}
-          setItem={props.setItem}
-          canApply={props.canApply}
-          getAvailableMacros={getAvailableMacros}
-          quantityField={props.quantityField}
-        />
+      <Show
+        when={
+          !isGroupItem(props.item()) &&
+          props.viewMode !== 'group' &&
+          currentDayDiet()
+        }
+      >
+        {(currentDayDiet) => (
+          <>
+            <QuantityControls
+              item={props.item}
+              setItem={props.setItem}
+              canApply={props.canApply}
+              getAvailableMacros={() =>
+                getAvailableMacros({
+                  dayDiet: currentDayDiet(),
+                  originalItem: props.macroOverflow().originalItem,
+                })
+              }
+              quantityField={props.quantityField}
+            />
 
-        <QuantityShortcuts onQuantitySelect={handleQuantitySelect} />
+            <QuantityShortcuts onQuantitySelect={handleQuantitySelect} />
+          </>
+        )}
       </Show>
 
       {/* Para grupos ou receitas em modo grupo: editor de filhos */}

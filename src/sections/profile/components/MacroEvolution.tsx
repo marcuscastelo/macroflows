@@ -1,19 +1,16 @@
 import { type Accessor } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
+import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
+import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { userWeights } from '~/modules/weight/application/usecases/weightState'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { userWeights } from '~/modules/weight/application/weight/weightState'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
+import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import {
-  calcCalories,
-  calcDayCalories,
-  calcDayMacros,
-} from '~/shared/utils/macroMath'
-import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
-import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
   return (
@@ -40,25 +37,30 @@ function _createChartData(
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
 
-    const currentWeight = inForceWeight(weights, dayDate)
-    const currentMacroProfile = inForceMacroProfile(macroProfiles, dayDate)
+    const currentWeight = WeightsExt.effectiveAt(weights, dayDate)
+    const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
     const macroTarget =
-      currentMacroProfile !== undefined
-        ? calculateMacroTarget(currentWeight?.weight ?? 0, currentMacroProfile)
+      currentMacroProfile !== null
+        ? MacroTargetExt.forWeight(
+            currentMacroProfile,
+            currentWeight?.weight ?? 0,
+          )
         : null
 
-    const dayMacros = calcDayMacros(day)
-    const dayCalories = calcDayCalories(day)
+    const dayMacros = DayDietExt.of(day).macros()
+    const dayCalories = dayMacros.calories()
     return {
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
       targetCalories:
-        macroTarget !== null ? calcCalories(macroTarget) : undefined,
-      protein: dayMacros.protein.toFixed(0),
+        macroTarget !== null
+          ? MacroNutrientsExt.totalCalories(macroTarget)
+          : undefined,
+      protein: dayMacros.protein().toFixed(0),
       targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat.toFixed(0),
+      fat: dayMacros.fat().toFixed(0),
       targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs.toFixed(0),
+      carbs: dayMacros.carbs().toFixed(0),
       targetCarbs: macroTarget?.carbs.toFixed(0),
       targetGrams:
         (macroTarget?.protein ?? NaN) +
