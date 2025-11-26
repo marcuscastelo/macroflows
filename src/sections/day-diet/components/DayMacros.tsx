@@ -8,55 +8,40 @@ import { macroTargetUseCases } from '~/modules/diet/macro-target/application/mac
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
-export default function DayMacros(props: { dayDiet: DayDiet; class?: string }) {
-  const macroSignals = createMemo(() => {
-    const day = props.dayDiet
+export type DayMacrosProps = {
+  dayDiet: DayDiet
+  class?: string
+}
 
-    const macroTarget_ = macroTargetUseCases.macroTargetAt(
-      stringToDate(day.target_day),
-    )
-    if (macroTarget_ === null) {
-      return { error: 'Peso ou meta de macros não encontrada para o dia.' }
-    }
-    return {
-      macroTarget: macroTarget_,
-      error: null,
-    }
-  })
-
+export default function DayMacros(props: DayMacrosProps) {
   const macros = createMemo(() => DayDietExt.calcDayMacros(props.dayDiet))
+  const macroTarget = createMemo(() =>
+    macroTargetUseCases.macroTargetAt(stringToDate(props.dayDiet.target_day)),
+  )
 
   return (
     <Show
-      when={
-        macroSignals().error === null &&
-        macroSignals().macroTarget !== undefined &&
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        (macroSignals() as {
-          macroTarget: MacroNutrients
-          error: null
-        })
-      }
+      when={macroTarget()}
       fallback={
         <div class="text-red-500 text-sm">
-          {macroSignals().error ?? 'Erro desconhecido ao calcular macros.'}
+          Peso ou meta de macros não encontrada para o dia.
         </div>
       }
     >
-      {(macroSignals) => (
+      {(macroTarget) => (
         <div class={`flex pt-3 ${props.class} flex-col xs:flex-row `}>
           <div class="shrink">
             <Calories
               class="w-full"
               macros={macros()}
-              targetMacros={macroSignals().macroTarget}
+              targetMacros={macroTarget()}
             />
           </div>
           <div class="flex-1">
             <Macros
               class="mt-3 text-xl xs:mt-0"
               macros={macros()}
-              targetMacros={macroSignals().macroTarget}
+              targetMacros={macroTarget()}
             />
           </div>
         </div>
