@@ -16,15 +16,6 @@ export type MaxQuantityButtonProps = {
   disabled?: boolean
 }
 
-/**
- * Button to set the input to the maximum allowed quantity based on macro constraints.
- * @param currentValue - Current value in the input
- * @param macroTargets - Available macro amounts in grams (absolute values, not per-kg)
- * @param itemMacros - Macro values per 100g for the item
- * @param onMaxSelected - Callback to set the input value
- * @param disabled - Disables the button if true
- * @returns JSX.Element
- */
 export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
   function calculateMaxQuantity(): number {
     logging.debug('calculateMaxQuantity called')
