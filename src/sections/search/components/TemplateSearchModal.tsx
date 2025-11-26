@@ -74,7 +74,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       title: 'Edit Item',
       targetName: props.targetName,
       onApply: (templateItem: TemplateItem) => {
-        const { unifiedItem } = createUnifiedItemFromTemplate(
+        const unifiedItem = createUnifiedItemFromTemplate(
           template,
           templateItem,
         )

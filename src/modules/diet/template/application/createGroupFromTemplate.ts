@@ -3,7 +3,6 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import {
   createUnifiedItem,
   isFoodItem,
@@ -17,44 +16,35 @@ import { generateId } from '~/shared/utils/idUtils'
  * This is the new unified approach that directly creates UnifiedItems.
  *
  * @param template - The Template (food or recipe)
- * @param item - The TemplateItem containing user's desired quantity
+ * @param protoItem - The TemplateItem containing user's desired quantity
  * @returns Object with unifiedItem, operation, templateType
  */
 export function createUnifiedItemFromTemplate(
   template: Template,
-  item: TemplateItem,
-): { unifiedItem: UnifiedItem; operation: string; templateType: string } {
-  if (isFoodItem(item)) {
-    return {
-      unifiedItem: item,
-      operation: 'addUnifiedItem',
-      templateType: 'Item',
-    }
+  protoItem: UnifiedItem,
+): UnifiedItem {
+  if (isFoodItem(protoItem)) {
+    return protoItem
   }
 
-  if (isTemplateRecipe(template) && isRecipeItem(item)) {
+  if (isTemplateRecipe(template) && isRecipeItem(protoItem)) {
     // Scale the recipe items based on the user's desired quantity
     const { scaledItems } = scaleRecipeByPreparedQuantity(
       template,
-      item.quantity,
+      protoItem.quantity,
     )
 
     // Create a UnifiedItem with recipe reference containing scaled items
-    const unifiedItem = createUnifiedItem({
+    return createUnifiedItem({
       id: generateId(),
-      name: item.name,
-      quantity: item.quantity,
+      name: protoItem.name,
+      quantity: protoItem.quantity,
       reference: {
         type: 'recipe',
         id: template.id,
         children: scaledItems,
       },
     })
-    return {
-      unifiedItem,
-      operation: 'addUnifiedRecipeItem',
-      templateType: 'Recipe',
-    }
   }
 
   throw new Error('Template is not a Recipe or item type mismatch')
