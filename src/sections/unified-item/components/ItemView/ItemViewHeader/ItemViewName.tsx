@@ -1,7 +1,7 @@
 import { type Accessor, createMemo, createResource, Show } from 'solid-js'
 
 import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { compareUnifiedItemArrays } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import {
   isRecipeItem,
   type UnifiedItem,
@@ -33,23 +33,15 @@ export function ItemViewName(props: ItemViewNameProps) {
 
   const isManuallyEdited = createMemo(() => {
     const item = props.item()
-    const unifiedRecipe = originalRecipe()
+    const recipe = originalRecipe()
 
-    if (
-      !isRecipeItem(item) ||
-      unifiedRecipe === null ||
-      unifiedRecipe === undefined ||
-      originalRecipe.loading
-    ) {
+    if (recipe === null || recipe === undefined || originalRecipe.loading) {
       return false
     }
 
     // Compare original recipe items with current recipe items
     // If they're different, the recipe was manually edited
-    return !compareUnifiedItemArrays(
-      unifiedRecipe.items,
-      item.reference.children,
-    )
+    return !ItemExt.of(item).isInSyncWithRecipe(recipe.items)
   })
 
   const warningIndicator = () => (isManuallyEdited() ? '⚠️' : '')

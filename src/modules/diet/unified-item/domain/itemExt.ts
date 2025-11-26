@@ -3,6 +3,7 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { Items } from '~/modules/diet/unified-item/domain/itemsExt'
 import {
   type FoodItem,
   type GroupItem,
@@ -86,6 +87,17 @@ export const ItemExt = {
     return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
   },
 
+  isInSyncWithRecipe(
+    item: UnifiedItem,
+    recipeItems: readonly UnifiedItem[],
+  ): boolean {
+    if (!isRecipeItem(item)) {
+      throw new Error('isInSyncWithRecipe can only be called on RecipeItem')
+    }
+
+    return Items.equals(recipeItems, item.reference.children)
+  },
+
   of(item: UnifiedItem) {
     return {
       // Self reference
@@ -95,6 +107,23 @@ export const ItemExt = {
       reference: () => item.reference,
       // Derived props
       macros: () => MacroNutrientsExt.of(ItemExt.macros(item)),
+      isInSyncWithRecipe: (recipeItems: readonly UnifiedItem[]) =>
+        ItemExt.isInSyncWithRecipe(item, recipeItems),
+      // Type guards
+      isFoodItem: () => isFoodItem(item),
+      isRecipeItem: () => isRecipeItem(item),
+      isGroupItem: () => isGroupItem(item),
+      asFoodItem: () => (isFoodItem(item) ? item : undefined),
+      asRecipeItem: () => (isRecipeItem(item) ? item : undefined),
+      asGroupItem: () => (isGroupItem(item) ? item : undefined),
+      ifFoodItem: <T>(fn: (foodItem: FoodItem) => T, defaultValue: T): T =>
+        isFoodItem(item) ? fn(item) : defaultValue,
+      ifRecipeItem: <T>(
+        fn: (recipeItem: RecipeItem) => T,
+        defaultValue: T,
+      ): T => (isRecipeItem(item) ? fn(item) : defaultValue),
+      ifGroupItem: <T>(fn: (groupItem: GroupItem) => T, defaultValue: T): T =>
+        isGroupItem(item) ? fn(item) : defaultValue,
     } as const
   },
 }

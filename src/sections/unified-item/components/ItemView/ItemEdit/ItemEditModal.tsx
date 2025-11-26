@@ -19,10 +19,8 @@ import {
   addChildToItem,
   updateChildInItem,
 } from '~/modules/diet/unified-item/domain/childOperations'
-import {
-  compareUnifiedItemArrays,
-  synchronizeRecipeItemWithOriginal,
-} from '~/modules/diet/unified-item/domain/unifiedItemOperations'
+import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { synchronizeRecipeItemWithOriginal } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
   asGroupItem,
   createUnifiedItem,
@@ -64,9 +62,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   logging.debug('[UnifiedItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 
-  const handleClose = () => {
-    props.onClose?.()
-  }
+  const handleClose = () => props.onClose?.()
 
   const [item, setItem] = createSignal(untrack(() => props.item()))
   createEffect(() => setItem(props.item()))
@@ -131,21 +127,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     const currentItem = item()
     const recipe = originalRecipe()
 
-    if (
-      !isRecipeItem(currentItem) ||
-      recipe === null ||
-      recipe === undefined ||
-      originalRecipe.loading
-    ) {
+    if (recipe === null || recipe === undefined || originalRecipe.loading) {
       return false
     }
 
     // Compare original recipe items with current recipe items
     // If they're different, the recipe was manually edited
-    return !compareUnifiedItemArrays(
-      recipe.items,
-      currentItem.reference.children,
-    )
+    return !ItemExt.of(currentItem).isInSyncWithRecipe(recipe.items)
   })
 
   const quantitySignal = () =>

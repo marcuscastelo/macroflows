@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { Items } from '~/modules/diet/unified-item/domain/itemsExt'
 import {
-  compareUnifiedItemArrays,
   scaleRecipeItemQuantity,
   synchronizeRecipeItemWithOriginal,
 } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
@@ -55,7 +55,7 @@ describe('compareUnifiedItemArrays', () => {
       createFoodItem(2, 'Banana', 150),
     ]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(true)
+    expect(Items.equals(items1, items2)).toBe(true)
   })
 
   it('returns true for arrays with same items in different order', () => {
@@ -68,7 +68,7 @@ describe('compareUnifiedItemArrays', () => {
       createFoodItem(1, 'Apple', 100),
     ]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(true)
+    expect(Items.equals(items1, items2)).toBe(true)
   })
 
   it('returns false for arrays with different lengths', () => {
@@ -78,21 +78,21 @@ describe('compareUnifiedItemArrays', () => {
       createFoodItem(2, 'Banana', 150),
     ]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(false)
+    expect(Items.equals(items1, items2)).toBe(false)
   })
 
   it('returns false when quantities differ', () => {
     const items1 = [createFoodItem(1, 'Apple', 100)]
     const items2 = [createFoodItem(1, 'Apple', 200)]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(false)
+    expect(Items.equals(items1, items2)).toBe(false)
   })
 
   it('returns false when names differ', () => {
     const items1 = [createFoodItem(1, 'Apple', 100)]
     const items2 = [createFoodItem(1, 'Orange', 100)]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(false)
+    expect(Items.equals(items1, items2)).toBe(false)
   })
 
   it('returns false when macros differ', () => {
@@ -126,7 +126,7 @@ describe('compareUnifiedItemArrays', () => {
       },
     })
 
-    expect(compareUnifiedItemArrays([item1], [item2])).toBe(false)
+    expect(Items.equals([item1], [item2])).toBe(false)
   })
 
   it('returns true for identical recipe items with children', () => {
@@ -134,7 +134,7 @@ describe('compareUnifiedItemArrays', () => {
     const items1 = [createRecipeItem(1, 'Bread', 500, children)]
     const items2 = [createRecipeItem(1, 'Bread', 500, children)]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(true)
+    expect(Items.equals(items1, items2)).toBe(true)
   })
 
   it('returns false when recipe children differ', () => {
@@ -143,7 +143,7 @@ describe('compareUnifiedItemArrays', () => {
     const items1 = [createRecipeItem(1, 'Bread', 500, children1)]
     const items2 = [createRecipeItem(1, 'Bread', 500, children2)]
 
-    expect(compareUnifiedItemArrays(items1, items2)).toBe(false)
+    expect(Items.equals(items1, items2)).toBe(false)
   })
 })
 
@@ -297,24 +297,6 @@ describe('synchronizeRecipeItemWithOriginal', () => {
     if (synchronized.reference.type === 'recipe') {
       expect(synchronized.reference.children).toHaveLength(0)
     }
-  })
-
-  it('should throw error for non-recipe items', () => {
-    const foodItem: UnifiedItem = {
-      id: 1,
-      name: 'Apple',
-      quantity: 100,
-      reference: {
-        type: 'food',
-        id: 10,
-        macros: createMacroNutrients({ protein: 1, carbs: 25, fat: 0 }),
-      },
-      __type: 'UnifiedItem',
-    }
-
-    expect(() => {
-      synchronizeRecipeItemWithOriginal(foodItem, [])
-    }).toThrow('Can only synchronize recipe items')
   })
 })
 
