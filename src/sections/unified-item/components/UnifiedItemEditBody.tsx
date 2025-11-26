@@ -1,11 +1,7 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
+import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import {
   asFoodItem,
   isGroupItem,
@@ -38,30 +34,6 @@ export type UnifiedItemEditBodyProps = {
   showAddItemButton?: boolean
 }
 
-function getAvailableMacros(args: {
-  dayDiet: DayDiet
-  originalItem?: UnifiedItem | undefined
-}): MacroNutrientsRecord {
-  logging.debug('getAvailableMacros')
-  const dayDiet = args.dayDiet
-  const dayMacros = DayDietExt.calcDayMacros(dayDiet)
-
-  const macroTarget = macroTargetUseCases.macroTargetAt(
-    new Date(dayDiet.target_day),
-  )
-  if (!macroTarget) {
-    return { carbs: 0, protein: 0, fat: 0 }
-  }
-
-  const originalItem = args.originalItem
-  const originalMacros = ItemExt.macros(originalItem)
-  return {
-    carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
-    protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
-    fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
-  }
-}
-
 export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
@@ -87,7 +59,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
         }
       />
 
-      {/* Para alimentos e receitas (modo normal): controles de quantidade normal */}
+      {/* For foods and recipes (normal mode): normal quantity controls */}
       <Show
         when={
           !isGroupItem(props.item()) &&
@@ -102,7 +74,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
               setItem={props.setItem}
               canApply={props.canApply}
               getAvailableMacros={() =>
-                getAvailableMacros({
+                macroOverflowUseCases.getAvailableMacros({
                   dayDiet: currentDayDiet(),
                   originalItem: props.macroOverflow().originalItem,
                 })
@@ -115,7 +87,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
         )}
       </Show>
 
-      {/* Para grupos ou receitas em modo grupo: editor de filhos */}
+      {/* For groups or recipes in group mode: children editor */}
       <Show when={isGroupItem(props.item()) || props.viewMode === 'group'}>
         <GroupChildrenEditor
           item={props.item}

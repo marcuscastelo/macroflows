@@ -2,6 +2,7 @@ import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import {
   createMacroNutrients,
@@ -76,6 +77,31 @@ export function isOverflow(args: {
   }
 }
 
+function getAvailableMacros(args: {
+  dayDiet: DayDiet
+  originalItem?: UnifiedItem | undefined
+}): MacroNutrientsRecord {
+  logging.debug('getAvailableMacros')
+  const dayDiet = args.dayDiet
+  const dayMacros = DayDietExt.calcDayMacros(dayDiet)
+
+  const macroTarget = macroTargetUseCases.macroTargetAt(
+    new Date(dayDiet.target_day),
+  )
+  if (!macroTarget) {
+    return { carbs: 0, protein: 0, fat: 0 }
+  }
+
+  const originalItem = args.originalItem
+  const originalMacros = ItemExt.macros(originalItem)
+  return {
+    carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
+    protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
+    fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
+  }
+}
+
 export const macroOverflowUseCases = {
   isOverflow,
+  getAvailableMacros,
 }
