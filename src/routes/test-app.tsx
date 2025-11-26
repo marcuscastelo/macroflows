@@ -41,7 +41,7 @@ import { Datepicker } from '~/sections/datepicker/components/Datepicker'
 import { type DateValueType } from '~/sections/datepicker/types'
 import DayMacros from '~/sections/day-diet/components/DayMacros'
 import { TemplateSearchModal } from '~/sections/search/components/TemplateSearchModal'
-import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { ItemView } from '~/sections/unified-item/components/ItemView'
 import {
   openConfirmModal,
   openContentModal,

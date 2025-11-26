@@ -15,8 +15,8 @@ import {
 import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
+import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 

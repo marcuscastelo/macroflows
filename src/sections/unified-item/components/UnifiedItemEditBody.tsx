@@ -9,10 +9,10 @@ import {
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemChildrenEditor'
+import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { QuantityControls } from '~/sections/unified-item/components/QuantityControls'
 import { QuantityShortcuts } from '~/sections/unified-item/components/QuantityShortcuts'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemEditBodyProps = {

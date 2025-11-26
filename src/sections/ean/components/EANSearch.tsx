@@ -10,8 +10,8 @@ import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCru
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
+import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { ItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 

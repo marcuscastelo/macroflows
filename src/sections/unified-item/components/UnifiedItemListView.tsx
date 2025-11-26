@@ -4,7 +4,7 @@ import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItem
 import {
   ItemView,
   type ItemViewProps,
-} from '~/sections/unified-item/components/UnifiedItemView'
+} from '~/sections/unified-item/components/ItemView'
 import { logging } from '~/shared/utils/logging'
 
 export type UnifiedItemListViewProps = {
