@@ -9,15 +9,9 @@ import {
   untrack,
 } from 'solid-js'
 
-import {
-  deleteRecipe,
-  fetchRecipeById,
-  updateRecipe,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
-import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
+import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import {
   asGroupItem,
   asParentItem,
@@ -28,7 +22,13 @@ import {
   isRecipeItem,
   type Item,
   itemSchema,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import {
+  deleteRecipe,
+  fetchRecipeById,
+  updateRecipe,
+} from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'

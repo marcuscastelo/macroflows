@@ -3,6 +3,7 @@
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 import { z } from 'zod/v4'
 
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
@@ -14,10 +15,6 @@ import {
   updateRecipePreparedMultiplier,
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  type Item,
-  itemSchema,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'

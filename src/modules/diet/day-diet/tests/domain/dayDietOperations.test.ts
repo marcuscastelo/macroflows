@@ -6,9 +6,9 @@ import {
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 function makeItem(id: number, name = 'Arroz') {
   return createItem({

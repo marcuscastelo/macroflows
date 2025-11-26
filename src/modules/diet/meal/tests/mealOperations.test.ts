@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import {
@@ -8,7 +9,6 @@ import {
   setMealItems,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 function makeItem(id: number, name = 'Arroz') {
   return createItem({

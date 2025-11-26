@@ -1,4 +1,4 @@
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 
 export const ParentItemExt = {
   addChildToParentItem<T extends { reference: { children: Item[] } }>(

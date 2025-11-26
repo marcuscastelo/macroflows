@@ -1,5 +1,5 @@
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export function addItemToMeal(meal: Meal, item: Item): Meal {
   return {

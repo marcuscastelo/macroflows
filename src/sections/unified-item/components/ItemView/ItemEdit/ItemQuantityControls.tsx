@@ -6,14 +6,14 @@ import {
   untrack,
 } from 'solid-js'
 
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import {
   isFoodItem,
   isRecipeItem,
   type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { MaxQuantityButton } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'

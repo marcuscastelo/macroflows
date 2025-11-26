@@ -1,6 +1,6 @@
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export type Mutable<T> = {
   -readonly [P in keyof T]: Mutable<T[P]>

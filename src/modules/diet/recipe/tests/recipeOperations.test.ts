@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { createItem, type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   createNewRecipe,
@@ -12,10 +13,6 @@ import {
   getRecipeRawQuantity,
   scaleRecipeByPreparedQuantity,
 } from '~/modules/diet/recipe/domain/recipeOperations'
-import {
-  createItem,
-  type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 
 function makeItem(id: number, name = 'Arroz'): Item {
   return createItem({

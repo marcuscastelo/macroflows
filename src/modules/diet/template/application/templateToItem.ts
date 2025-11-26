@@ -1,9 +1,9 @@
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 import { generateId } from '~/shared/utils/idUtils'
 
 export const DEFAULT_QUANTITY = 100

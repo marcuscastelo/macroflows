@@ -1,6 +1,6 @@
 import { type z } from 'zod/v4'
 
-import { itemSchema } from '~/modules/diet/unified-item/schema/itemSchema'
+import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { createZodEntity } from '~/shared/domain/validation'
 
 const ze = createZodEntity('Meal')

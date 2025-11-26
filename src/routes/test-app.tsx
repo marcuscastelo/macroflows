@@ -18,16 +18,13 @@ import {
   type DayDiet,
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { createItem, type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   createNewMeal,
   type Meal,
   promoteMeal,
 } from '~/modules/diet/meal/domain/meal'
-import {
-  createItem,
-  type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { TestChart } from '~/sections/common/components/charts/TestChart'
 import { FloatInput } from '~/sections/common/components/FloatInput'

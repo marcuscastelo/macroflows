@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
+import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import {
   createGroupItem,
   createItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 describe('parentItemExt', () => {
   const childA = createItem({

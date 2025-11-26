@@ -1,3 +1,3 @@
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 
 export type TemplateItem = Item

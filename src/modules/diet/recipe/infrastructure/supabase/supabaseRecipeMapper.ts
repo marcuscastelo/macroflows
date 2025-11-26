@@ -1,9 +1,9 @@
+import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import {
   type NewRecipe,
   type Recipe,
   recipeSchema,
 } from '~/modules/diet/recipe/domain/recipe'
-import { itemSchema } from '~/modules/diet/unified-item/schema/itemSchema'
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

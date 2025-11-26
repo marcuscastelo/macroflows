@@ -1,11 +1,11 @@
 import { type Accessor, For, Show } from 'solid-js'
 
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import {
   isGroupItem,
   isRecipeItem,
   type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
 
 export type ItemChildrenViewProps = {
   item: Accessor<Item>

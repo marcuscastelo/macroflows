@@ -1,4 +1,5 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
@@ -6,7 +7,6 @@ import {
   addItemToMeal,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 

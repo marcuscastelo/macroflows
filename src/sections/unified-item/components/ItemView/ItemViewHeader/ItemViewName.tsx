@@ -1,11 +1,8 @@
 import { type Accessor, createMemo, createResource, Show } from 'solid-js'
 
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { isRecipeItem, type Item } from '~/modules/diet/item/schema/itemSchema'
 import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import {
-  isRecipeItem,
-  type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { getItemTypeDisplay } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 import { logging } from '~/shared/utils/logging'
 

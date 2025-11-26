@@ -1,6 +1,6 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { ItemActions } from '~/sections/unified-item/components/ItemView/ItemActions'
 import { ItemChildrenView } from '~/sections/unified-item/components/ItemView/ItemChildrenView'
 import { ItemViewHeader } from '~/sections/unified-item/components/ItemView/ItemViewHeader'

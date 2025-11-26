@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import { GroupItemExt } from '~/modules/diet/item/domain/ext/groupItemExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import type { GroupItem, Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { GroupItemExt } from '~/modules/diet/unified-item/domain/ext/groupItemExt'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import type {
-  GroupItem,
-  Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 
 const makeFoodItem = (
   id: number,

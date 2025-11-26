@@ -1,16 +1,16 @@
 import { type Accessor, createEffect, createSignal } from 'solid-js'
 import { untrack } from 'solid-js'
 
+import {
+  createItem,
+  isRecipeItem,
+  type Item,
+} from '~/modules/diet/item/schema/itemSchema'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import {
   addItemToRecipe,
   updateItemInRecipe,
 } from '~/modules/diet/recipe/domain/recipeOperations'
-import {
-  createItem,
-  isRecipeItem,
-  type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {

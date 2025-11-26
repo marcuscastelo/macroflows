@@ -4,14 +4,14 @@ import {
 } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import {
   createMacroNutrients,
   type MacroNutrients,
   type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 

@@ -1,8 +1,8 @@
 import { type Accessor, createMemo } from 'solid-js'
 
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
 

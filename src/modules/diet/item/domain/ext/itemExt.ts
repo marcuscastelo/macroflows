@@ -1,12 +1,7 @@
-import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
-import {
-  createMacroNutrients,
-  type MacroNutrients,
-} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { FoodItemExt } from '~/modules/diet/unified-item/domain/ext/foodItemExt'
-import { GroupItemExt } from '~/modules/diet/unified-item/domain/ext/groupItemExt'
-import { Items } from '~/modules/diet/unified-item/domain/ext/itemsExt'
-import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
+import { FoodItemExt } from '~/modules/diet/item/domain/ext/foodItemExt'
+import { GroupItemExt } from '~/modules/diet/item/domain/ext/groupItemExt'
+import { Items } from '~/modules/diet/item/domain/ext/itemsExt'
+import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import {
   type FoodItem,
   type GroupItem,
@@ -15,7 +10,12 @@ import {
   isRecipeItem,
   type Item,
   type RecipeItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
+import {
+  createMacroNutrients,
+  type MacroNutrients,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 function calcFoodItemMacros(item: FoodItem) {
   // For food items, calculate proportionally from stored macros in reference

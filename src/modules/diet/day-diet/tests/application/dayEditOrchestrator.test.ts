@@ -5,9 +5,9 @@ import {
   createNewDayDiet,
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 
 // Mock dependencies
 vi.mock('~/modules/diet/macro-target/application/macroTarget', () => ({

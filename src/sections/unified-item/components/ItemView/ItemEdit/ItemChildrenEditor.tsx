@@ -1,10 +1,8 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
-import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
-import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
-import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
+import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
+import { validateItemHierarchy } from '~/modules/diet/item/domain/validateItemHierarchy'
 import {
   asParentItem,
   createGroupItem,
@@ -14,7 +12,9 @@ import {
   type Item,
   itemSchema,
   type ParentItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'

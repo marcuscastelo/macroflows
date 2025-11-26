@@ -1,13 +1,13 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import {
   asFoodItem,
   isGroupItem,
   type Item,
   type ParentItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
+import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemChildrenEditor'

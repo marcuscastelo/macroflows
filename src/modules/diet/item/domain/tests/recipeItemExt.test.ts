@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
+import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
+import type { Item, RecipeItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
-import type {
-  Item,
-  RecipeItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 
 const makeFoodItem = (
   id: number,

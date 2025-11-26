@@ -1,6 +1,6 @@
 import { type Accessor, Show } from 'solid-js'
 
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { ContextMenu } from '~/sections/common/components/ContextMenu'
 import { ContextMenuCopyItem } from '~/sections/common/components/contextMenuItems/ContextMenuCopyItem'
 import { ContextMenuDeleteItem } from '~/sections/common/components/contextMenuItems/ContextMenuDeleteItem'

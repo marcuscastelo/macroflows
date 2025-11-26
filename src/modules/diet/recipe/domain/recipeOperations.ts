@@ -1,5 +1,5 @@
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 export function updateRecipeName(recipe: Recipe, name: string): Recipe {
   return {

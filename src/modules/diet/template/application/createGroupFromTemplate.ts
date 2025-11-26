@@ -1,15 +1,15 @@
+import {
+  createItem,
+  isFoodItem,
+  isRecipeItem,
+  type Item,
+} from '~/modules/diet/item/schema/itemSchema'
 import { scaleRecipeByPreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import {
-  createItem,
-  isFoodItem,
-  isRecipeItem,
-  type Item,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { generateId } from '~/shared/utils/idUtils'
 
 /**

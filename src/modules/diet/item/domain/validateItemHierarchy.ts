@@ -1,4 +1,4 @@
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 
 /**
  * Validates that the Item hierarchy does not contain circular references.

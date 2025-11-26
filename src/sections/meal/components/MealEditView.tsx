@@ -2,6 +2,7 @@ import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
 import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
@@ -10,10 +11,6 @@ import {
   removeItemFromMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import {
-  type Item,
-  itemSchema,
-} from '~/modules/diet/unified-item/schema/itemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'

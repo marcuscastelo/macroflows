@@ -5,8 +5,8 @@ import {
   type EditMode,
 } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
 import { DeleteDayButton } from '~/sections/day-diet/components/DeleteDayButton'

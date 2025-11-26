@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import { validateItemHierarchy } from '~/modules/diet/item/domain/validateItemHierarchy'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 describe('validateItemHierarchy', () => {
   const unifiedFood: Item = createItem({

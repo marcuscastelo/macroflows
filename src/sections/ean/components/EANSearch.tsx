@@ -8,7 +8,7 @@ import {
 
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
-import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'

@@ -1,8 +1,8 @@
-import { ItemExt } from '~/modules/diet/unified-item/domain/ext/itemExt'
+import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import {
   type Item,
   type RecipeItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
+} from '~/modules/diet/item/schema/itemSchema'
 
 export const RecipeItemExt = {
   syncWithOriginal(

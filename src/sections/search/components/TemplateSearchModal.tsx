@@ -1,5 +1,7 @@
 import { createEffect, Suspense } from 'solid-js'
 
+import { isFoodItem, isRecipeItem } from '~/modules/diet/item/schema/itemSchema'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
@@ -10,11 +12,6 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  isFoodItem,
-  isRecipeItem,
-} from '~/modules/diet/unified-item/schema/itemSchema'
-import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 import {
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
