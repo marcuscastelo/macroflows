@@ -37,13 +37,13 @@ export type ModalController = {
   close: () => void
 }
 
-export type UnifiedItemEditModalConfig = ItemEditModalProps & {
+export type ItemEditModalConfig = ItemEditModalProps & {
   title?: string
   targetName?: string
 }
 
-export function openUnifiedItemEditModal(
-  config: UnifiedItemEditModalConfig,
+export function openItemEditModal(
+  config: ItemEditModalConfig,
 ): ModalController {
   const title = config.title ?? 'Editar Item'
 
@@ -104,7 +104,7 @@ export function openTemplateSearchModal(
     () => (
       <TemplateSearchModal
         targetName={config.targetName}
-        onNewUnifiedItem={config.onNewUnifiedItem}
+        onNewItem={config.onNewItem}
         onFinish={() => {
           config.onFinish?.()
           controller.close()

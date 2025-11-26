@@ -22,7 +22,7 @@ const makeFoodItem = (
     id,
     macros: createMacroNutrients(macros),
   },
-  __type: 'UnifiedItem' as const,
+  __type: 'Item' as const,
 })
 
 const makeGroupItem = (
@@ -38,7 +38,7 @@ const makeGroupItem = (
     type: 'group',
     children,
   },
-  __type: 'UnifiedItem' as const,
+  __type: 'Item' as const,
 })
 
 describe('GroupItemExt', () => {

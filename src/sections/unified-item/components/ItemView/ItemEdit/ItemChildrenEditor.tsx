@@ -43,7 +43,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       : []
   }
 
-  // Clipboard schema accepts UnifiedItem or array of UnifiedItems
+  // Clipboard schema accepts Item or array of Items
   const acceptedClipboardSchema = itemSchema.or(z.array(itemSchema))
 
   // Clipboard actions for children
@@ -154,13 +154,13 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         showError('Usuário não autenticado')
         return
       }
-      // Create new unified recipe directly from UnifiedItem children
+      // Create new unified recipe directly from Item children
       const newUnifiedRecipe = createNewRecipe({
         name:
           item.name.length > 0
             ? `${item.name} (Receita)`
             : 'Nova receita (a partir de um grupo)',
-        items: children(), // Use UnifiedItems directly
+        items: children(), // Use Items directly
         user_id: userId,
       })
 
@@ -172,7 +172,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       }
 
       // Transform the group into a recipe item
-      const recipeUnifiedItem = createItem({
+      const recipeItem = createItem({
         id: item.id, // Keep the same ID
         name: insertedRecipe.name,
         quantity: item.quantity,
@@ -183,7 +183,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         },
       })
 
-      props.setItemDraft(recipeUnifiedItem)
+      props.setItemDraft(recipeItem)
     } catch (err) {
       logging.error('GroupChildrenEditor handleConvertToRecipe error:', err)
       showError(err, undefined, 'Falha ao criar receita a partir do grupo')

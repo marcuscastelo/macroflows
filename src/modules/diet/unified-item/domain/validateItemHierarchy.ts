@@ -1,8 +1,8 @@
 import { type Item } from '~/modules/diet/unified-item/schema/itemSchema'
 
 /**
- * Validates that the UnifiedItem hierarchy does not contain circular references.
- * @param item UnifiedItem
+ * Validates that the Item hierarchy does not contain circular references.
+ * @param item Item
  * @param visited Set of visited item ids
  * @returns boolean
  */

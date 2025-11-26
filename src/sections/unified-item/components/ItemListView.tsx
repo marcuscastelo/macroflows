@@ -12,7 +12,7 @@ export type ItemListViewProps = {
 } & Omit<ItemViewProps, 'item'>
 
 export function ItemListView(props: ItemListViewProps) {
-  logging.debug('[UnifiedItemListView] - Rendering')
+  logging.debug('[ItemListView] - Rendering')
   return (
     <For each={props.items()}>
       {(item) => (

@@ -108,7 +108,7 @@ function UserInfo() {
 }
 
 export default function TestApp() {
-  const [_, setUnifiedItemEditModalVisible] = createSignal(false)
+  const [_, setItemEditModalVisible] = createSignal(false)
 
   const [item1] = createSignal<Item>(
     createItem({
@@ -225,7 +225,7 @@ export default function TestApp() {
                   () => (
                     <TemplateSearchModal
                       targetName="Teste"
-                      onNewUnifiedItem={() => {
+                      onNewItem={() => {
                         logging.debug('New unified item added')
                       }}
                       onFinish={() => {}}
@@ -243,10 +243,10 @@ export default function TestApp() {
             <button
               class="btn cursor-pointer uppercase"
               onClick={() => {
-                setUnifiedItemEditModalVisible(true)
+                setItemEditModalVisible(true)
               }}
             >
-              setUnifiedItemEditModalVisible
+              setItemEditModalVisible
             </button>
           </div>
         </details>
@@ -257,22 +257,22 @@ export default function TestApp() {
             Item Group & List
           </summary>
           <div class="pl-4 flex flex-col gap-2">
-            <h1>UnifiedItemListView (legacy test)</h1>
-            {/* <UnifiedItemListView
-              items={() => group().items.map(itemToUnifiedItem)}
+            <h1>ItemListView (legacy test)</h1>
+            {/* <ItemListView
+              items={() => group().items.map(itemToItem)}
               mode="edit"
               handlers={{
                 onClick: () => {
-                  setUnifiedItemEditModalVisible(true)
+                  setItemEditModalVisible(true)
                 },
               }}
             /> */}
-            <h1>UnifiedItemView (ItemGroup test)</h1>
+            <h1>ItemView (ItemGroup test)</h1>
             <ItemView
               item={item2}
               handlers={{
                 onEdit: () => {
-                  setUnifiedItemEditModalVisible(true)
+                  setItemEditModalVisible(true)
                 },
                 onCopy: (item) => {
                   logging.debug('Copy item:', item)

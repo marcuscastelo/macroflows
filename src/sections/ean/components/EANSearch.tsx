@@ -11,7 +11,7 @@ import { type Food } from '~/modules/diet/food/domain/food'
 import { createItem } from '~/modules/diet/unified-item/schema/itemSchema'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
-import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
+import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -90,8 +90,8 @@ export function EANSearch(props: EANSearchProps) {
 
       <Show when={props.food()}>
         {(food) => {
-          // Create UnifiedItem from food
-          const createUnifiedItemFromFood = () =>
+          // Create Item from food
+          const createItemFromFood = () =>
             createItem({
               id: food().id,
               name: food().name,
@@ -111,16 +111,14 @@ export function EANSearch(props: EANSearchProps) {
                   <p class="text-sm">
                     <ItemView
                       handlers={{
-                        // TODO : default handlers for UnifiedItemView
+                        // TODO : default handlers for ItemView
                         onCopy: (item) => {
                           clipboard.write(JSON.stringify(item))
                         },
                       }}
                       mode="read-only"
-                      item={createUnifiedItemFromFood}
-                      primaryActions={
-                        <UnifiedItemFavorite foodId={food().id} />
-                      }
+                      item={createItemFromFood}
+                      primaryActions={<ItemFavorite foodId={food().id} />}
                     />
                   </p>
                 </div>

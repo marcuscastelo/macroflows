@@ -18,12 +18,12 @@ import {
 } from '~/sections/meal/components/MealEditView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import {
+  openItemEditModal,
   openTemplateSearchModal,
-  openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
-const handleEditUnifiedItem = (
+const handleEditItem = (
   meal: Meal,
   item: Item,
   props: {
@@ -54,7 +54,7 @@ const handleEditUnifiedItem = (
   )
   logging.debug('macroOverflow:', macroOverflow)
 
-  openUnifiedItemEditModal({
+  openItemEditModal({
     targetMealName: meal.name,
     item: () => item,
     macroOverflow: () => macroOverflow,
@@ -95,7 +95,7 @@ const handleUpdateMeal = async (
   await dayUseCases.updateMealOrchestrated(meal)
 }
 
-const handleNewUnifiedItem = (
+const handleNewItem = (
   meal: Meal,
   newItem: Item,
   props: {
@@ -149,7 +149,7 @@ const handleNewItemButton = (
 
   openTemplateSearchModal({
     targetName: meal.name,
-    onNewUnifiedItem: (newItem) => handleNewUnifiedItem(meal, newItem, props),
+    onNewItem: (newItem) => handleNewItem(meal, newItem, props),
   })
 }
 
@@ -187,7 +187,7 @@ export default function DayMeals(props: {
             content={
               <MealEditViewContent
                 onEditItem={(item) => {
-                  handleEditUnifiedItem(meal, item, props)
+                  handleEditItem(meal, item, props)
                 }}
                 onUpdateMeal={(meal) => void handleUpdateMeal(meal, props)}
                 mode={props.mode}

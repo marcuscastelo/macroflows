@@ -17,6 +17,5 @@ export const {
   prepared_multiplier: ze.number().default(1),
 })
 
-// Types using UnifiedItem
 export type NewRecipe = Readonly<z.infer<typeof newRecipeSchema>>
 export type Recipe = Readonly<z.infer<typeof recipeSchema>>

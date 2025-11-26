@@ -2,7 +2,7 @@ import { For, Show } from 'solid-js'
 
 import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
+import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import {
   isTemplateFood,
   isTemplateRecipe,
@@ -16,7 +16,7 @@ import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
-import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
+import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -69,9 +69,7 @@ export function TemplateSearchResults(props: {
                 <>
                   <ItemView
                     mode="read-only"
-                    item={() =>
-                      templateToUnifiedItem(template, displayQuantity())
-                    }
+                    item={() => templateToItem(template, displayQuantity())}
                     class="mt-1"
                     handlers={{
                       onClick: () => {
@@ -92,9 +90,7 @@ export function TemplateSearchResults(props: {
                           }
                         : undefined,
                     }}
-                    primaryActions={
-                      <UnifiedItemFavorite foodId={template.id} />
-                    }
+                    primaryActions={<ItemFavorite foodId={template.id} />}
                     secondaryActions={
                       <RemoveFromRecentButton
                         template={template}

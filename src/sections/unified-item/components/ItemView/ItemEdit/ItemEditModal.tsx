@@ -35,9 +35,9 @@ import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemEditBody'
 import { UnsupportedItemMessage } from '~/sections/unified-item/components/ItemView/ItemEdit/UnsupportedItemMessage'
 import {
+  openItemEditModal,
   openRecipeEditModal,
   openTemplateSearchModal,
-  openUnifiedItemEditModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
@@ -58,7 +58,7 @@ export type ItemEditModalProps = {
 }
 
 export const ItemEditModal = (_props: ItemEditModalProps) => {
-  logging.debug('[UnifiedItemEditModal] called', _props)
+  logging.debug('[ItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 
   const handleClose = () => props.onClose?.()
@@ -150,14 +150,14 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   })
 
   const canApply = () => {
-    logging.debug('[UnifiedItemEditModal] canApply', {
+    logging.debug('[ItemEditModal] canApply', {
       quantity: itemDraft().quantity,
     })
     return itemDraft().quantity > 0
   }
 
   const handleEditChild = (child: Item) => {
-    openUnifiedItemEditModal({
+    openItemEditModal({
       targetMealName: `${props.targetMealName} > ${itemDraft().name}`,
       targetNameColor: 'text-orange-400',
       item: () => child,
@@ -322,13 +322,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
               openTemplateSearchModal({
                 targetName: itemDraft().name,
                 title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
-                onNewUnifiedItem: (newUnifiedItem) => {
+                onNewItem: (newItem) => {
                   const item_ = itemDraft()
                   if (isGroupItem(item_)) {
                     const updatedItem = ParentItemExt.addChildToParentItem(
                       item_,
                       {
-                        ...newUnifiedItem,
+                        ...newItem,
                         id: generateId(),
                       },
                     )
@@ -347,7 +347,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                             id: generateId(),
                           }),
                           {
-                            ...newUnifiedItem,
+                            ...newItem,
                             id: generateId(),
                           },
                         ],
@@ -376,7 +376,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         <button
           class="btn cursor-pointer uppercase"
           onClick={(e) => {
-            logging.debug('[UnifiedItemEditModal] Cancel clicked')
+            logging.debug('[ItemEditModal] Cancel clicked')
             e.preventDefault()
             e.stopPropagation()
             handleClose()

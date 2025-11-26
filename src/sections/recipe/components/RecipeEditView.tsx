@@ -29,7 +29,7 @@ import { ItemListView } from '~/sections/unified-item/components/ItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isUnifiedItem } from '~/shared/utils/typeUtils'
+import { isItem } from '~/shared/utils/typeUtils'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -65,8 +65,8 @@ export function RecipeEditHeader(props: {
     acceptedClipboardSchema,
     getDataToCopy: () => recipe(),
     onPaste: (data) => {
-      // Check if data is array of UnifiedItems
-      if (Array.isArray(data) && data.every(isUnifiedItem)) {
+      // Check if data is array of Items
+      if (Array.isArray(data) && data.every(isItem)) {
         const itemsToAdd = data
           .filter((item) => item.reference.type === 'food') // Only food items in recipes
           .map((item) => regenerateId(item))
@@ -75,8 +75,8 @@ export function RecipeEditHeader(props: {
         return
       }
 
-      // Check if data is single UnifiedItem
-      if (isUnifiedItem(data)) {
+      // Check if data is single Item
+      if (isItem(data)) {
         if (data.reference.type === 'food') {
           const item = data
           const regeneratedItem = regenerateId(item)
@@ -146,11 +146,11 @@ export function RecipeEditContent(props: {
         items={() => [...recipe().items]}
         mode="edit"
         handlers={{
-          onEdit: (unifiedItem: Item) => {
-            props.onEditItem(unifiedItem)
+          onEdit: (Item: Item) => {
+            props.onEditItem(Item)
           },
-          onCopy: (unifiedItem: Item) => {
-            clipboard.write(JSON.stringify(unifiedItem))
+          onCopy: (Item: Item) => {
+            clipboard.write(JSON.stringify(Item))
           },
           onDelete: (item: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), item.id))

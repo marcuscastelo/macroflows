@@ -4,12 +4,12 @@ import {
 } from '~/modules/user/application/user'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemFavoriteProps = {
+export type ItemFavoriteProps = {
   foodId: number
 }
 
-export function UnifiedItemFavorite(props: UnifiedItemFavoriteProps) {
-  logging.debug('UnifiedItemFavorite called', { props })
+export function ItemFavorite(props: ItemFavoriteProps) {
+  logging.debug('ItemFavorite called', { props })
 
   const toggleFavorite = (e: MouseEvent) => {
     logging.debug('toggleFavorite', {

@@ -131,7 +131,7 @@ describe('Template Domain', () => {
               },
             },
             quantity: 100,
-            __type: 'UnifiedItem',
+            __type: 'Item',
           },
           {
             id: 2,
@@ -147,7 +147,7 @@ describe('Template Domain', () => {
               },
             },
             quantity: 50,
-            __type: 'UnifiedItem',
+            __type: 'Item',
           },
         ],
         prepared_multiplier: 2,

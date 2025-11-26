@@ -2,10 +2,10 @@ import { createEffect, Suspense } from 'solid-js'
 
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { createUnifiedItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
+import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
   DEFAULT_QUANTITY,
-  templateToUnifiedItem,
+  templateToItem,
 } from '~/modules/diet/template/application/templateToItem'
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
@@ -46,14 +46,14 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
+import { openItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
 export type TemplateSearchModalProps = {
   targetName: string
-  onNewUnifiedItem?: (item: Item, originalAddedItem: TemplateItem) => void
+  onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
   onFinish?: () => void
   onClose?: () => void
 }
@@ -64,30 +64,27 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       ? getRecipePreparedQuantity(template)
       : DEFAULT_QUANTITY
 
-    const controller = openUnifiedItemEditModal({
+    const controller = openItemEditModal({
       targetMealName: props.targetName,
-      item: () => templateToUnifiedItem(template, initialQuantity),
+      item: () => templateToItem(template, initialQuantity),
       macroOverflow: () => ({ enable: true }),
       title: 'Edit Item',
       targetName: props.targetName,
       onApply: (templateItem: TemplateItem) => {
-        const unifiedItem = createUnifiedItemFromTemplate(
-          template,
-          templateItem,
-        )
+        const Item = createItemFromTemplate(template, templateItem)
 
-        handleNewUnifiedItem(unifiedItem, templateItem, () =>
-          controller.close(),
-        ).catch((err) => {
-          logging.error('TemplateSearchModal handleNewUnifiedItem error:', err)
-          showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
-        })
+        handleNewItem(Item, templateItem, () => controller.close()).catch(
+          (err) => {
+            logging.error('TemplateSearchModal handleNewItem error:', err)
+            showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
+          },
+        )
       },
       onClose: () => controller.close(),
     })
   }
 
-  const handleNewUnifiedItem = async (
+  const handleNewItem = async (
     newItem: Item,
     originalAddedItem: Item,
     closeEditModal: () => void,
@@ -99,7 +96,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         return
       }
 
-      props.onNewUnifiedItem?.(newItem, originalAddedItem)
+      props.onNewItem?.(newItem, originalAddedItem)
 
       let type: 'food' | 'recipe'
       if (isFoodItem(originalAddedItem)) {

@@ -28,7 +28,7 @@ import {
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isMeal, isUnifiedItem } from '~/shared/utils/typeUtils'
+import { isItem, isMeal } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -97,28 +97,28 @@ export function MealEditViewHeader(props: {
     onPaste: (data) => {
       if (Array.isArray(data)) {
         const firstItem = data[0]
-        if (firstItem && isUnifiedItem(firstItem)) {
-          const unifiedItemsToAdd = data.map((item) => ({
+        if (firstItem && isItem(firstItem)) {
+          const ItemsToAdd = data.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
-          const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+          const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
           props.onUpdateMeal(updatedMeal)
           return
         }
       }
 
       if (isMeal(data)) {
-        const unifiedItemsToAdd = data.items.map((item) => ({
+        const ItemsToAdd = data.items.map((item) => ({
           ...item,
           id: regenerateId(item).id,
         }))
-        const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+        const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
         props.onUpdateMeal(updatedMeal)
         return
       }
 
-      if (isUnifiedItem(data)) {
+      if (isItem(data)) {
         const regeneratedItem = {
           ...data,
           id: regenerateId(data).id,

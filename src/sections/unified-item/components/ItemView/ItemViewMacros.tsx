@@ -32,7 +32,7 @@ export function ItemViewMacros(props: ItemViewMacrosProps) {
       return fallback
     }
 
-    // Convert UnifiedItem to TemplateItem format for overflow check
+    // Convert Item to TemplateItem format for overflow check
     const item = props.item()
     const originalItem = overflow.originalItem
 

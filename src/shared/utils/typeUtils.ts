@@ -8,12 +8,12 @@ export type Mutable<T> = {
 
 export type ObjectValues<T extends object> = T[keyof T]
 
-export function isUnifiedItem(obj: unknown): obj is Item {
+export function isItem(obj: unknown): obj is Item {
   return (
     typeof obj === 'object' &&
     obj !== null &&
     '__type' in obj &&
-    obj.__type === 'UnifiedItem'
+    obj.__type === 'Item'
   )
 }
 

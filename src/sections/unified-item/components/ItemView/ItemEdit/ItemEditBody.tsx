@@ -13,7 +13,7 @@ import { ItemView } from '~/sections/unified-item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemChildrenEditor'
 import { ItemQuantityControls } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityControls'
 import { ItemQuantityShortcuts } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
-import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
+import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemEditBodyProps = {
@@ -38,7 +38,7 @@ export type ItemEditBodyProps = {
 
 export function ItemEditBody(props: ItemEditBodyProps) {
   const handleQuantitySelect = (quantity: number) => {
-    logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
+    logging.debug('[ItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
   }
 
@@ -54,9 +54,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         class="mt-4"
         primaryActions={
           <Show when={asFoodItem(props.itemDraft())} fallback={null}>
-            {(foodItem) => (
-              <UnifiedItemFavorite foodId={foodItem().reference.id} />
-            )}
+            {(foodItem) => <ItemFavorite foodId={foodItem().reference.id} />}
           </Show>
         }
       />

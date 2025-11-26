@@ -1,5 +1,5 @@
 import { scaleRecipeByPreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
+import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import {
   isTemplateRecipe,
   type Template,
@@ -13,19 +13,19 @@ import {
 import { generateId } from '~/shared/utils/idUtils'
 
 /**
- * Creates a UnifiedItem from a Template and TemplateItem.
- * This is the new unified approach that directly creates UnifiedItems.
+ * Creates a Item from a Template and TemplateItem.
+ * This is the new unified approach that directly creates Items.
  *
  * @param template - The Template (food or recipe)
  * @param protoItem - The TemplateItem containing user's desired quantity
- * @returns Object with unifiedItem, operation, templateType
+ * @returns Object with Item, operation, templateType
  */
-export function createUnifiedItemFromTemplate(
+export function createItemFromTemplate(
   template: Template,
   protoItem: Item,
 ): Item {
   if (isFoodItem(protoItem)) {
-    return templateToUnifiedItem(template, protoItem.quantity)
+    return templateToItem(template, protoItem.quantity)
   }
 
   if (isTemplateRecipe(template) && isRecipeItem(protoItem)) {
@@ -35,7 +35,7 @@ export function createUnifiedItemFromTemplate(
       protoItem.quantity,
     )
 
-    // Create a UnifiedItem with recipe reference containing scaled items
+    // Create a Item with recipe reference containing scaled items
     return createItem({
       id: generateId(),
       name: protoItem.name,
