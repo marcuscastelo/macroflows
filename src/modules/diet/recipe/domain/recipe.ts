@@ -13,7 +13,7 @@ export const {
 } = ze.create({
   name: ze.string(),
   user_id: ze.string(),
-  items: ze.array(unifiedItemSchema).readonly(),
+  items: ze.array(unifiedItemSchema),
   prepared_multiplier: ze.number().default(1),
 })
 

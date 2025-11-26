@@ -38,9 +38,7 @@ export function templateToUnifiedItem(
     reference: {
       type: 'recipe',
       id: template.id,
-      children: template.items.map((item) => {
-        return item
-      }),
+      children: template.items,
     },
   })
 }
