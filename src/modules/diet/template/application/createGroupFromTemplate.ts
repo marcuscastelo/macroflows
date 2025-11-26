@@ -1,4 +1,5 @@
 import { scaleRecipeByPreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
+import { templateToUnifiedItem } from '~/modules/diet/template/application/templateToItem'
 import {
   isTemplateRecipe,
   type Template,
@@ -24,7 +25,7 @@ export function createUnifiedItemFromTemplate(
   protoItem: UnifiedItem,
 ): UnifiedItem {
   if (isFoodItem(protoItem)) {
-    return protoItem
+    return templateToUnifiedItem(template, protoItem.quantity)
   }
 
   if (isTemplateRecipe(template) && isRecipeItem(protoItem)) {
