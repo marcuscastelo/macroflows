@@ -3,10 +3,7 @@ import { z } from 'zod/v4'
 
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
-import {
-  removeChildFromItem,
-  updateChildInItem,
-} from '~/modules/diet/unified-item/domain/childOperations'
+import { updateChildInItem } from '~/modules/diet/unified-item/domain/childOperations'
 import { ParentItemExt } from '~/modules/diet/unified-item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/unified-item/domain/validateItemHierarchy'
 import {
@@ -222,7 +219,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
-                const updatedItem = removeChildFromItem(
+                const updatedItem = ParentItemExt.removeChildFromParentItem(
                   props.itemDraft(),
                   childToDelete.id,
                 )

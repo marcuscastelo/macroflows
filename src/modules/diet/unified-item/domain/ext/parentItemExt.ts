@@ -14,11 +14,27 @@ export const ParentItemExt = {
     }
   },
 
+  removeChildFromParentItem<
+    T extends { reference: { children: UnifiedItem[] } },
+  >(parentItem: T, childId: number): T {
+    return {
+      ...parentItem,
+      reference: {
+        ...parentItem.reference,
+        children: parentItem.reference.children.filter(
+          (child) => child.id !== childId,
+        ),
+      },
+    }
+  },
+
   of<T extends { reference: { children: UnifiedItem[] } }>(item: T) {
     return {
       value: item,
       addChild: (childItem: UnifiedItem) =>
         ParentItemExt.addChildToParentItem(item, childItem),
+      removeChild: (childId: number) =>
+        ParentItemExt.removeChildFromParentItem(item, childId),
     }
   },
 }
