@@ -1,7 +1,5 @@
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
-type ProtoUnifiedItem = Omit<UnifiedItem, '__type'>
-
 /**
  * Validates that the UnifiedItem hierarchy does not contain circular references.
  * @param item UnifiedItem
@@ -9,7 +7,7 @@ type ProtoUnifiedItem = Omit<UnifiedItem, '__type'>
  * @returns boolean
  */
 export function validateItemHierarchy(
-  item: ProtoUnifiedItem,
+  item: UnifiedItem,
   visited: Set<number> = new Set(),
 ): boolean {
   if (typeof item.id !== 'number') return false
