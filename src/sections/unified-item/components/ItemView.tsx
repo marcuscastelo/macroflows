@@ -2,9 +2,9 @@ import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { ItemActions } from '~/sections/unified-item/components/ItemView/ItemActions'
-import { UnifiedItemChildren } from '~/sections/unified-item/components/UnifiedItemChildren'
-import { UnifiedItemHeader } from '~/sections/unified-item/components/UnifiedItemHeader'
-import { UnifiedItemNutritionalInfo } from '~/sections/unified-item/components/UnifiedItemNutritionalInfo'
+import { ItemChildrenView } from '~/sections/unified-item/components/ItemView/ItemChildrenView'
+import { ItemViewHeader } from '~/sections/unified-item/components/ItemView/ItemViewHeader'
+import { ItemViewMacros } from '~/sections/unified-item/components/ItemView/ItemViewMacros'
 import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 import { cn } from '~/shared/cn'
 
@@ -40,7 +40,7 @@ export function ItemView(props: ItemViewProps) {
         handler?.(e)
       }}
     >
-      <UnifiedItemHeader
+      <ItemViewHeader
         item={props.item}
         primaryActions={props.primaryActions}
         secondaryActions={props.secondaryActions}
@@ -48,14 +48,11 @@ export function ItemView(props: ItemViewProps) {
         <Show when={isInteractive()}>
           <ItemActions item={props.item} handlers={props.handlers} />
         </Show>
-      </UnifiedItemHeader>
+      </ItemViewHeader>
 
-      <UnifiedItemChildren item={props.item} />
+      <ItemChildrenView item={props.item} />
 
-      <UnifiedItemNutritionalInfo
-        item={props.item}
-        macroOverflow={props.macroOverflow}
-      />
+      <ItemViewMacros item={props.item} macroOverflow={props.macroOverflow} />
     </div>
   )
 }

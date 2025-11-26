@@ -6,7 +6,7 @@ import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItem
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemNutritionalInfoProps = {
+export type ItemViewMacrosProps = {
   item: Accessor<UnifiedItem>
   macroOverflow?: () => {
     enable: boolean
@@ -14,9 +14,7 @@ export type UnifiedItemNutritionalInfoProps = {
   }
 }
 
-export function UnifiedItemNutritionalInfo(
-  props: UnifiedItemNutritionalInfoProps,
-) {
+export function ItemViewMacros(props: ItemViewMacrosProps) {
   const macros = () => ItemExt.of(props.item()).macros()
   const calories = () => macros().calories()
 

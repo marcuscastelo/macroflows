@@ -20,9 +20,9 @@ import {
   type TemplateSearchModalProps,
 } from '~/sections/search/components/TemplateSearchModal'
 import {
-  UnifiedItemEditModal,
-  type UnifiedItemEditModalProps,
-} from '~/sections/unified-item/components/UnifiedItemEditModal'
+  ItemEditModal,
+  type ItemEditModalProps,
+} from '~/sections/unified-item/components/ItemView/ItemEdit/ItemEditModal'
 import {
   closeModal,
   openConfirmModal,
@@ -37,7 +37,7 @@ export type ModalController = {
   close: () => void
 }
 
-export type UnifiedItemEditModalConfig = UnifiedItemEditModalProps & {
+export type UnifiedItemEditModalConfig = ItemEditModalProps & {
   title?: string
   targetName?: string
 }
@@ -51,7 +51,7 @@ export function openUnifiedItemEditModal(
 
   const modalId = openEditModal(
     () => (
-      <UnifiedItemEditModal
+      <ItemEditModal
         targetMealName={config.targetMealName}
         targetNameColor={config.targetNameColor}
         item={config.item}

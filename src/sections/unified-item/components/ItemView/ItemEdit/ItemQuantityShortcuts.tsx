@@ -2,11 +2,11 @@ import { For } from 'solid-js'
 
 import { logging } from '~/shared/utils/logging'
 
-export type QuantityShortcutsProps = {
+export type ItemQuantityShortcutsProps = {
   onQuantitySelect: (quantity: number) => void
 }
 
-export function QuantityShortcuts(props: QuantityShortcutsProps) {
+export function ItemQuantityShortcuts(props: ItemQuantityShortcutsProps) {
   const shortcutRows = [
     [10, 20, 30, 40, 50],
     [100, 150, 200, 250, 300],

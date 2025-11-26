@@ -21,7 +21,7 @@ import {
   MealContextProvider,
   useMealContext,
 } from '~/sections/meal/context/MealContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
+import { ItemListView } from '~/sections/unified-item/components/ItemListView'
 import {
   openClearItemsConfirmModal,
   openDeleteConfirmModal,
@@ -184,7 +184,7 @@ export function MealEditViewContent(props: {
   })
 
   return (
-    <UnifiedItemListView
+    <ItemListView
       items={() => meal().items}
       handlers={{
         onEdit: props.onEditItem,

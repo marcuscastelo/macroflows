@@ -1,21 +1,21 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { UnifiedItemName } from '~/sections/unified-item/components/UnifiedItemName'
+import { ItemViewName } from '~/sections/unified-item/components/ItemView/ItemViewHeader/ItemViewName'
 
-export type UnifiedItemHeaderProps = {
+export type ItemViewHeaderProps = {
   item: Accessor<UnifiedItem>
   children?: JSXElement
   primaryActions?: JSXElement
   secondaryActions?: JSXElement
 }
 
-export function UnifiedItemHeader(props: UnifiedItemHeaderProps) {
+export function ItemViewHeader(props: ItemViewHeaderProps) {
   return (
     <div class="flex justify-between items-center ">
       <div class="flex flex-1 items-center">
         <div class="flex-1 flex justify-between">
-          <UnifiedItemName item={props.item} />
+          <ItemViewName item={props.item} />
           {props.children}
         </div>
       </div>

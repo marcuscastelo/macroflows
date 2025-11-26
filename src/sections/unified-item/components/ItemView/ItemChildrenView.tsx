@@ -7,11 +7,11 @@ import {
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
-export type UnifiedItemChildrenProps = {
+export type ItemChildrenViewProps = {
   item: Accessor<UnifiedItem>
 }
 
-export function UnifiedItemChildren(props: UnifiedItemChildrenProps) {
+export function ItemChildrenView(props: ItemChildrenViewProps) {
   const hasChildren = () => {
     const item = props.item()
     return (

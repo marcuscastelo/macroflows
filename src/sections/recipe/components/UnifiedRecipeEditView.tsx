@@ -23,7 +23,7 @@ import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
+import { ItemListView } from '~/sections/unified-item/components/ItemListView'
 import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
@@ -123,7 +123,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         }}
         value={recipe().name}
       />
-      <UnifiedItemListView
+      <ItemListView
         items={() => [...recipe().items]}
         mode="edit"
         handlers={{

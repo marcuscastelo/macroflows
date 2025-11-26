@@ -9,11 +9,11 @@ import {
 import { getItemTypeDisplay } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemNameProps = {
+export type ItemViewNameProps = {
   item: Accessor<UnifiedItem>
 }
 
-export function UnifiedItemName(props: UnifiedItemNameProps) {
+export function ItemViewName(props: ItemViewNameProps) {
   const typeDisplay = () => getItemTypeDisplay(props.item())
 
   const [originalRecipe] = createResource(

@@ -8,14 +8,14 @@ import {
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
-import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemChildrenEditor'
 import { ItemView } from '~/sections/unified-item/components/ItemView'
-import { QuantityControls } from '~/sections/unified-item/components/QuantityControls'
-import { QuantityShortcuts } from '~/sections/unified-item/components/QuantityShortcuts'
+import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemChildrenEditor'
+import { ItemQuantityControls } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityControls'
+import { ItemQuantityShortcuts } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
 import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemEditBodyProps = {
+export type ItemEditBodyProps = {
   canApply: boolean
   item: Accessor<UnifiedItem>
   setItem: Setter<UnifiedItem>
@@ -34,7 +34,7 @@ export type UnifiedItemEditBodyProps = {
   showAddItemButton?: boolean
 }
 
-export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
+export function ItemEditBody(props: ItemEditBodyProps) {
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[UnifiedItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
@@ -69,7 +69,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
       >
         {(currentDayDiet) => (
           <>
-            <QuantityControls
+            <ItemQuantityControls
               item={props.item}
               setItem={props.setItem}
               canApply={props.canApply}
@@ -82,7 +82,7 @@ export function UnifiedItemEditBody(props: UnifiedItemEditBodyProps) {
               quantityField={props.quantityField}
             />
 
-            <QuantityShortcuts onQuantitySelect={handleQuantitySelect} />
+            <ItemQuantityShortcuts onQuantitySelect={handleQuantitySelect} />
           </>
         )}
       </Show>

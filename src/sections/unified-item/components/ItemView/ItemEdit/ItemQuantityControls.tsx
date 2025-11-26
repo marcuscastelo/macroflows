@@ -19,7 +19,7 @@ import { MaxQuantityButton } from '~/sections/common/components/MaxQuantityButto
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { logging } from '~/shared/utils/logging'
 
-export type QuantityControlsProps = {
+export type ItemQuantityControlsProps = {
   item: Accessor<UnifiedItem>
   setItem: Setter<UnifiedItem>
   canApply: boolean
@@ -27,7 +27,7 @@ export type QuantityControlsProps = {
   quantityField: UseFieldReturn<number>
 }
 
-export function QuantityControls(props: QuantityControlsProps) {
+export function ItemQuantityControls(props: ItemQuantityControlsProps) {
   createEffect(() => {
     const newQuantity = props.quantityField.value() ?? 0.1
     const currentItem = untrack(props.item)

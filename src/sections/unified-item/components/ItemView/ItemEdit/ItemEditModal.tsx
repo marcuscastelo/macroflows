@@ -35,8 +35,8 @@ import {
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
-import { UnifiedItemEditBody } from '~/sections/unified-item/components/UnifiedItemEditBody'
-import { UnsupportedItemMessage } from '~/sections/unified-item/components/UnsupportedItemMessage'
+import { ItemEditBody } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemEditBody'
+import { UnsupportedItemMessage } from '~/sections/unified-item/components/ItemView/ItemEdit/UnsupportedItemMessage'
 import {
   openRecipeEditModal,
   openTemplateSearchModal,
@@ -45,7 +45,7 @@ import {
 import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemEditModalProps = {
+export type ItemEditModalProps = {
   targetMealName: string
   targetNameColor?: string
   item: Accessor<UnifiedItem>
@@ -60,7 +60,7 @@ export type UnifiedItemEditModalProps = {
   onClose?: () => void
 }
 
-export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
+export const ItemEditModal = (_props: ItemEditModalProps) => {
   logging.debug('[UnifiedItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 
@@ -315,7 +315,7 @@ export const UnifiedItemEditModal = (_props: UnifiedItemEditModalProps) => {
             </div>
           </Show>
 
-          <UnifiedItemEditBody
+          <ItemEditBody
             canApply={canApply()}
             item={item}
             setItem={setItem}

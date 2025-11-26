@@ -7,11 +7,11 @@ import {
 } from '~/sections/unified-item/components/ItemView'
 import { logging } from '~/shared/utils/logging'
 
-export type UnifiedItemListViewProps = {
+export type ItemListViewProps = {
   items: Accessor<UnifiedItem[]>
-} & Omit<ItemViewProps, 'item' | 'header' | 'nutritionalInfo'>
+} & Omit<ItemViewProps, 'item'>
 
-export function UnifiedItemListView(props: UnifiedItemListViewProps) {
+export function ItemListView(props: ItemListViewProps) {
   logging.debug('[UnifiedItemListView] - Rendering')
   return (
     <For each={props.items()}>
