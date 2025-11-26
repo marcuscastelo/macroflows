@@ -32,8 +32,8 @@ import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
-import { ItemEditBody } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemEditBody'
-import { UnsupportedItemMessage } from '~/sections/unified-item/components/ItemView/ItemEdit/UnsupportedItemMessage'
+import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
+import { UnsupportedItemMessage } from '~/sections/item/components/ItemView/ItemEdit/UnsupportedItemMessage'
 import {
   openItemEditModal,
   openRecipeEditModal,

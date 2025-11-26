@@ -10,6 +10,10 @@ import {
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import {
+  ItemEditModal,
+  type ItemEditModalProps,
+} from '~/sections/item/components/ItemView/ItemEdit/ItemEditModal'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   RecipeEditModal,
@@ -19,10 +23,6 @@ import {
   TemplateSearchModal,
   type TemplateSearchModalProps,
 } from '~/sections/search/components/TemplateSearchModal'
-import {
-  ItemEditModal,
-  type ItemEditModalProps,
-} from '~/sections/unified-item/components/ItemView/ItemEdit/ItemEditModal'
 import {
   closeModal,
   openConfirmModal,

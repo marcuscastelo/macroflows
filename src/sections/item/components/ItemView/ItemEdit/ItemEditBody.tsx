@@ -9,11 +9,11 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
-import { ItemView } from '~/sections/unified-item/components/ItemView'
-import { ItemChildrenEditor } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemChildrenEditor'
-import { ItemQuantityControls } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityControls'
-import { ItemQuantityShortcuts } from '~/sections/unified-item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
-import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
+import { ItemView } from '~/sections/item/components/ItemView'
+import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'
+import { ItemQuantityControls } from '~/sections/item/components/ItemView/ItemEdit/ItemQuantityControls'
+import { ItemQuantityShortcuts } from '~/sections/item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
+import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemEditBodyProps = {

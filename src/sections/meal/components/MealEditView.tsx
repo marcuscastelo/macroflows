@@ -14,11 +14,11 @@ import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
+import { ItemListView } from '~/sections/item/components/ItemListView'
 import {
   MealContextProvider,
   useMealContext,
 } from '~/sections/meal/context/MealContext'
-import { ItemListView } from '~/sections/unified-item/components/ItemListView'
 import {
   openClearItemsConfirmModal,
   openDeleteConfirmModal,

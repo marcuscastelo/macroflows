@@ -1,7 +1,7 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { ItemViewName } from '~/sections/unified-item/components/ItemView/ItemViewHeader/ItemViewName'
+import { ItemViewName } from '~/sections/item/components/ItemView/ItemViewHeader/ItemViewName'
 
 export type ItemViewHeaderProps = {
   item: Accessor<Item>

@@ -4,7 +4,7 @@ import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import {
   ItemView,
   type ItemViewProps,
-} from '~/sections/unified-item/components/ItemView'
+} from '~/sections/item/components/ItemView'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemListViewProps = {

@@ -14,9 +14,9 @@ import {
 } from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
 import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
+import { ItemView } from '~/sections/item/components/ItemView'
+import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
-import { ItemView } from '~/sections/unified-item/components/ItemView'
-import { ItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
 import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 

@@ -1,11 +1,11 @@
 import { type Accessor, type JSXElement, Show } from 'solid-js'
 
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { ItemActions } from '~/sections/unified-item/components/ItemView/ItemActions'
-import { ItemChildrenView } from '~/sections/unified-item/components/ItemView/ItemChildrenView'
-import { ItemViewHeader } from '~/sections/unified-item/components/ItemView/ItemViewHeader'
-import { ItemViewMacros } from '~/sections/unified-item/components/ItemView/ItemViewMacros'
-import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
+import { ItemActions } from '~/sections/item/components/ItemView/ItemActions'
+import { ItemChildrenView } from '~/sections/item/components/ItemView/ItemChildrenView'
+import { ItemViewHeader } from '~/sections/item/components/ItemView/ItemViewHeader'
+import { ItemViewMacros } from '~/sections/item/components/ItemView/ItemViewMacros'
+import { createEventHandler } from '~/sections/item/utils/unifiedItemDisplayUtils'
 import { cn } from '~/shared/cn'
 
 export type ItemViewProps = {

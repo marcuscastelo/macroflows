@@ -6,7 +6,7 @@ import { ContextMenuCopyItem } from '~/sections/common/components/contextMenuIte
 import { ContextMenuDeleteItem } from '~/sections/common/components/contextMenuItems/ContextMenuDeleteItem'
 import { ContextMenuEditItem } from '~/sections/common/components/contextMenuItems/ContextMenuEditItem'
 import { MoreVertIcon } from '~/sections/common/components/icons/MoreVertIcon'
-import { createEventHandler } from '~/sections/unified-item/utils/unifiedItemDisplayUtils'
+import { createEventHandler } from '~/sections/item/utils/unifiedItemDisplayUtils'
 
 export type ItemActionsProps = {
   item: Accessor<Item>

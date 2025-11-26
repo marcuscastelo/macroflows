@@ -21,7 +21,7 @@ import { ClipboardActionButtons } from '~/sections/common/components/ClipboardAc
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
 import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
-import { ItemView } from '~/sections/unified-item/components/ItemView'
+import { ItemView } from '~/sections/item/components/ItemView'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
