@@ -193,20 +193,18 @@ describe('synchronizeRecipeItemWithOriginal', () => {
     )
 
     expect(synchronized.reference.type).toBe('recipe')
-    if (synchronized.reference.type === 'recipe') {
-      expect(synchronized.reference.children).toHaveLength(1)
-      const syncedChild = synchronized.reference.children[0]!
+    expect(synchronized.reference.children).toHaveLength(1)
+    const syncedChild = synchronized.reference.children[0]!
 
-      // Should have original values (including original ID)
-      expect(syncedChild.id).toBe(originalItems[0]!.id) // Keep original ID
-      expect(syncedChild.name).toBe('Original Apple') // Original name
-      expect(syncedChild.quantity).toBe(200) // Original quantity
+    // Should have original values (including original ID)
+    expect(syncedChild.id).toBe(originalItems[0]!.id) // Keep original ID
+    expect(syncedChild.name).toBe('Original Apple') // Original name
+    expect(syncedChild.quantity).toBe(200) // Original quantity
 
-      if (syncedChild.reference.type === 'food') {
-        expect(syncedChild.reference.macros).toEqual(
-          createMacroNutrients({ protein: 2, carbs: 50, fat: 0 }),
-        ) // Original macros
-      }
+    if (syncedChild.reference.type === 'food') {
+      expect(syncedChild.reference.macros).toEqual(
+        createMacroNutrients({ protein: 2, carbs: 50, fat: 0 }),
+      ) // Original macros
     }
 
     // BUG FIX: Verify that parent recipe quantity matches sum of children quantities
@@ -259,9 +257,7 @@ describe('synchronizeRecipeItemWithOriginal', () => {
     // Should calculate correct total: 150 + 100 = 250
     expect(synchronized.quantity).toBe(250)
     expect(synchronized.reference.type).toBe('recipe')
-    if (synchronized.reference.type === 'recipe') {
-      expect(synchronized.reference.children).toHaveLength(2)
-    }
+    expect(synchronized.reference.children).toHaveLength(2)
   })
 
   it('should handle empty children array', () => {
@@ -294,9 +290,7 @@ describe('synchronizeRecipeItemWithOriginal', () => {
     // Empty children should result in 0 total quantity
     expect(synchronized.quantity).toBe(0)
     expect(synchronized.reference.type).toBe('recipe')
-    if (synchronized.reference.type === 'recipe') {
-      expect(synchronized.reference.children).toHaveLength(0)
-    }
+    expect(synchronized.reference.children).toHaveLength(0)
   })
 })
 

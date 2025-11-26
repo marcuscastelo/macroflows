@@ -10,7 +10,7 @@ import {
 export function synchronizeRecipeItemWithOriginal(
   recipeItem: RecipeItem,
   originalRecipeItems: readonly UnifiedItem[],
-): UnifiedItem {
+): RecipeItem {
   // Use original items directly - no need to regenerate IDs
   const syncedChildren = [...originalRecipeItems]
 

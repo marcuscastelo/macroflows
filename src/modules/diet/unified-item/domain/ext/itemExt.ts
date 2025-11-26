@@ -3,7 +3,10 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { FoodItemExt } from '~/modules/diet/unified-item/domain/ext/foodItemExt'
+import { GroupItemExt } from '~/modules/diet/unified-item/domain/ext/groupItemExt'
 import { Items } from '~/modules/diet/unified-item/domain/ext/itemsExt'
+import { RecipeItemExt } from '~/modules/diet/unified-item/domain/ext/recipeItemExt'
 import {
   type FoodItem,
   type GroupItem,
@@ -113,9 +116,11 @@ export const ItemExt = {
       isFoodItem: () => isFoodItem(item),
       isRecipeItem: () => isRecipeItem(item),
       isGroupItem: () => isGroupItem(item),
-      asFoodItem: () => (isFoodItem(item) ? item : undefined),
-      asRecipeItem: () => (isRecipeItem(item) ? item : undefined),
-      asGroupItem: () => (isGroupItem(item) ? item : undefined),
+      asFoodItem: () => (isFoodItem(item) ? FoodItemExt.of(item) : undefined),
+      asRecipeItem: () =>
+        isRecipeItem(item) ? RecipeItemExt.of(item) : undefined,
+      asGroupItem: () =>
+        isGroupItem(item) ? GroupItemExt.of(item) : undefined,
       ifFoodItem: <T>(fn: (foodItem: FoodItem) => T, defaultValue: T): T =>
         isFoodItem(item) ? fn(item) : defaultValue,
       ifRecipeItem: <T>(
