@@ -56,8 +56,10 @@ export function isOverflow(args: {
       ? ItemExt.macros(args.originalItem)
       : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
 
+  const dayMacros = DayDietExt.calcDayMacros(currentDayDiet)
+
   const checkOverflowOf = (property: keyof MacroNutrientsRecord) => {
-    const current = DayDietExt.calcDayMacros(currentDayDiet)[property]
+    const current = dayMacros[property]
     const target = macroTarget[property]
 
     const delta = itemMacros[property] - originalItemMacros[property]
