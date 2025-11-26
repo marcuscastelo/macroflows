@@ -6,6 +6,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { ItemExt } from '~/modules/diet/unified-item/domain/itemExt'
 import { scaleRecipeItemQuantity } from '~/modules/diet/unified-item/domain/unifiedItemOperations'
 import {
@@ -14,10 +15,7 @@ import {
   type UnifiedItem,
 } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { FloatInput } from '~/sections/common/components/FloatInput'
-import {
-  type MacroValues,
-  MaxQuantityButton,
-} from '~/sections/common/components/MaxQuantityButton'
+import { MaxQuantityButton } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { logging } from '~/shared/utils/logging'
 
@@ -25,7 +23,7 @@ export type QuantityControlsProps = {
   item: Accessor<UnifiedItem>
   setItem: Setter<UnifiedItem>
   canApply: boolean
-  getAvailableMacros: () => MacroValues
+  getAvailableMacros: () => MacroNutrientsRecord
   quantityField: UseFieldReturn<number>
 }
 
@@ -162,7 +160,6 @@ export function QuantityControls(props: QuantityControlsProps) {
               )
               props.quantityField.setRawValue(maxValue.toFixed(2))
             }}
-            disabled={!props.canApply}
           />
         </Show>
       </div>
