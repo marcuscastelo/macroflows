@@ -19,7 +19,6 @@
     "check-unused-exports-prune-strict": "ts-prune",
     "check": "run-p flint type-check test",
     "copilot:check": "pnpm run check 2>&1 && echo 'COPILOT: All checks passed!' || echo 'COPILOT: Some checks failed!'",
-    "validate:unified-item": "node scripts/validate-unified-item-migration.cjs",
     "tw:build": "tailwindcss -c tailwind.config.cjs -i ./src/app.css -o ./src/tailwind-build-debug.css",
     "supabase:gen-types": "echo '/* eslint-disable @typescript-eslint/no-redundant-type-constituents */' > src/shared/supabase/database.types.ts && yes | npx supabase gen types typescript --project-id vdkyfygjuqcxqyzzkfjo >> src/shared/supabase/database.types.ts && pnpm run fix"
   },
