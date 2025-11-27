@@ -261,6 +261,7 @@ export default [
   {
     // Allow dynamic imports for code-splitting and lazy loading
     // These files use dynamic imports for legitimate code-splitting purposes
+    // Note: We preserve the JSON.parse restriction from other config blocks
     files: [
       // Lazy loading utility
       'src/shared/solid/lazyImport.ts',
@@ -276,7 +277,15 @@ export default [
       '**/*.test.tsx',
     ],
     rules: {
-      'no-restricted-syntax': 'off',
+      // Override: Remove only the ImportExpression restriction while preserving JSON.parse restriction
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
+          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
+        },
+        // Note: Dynamic imports (ImportExpression) are allowed in these files for code-splitting
+      ],
     },
   },
 ]
