@@ -168,7 +168,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
     })
 
     if (result.grams > 0) {
-      props.onMaxSelected(result.grams)
+      props.onMaxSelected(result.grams - 1)
 
       // Show tooltip for dominant macro items
       if (!isMixedItem() && mode !== 'balanced') {
