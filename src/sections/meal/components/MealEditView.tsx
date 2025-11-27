@@ -6,31 +6,28 @@ import {
   useCopyPasteActions,
 } from '~/modules/clipboard/application/useClipboardUnified'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
   addItemsToMeal,
   clearMealItems,
   removeItemFromMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
+import { ItemListView } from '~/sections/item/components/ItemListView'
 import {
   MealContextProvider,
   useMealContext,
 } from '~/sections/meal/context/MealContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
 import {
   openClearItemsConfirmModal,
   openDeleteConfirmModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcMealCalories } from '~/shared/utils/macroMath'
-import { isMeal, isUnifiedItem } from '~/shared/utils/typeUtils'
+import { isItem, isMeal } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -90,8 +87,8 @@ export function MealEditViewHeader(props: {
   const { meal } = useMealContext()
   const acceptedClipboardSchema = mealSchema
     .or(recipeSchema)
-    .or(unifiedItemSchema)
-    .or(z.array(unifiedItemSchema))
+    .or(itemSchema)
+    .or(z.array(itemSchema))
 
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema,
@@ -99,28 +96,28 @@ export function MealEditViewHeader(props: {
     onPaste: (data) => {
       if (Array.isArray(data)) {
         const firstItem = data[0]
-        if (firstItem && isUnifiedItem(firstItem)) {
-          const unifiedItemsToAdd = data.map((item) => ({
+        if (firstItem && isItem(firstItem)) {
+          const ItemsToAdd = data.map((item) => ({
             ...item,
             id: regenerateId(item).id,
           }))
-          const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+          const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
           props.onUpdateMeal(updatedMeal)
           return
         }
       }
 
       if (isMeal(data)) {
-        const unifiedItemsToAdd = data.items.map((item) => ({
+        const ItemsToAdd = data.items.map((item) => ({
           ...item,
           id: regenerateId(item).id,
         }))
-        const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
+        const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
         props.onUpdateMeal(updatedMeal)
         return
       }
 
-      if (isUnifiedItem(data)) {
+      if (isItem(data)) {
         const regeneratedItem = {
           ...data,
           id: regenerateId(data).id,
@@ -134,7 +131,7 @@ export function MealEditViewHeader(props: {
     },
   })
 
-  const mealCalories = () => calcMealCalories(meal())
+  const mealCalories = () => MealExt.of(meal()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
     e.preventDefault()
@@ -172,7 +169,7 @@ export function MealEditViewHeader(props: {
 }
 
 export function MealEditViewContent(props: {
-  onEditItem: (item: UnifiedItem) => void
+  onEditItem: (item: Item) => void
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
@@ -186,7 +183,7 @@ export function MealEditViewContent(props: {
   })
 
   return (
-    <UnifiedItemListView
+    <ItemListView
       items={() => meal().items}
       handlers={{
         onEdit: props.onEditItem,

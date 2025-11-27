@@ -1,14 +1,14 @@
 import { z } from 'zod/v4'
 
+import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import { unifiedItemSchema } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 /**
  * Discriminated union for clipboard payload types
  */
 export const clipboardPayloadSchema = z.union([
-  unifiedItemSchema,
+  itemSchema,
   mealSchema,
   recipeSchema,
 ])

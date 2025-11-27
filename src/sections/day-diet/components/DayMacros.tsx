@@ -1,94 +1,70 @@
 import { createMemo, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import {
-  createMacroNutrients,
-  type MacroNutrients,
-} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
+import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
-import { calcCalories, calcDayMacros } from '~/shared/utils/macroMath'
 
-export default function DayMacros(props: {
+export type DayMacrosProps = {
+  dayDiet: DayDiet
   class?: string
-  dayDiet?: DayDiet
-}) {
-  const macroSignals = createMemo(() => {
-    const day = props.dayDiet ?? currentDayDiet()
-    if (!day) {
-      return { error: 'Dia atual não encontrado' }
-    }
-    const macroTarget_ = getMacroTargetForDay(stringToDate(day.target_day))
-    if (macroTarget_ === null) {
-      return { error: 'Peso ou meta de macros não encontrada para o dia.' }
-    }
-    const dayMacros = calcDayMacros(day)
-    return {
-      macroTarget: macroTarget_,
-      macros: dayMacros,
-      targetCalories: calcCalories(macroTarget_),
-      error: null,
-    }
-  })
+}
+
+export default function DayMacros(props: DayMacrosProps) {
+  const macros = createMemo(() => DayDietExt.calcDayMacros(props.dayDiet))
+  const macroTarget = createMemo(() =>
+    macroTargetUseCases.macroTargetAt(stringToDate(props.dayDiet.target_day)),
+  )
 
   return (
     <Show
-      when={
-        macroSignals().error === null &&
-        macroSignals().macros !== undefined &&
-        macroSignals().macroTarget !== undefined &&
-        macroSignals().targetCalories !== undefined
-      }
+      when={macroTarget()}
       fallback={
         <div class="text-red-500 text-sm">
-          {macroSignals().error ?? 'Erro desconhecido ao calcular macros.'}
+          Peso ou meta de macros não encontrada para o dia.
         </div>
       }
     >
-      <div class={`flex pt-3 ${props.class} flex-col xs:flex-row `}>
-        <div class="shrink">
-          <Calories
-            class="w-full"
-            macros={
-              macroSignals().macros ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-            targetCalories={macroSignals().targetCalories ?? 0}
-          />
+      {(macroTarget) => (
+        <div class={`flex pt-3 ${props.class} flex-col xs:flex-row `}>
+          <div class="shrink">
+            <Calories
+              class="w-full"
+              macros={macros()}
+              targetMacros={macroTarget()}
+            />
+          </div>
+          <div class="flex-1">
+            <Macros
+              class="mt-3 text-xl xs:mt-0"
+              macros={macros()}
+              targetMacros={macroTarget()}
+            />
+          </div>
         </div>
-        <div class="flex-1">
-          <Macros
-            class="mt-3 text-xl xs:mt-0"
-            macros={
-              macroSignals().macros ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-            targetMacros={
-              macroSignals().macroTarget ??
-              createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
-            }
-          />
-        </div>
-      </div>
+      )}
     </Show>
   )
 }
 
 function Calories(props: {
   macros: MacroNutrients
-  targetCalories: number
+  targetMacros: MacroNutrients
   class?: string
 }) {
-  const calories = () => calcCalories(props.macros)
+  const calories = () => MacroNutrientsExt.of(props.macros).calories()
+  const targetCalories = () =>
+    MacroNutrientsExt.of(props.targetMacros).calories()
   return (
     <>
       <div class={`h-24 overflow-y-clip text-center ${props.class}`}>
         <div
           class="radial-progress text-blue-600"
           style={{
-            '--value': (100 * (calories() / props.targetCalories)) / 2,
+            '--value': (100 * (calories() / targetCalories())) / 2,
             '--size': '12rem',
             '--thickness': '0.7rem',
             transform: 'rotate(90deg) scale(-1, -1)',
@@ -102,7 +78,7 @@ function Calories(props: {
             }}
           >
             {Math.round(calories()).toFixed(2)}/
-            {Math.round(props.targetCalories).toFixed(2)}kcal
+            {Math.round(targetCalories()).toFixed(2)}kcal
           </span>
         </div>
       </div>
@@ -115,7 +91,6 @@ function Macros(props: {
   targetMacros: MacroNutrients
   class?: string
 }) {
-  // TODO: Add Progress component
   return (
     <div class={`mx-2 ${props.class}`}>
       <Progress
@@ -123,9 +98,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="green"
-        textLabel={`Carboidrato (${
-          Math.round(props.macros.carbs * 100) / 100
-        }/${Math.round(props.targetMacros.carbs * 100) / 100}g)`}
+        textLabel={`Carboidrato (${props.macros.carbs.toFixed(2)}/${props.targetMacros.carbs.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.carbs) / props.targetMacros.carbs}
       />
@@ -134,9 +107,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="red"
-        textLabel={`Proteína (${Math.round(props.macros.protein * 100) / 100}/${
-          Math.round(props.targetMacros.protein * 100) / 100
-        }g)`}
+        textLabel={`Proteína (${props.macros.protein.toFixed(2)}/${props.targetMacros.protein.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.protein) / props.targetMacros.protein}
       />
@@ -145,9 +116,7 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="yellow"
-        textLabel={`Gordura (${Math.round(props.macros.fat * 100) / 100}/${
-          Math.round(props.targetMacros.fat * 100) / 100
-        }g)`}
+        textLabel={`Gordura (${props.macros.fat.toFixed(2)}/${props.targetMacros.fat.toFixed(2)}g)`}
         showLabel={true}
         progress={(100 * props.macros.fat) / props.targetMacros.fat}
       />

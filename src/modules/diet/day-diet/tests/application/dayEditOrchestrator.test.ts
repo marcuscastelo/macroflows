@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createDayEditOrchestrator } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import {
   createNewDayDiet,
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 // Mock dependencies
 vi.mock('~/modules/diet/macro-target/application/macroTarget', () => ({
@@ -22,13 +22,13 @@ vi.mock('~/shared/utils/date/dateUtils', () => ({
   stringToDate: vi.fn(() => new Date('2023-01-01')),
 }))
 
-const { getMacroTargetForDay } = await import(
-  '~/modules/diet/macro-target/application/macroTarget'
+const { macroTargetUseCases } = await import(
+  '~/modules/diet/macro-target/application/macroTargetUseCases'
 )
 const { updateMeal } = await import('~/modules/diet/meal/application/meal')
 
 function makeTestItem(id = 1) {
-  return createUnifiedItem({
+  return createItem({
     id,
     name: 'Test Item',
     quantity: 100,
@@ -58,18 +58,16 @@ function makeTestDayDiet() {
   )
 }
 
-describe('DayEditOrchestrator', () => {
+describe('DayEditdayUseCases', () => {
   describe('checkEditPermission', () => {
     it('should allow editing when mode is edit', () => {
-      const orchestrator = createDayEditOrchestrator()
-      const result = orchestrator.checkEditPermission('edit')
+      const result = dayUseCases.checkEditPermission('edit')
 
       expect(result.canEdit).toBe(true)
     })
 
     it('should deny editing when mode is summary', () => {
-      const orchestrator = createDayEditOrchestrator()
-      const result = orchestrator.checkEditPermission('summary')
+      const result = dayUseCases.checkEditPermission('summary')
 
       expect(result.canEdit).toBe(false)
       if (!result.canEdit) {
@@ -78,8 +76,7 @@ describe('DayEditOrchestrator', () => {
     })
 
     it('should deny editing when mode is read-only', () => {
-      const orchestrator = createDayEditOrchestrator()
-      const result = orchestrator.checkEditPermission('read-only')
+      const result = dayUseCases.checkEditPermission('read-only')
 
       expect(result.canEdit).toBe(false)
       if (!result.canEdit) {
@@ -98,26 +95,26 @@ describe('DayEditOrchestrator', () => {
         protein: 50,
         fat: 30,
       })
-      vi.mocked(getMacroTargetForDay).mockReturnValue(mockMacroTarget)
+      vi.spyOn(macroTargetUseCases, 'macroTargetAt').mockReturnValue(
+        mockMacroTarget,
+      )
 
-      const orchestrator = createDayEditOrchestrator()
       const dayDiet = makeTestDayDiet()
       const item = makeTestItem()
 
-      const result = orchestrator.prepareMacroOverflowConfig(dayDiet, item)
+      const result = dayUseCases.prepareMacroOverflowConfig(dayDiet, item)
 
       expect(result.enable).toBe(true)
       expect(result.originalItem).toBe(item)
     })
 
     it('should disable macro overflow when no macro target exists', () => {
-      vi.mocked(getMacroTargetForDay).mockReturnValue(null)
+      vi.spyOn(macroTargetUseCases, 'macroTargetAt').mockReturnValue(null)
 
-      const orchestrator = createDayEditOrchestrator()
       const dayDiet = makeTestDayDiet()
       const item = makeTestItem()
 
-      const result = orchestrator.prepareMacroOverflowConfig(dayDiet, item)
+      const result = dayUseCases.prepareMacroOverflowConfig(dayDiet, item)
 
       expect(result.enable).toBe(false)
       expect(result.originalItem).toBeUndefined()
@@ -128,10 +125,9 @@ describe('DayEditOrchestrator', () => {
     it('should call updateMeal with correct parameters', async () => {
       vi.mocked(updateMeal).mockResolvedValue(true)
 
-      const orchestrator = createDayEditOrchestrator()
       const meal = makeTestMeal()
 
-      await orchestrator.updateMealOrchestrated(meal)
+      await dayUseCases.updateMealOrchestrated(meal)
 
       expect(updateMeal).toHaveBeenCalledWith(meal.id, meal)
     })
@@ -140,10 +136,9 @@ describe('DayEditOrchestrator', () => {
       const error = new Error('Update failed')
       vi.mocked(updateMeal).mockRejectedValue(error)
 
-      const orchestrator = createDayEditOrchestrator()
       const meal = makeTestMeal()
 
-      await expect(orchestrator.updateMealOrchestrated(meal)).rejects.toThrow(
+      await expect(dayUseCases.updateMealOrchestrated(meal)).rejects.toThrow(
         'Update failed',
       )
     })
@@ -153,11 +148,10 @@ describe('DayEditOrchestrator', () => {
     it('should update meal with new item', async () => {
       vi.mocked(updateMeal).mockResolvedValue(true)
 
-      const orchestrator = createDayEditOrchestrator()
       const meal = makeTestMeal()
       const newItem = makeTestItem(2)
 
-      await orchestrator.addItemToMealOrchestrated(meal, newItem)
+      await dayUseCases.addItemToMealOrchestrated(meal, newItem)
 
       expect(updateMeal).toHaveBeenCalledWith(meal.id, expect.any(Object))
     })
@@ -167,15 +161,14 @@ describe('DayEditOrchestrator', () => {
     it('should update specific item in meal', async () => {
       vi.mocked(updateMeal).mockResolvedValue(true)
 
-      const orchestrator = createDayEditOrchestrator()
       const meal = makeTestMeal()
       const originalItem = meal.items[0]!
-      const updatedItem = createUnifiedItem({
+      const updatedItem = createItem({
         ...originalItem,
         name: 'Updated Item',
       })
 
-      await orchestrator.updateItemInMealOrchestrated(
+      await dayUseCases.updateItemInMealOrchestrated(
         meal,
         originalItem,
         updatedItem,

@@ -6,13 +6,13 @@ import {
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
 import { type ClipboardPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import {
   createNewRecipe,
   promoteRecipe,
 } from '~/modules/diet/recipe/domain/recipe'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 describe('ClipboardStore', () => {
   const mockPersistence: ClipboardPersistence = {
@@ -35,7 +35,7 @@ describe('ClipboardStore', () => {
   describe('copy', () => {
     it('adds entry to the store', () => {
       const store = createClipboardStore()
-      const payload: ClipboardPayload = createUnifiedItem({
+      const payload: ClipboardPayload = createItem({
         id: 1,
         name: 'Test Item',
         quantity: 100,

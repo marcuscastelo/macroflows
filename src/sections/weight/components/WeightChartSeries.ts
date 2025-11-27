@@ -1,4 +1,4 @@
-import { type WeightChartOHLC } from '~/modules/weight/application/weightChartUtils'
+import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
 
 /**
  * Builds the series for the weight chart.

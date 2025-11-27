@@ -1,6 +1,6 @@
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 
 export type Mutable<T> = {
   -readonly [P in keyof T]: Mutable<T[P]>
@@ -8,7 +8,7 @@ export type Mutable<T> = {
 
 export type ObjectValues<T extends object> = T[keyof T]
 
-export function isUnifiedItem(obj: unknown): obj is UnifiedItem {
+export function isItem(obj: unknown): obj is Item {
   return (
     typeof obj === 'object' &&
     obj !== null &&

@@ -7,12 +7,17 @@ import { initializeMacroProfileEffects } from '~/modules/diet/macro-profile/infr
 import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileStateStore'
 import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
 import { currentUserId } from '~/modules/user/application/user'
+import { logging } from '~/shared/utils/logging'
 
 export const selectedUserId = macroProfileStateStore.selectedUserId
 export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 
 export const userMacroProfiles = () => {
   const userId = currentUserId()
+  if (userId === undefined) {
+    logging.error('User ID is undefined')
+    return []
+  }
   return macroProfileCacheStore.getProfilesByUserId(userId)
 }
 
@@ -20,7 +25,12 @@ export const latestMacroProfile = () => {
   const profiles = userMacroProfiles()
   const latest = getLatestMacroProfile(profiles)
   if (latest === null) {
-    return createDefaultMacroProfile(currentUserId())
+    const userId = currentUserId()
+    if (userId === undefined) {
+      logging.error('User ID is undefined')
+      return null
+    }
+    return createDefaultMacroProfile(userId)
   }
   return latest
 }

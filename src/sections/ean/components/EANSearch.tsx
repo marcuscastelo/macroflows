@@ -10,9 +10,9 @@ import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalC
 import { useClipboard } from '~/modules/clipboard/application/useClipboardUnified'
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { UnifiedItemFavorite } from '~/sections/unified-item/components/UnifiedItemFavorite'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
+import { ItemView } from '~/sections/item/components/ItemView'
+import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
@@ -92,9 +92,9 @@ export function EANSearch(props: EANSearchProps) {
 
       <Show when={props.food()}>
         {(food) => {
-          // Create UnifiedItem from food
-          const createUnifiedItemFromFood = () =>
-            createUnifiedItem({
+          // Create Item from food
+          const createItemFromFood = () =>
+            createItem({
               id: food().id,
               name: food().name,
               quantity: 100,
@@ -111,8 +111,10 @@ export function EANSearch(props: EANSearchProps) {
                 <div class="flex-1">
                   <p class="font-bold">{food().name}</p>
                   <p class="text-sm">
-                    <UnifiedItemView
+                    <ItemView
                       handlers={{
+                        // TODO : default handlers for ItemView
+                        // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
                           // Copy to both system and in-app clipboard
                           clipboard.write(JSON.stringify(item))
@@ -120,10 +122,8 @@ export function EANSearch(props: EANSearchProps) {
                         },
                       }}
                       mode="read-only"
-                      item={createUnifiedItemFromFood}
-                      primaryActions={
-                        <UnifiedItemFavorite foodId={food().id} />
-                      }
+                      item={createItemFromFood}
+                      primaryActions={<ItemFavorite foodId={food().id} />}
                     />
                   </p>
                 </div>

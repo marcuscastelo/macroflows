@@ -9,7 +9,11 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { userWeights } from '~/modules/weight/application/usecases/weightState'
+import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import {
+  ItemEditModal,
+  type ItemEditModalProps,
+} from '~/sections/item/components/ItemView/ItemEdit/ItemEditModal'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   RecipeEditModal,
@@ -20,10 +24,6 @@ import {
   type TemplateSearchModalProps,
 } from '~/sections/search/components/TemplateSearchModal'
 import {
-  UnifiedItemEditModal,
-  type UnifiedItemEditModalProps,
-} from '~/sections/unified-item/components/UnifiedItemEditModal'
-import {
   closeModal,
   openConfirmModal,
   openContentModal,
@@ -31,20 +31,19 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import type { ModalId } from '~/shared/modal/types/modalTypes'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
-import { inForceWeight, latestWeight } from '~/shared/utils/weightUtils'
 
 export type ModalController = {
   modalId: ModalId
   close: () => void
 }
 
-export type UnifiedItemEditModalConfig = UnifiedItemEditModalProps & {
+export type ItemEditModalConfig = ItemEditModalProps & {
   title?: string
   targetName?: string
 }
 
-export function openUnifiedItemEditModal(
-  config: UnifiedItemEditModalConfig,
+export function openItemEditModal(
+  config: ItemEditModalConfig,
 ): ModalController {
   const title = config.title ?? 'Editar Item'
 
@@ -52,7 +51,7 @@ export function openUnifiedItemEditModal(
 
   const modalId = openEditModal(
     () => (
-      <UnifiedItemEditModal
+      <ItemEditModal
         targetMealName={config.targetMealName}
         targetNameColor={config.targetNameColor}
         item={config.item}
@@ -105,7 +104,7 @@ export function openTemplateSearchModal(
     () => (
       <TemplateSearchModal
         targetName={config.targetName}
-        onNewUnifiedItem={config.onNewUnifiedItem}
+        onNewItem={config.onNewItem}
         onFinish={() => {
           config.onFinish?.()
           controller.close()
@@ -275,9 +274,9 @@ export function openRestoreProfileModal(
   let controller: ModalController
 
   const previousProfileWeight = () =>
-    inForceWeight(userWeights(), config.previousMacroProfile.target_day)
+    weightUseCases.effectiveAt(config.previousMacroProfile.target_day)
       ?.weight ??
-    latestWeight()?.weight ??
+    weightUseCases.latest()?.weight ??
     0
 
   const modalId = openContentModal(
