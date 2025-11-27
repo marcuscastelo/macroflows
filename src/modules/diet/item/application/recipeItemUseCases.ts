@@ -38,9 +38,8 @@ export const recipeItemUseCases = {
   },
 
   createRecipeResource: (item: Accessor<Item>) => {
-    const item_ = item()
     const resource = createResource(
-      () => (isRecipeItem(item_) ? item_.reference.id : null),
+      () => ItemExt.of(item()).asRecipeItem()?.value.reference.id ?? null,
       async (recipeId: number) => {
         try {
           return await fetchRecipeById(recipeId)
