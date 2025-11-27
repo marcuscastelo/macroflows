@@ -350,8 +350,7 @@ import { logging } from '~/shared/utils/logging'
 try {
   await domainFunc()
 } catch (e) {
-  logging.error('isRecipedGroupUpToDate failed', { 
-    error: e, 
+  logging.error('isRecipedGroupUpToDate failed', e, { 
     component: 'itemGroupDomain',
     additionalData: { groupId, groupRecipeId }
   })

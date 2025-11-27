@@ -105,8 +105,7 @@ export function useDayDietUpdater() {
       toast.success('Day diet updated successfully')
       return result
     } catch (e) {
-      logging.error('updateDayDiet failed', {
-        error: e,
+      logging.error('updateDayDiet failed', e, {
         component: 'DayDietUpdater',
         additionalData: { dayDietId: dayDiet.id }
       })
@@ -185,7 +184,7 @@ export function MealEditor() {
       await mealRepository.save(meal())
       toast.success('Meal saved')
     } catch (e) {
-      logging.error('saveMeal failed', { error: e, component: 'MealEditor' })
+      logging.error('saveMeal failed', e, { component: 'MealEditor' })
       showError(e, { context: 'user-action' })
     } finally {
       setLoading(false)
@@ -208,8 +207,7 @@ export function useMealEditor() {
       await mealRepository.save(meal())
       toast.success('Meal saved')
     } catch (e) {
-      logging.error('saveMeal failed', {
-        error: e,
+      logging.error('saveMeal failed', e, {
         component: 'MealEditor',
         additionalData: { mealId: meal()?.id }
       })

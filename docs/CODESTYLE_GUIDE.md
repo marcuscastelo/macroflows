@@ -149,7 +149,7 @@ import { logging } from '~/shared/utils/logging'
 try {
   await domainFunc()
 } catch (e) {
-  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  logging.error('submitGroup failed', e, { component: 'ItemGroupForm' })
   showError(e, { context: 'user-action' })
   throw e
 }
@@ -195,7 +195,7 @@ import { logging } from '~/shared/utils/logging'
 try {
   await domainFunc()
 } catch (e) {
-  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  logging.error('submitGroup failed', e, { component: 'ItemGroupForm' })
   showError(e, { context: 'user-action' })
   throw e
 }
