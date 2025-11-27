@@ -11,15 +11,7 @@ import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalId } from '~/shared/modal/types/modalTypes'
-
-/**
- * Controller for managing a modal's lifecycle.
- */
-export type ModalController = {
-  modalId: ModalId
-  close: () => void
-}
+import type { ModalController } from '~/shared/modal/types/modalTypes'
 
 /**
  * Configuration for template search modals.

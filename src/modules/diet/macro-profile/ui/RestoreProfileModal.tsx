@@ -15,16 +15,8 @@ import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalId } from '~/shared/modal/types/modalTypes'
+import type { ModalController } from '~/shared/modal/types/modalTypes'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
-
-/**
- * Controller for managing a modal's lifecycle.
- */
-export type ModalController = {
-  modalId: ModalId
-  close: () => void
-}
 
 /**
  * Configuration for restore profile modals.

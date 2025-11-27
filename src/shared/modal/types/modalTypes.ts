@@ -7,6 +7,14 @@ export type ModalPriority = 'low' | 'normal' | 'high' | 'critical'
 export type ModalTitle = string
 export type ModalBody = JSXElement
 
+/**
+ * Controller for managing a modal's lifecycle.
+ */
+export type ModalController = {
+  modalId: ModalId
+  close: () => void
+}
+
 export type BaseModalConfig = {
   id?: ModalId
   title?: ModalTitle | ((modalId: ModalId) => ModalTitle)

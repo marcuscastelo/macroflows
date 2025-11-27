@@ -8,15 +8,7 @@ import {
   type RecipeEditModalProps,
 } from '~/sections/recipe/components/RecipeEditModal'
 import { closeModal, openEditModal } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalId } from '~/shared/modal/types/modalTypes'
-
-/**
- * Controller for managing a modal's lifecycle.
- */
-export type ModalController = {
-  modalId: ModalId
-  close: () => void
-}
+import type { ModalController } from '~/shared/modal/types/modalTypes'
 
 /**
  * Configuration for recipe edit modals.
