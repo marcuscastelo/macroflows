@@ -4,9 +4,6 @@ import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 
-/**
- * Discriminated union for clipboard payload types
- */
 export const clipboardPayloadSchema = z.union([
   itemSchema,
   mealSchema,
