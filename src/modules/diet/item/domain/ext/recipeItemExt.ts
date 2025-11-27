@@ -38,8 +38,8 @@ export const RecipeItemExt = {
       throw new Error('New quantity must be greater than 0')
     }
 
-    const mainQuantity = newQuantity
-    const totalChildQuantity = newQuantity / recipe.prepared_multiplier
+    const mainQuantity = Math.max(0.01, Math.round(newQuantity * 100) / 100)
+    const totalChildQuantity = mainQuantity / recipe.prepared_multiplier
 
     const currentChildQuantitySum = recipeItem.reference.children.reduce(
       (sum, child) => sum + child.quantity,

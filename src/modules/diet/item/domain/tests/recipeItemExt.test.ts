@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import type { Item, RecipeItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 
 const makeFoodItem = (
   id: number,
@@ -75,17 +76,33 @@ describe('RecipeItemExt', () => {
       carbs: 70,
       fat: 1,
     })
-    const recipe = makeRecipeItem(2, 'Bread', 500, [child])
+    const recipeItem = makeRecipeItem(2, 'Bread', 200, [child])
+    const recipe: Recipe = {
+      id: 2,
+      name: 'Bread',
+      prepared_multiplier: 2, // 1 unit of recipe = 2 units prepared
+      items: [child],
+      user_id: '',
+      __type: 'Recipe',
+    }
 
-    const scaled = RecipeItemExt.scaleQuantityAndChildren(recipe, 1000)
+    const scaled = RecipeItemExt.scaleQuantityAndChildren(
+      recipeItem,
+      recipe,
+      1000,
+    )
 
     // parent doubled
     expect(scaled.quantity).toBe(1000)
 
-    expect(scaled.reference.children[0]!.quantity).toBeCloseTo(200)
+    expect(scaled.reference.children[0]!.quantity).toBeCloseTo(500)
 
     // Scaling down to very small should enforce minima
-    const tinyScaled = RecipeItemExt.scaleQuantityAndChildren(recipe, 0.001)
+    const tinyScaled = RecipeItemExt.scaleQuantityAndChildren(
+      recipeItem,
+      recipe,
+      0.001,
+    )
     expect(tinyScaled.quantity).toBe(0.01) // main min
     expect(tinyScaled.reference.children[0]!.quantity).toBeGreaterThanOrEqual(
       0.0001,
