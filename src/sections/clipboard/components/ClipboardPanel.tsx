@@ -3,9 +3,9 @@ import { For, type JSXElement, Show } from 'solid-js'
 import { useClipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
 import {
   type ClipboardEntry,
+  isItemPayload,
   isMealPayload,
   isRecipePayload,
-  isUnifiedItemPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
@@ -23,7 +23,7 @@ function ClipboardEntryPreview(props: { entry: ClipboardEntry }): JSXElement {
   const payload = () => props.entry.payload
 
   const name = () => {
-    if (isUnifiedItemPayload(payload())) {
+    if (isItemPayload(payload())) {
       return payload().name
     }
     if (isMealPayload(payload())) {

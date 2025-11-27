@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
 
-import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import { mealSchema } from '~/modules/diet/meal/domain/meal'
-import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
+import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 
 /**
  * Discriminated union for clipboard payload types
@@ -15,9 +15,6 @@ export const clipboardPayloadSchema = z.union([
 
 export type ClipboardPayload = z.infer<typeof clipboardPayloadSchema>
 
-/**
- * Clipboard entry with metadata
- */
 export const clipboardEntrySchema = z.object({
   id: z.string(),
   payload: clipboardPayloadSchema,
@@ -27,30 +24,18 @@ export const clipboardEntrySchema = z.object({
 
 export type ClipboardEntry = z.infer<typeof clipboardEntrySchema>
 
-/**
- * Type guards for clipboard payloads
- */
-export function isUnifiedItemPayload(
-  payload: ClipboardPayload,
-): payload is Extract<ClipboardPayload, { __type: 'UnifiedItem' }> {
+export function isItemPayload(payload: ClipboardPayload): payload is Item {
   return payload.__type === 'UnifiedItem'
 }
 
-export function isMealPayload(
-  payload: ClipboardPayload,
-): payload is Extract<ClipboardPayload, { __type: 'Meal' }> {
+export function isMealPayload(payload: ClipboardPayload): payload is Meal {
   return payload.__type === 'Meal'
 }
 
-export function isRecipePayload(
-  payload: ClipboardPayload,
-): payload is Extract<ClipboardPayload, { __type: 'Recipe' }> {
+export function isRecipePayload(payload: ClipboardPayload): payload is Recipe {
   return payload.__type === 'Recipe'
 }
 
-/**
- * Create a new clipboard entry
- */
 export function createClipboardEntry(
   payload: ClipboardPayload,
   options?: { pinned?: boolean },
