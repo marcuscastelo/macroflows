@@ -5,6 +5,8 @@
   "version": "0.14.0",
   "packageManager": "pnpm@10.12.1",
   "scripts": {
+    "assume-unchanged": "git update-index --assume-unchanged src/app-version.json",
+    "postinstall": "npm run assume-unchanged",
     "dev": "pnpm run gen-app-version; vinxi dev",
     "build": "pnpm run gen-app-version && vinxi build",
     "gen-app-version": "bash ./.scripts/gen-app-version.sh",
