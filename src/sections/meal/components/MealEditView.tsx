@@ -1,5 +1,4 @@
 import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
-import { z } from 'zod/v4'
 
 import {
   useClipboard,
@@ -27,7 +26,7 @@ import {
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
+import { isItem, isMeal } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
