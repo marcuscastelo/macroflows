@@ -2,8 +2,7 @@ import { type ClipboardPayload } from '~/modules/clipboard/domain/clipboardEntry
 import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { ItemListView } from '~/sections/item/components/ItemListView'
-import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
-import { closeModal } from '~/shared/modal/helpers/modalHelpers'
+import { openContentModal, closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 export const openPasteConfirmModal = <T extends ClipboardPayload>(
