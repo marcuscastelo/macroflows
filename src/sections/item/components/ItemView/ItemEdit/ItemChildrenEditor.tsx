@@ -46,12 +46,12 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   }
 
   // Clipboard schema accepts Item or array of Items
-  const acceptedClipboardSchema = itemSchema.or(z.array(itemSchema))
+  const acceptedClipboardSchema = itemSchema
 
   // Clipboard actions for children
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema,
-    getDataToCopy: () => children(),
+    getDataToCopy: () => props.itemDraft(), // TODO: copy self vs children? (expandable?)
     onPaste: (data) => {
       const itemsToAdd = Array.isArray(data) ? data : [data]
 
