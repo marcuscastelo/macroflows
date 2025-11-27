@@ -20,92 +20,26 @@ import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
+import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
 
 export type ClipboardFilter = (clipboard: string) => boolean
 
-const clipboardStore = createRoot(() => {
+export const clipboardStore = createRoot(() => {
   // Default to RAM-only (no persistence)
-  const globalStore = createClipboardStore({
+  const store = createClipboardStore({
     maxEntries: 20,
     persistence: createNoOpPersistence(),
   })
-
-  // Local signal reflecting current entries. We will update this signal
-  // when mutating operations occur so callers can subscribe to it via
-  // Solid's reactive system instead of a custom subscribe mechanism.
-  const [entries, setEntries] = createSignal<ClipboardEntry[]>(
-    globalStore.readAll(),
-  )
-
   // Clean expired entries every hour and refresh signal
   setInterval(
     () => {
-      globalStore.cleanExpired()
-      setEntries(globalStore.readAll())
+      store.cleanExpired()
     },
     60 * 60 * 1000,
   )
 
-  // Wrap mutating methods so they update the entries signal after performing
-  // their operation. Use a loose args signature and cast to `any` when calling
-  // the underlying store to avoid coupling to the store's precise types here.
-  const copy = (...args: any[]) => {
-    const res = (globalStore.copy as any)(...args)
-    setEntries(globalStore.readAll())
-    return res
-  }
-
-  const clear = (...args: any[]) => {
-    const res = (globalStore.clear as any)(...args)
-    setEntries(globalStore.readAll())
-    return res
-  }
-
-  const remove = (...args: any[]) => {
-    const res = (globalStore.remove as any)(...args)
-    setEntries(globalStore.readAll())
-    return res
-  }
-
-  const togglePin = (...args: any[]) => {
-    const res = (globalStore.togglePin as any)(...args)
-    setEntries(globalStore.readAll())
-    return res
-  }
-
-  const read = globalStore.read.bind(globalStore)
-  const readAll = () => entries()
-
-  return {
-    // expose the entries accessor (signal) so consumers can react to it
-    entries,
-    copy,
-    read,
-    readAll,
-    clear,
-    remove,
-    togglePin,
-  }
+  return store
 })
-
-/**
- * Unified store hook (wraps the global clipboard store)
- */
-export function useClipboardStore() {
-  const store = clipboardStore
-
-  // The store exposes an `entries` accessor (Solid signal). Return it
-  // directly so consumers can react to it via Solid instead of subscribing.
-  return {
-    entries: store.entries,
-    copy: store.copy,
-    read: store.read,
-    readAll: store.readAll,
-    clear: store.clear,
-    remove: store.remove,
-    togglePin: store.togglePin,
-  }
-}
 
 /**
  * Hook for reading/writing clipboard via the in-app clipboard store
@@ -114,7 +48,6 @@ export function useClipboard(props?: {
   filter?: ClipboardFilter
   periodicRead?: boolean
 }) {
-  const { copy, read, clear: clearStore } = useClipboardStore()
   // keep the filter accessor for API compatibility with previous implementation
 
   const _filter = () => props?.filter
@@ -123,7 +56,7 @@ export function useClipboard(props?: {
     try {
       // Treat empty string as a clear request for the clipboard store
       if (text === '') {
-        clearStore()
+        clipboardStore.clear()
         return
       }
 
@@ -137,7 +70,7 @@ export function useClipboard(props?: {
 
       console.debug('Parsed clipboard payload:', parsed)
       const payload = parseWithStack(clipboardPayloadSchema, parsed)
-      copy(payload)
+      clipboardStore.copy(payload)
 
       if (text.length > 0) {
         showSuccess(`Copiado com sucesso`)
@@ -152,7 +85,7 @@ export function useClipboard(props?: {
 
   const handleRead = async () => {
     try {
-      const clipboard = read()
+      const clipboard = clipboardStore.read()
       const clipboardText = JSON.stringify(clipboard?.payload)
 
       return clipboardText
@@ -192,7 +125,7 @@ export function createClipboardSchemaFilter(
 /**
  * Hook that provides copy / paste actions for a given schema and handlers
  */
-export function useCopyPasteActions<T>({
+export function useCopyPasteActions<T extends ClipboardEntry['payload']>({
   acceptedClipboardSchema,
   getDataToCopy,
   onPaste,
@@ -236,39 +169,32 @@ export function useCopyPasteActions<T>({
   // Note: use getPayloadType + openPreviewModal to determine how to show previews
 
   // Determine payload type by looking at the __type discriminator
-  const getPayloadType = (
-    d: unknown,
-  ): 'UnifiedItem' | 'Meal' | 'Recipe' | null => {
-    if (d === null || typeof d !== 'object') return null
-    if (Array.isArray(d)) {
-      return d.length > 0 && typeof d[0] === 'object'
-        ? ((d[0] as any).__type ?? null)
-        : null
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    return (d as any).__type ?? null
+  const getPayloadType = (d: T): 'UnifiedItem' | 'Meal' | 'Recipe' | null => {
+    if (typeof d !== 'object') return null
+    return d.__type
   }
 
-  const openPreviewModal = (payload: unknown, clipboardText: string) => {
+  const openPreviewModal = (payload: T, clipboardText: string) => {
     const type = getPayloadType(payload)
 
     // If payload contains items (Meal, Recipe or array of Items), render ItemListView
     if (type === 'UnifiedItem' || type === 'Meal' || type === 'Recipe') {
       let itemsArray: Item[] = []
-      if (Array.isArray(payload)) {
-        itemsArray = payload as Item[]
-      } else if (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (payload as any).items &&
-        Array.isArray((payload as any).items)
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        itemsArray = (payload as any).items
-      } else if (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (payload as any).__type === 'UnifiedItem'
-      ) {
-        itemsArray = [payload as Item]
+      if (isRecipe(payload)) {
+        itemsArray = payload.items
+      } else if (isMeal(payload)) {
+        itemsArray = payload.items
+      } else if (isItem(payload)) {
+        itemsArray = [payload]
+      } else {
+        payload satisfies never
+        logging.error('Unexpected payload type in clipboard preview modal', {
+          payload,
+        })
+        showError(
+          'Erro inesperado ao processar o conteúdo da área de transferência.',
+        )
+        return
       }
 
       try {
@@ -369,11 +295,4 @@ export function useCopyPasteActions<T>({
     handleCopy,
     handlePaste,
   }
-}
-
-export default {
-  useClipboardStore,
-  useClipboard,
-  createClipboardSchemaFilter,
-  useCopyPasteActions,
 }
