@@ -106,7 +106,7 @@ const store = createClipboardStore({
 - `clear(): void` - Clear all unpinned entries
 - `remove(id: string): void` - Remove a specific entry
 - `togglePin(id: string): void` - Toggle pin status of an entry
-- `subscribe(fn: (entries: ClipboardEntry[]) => void): () => void` - Subscribe to changes
+- Reactivity: Use the `entries` signal for reactive updates in SolidJS components (see usage examples above)
 - `cleanExpired(): void` - Clean expired entries (automatic if persistence enabled)
 
 ### ClipboardPayload Types
