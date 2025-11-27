@@ -16,21 +16,18 @@ An in-application clipboard store for holding copied UnifiedItem(s), Meals, and 
 ### Basic Usage
 
 ```typescript
-import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalClipboardStore'
-import { createUnifiedItemPayload } from '~/modules/clipboard/application/clipboardHelpers'
-
-const store = getGlobalClipboardStore()
+import { clipboardUseCases } from '~/modules/clipboard/application/clipboardUseCases'
 
 // Copy to clipboard
 const item = createUnifiedItem(...)
-store.copy(createUnifiedItemPayload(item))
+clipboardUseCases.copy(item)
 
 // Read from clipboard
-const latest = store.read()
-const all = store.readAll()
+const latest = clipboardUseCases.read()
+const all = clipboardUseCases.readAll()
 
 // Clear clipboard
-store.clear() // Clears all unpinned entries
+clipboardUseCases.clear() // Clears all unpinned entries
 ```
 
 ### Using in Components
