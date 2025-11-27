@@ -142,7 +142,11 @@ export function MealEditViewHeader(props: {
   return (
     <Show when={meal()}>
       {(mealSignal) => (
-        <div class="flex" tabindex={0} onPaste={() => handlePaste()}>
+        <div
+          class="flex"
+          tabindex={0}
+          onPaste={() => void handlePaste().catch(console.error)}
+        >
           <div class="my-2">
             <h5 class="text-3xl">{mealSignal().name}</h5>
             <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
@@ -153,7 +157,7 @@ export function MealEditViewHeader(props: {
               canPaste={true}
               canClear={mealSignal().items.length > 0}
               onCopy={handleCopy}
-              onPaste={handlePaste}
+              onPaste={() => void handlePaste().catch(console.error)}
               onClear={onClearItems}
             />
           )}
