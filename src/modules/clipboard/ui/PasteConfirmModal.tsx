@@ -26,7 +26,6 @@ export const openPasteConfirmModal = <T extends ClipboardPayload>(
       showCloseButton: true,
     })
 
-    return
   } catch (err) {
     logging.warn('Preview validation failed, falling back to confirm modal', {
       error: err instanceof Error ? err.message : String(err),
