@@ -1,16 +1,35 @@
+import { createRoot } from 'solid-js'
 import { type z } from 'zod/v4'
 
-import { clipboardStore } from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import {
   type ClipboardEntry,
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 import { openPasteConfirmModal } from '~/modules/clipboard/ui/PasteConfirmModal'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
+
+const clipboardStore = createRoot(() => {
+  // Default to RAM-only (no persistence)
+  const store = createClipboardStore({
+    maxEntries: 20,
+    persistence: createNoOpPersistence(),
+  })
+  // Clean expired entries every hour and refresh signal
+  setInterval(
+    () => {
+      store.cleanExpired()
+    },
+    60 * 60 * 1000,
+  )
+
+  return store
+})
 
 export const clipboardUseCases = {
   copy(payload: ClipboardPayload): void {
