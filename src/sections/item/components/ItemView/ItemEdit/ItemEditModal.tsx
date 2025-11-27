@@ -13,6 +13,7 @@ import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clip
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
+import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
 import {
   asGroupItem,
   asParentItem,
@@ -150,10 +151,12 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   })
 
   const canApply = () => {
+    const item = itemDraft()
     logging.debug('[ItemEditModal] canApply', {
-      quantity: itemDraft().quantity,
+      quantity: item.quantity,
+      name: item.name,
     })
-    return itemDraft().quantity > 0
+    return canApplyItem(item)
   }
 
   const handleEditChild = (child: Item) => {

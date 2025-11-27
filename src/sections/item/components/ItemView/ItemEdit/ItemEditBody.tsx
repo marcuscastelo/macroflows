@@ -2,8 +2,14 @@ import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import {
+  isItemNameValid,
+  MAX_ITEM_NAME_LENGTH,
+  truncateItemName,
+} from '~/modules/diet/item/domain/itemValidation'
+import {
   asFoodItem,
   isGroupItem,
+  isParentItem,
   type Item,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
@@ -42,8 +48,39 @@ export function ItemEditBody(props: ItemEditBodyProps) {
     props.quantityField.setRawValue(quantity.toString())
   }
 
+  const handleNameChange = (newName: string) => {
+    logging.debug('[ItemEditBody] name change', { newName })
+    // Enforce max length using shared utility
+    const trimmedName = truncateItemName(newName)
+    props.setItemDraft({
+      ...props.itemDraft(),
+      name: trimmedName,
+    })
+  }
+
   return (
     <>
+      {/* Name input for GroupItem and RecipeItem */}
+      <Show when={isParentItem(props.itemDraft())}>
+        <div class="mb-4">
+          <label class="block text-sm text-gray-400 mb-1">Nome do item</label>
+          <input
+            class={`input w-full bg-gray-800 border-gray-600 text-white ${
+              !isItemNameValid(props.itemDraft().name) ? 'border-red-500' : ''
+            }`}
+            type="text"
+            value={props.itemDraft().name}
+            onInput={(e) => handleNameChange(e.currentTarget.value)}
+            onFocus={(e) => e.target.select()}
+            placeholder="Digite o nome do item"
+            maxLength={MAX_ITEM_NAME_LENGTH}
+          />
+          <Show when={!isItemNameValid(props.itemDraft().name)}>
+            <p class="text-red-500 text-xs mt-1">O nome não pode estar vazio</p>
+          </Show>
+        </div>
+      </Show>
+
       <ItemView
         mode="edit"
         handlers={{
