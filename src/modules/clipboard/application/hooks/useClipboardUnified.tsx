@@ -2,6 +2,7 @@ import { createRoot, createSignal } from 'solid-js'
 import { type z } from 'zod/v4'
 
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { type ClipboardPayload } from '~/modules/clipboard/domain/clipboardEntry'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
@@ -104,30 +105,6 @@ const openPreviewModal = <T extends ClipboardPayload>(
   }
 }
 
-const readAndParseClipboard = async <T extends ClipboardPayload>(
-  acceptedClipboardSchema: z.ZodType<T>,
-): Promise<T | null> => {
-  const data = clipboardStore.read()
-  if (data === null) {
-    logging.debug('No clipboard data present')
-    return null
-  }
-
-  const safeParseResult = acceptedClipboardSchema.safeParse(data.payload)
-  if (!safeParseResult.success) {
-    logging.warn('Clipboard data did not match accepted schema', {
-      errors: safeParseResult.error,
-    })
-    showError('O conteúdo da área de transferência não é compatível.')
-    return null
-  }
-
-  return safeParseResult.data satisfies T
-}
-
-/**
- * Hook that provides copy / paste actions for a given schema and handlers
- */
 export function useCopyPasteActions<T extends ClipboardPayload>({
   acceptedClipboardSchema,
   onPaste,
@@ -136,7 +113,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   onPaste: (data: T) => void
 }) {
   const paste = async () => {
-    const parsed = await readAndParseClipboard(acceptedClipboardSchema)
+    const parsed = clipboardUseCases.fetchLatestParsing(acceptedClipboardSchema)
     if (parsed === null) {
       showError('A área de transferência está vazia ou o conteúdo é inválido.')
       return
