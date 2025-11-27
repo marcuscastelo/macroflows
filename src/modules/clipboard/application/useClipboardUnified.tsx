@@ -17,6 +17,7 @@ import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
+import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export type ClipboardFilter = (clipboard: string) => boolean
@@ -175,85 +176,127 @@ export function useCopyPasteActions<T>({
     return { clipboardText, parsed }
   }
 
-  const isItemPayload = (d: unknown) => {
-    if (d === null || typeof d !== 'object') return false
+  // Note: use getPayloadType + openPreviewModal to determine how to show previews
+
+  // Determine payload type by looking at the __type discriminator
+  const getPayloadType = (
+    d: unknown,
+  ): 'UnifiedItem' | 'Meal' | 'Recipe' | null => {
+    if (d === null || typeof d !== 'object') return null
     if (Array.isArray(d)) {
-      return (
-        d.length > 0 &&
-        typeof d[0] === 'object' &&
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (d[0] as any).__type === 'UnifiedItem'
-      )
+      return d.length > 0 && typeof d[0] === 'object'
+        ? ((d[0] as any).__type ?? null)
+        : null
     }
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    return (d as any).__type === 'UnifiedItem'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    return (d as any).__type ?? null
   }
 
-  const openItemsPreviewModal = (itemsArray: Item[], clipboardText: string) => {
-    const [itemsSignal] = createSignal(itemsArray)
+  const openPreviewModal = (payload: unknown, clipboardText: string) => {
+    const type = getPayloadType(payload)
 
-    const modalId = openContentModal(
-      () => (
-        <div>
-          <div class="mb-4">{`Os seguintes itens serão colados:`}</div>
-          <ItemListView items={itemsSignal} handlers={{}} />
-        </div>
-      ),
-      {
-        title: 'Colar itens',
-        footer: () => (
-          <div class="flex gap-2 justify-end">
-            <button
-              type="button"
-              class="btn btn-ghost"
-              onClick={() => {
-                closeModal(modalId)
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              onClick={() => {
-                processClipboardText(clipboardText)
-                  .finally(() => closeModal(modalId))
-                  .catch((err) => {
-                    showError(`Erro ao colar itens: ${JSON.stringify(err)}`)
-                  })
-              }}
-            >
-              Colar
-            </button>
-          </div>
-        ),
-        closeOnOutsideClick: false,
-        closeOnEscape: true,
-        showCloseButton: true,
-      },
-    )
+    // If payload contains items (Meal, Recipe or array of Items), render ItemListView
+    if (type === 'UnifiedItem' || type === 'Meal' || type === 'Recipe') {
+      let itemsArray: Item[] = []
+      if (Array.isArray(payload)) {
+        itemsArray = payload as Item[]
+      } else if (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (payload as any).items &&
+        Array.isArray((payload as any).items)
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        itemsArray = (payload as any).items
+      } else if (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (payload as any).__type === 'UnifiedItem'
+      ) {
+        itemsArray = [payload as Item]
+      }
+
+      try {
+        const validated = itemSchema.array().parse(itemsArray)
+        const [itemsSignal] = createSignal(validated)
+
+        const modalId = openContentModal(
+          () => (
+            <div>
+              <div class="mb-4">{`Os seguintes itens serão colados:`}</div>
+              <ItemListView items={itemsSignal} handlers={{}} />
+            </div>
+          ),
+          {
+            title: 'Colar itens',
+            footer: () => (
+              <div class="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  onClick={() => {
+                    closeModal(modalId)
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  onClick={() => {
+                    processClipboardText(clipboardText)
+                      .finally(() => closeModal(modalId))
+                      .catch((err) => {
+                        showError(`Erro ao colar itens: ${JSON.stringify(err)}`)
+                      })
+                  }}
+                >
+                  Colar
+                </button>
+              </div>
+            ),
+            closeOnOutsideClick: false,
+            closeOnEscape: true,
+            showCloseButton: true,
+          },
+        )
+
+        return
+      } catch (err) {
+        // validation failed - fallthrough to default confirm modal
+        logging.warn(
+          'Preview validation failed, falling back to confirm modal',
+          {
+            error: err instanceof Error ? err.message : String(err),
+          },
+        )
+      }
+    }
+
+    // Fallback: simple confirmation when we cannot preview
+    openConfirmModal('Tem certeza que deseja colar os itens?', {
+      title: 'Colar itens',
+      confirmText: 'Colar',
+      cancelText: 'Cancelar',
+      onConfirm: () => readFromClipboard().then(processClipboardText),
+    })
   }
 
   const handlePaste = async () => {
     try {
       const { clipboardText, parsed } = await readAndParseClipboard()
 
-      if (parsed !== null && isItemPayload(parsed)) {
-        const itemsArray = Array.isArray(parsed) ? parsed : [parsed]
-        const items = itemSchema.array().parse(itemsArray) // Validate items
-        openItemsPreviewModal(items, clipboardText)
+      if (parsed !== null) {
+        openPreviewModal(parsed, clipboardText)
         return
-      } else {
-        showError('O conteúdo da área de transferência não é um item válido.')
       }
 
+      showError('O conteúdo da área de transferência não pôde ser processado.')
       openConfirmModal('Tem certeza que deseja colar os itens?', {
         title: 'Colar itens',
         confirmText: 'Colar',
         cancelText: 'Cancelar',
         onConfirm: () => readFromClipboard().then(processClipboardText),
       })
-    } catch (err) {
+    } catch (_err) {
       openConfirmModal('Tem certeza que deseja colar os itens?', {
         title: 'Colar itens',
         confirmText: 'Colar',
