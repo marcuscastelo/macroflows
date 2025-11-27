@@ -31,8 +31,6 @@ Thumbs.db
 yarn.lock
 package-lock.json
 src/app-version.json
-src/app.version.ts
-src/shared/app-version/APP_VERSION.ts
 .eslintcache
 
 # Generated one-time prompts
