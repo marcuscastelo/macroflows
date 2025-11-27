@@ -70,7 +70,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   getDataToCopy: () => T
   onPaste: (data: T) => void
 }) {
-  const { read: readFromClipboard, clear: clearClipboard } = useClipboard()
+  const { read: readFromClipboard } = useClipboard()
 
   const handleCopy = () => {
     clipboardStore.copy(getDataToCopy())
@@ -211,7 +211,6 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   }
 
   return {
-    clearClipboard,
     handleCopy,
     handlePaste,
   }
