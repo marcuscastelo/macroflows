@@ -170,12 +170,21 @@ export function RecipeEditContent(props: {
             )}
             preparedMultiplier={recipe().prepared_multiplier}
             onPreparedQuantityChange={({ newMultiplier }) => {
-              const newRecipe = updateRecipePreparedMultiplier(
-                recipe(),
-                newMultiplier(),
-              )
+              try {
+                const newRecipe = updateRecipePreparedMultiplier(
+                  recipe(),
+                  newMultiplier(),
+                )
 
-              setRecipe(newRecipe)
+                setRecipe(newRecipe)
+              } catch (error) {
+                showError(
+                  error instanceof Error
+                    ? error
+                    : new Error('Multiplicador inválido'),
+                  { context: 'user-action' },
+                )
+              }
             }}
           />
           <div class="text-gray-400 ml-1">Peso (pronto)</div>
