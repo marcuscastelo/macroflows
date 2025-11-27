@@ -15,8 +15,8 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { FloatInput } from '~/sections/common/components/FloatInput'
-import { MaxQuantityButton } from '~/sections/common/components/MaxQuantityButton'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
+import { ItemMaxQuantityButton } from '~/sections/item/components/ItemView/ItemEdit/ItemMaxQuantityButton'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemQuantityControlsProps = {
@@ -141,7 +141,7 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
             isFoodItem(props.itemDraft()) || isRecipeItem(props.itemDraft())
           }
         >
-          <MaxQuantityButton
+          <ItemMaxQuantityButton
             currentValue={props.quantityField.value() ?? 0}
             macroTargets={props.getAvailableMacros()}
             itemMacros={(() => {
