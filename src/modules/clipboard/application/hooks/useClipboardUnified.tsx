@@ -94,23 +94,18 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
     clipboardStore.copy(getDataToCopy())
   }
 
-  const processClipboardText = async (
-    clipboardText: string,
-    clearWhenFromApi = true,
-  ) => {
-    console.debug('Processing clipboard text:', clipboardText)
-    const data = deserializeClipboard(clipboardText, acceptedClipboardSchema)
+  const processClipboardText = async (data: T | null) => {
     if (data === null) {
-      throw new Error('Invalid clipboard data: ' + clipboardText)
+      showError('O conteúdo da área de transferência não pôde ser processado.')
+      return
     }
     onPaste(data)
-    if (clearWhenFromApi) clearClipboard()
   }
 
   const readAndParseClipboard = async () => {
     const clipboardText = await readFromClipboard()
     const parsed = deserializeClipboard(clipboardText, acceptedClipboardSchema)
-    return { clipboardText, parsed }
+    return parsed
   }
 
   // Note: use getPayloadType + openPreviewModal to determine how to show previews
@@ -121,7 +116,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
     return d.__type
   }
 
-  const openPreviewModal = (payload: T, clipboardText: string) => {
+  const openPreviewModal = (payload: T) => {
     const type = getPayloadType(payload)
 
     // If payload contains items (Meal, Recipe or array of Items), render ItemListView
@@ -172,7 +167,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
                   type="button"
                   class="btn btn-primary"
                   onClick={() => {
-                    processClipboardText(clipboardText)
+                    processClipboardText(payload)
                       .finally(() => closeModal(modalId))
                       .catch((err) => {
                         showError(`Erro ao colar itens: ${JSON.stringify(err)}`)
@@ -206,16 +201,16 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
       title: 'Colar itens',
       confirmText: 'Colar',
       cancelText: 'Cancelar',
-      onConfirm: () => readFromClipboard().then(processClipboardText),
+      onConfirm: () => readAndParseClipboard().then(processClipboardText),
     })
   }
 
   const handlePaste = async () => {
     try {
-      const { clipboardText, parsed } = await readAndParseClipboard()
+      const parsed = await readAndParseClipboard()
 
       if (parsed !== null) {
-        openPreviewModal(parsed, clipboardText)
+        openPreviewModal(parsed)
         return
       }
 
@@ -224,14 +219,14 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
         title: 'Colar itens',
         confirmText: 'Colar',
         cancelText: 'Cancelar',
-        onConfirm: () => readFromClipboard().then(processClipboardText),
+        onConfirm: () => readAndParseClipboard().then(processClipboardText),
       })
     } catch (_err) {
       openConfirmModal('Tem certeza que deseja colar os itens?', {
         title: 'Colar itens',
         confirmText: 'Colar',
         cancelText: 'Cancelar',
-        onConfirm: () => readFromClipboard().then(processClipboardText),
+        onConfirm: () => readAndParseClipboard().then(processClipboardText),
       })
     }
   }
