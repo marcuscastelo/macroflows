@@ -24,6 +24,8 @@ vi.mock('~/modules/toast/application/toastManager', () => ({
   showPromise: vi.fn((promise) => promise), // Pass through the promise
 }))
 
+import { showPromise } from '~/modules/toast/application/toastManager'
+
 const mockRepository = {
   fetchDayDietById: vi.fn(),
   fetchDayDietByUserIdAndTargetDay: vi.fn(),
@@ -151,9 +153,6 @@ describe('Day Diet CRUD Operations', () => {
 
       expect(mockRepository.insertDayDiet).toHaveBeenCalledWith(newDayDiet)
 
-      const { showPromise } = await import(
-        '~/modules/toast/application/toastManager'
-      )
       expect(showPromise).toHaveBeenCalledWith(
         expect.any(Promise),
         {
@@ -199,9 +198,6 @@ describe('Day Diet CRUD Operations', () => {
         updatedData,
       )
 
-      const { showPromise } = await import(
-        '~/modules/toast/application/toastManager'
-      )
       expect(showPromise).toHaveBeenCalledWith(
         expect.any(Promise),
         {
@@ -239,9 +235,6 @@ describe('Day Diet CRUD Operations', () => {
 
       expect(mockRepository.deleteDayDietById).toHaveBeenCalledWith(dayDiet.id)
 
-      const { showPromise } = await import(
-        '~/modules/toast/application/toastManager'
-      )
       expect(showPromise).toHaveBeenCalledWith(
         expect.any(Promise),
         {

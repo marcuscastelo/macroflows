@@ -159,6 +159,68 @@ try {
 ## Import Rules Violations
 - **Barrel Files (`index.ts`) are BANNED:** The `CLAUDE.md` explicitly states that barrel files (`index.ts`) that only re-export from other files are forbidden.
 
+## Dynamic Imports (`import()`) Ban
+
+### Policy
+**Inline dynamic imports are banned** in application code. Dynamic imports (`import()`) should only be used through approved code-splitting patterns.
+
+### Approved Patterns
+1. **`lazyImport()` utility** for component lazy loading:
+   ```typescript
+   // src/shared/solid/lazyImport.ts - approved pattern
+   const { UserInfo } = lazyImport(
+     () => import('~/sections/profile/components/UserInfo'),
+     ['UserInfo'],
+   )
+   ```
+
+2. **SolidJS `lazy()`** for component code-splitting:
+   ```typescript
+   import { lazy } from 'solid-js'
+   const LazyComponent = lazy(() => import('~/components/MyComponent'))
+   ```
+
+### ❌ Forbidden Patterns
+```typescript
+// BAD: Inline dynamic import in catch block
+try {
+  await doSomething()
+} catch (error) {
+  import('~/shared/utils/logging')
+    .then(({ logging }) => logging.error(error))
+}
+
+// BAD: Inline dynamic import for runtime module loading
+const module = await import('~/utils/something')
+```
+
+### ✅ Correct Approach
+```typescript
+// GOOD: Static import at the top of the file
+import { logging } from '~/shared/utils/logging'
+
+try {
+  await doSomething()
+} catch (error) {
+  logging.error('Error occurred:', error)
+}
+```
+
+### Exceptions (Allowed Files)
+The ESLint rule (`no-restricted-syntax` with `ImportExpression` selector) is disabled for:
+- `src/shared/solid/lazyImport.ts` - the lazy loading utility itself
+- `src/app.tsx` - app entry point
+- `src/routes/**/*.tsx` - route components with lazy-loaded children
+- `src/sections/**/*.tsx` - section components using `lazyImport()`
+- `src/modules/observability/**/*.ts` - infrastructure code for SSR/client detection
+- `**/*.test.ts`, `**/*.test.tsx` - test files for mocking
+
+### Requesting Exceptions
+If you need to add a new exception:
+1. Add the file pattern to `eslint.config.mjs` in the dynamic imports exception block
+2. Document the reason in the ESLint config comment
+3. Ensure the usage follows code-splitting best practices
+
 ## **Component Duplication - Specific Cases**
 
 

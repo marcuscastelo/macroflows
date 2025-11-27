@@ -7,8 +7,9 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
-
 // Mock dependencies
 vi.mock('~/modules/diet/macro-target/application/macroTarget', () => ({
   getMacroTargetForDay: vi.fn(),
@@ -21,11 +22,6 @@ vi.mock('~/modules/diet/meal/application/meal', () => ({
 vi.mock('~/shared/utils/date/dateUtils', () => ({
   stringToDate: vi.fn(() => new Date('2023-01-01')),
 }))
-
-const { macroTargetUseCases } = await import(
-  '~/modules/diet/macro-target/application/macroTargetUseCases'
-)
-const { updateMeal } = await import('~/modules/diet/meal/application/meal')
 
 function makeTestItem(id = 1) {
   return createItem({
