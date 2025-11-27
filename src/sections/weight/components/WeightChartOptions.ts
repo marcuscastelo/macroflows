@@ -37,7 +37,8 @@ export function buildWeightChartOptions({
       max: max + 1,
       tickAmount: y.tickAmount,
       labels: {
-        formatter: (val: number) => `${val.toFixed(y.decimalsInFloat)} kg`,
+        formatter: (val: number | undefined) =>
+          `${val?.toFixed(y.decimalsInFloat)} kg`,
       },
     },
     stroke: {
