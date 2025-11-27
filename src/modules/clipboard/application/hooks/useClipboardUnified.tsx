@@ -10,7 +10,6 @@ import { ItemListView } from '~/sections/item/components/ItemListView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
-import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 import { logging } from '~/shared/utils/logging'
 import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
 
@@ -32,31 +31,6 @@ export const clipboardStore = createRoot(() => {
 
   return store
 })
-
-/**
- * Hook for reading/writing clipboard via the in-app clipboard store
- */
-function useClipboard() {
-  const handleRead = async () => {
-    try {
-      const clipboard = clipboardStore.read()
-      const clipboardText = JSON.stringify(clipboard?.payload)
-
-      return clipboardText
-    } catch (err) {
-      showError(`Failed to read using clipboard store: ${JSON.stringify(err)}`)
-    }
-
-    return ''
-  }
-
-  return {
-    read: handleRead,
-    clear: () => {
-      clipboardStore.clear()
-    },
-  }
-}
 
 /**
  * Hook that provides copy / paste actions for a given schema and handlers
