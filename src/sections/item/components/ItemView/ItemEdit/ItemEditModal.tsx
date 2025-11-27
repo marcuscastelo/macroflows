@@ -39,7 +39,7 @@ import {
   openRecipeEditModal,
   openTemplateSearchModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
-import { generateId } from '~/shared/utils/idUtils'
+import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemEditModalProps = {
@@ -335,14 +335,8 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
                     reference: {
                       type: 'group',
                       children: [
-                        createItem({
-                          ...currentItem,
-                          id: generateId(),
-                        }),
-                        {
-                          ...newItem,
-                          id: generateId(),
-                        },
+                        regenerateId(currentItem),
+                        regenerateId(newItem),
                       ],
                     },
                   })
