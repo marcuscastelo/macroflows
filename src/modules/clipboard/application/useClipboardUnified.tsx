@@ -1,4 +1,4 @@
-import { createEffect, createRoot, createSignal, onCleanup } from 'solid-js'
+import { createRoot, createSignal } from 'solid-js'
 import { type z } from 'zod/v4'
 
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
@@ -30,15 +30,62 @@ const clipboardStore = createRoot(() => {
     persistence: createNoOpPersistence(),
   })
 
-  // Clean expired entries every hour
+  // Local signal reflecting current entries. We will update this signal
+  // when mutating operations occur so callers can subscribe to it via
+  // Solid's reactive system instead of a custom subscribe mechanism.
+  const [entries, setEntries] = createSignal<ClipboardEntry[]>(
+    globalStore.readAll(),
+  )
+
+  // Clean expired entries every hour and refresh signal
   setInterval(
     () => {
       globalStore.cleanExpired()
+      setEntries(globalStore.readAll())
     },
     60 * 60 * 1000,
   )
 
-  return globalStore
+  // Wrap mutating methods so they update the entries signal after performing
+  // their operation. Use a loose args signature and cast to `any` when calling
+  // the underlying store to avoid coupling to the store's precise types here.
+  const copy = (...args: any[]) => {
+    const res = (globalStore.copy as any)(...args)
+    setEntries(globalStore.readAll())
+    return res
+  }
+
+  const clear = (...args: any[]) => {
+    const res = (globalStore.clear as any)(...args)
+    setEntries(globalStore.readAll())
+    return res
+  }
+
+  const remove = (...args: any[]) => {
+    const res = (globalStore.remove as any)(...args)
+    setEntries(globalStore.readAll())
+    return res
+  }
+
+  const togglePin = (...args: any[]) => {
+    const res = (globalStore.togglePin as any)(...args)
+    setEntries(globalStore.readAll())
+    return res
+  }
+
+  const read = globalStore.read.bind(globalStore)
+  const readAll = () => entries()
+
+  return {
+    // expose the entries accessor (signal) so consumers can react to it
+    entries,
+    copy,
+    read,
+    readAll,
+    clear,
+    remove,
+    togglePin,
+  }
 })
 
 /**
@@ -46,26 +93,17 @@ const clipboardStore = createRoot(() => {
  */
 export function useClipboardStore() {
   const store = clipboardStore
-  const [entries, setEntries] = createSignal<ClipboardEntry[]>(store.readAll())
 
-  createEffect(() => {
-    const unsubscribe = store.subscribe((newEntries) => {
-      setEntries(newEntries)
-    })
-
-    onCleanup(() => {
-      unsubscribe()
-    })
-  })
-
+  // The store exposes an `entries` accessor (Solid signal). Return it
+  // directly so consumers can react to it via Solid instead of subscribing.
   return {
-    entries,
-    copy: store.copy.bind(store),
-    read: store.read.bind(store),
-    readAll: store.readAll.bind(store),
-    clear: store.clear.bind(store),
-    remove: store.remove.bind(store),
-    togglePin: store.togglePin.bind(store),
+    entries: store.entries,
+    copy: store.copy,
+    read: store.read,
+    readAll: store.readAll,
+    clear: store.clear,
+    remove: store.remove,
+    togglePin: store.togglePin,
   }
 }
 
