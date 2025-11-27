@@ -94,7 +94,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
     clipboardStore.copy(getDataToCopy())
   }
 
-  const processClipboardText = async (data: T | null) => {
+  const emitPasteIfPresent = async (data: T | null) => {
     if (data === null) {
       showError('O conteúdo da área de transferência não pôde ser processado.')
       return
@@ -167,11 +167,8 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
                   type="button"
                   class="btn btn-primary"
                   onClick={() => {
-                    processClipboardText(payload)
-                      .finally(() => closeModal(modalId))
-                      .catch((err) => {
-                        showError(`Erro ao colar itens: ${JSON.stringify(err)}`)
-                      })
+                    onPaste(payload)
+                    closeModal(modalId)
                   }}
                 >
                   Colar
@@ -201,7 +198,7 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
       title: 'Colar itens',
       confirmText: 'Colar',
       cancelText: 'Cancelar',
-      onConfirm: () => readAndParseClipboard().then(processClipboardText),
+      onConfirm: () => readAndParseClipboard().then(emitPasteIfPresent),
     })
   }
 
@@ -219,14 +216,14 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
         title: 'Colar itens',
         confirmText: 'Colar',
         cancelText: 'Cancelar',
-        onConfirm: () => readAndParseClipboard().then(processClipboardText),
+        onConfirm: () => readAndParseClipboard().then(emitPasteIfPresent),
       })
     } catch (_err) {
       openConfirmModal('Tem certeza que deseja colar os itens?', {
         title: 'Colar itens',
         confirmText: 'Colar',
         cancelText: 'Cancelar',
-        onConfirm: () => readAndParseClipboard().then(processClipboardText),
+        onConfirm: () => readAndParseClipboard().then(emitPasteIfPresent),
       })
     }
   }
