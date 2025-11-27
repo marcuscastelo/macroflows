@@ -70,8 +70,6 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   getDataToCopy: () => T
   onPaste: (data: T) => void
 }) {
-  const { read: readFromClipboard } = useClipboard()
-
   const handleCopy = () => {
     clipboardStore.copy(getDataToCopy())
   }
@@ -85,9 +83,12 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   }
 
   const readAndParseClipboard = async () => {
-    const clipboardText = await readFromClipboard()
-    const parsed = deserializeClipboard(clipboardText, acceptedClipboardSchema)
-    return parsed
+    const data = clipboardStore.read()
+    const safeParseResult = acceptedClipboardSchema.safeParse(data)
+    if (safeParseResult.success) {
+      return safeParseResult.data satisfies T
+    }
+    return null
   }
 
   // Note: use getPayloadType + openPreviewModal to determine how to show previews
