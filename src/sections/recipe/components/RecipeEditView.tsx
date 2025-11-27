@@ -56,7 +56,7 @@ export function RecipeEditHeader(props: {
   const acceptedClipboardSchema = mealSchema
     .or(recipeSchema)
     .or(itemSchema)
-    .or(z.array(itemSchema))
+    .or(mealSchema)
 
   const { recipe } = useRecipeEditContext()
 
