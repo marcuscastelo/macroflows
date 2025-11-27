@@ -9,7 +9,7 @@ This audit reviews the `recipe` submodule within the diet domain, focusing on DD
 - **ID Generation in Domain:** If present, ID generation should be moved to infrastructure or application. Check for any use of legacy utilities in domain code.
 - **Schema/Type Logic:** Zod schemas are used for validation and transformation. Ensure transformation logic (e.g., setting `__type`) is isolated for clarity.
 - **Repository Interface:** The domain defines a `RecipeRepository` interface, which is good for abstraction and testability. Review for strict contracts and nullability.
-- **Error Handling:** No direct use of `handleApiError` in domain, which is correct. However, there are no custom error classes for domain invariants or business rules.
+- **Error Handling:** No direct use of side-effect utilities in domain, which is correct. However, there are no custom error classes for domain invariants or business rules.
 - **Test Coverage:** There is a test file for recipe operations, but coverage of invariants and edge cases should be reviewed.
 
 ## Urgency

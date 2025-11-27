@@ -231,7 +231,7 @@ describe('CopyDayOperations', () => {
       expect(operations.state().copyingDay).toBe(null)
     })
 
-    it('should handle repository error and call handleApiError', async () => {
+    it('should handle fetch error and call errorHandler.apiError', async () => {
       const sourceDayDiet = makeMockDayDiet('2023-01-01')
       const previousDays = [sourceDayDiet]
       const error = new Error('Database error')
