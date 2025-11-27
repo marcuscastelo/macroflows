@@ -197,7 +197,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={() => clipboardActions.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+          onCopy={() => clipboardUseCases.save(props.itemDraft())} // TODO: copy self vs children? (expandable?)
           onPaste={() => void clipboardActions.paste().catch(console.error)}
           onClear={() => {}} // Empty function since canClear is false
         />

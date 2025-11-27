@@ -5,10 +5,7 @@ import { createClipboardStore } from '~/modules/clipboard/application/store/clip
 import { type ClipboardPayload } from '~/modules/clipboard/domain/clipboardEntry'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import {
-  showError,
-  showSuccess,
-} from '~/modules/toast/application/toastManager'
+import { showError } from '~/modules/toast/application/toastManager'
 import { ItemListView } from '~/sections/item/components/ItemListView'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
@@ -138,12 +135,6 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   acceptedClipboardSchema: z.ZodType<T>
   onPaste: (data: T) => void
 }) {
-  const copy = (data: T) => {
-    const dataToCopy = data
-    clipboardStore.copy(dataToCopy)
-    showSuccess('Conteúdo copiado para a área de transferência.')
-  }
-
   const paste = async () => {
     const parsed = await readAndParseClipboard(acceptedClipboardSchema)
     if (parsed === null) {
@@ -155,7 +146,6 @@ export function useCopyPasteActions<T extends ClipboardPayload>({
   }
 
   return {
-    copy,
     paste,
   }
 }

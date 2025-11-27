@@ -86,7 +86,7 @@ export function RecipeEditHeader(props: {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={() => clipboardActions.copy(recipe())}
+        onCopy={() => clipboardUseCases.save(recipe())}
         onPaste={() => void clipboardActions.paste().catch(console.error)}
         onClear={onClearItems}
       />

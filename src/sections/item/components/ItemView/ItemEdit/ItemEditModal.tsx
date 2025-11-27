@@ -10,6 +10,7 @@ import {
 } from 'solid-js'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
@@ -318,7 +319,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             onEditChild={handleEditChild}
             viewMode={viewMode()}
             clipboardActions={{
-              onCopy: () => clipboardActions.copy(itemDraft()),
+              onCopy: () => clipboardUseCases.save(itemDraft()),
               onPaste: () => void clipboardActions.paste().catch(console.error),
             }}
             onAddNewItem={() => {

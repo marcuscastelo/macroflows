@@ -3,10 +3,12 @@ import {
   type ClipboardEntry,
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { showSuccess } from '~/modules/toast/application/toastManager'
 
 export const clipboardUseCases = {
   save(payload: ClipboardPayload): void {
     clipboardStore.copy(payload)
+    showSuccess('Conteúdo copiado para a área de transferência.')
   },
 
   remove(id: string): void {

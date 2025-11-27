@@ -118,7 +118,7 @@ export function MealEditViewHeader(props: {
           canCopy={meal().items.length > 0}
           canPaste={true}
           canClear={meal().items.length > 0}
-          onCopy={() => clipboardActions.copy(meal())}
+          onCopy={() => clipboardUseCases.save(meal())}
           onPaste={() => void clipboardActions.paste().catch(console.error)}
           onClear={onClearItems}
         />
