@@ -44,14 +44,7 @@ export const clipboardStore = createRoot(() => {
 /**
  * Hook for reading/writing clipboard via the in-app clipboard store
  */
-export function useClipboard(props?: {
-  filter?: ClipboardFilter
-  periodicRead?: boolean
-}) {
-  // keep the filter accessor for API compatibility with previous implementation
-
-  const _filter = () => props?.filter
-
+function useClipboard() {
   const handleWrite = (text: string, onError?: (error: unknown) => void) => {
     try {
       // Treat empty string as a clear request for the clipboard store
@@ -134,14 +127,11 @@ export function useCopyPasteActions<T extends ClipboardEntry['payload']>({
   getDataToCopy: () => T
   onPaste: (data: T) => void
 }) {
-  const isClipboardValid = createClipboardSchemaFilter(acceptedClipboardSchema)
   const {
     read: readFromClipboard,
     write: writeToClipboard,
     clear: clearClipboard,
-  } = useClipboard({
-    filter: isClipboardValid,
-  })
+  } = useClipboard()
 
   const handleCopy = () => {
     writeToClipboard(JSON.stringify(getDataToCopy()))

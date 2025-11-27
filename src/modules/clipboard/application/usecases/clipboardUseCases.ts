@@ -1,7 +1,4 @@
-import {
-  clipboardStore,
-  useClipboard,
-} from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { clipboardStore } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import {
   type ClipboardEntry,
   type ClipboardPayload,
@@ -9,9 +6,7 @@ import {
 
 export const clipboardUseCases = {
   save(payload: ClipboardPayload): void {
-    const clipboard = useClipboard()
     clipboardStore.copy(payload)
-    clipboard.write(JSON.stringify(payload))
   },
 
   remove(id: string): void {
