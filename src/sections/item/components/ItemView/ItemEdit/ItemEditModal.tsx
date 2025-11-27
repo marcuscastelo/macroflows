@@ -150,10 +150,18 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   })
 
   const canApply = () => {
+    const item = itemDraft()
     logging.debug('[ItemEditModal] canApply', {
-      quantity: itemDraft().quantity,
+      quantity: item.quantity,
+      name: item.name,
     })
-    return itemDraft().quantity > 0
+    // Check quantity is valid
+    if (item.quantity <= 0) return false
+    // For parent items (GroupItem/RecipeItem), also check name is not empty
+    if (isGroupItem(item) || isRecipeItem(item)) {
+      if (item.name.trim().length === 0) return false
+    }
+    return true
   }
 
   const handleEditChild = (child: Item) => {
