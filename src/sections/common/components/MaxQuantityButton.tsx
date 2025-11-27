@@ -12,6 +12,7 @@ import {
   getDominantMacro,
   type MacroType,
   type MaxQuantityMode,
+  type MaxQuantityOptions,
   type MaxQuantityResult,
 } from '~/modules/diet/item/domain/maxQuantityCalculations'
 import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
@@ -82,6 +83,8 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
   )
   const [showTooltip, setShowTooltip] = createSignal(false)
   const [tooltipMessage, setTooltipMessage] = createSignal('')
+  // Toggle state for dominant items: alternates between respecting and ignoring other macro limits
+  const [forceDominant, setForceDominant] = createSignal(false)
   let popoverRef: HTMLDivElement | undefined
   let buttonRef: HTMLButtonElement | undefined
   let longPressTimer: ReturnType<typeof setTimeout> | undefined
@@ -89,8 +92,16 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
   const dominantMacro = () => getDominantMacro(props.itemMacros)
   const isMixedItem = () => dominantMacro() === null
 
-  function getResult(mode: MaxQuantityMode): MaxQuantityResult {
-    return calculateMaxQuantity(mode, props.itemMacros, props.macroTargets)
+  function getResult(
+    mode: MaxQuantityMode,
+    options: MaxQuantityOptions = {},
+  ): MaxQuantityResult {
+    return calculateMaxQuantity(
+      mode,
+      props.itemMacros,
+      props.macroTargets,
+      options,
+    )
   }
 
   function handleClickOutside(e: MouseEvent) {
@@ -147,9 +158,14 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
     }
   })
 
-  function applyMode(mode: MaxQuantityMode) {
-    const result = getResult(mode)
-    logging.debug('[MaxQuantityButton] Applying mode', { mode, result })
+  function applyMode(mode: MaxQuantityMode, options: MaxQuantityOptions = {}) {
+    const result = getResult(mode, options)
+    const isIgnoringOtherMacros = options.ignoreOtherMacros === true
+    logging.debug('[MaxQuantityButton] Applying mode', {
+      mode,
+      result,
+      ignoreOtherMacros: isIgnoringOtherMacros,
+    })
 
     if (result.grams > 0) {
       props.onMaxSelected(result.grams)
@@ -157,14 +173,28 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
       // Show tooltip for dominant macro items
       if (!isMixedItem() && mode !== 'balanced') {
         const dominantLabel = getMacroLabel(dominantMacro())
-        setTooltipMessage(`Maximizando ${dominantLabel}`)
+        if (isIgnoringOtherMacros) {
+          setTooltipMessage(
+            `Maximizando ${dominantLabel} (ignorando outros limites)`,
+          )
+        } else if (result.limitedBy !== null) {
+          setTooltipMessage(
+            `Maximizando ${dominantLabel} (limitado por ${getMacroLabel(result.limitedBy)})`,
+          )
+        } else {
+          setTooltipMessage(`Maximizando ${dominantLabel}`)
+        }
         setShowTooltip(true)
-        setTimeout(() => setShowTooltip(false), 2000)
+        setTimeout(() => setShowTooltip(false), 2500)
       }
     }
 
     setIsOpen(false)
     setSelectedMode(null)
+    // Reset toggle when manually selecting from menu
+    if (isOpen()) {
+      setForceDominant(false)
+    }
   }
 
   function handleClick(e: MouseEvent) {
@@ -177,10 +207,13 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
       return
     }
 
-    // For dominant items, apply the dominant macro directly
+    // For dominant items, toggle between respecting and ignoring other macro limits
     const dominant = dominantMacro()
     if (dominant) {
-      applyMode(dominant)
+      const shouldIgnoreOtherMacros = forceDominant()
+      // Toggle for next tap
+      setForceDominant(!forceDominant())
+      applyMode(dominant, { ignoreOtherMacros: shouldIgnoreOtherMacros })
     } else {
       applyMode('balanced')
     }
@@ -190,6 +223,8 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
     // Start long press timer for mobile
     longPressTimer = setTimeout(() => {
       setIsOpen(true)
+      // Reset toggle when opening menu via long-press
+      setForceDominant(false)
     }, LONG_PRESS_DURATION_MS)
   }
 
@@ -201,6 +236,8 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
   }
 
   function handleOptionSelect(mode: MaxQuantityMode) {
+    // When selecting from menu, reset toggle and apply without ignoring other macros
+    setForceDominant(false)
     applyMode(mode)
   }
 
@@ -311,7 +348,14 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
 
           {/* Help text */}
           <div class="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">
-            <span>Toque curto = Balanceado • Toque longo = Menu</span>
+            <Show
+              when={!isMixedItem()}
+              fallback={<span>Toque curto = Menu • Toque longo = Menu</span>}
+            >
+              <span>
+                1º toque = respeita limites • 2º toque = ignora limites
+              </span>
+            </Show>
           </div>
         </div>
       </Show>
@@ -327,39 +371,54 @@ type PreviewPanelProps = {
 function PreviewPanel(props: PreviewPanelProps): JSX.Element {
   const calcPercentage = (added: number, remaining: number): number => {
     if (remaining <= 0) return added > 0 ? 100 : 0
+    // Allow percentages above 100% when ignoring other macros
+    if (props.result.ignoredOtherMacros) {
+      return (added / remaining) * 100
+    }
     return Math.min(100, (added / remaining) * 100)
   }
 
+  const isOverLimit = (percentage: number): boolean =>
+    props.result.ignoredOtherMacros && percentage > 100
+
+  const carbPercentage = () =>
+    calcPercentage(props.result.preview.carbs, props.macroTargets.carbs)
+  const proteinPercentage = () =>
+    calcPercentage(props.result.preview.protein, props.macroTargets.protein)
+  const fatPercentage = () =>
+    calcPercentage(props.result.preview.fat, props.macroTargets.fat)
+
   return (
     <div class="space-y-1">
-      <div class="text-xs text-gray-400 mb-1">Preview:</div>
+      <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+        <span>Preview:</span>
+        <Show when={props.result.ignoredOtherMacros}>
+          <span class="text-orange-400 font-medium">
+            ⚠ Ignorando outros limites
+          </span>
+        </Show>
+      </div>
       <div class="grid grid-cols-3 gap-2 text-xs">
         <PreviewMacroItem
           label="C"
           value={props.result.preview.carbs}
-          percentage={calcPercentage(
-            props.result.preview.carbs,
-            props.macroTargets.carbs,
-          )}
+          percentage={carbPercentage()}
           color="text-yellow-400"
+          isOverLimit={isOverLimit(carbPercentage())}
         />
         <PreviewMacroItem
           label="P"
           value={props.result.preview.protein}
-          percentage={calcPercentage(
-            props.result.preview.protein,
-            props.macroTargets.protein,
-          )}
+          percentage={proteinPercentage()}
           color="text-blue-400"
+          isOverLimit={isOverLimit(proteinPercentage())}
         />
         <PreviewMacroItem
           label="G"
           value={props.result.preview.fat}
-          percentage={calcPercentage(
-            props.result.preview.fat,
-            props.macroTargets.fat,
-          )}
+          percentage={fatPercentage()}
           color="text-red-400"
+          isOverLimit={isOverLimit(fatPercentage())}
         />
       </div>
     </div>
@@ -371,6 +430,7 @@ type PreviewMacroItemProps = {
   value: number
   percentage: number
   color: string
+  isOverLimit?: boolean
 }
 
 function PreviewMacroItem(props: PreviewMacroItemProps): JSX.Element {
@@ -378,7 +438,18 @@ function PreviewMacroItem(props: PreviewMacroItemProps): JSX.Element {
     <div class="text-center">
       <div class={cn('font-medium', props.color)}>{props.label}</div>
       <div class="text-white">{formatGrams(props.value)}</div>
-      <div class="text-gray-500">{Math.round(props.percentage)}%</div>
+      <div
+        class={cn(
+          props.isOverLimit === true
+            ? 'text-orange-400 font-medium'
+            : 'text-gray-500',
+        )}
+      >
+        {Math.round(props.percentage)}%
+        <Show when={props.isOverLimit === true}>
+          <span class="ml-0.5">⚠</span>
+        </Show>
+      </div>
     </div>
   )
 }

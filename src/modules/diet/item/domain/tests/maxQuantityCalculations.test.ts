@@ -360,3 +360,130 @@ describe('real-world scenarios', () => {
     })
   })
 })
+
+describe('ignoreOtherMacros option', () => {
+  describe('getMaxForMacro with ignoreOtherMacros: true', () => {
+    // Example: Beef (per 100g: 26g protein, 15g fat)
+    const beefLike = { carbs: 0, protein: 26, fat: 15 }
+
+    it('should ignore fat constraint when maximizing protein', () => {
+      const remaining = { carbs: 100, protein: 100, fat: 10 }
+
+      // Without ignoreOtherMacros: limited to 66.67g by fat
+      const constrained = getMaxForMacro('protein', beefLike, remaining)
+      expect(constrained.grams).toBe(66.67)
+      expect(constrained.limitedBy).toBe('fat')
+      expect(constrained.ignoredOtherMacros).toBe(false)
+
+      // With ignoreOtherMacros: uses full protein target
+      const unconstrained = getMaxForMacro('protein', beefLike, remaining, {
+        ignoreOtherMacros: true,
+      })
+      // Max from protein only: 100 / 0.26 = 384.62g
+      expect(unconstrained.grams).toBe(384.62)
+      expect(unconstrained.limitedBy).toBe(null)
+      expect(unconstrained.ignoredOtherMacros).toBe(true)
+    })
+
+    it('should ignore protein constraint when maximizing fat', () => {
+      const remaining = { carbs: 100, protein: 10, fat: 100 }
+
+      // Without ignoreOtherMacros: limited to 38.46g by protein
+      const constrained = getMaxForMacro('fat', beefLike, remaining)
+      expect(constrained.grams).toBe(38.46)
+      expect(constrained.limitedBy).toBe('protein')
+      expect(constrained.ignoredOtherMacros).toBe(false)
+
+      // With ignoreOtherMacros: uses full fat target
+      const unconstrained = getMaxForMacro('fat', beefLike, remaining, {
+        ignoreOtherMacros: true,
+      })
+      // Max from fat only: 100 / 0.15 = 666.67g
+      expect(unconstrained.grams).toBe(666.67)
+      expect(unconstrained.limitedBy).toBe(null)
+      expect(unconstrained.ignoredOtherMacros).toBe(true)
+    })
+
+    it('should still respect target macro remaining even when ignoring others', () => {
+      const item = { carbs: 20, protein: 10, fat: 5 }
+      // Only 30g of carbs remaining
+      const remaining = { carbs: 30, protein: 100, fat: 100 }
+
+      const result = getMaxForMacro('carb', item, remaining, {
+        ignoreOtherMacros: true,
+      })
+      // Max from carbs: 30 / 0.2 = 150g (limited by carbs remaining)
+      expect(result.grams).toBe(150)
+      expect(result.limitedBy).toBe(null) // null because we ignored others
+      expect(result.ignoredOtherMacros).toBe(true)
+    })
+
+    it('should return 0 when target macro has 0 per gram', () => {
+      const pureFat = { carbs: 0, protein: 0, fat: 100 }
+      const remaining = { carbs: 100, protein: 50, fat: 50 }
+      const result = getMaxForMacro('protein', pureFat, remaining, {
+        ignoreOtherMacros: true,
+      })
+
+      expect(result.grams).toBe(0)
+      expect(result.limitedBy).toBe(null)
+      expect(result.ignoredOtherMacros).toBe(true)
+    })
+  })
+
+  describe('calculateMaxQuantity with ignoreOtherMacros option', () => {
+    const item = { carbs: 30, protein: 20, fat: 10 }
+    const remaining = { carbs: 60, protein: 50, fat: 10 }
+
+    it('should pass ignoreOtherMacros to getMaxForMacro for protein mode', () => {
+      // Without option: limited by fat (10 / 0.1 = 100g)
+      const constrained = calculateMaxQuantity('protein', item, remaining)
+      expect(constrained.grams).toBe(100)
+      expect(constrained.limitedBy).toBe('fat')
+      expect(constrained.ignoredOtherMacros).toBe(false)
+
+      // With option: protein only (50 / 0.2 = 250g)
+      const unconstrained = calculateMaxQuantity('protein', item, remaining, {
+        ignoreOtherMacros: true,
+      })
+      expect(unconstrained.grams).toBe(250)
+      expect(unconstrained.limitedBy).toBe(null)
+      expect(unconstrained.ignoredOtherMacros).toBe(true)
+    })
+
+    it('should not affect balanced mode (always respects all constraints)', () => {
+      const balancedResult = calculateMaxQuantity('balanced', item, remaining, {
+        ignoreOtherMacros: true,
+      })
+      // Balanced mode ignores the option; still limited by fat
+      expect(balancedResult.grams).toBe(100)
+      expect(balancedResult.limitedBy).toBe('fat')
+      expect(balancedResult.ignoredOtherMacros).toBe(false)
+    })
+  })
+
+  describe('ignoredOtherMacros flag in result', () => {
+    it('should be false for balanced mode', () => {
+      const item = { carbs: 30, protein: 20, fat: 10 }
+      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const result = getMaxBalanced(item, remaining)
+      expect(result.ignoredOtherMacros).toBe(false)
+    })
+
+    it('should be false for getMaxForMacro without option', () => {
+      const item = { carbs: 30, protein: 20, fat: 10 }
+      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const result = getMaxForMacro('protein', item, remaining)
+      expect(result.ignoredOtherMacros).toBe(false)
+    })
+
+    it('should be true for getMaxForMacro with ignoreOtherMacros: true', () => {
+      const item = { carbs: 30, protein: 20, fat: 10 }
+      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const result = getMaxForMacro('protein', item, remaining, {
+        ignoreOtherMacros: true,
+      })
+      expect(result.ignoredOtherMacros).toBe(true)
+    })
+  })
+})
