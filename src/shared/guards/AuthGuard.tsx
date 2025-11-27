@@ -6,6 +6,7 @@ import {
   isAuthLoading,
 } from '~/modules/auth/application/usecases/authState'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
+import { isInGuestMode } from '~/shared/guest/guestState'
 
 type AuthGuardProps = {
   children: JSXElement
@@ -14,20 +15,29 @@ type AuthGuardProps = {
 }
 
 /**
- * Authentication guard component that protects routes requiring authentication
+ * Authentication guard component that protects routes requiring authentication.
+ * In guest mode, allows access without redirecting to login.
  */
 export function AuthGuard(props: AuthGuardProps) {
   const navigate = useNavigate()
 
   createEffect(() => {
+    // Skip redirect if in guest mode
+    if (isInGuestMode()) {
+      return
+    }
     if (!isAuthLoading() && !isAuthenticated()) {
       navigate(props.redirectTo ?? '/login')
     }
   })
 
+  // In guest mode, skip loading and show children directly
+  const showChildren = () => isInGuestMode() || isAuthenticated()
+  const isLoading = () => !isInGuestMode() && isAuthLoading()
+
   return (
     <Show
-      when={!isAuthLoading()}
+      when={!isLoading()}
       fallback={
         props.fallback ?? (
           <div class="min-h-screen flex items-center justify-center">
@@ -41,7 +51,7 @@ export function AuthGuard(props: AuthGuardProps) {
         )
       }
     >
-      <Show when={isAuthenticated()} fallback={null}>
+      <Show when={showChildren()} fallback={null}>
         {props.children}
       </Show>
     </Show>

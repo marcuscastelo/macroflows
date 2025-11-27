@@ -2,13 +2,24 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { createGuestDayGateway } from '~/modules/diet/day-diet/infrastructure/guest/guestDayGateway'
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
+import { isInGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseDayGateway()
+const guestGateway = createGuestDayGateway()
+
+/**
+ * Returns the appropriate gateway based on guest mode state
+ */
+function getGateway(): DayGateway {
+  return isInGuestMode() ? guestGateway : supabaseGateway
+}
 
 export function createDayDietRepository(): DayRepository {
   return {
@@ -25,7 +36,7 @@ export async function fetchDayDietById(
   dayId: DayDiet['id'],
 ): Promise<DayDiet | null> {
   try {
-    const dayDiet = await supabaseGateway.fetchDayDietById(dayId)
+    const dayDiet = await getGateway().fetchDayDietById(dayId)
     if (dayDiet === null) {
       dayCacheStore.removeFromCache({ by: 'id', value: dayId })
       return null
@@ -45,8 +56,10 @@ export async function fetchDayDietByUserIdAndTargetDay(
   targetDay: string,
 ): Promise<DayDiet | null> {
   try {
-    const currentDayDiet =
-      await supabaseGateway.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+    const currentDayDiet = await getGateway().fetchDayDietByUserIdAndTargetDay(
+      userId,
+      targetDay,
+    )
 
     if (currentDayDiet === null) {
       dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
@@ -67,7 +80,7 @@ export async function fetchDayDietsByUserIdBeforeDate(
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
   try {
-    const previousDays = await supabaseGateway.fetchDayDietsByUserIdBeforeDate(
+    const previousDays = await getGateway().fetchDayDietsByUserIdBeforeDate(
       userId,
       beforeDay,
       limit,
@@ -86,7 +99,7 @@ export async function insertDayDiet(
   dayDiet: NewDayDiet,
 ): Promise<DayDiet | null> {
   try {
-    const insertedDayDiet = await supabaseGateway.insertDayDiet(dayDiet)
+    const insertedDayDiet = await getGateway().insertDayDiet(dayDiet)
     if (insertedDayDiet !== null) {
       dayCacheStore.upsertToCache(insertedDayDiet)
     }
@@ -102,10 +115,7 @@ export async function updateDayDietById(
   dayDiet: NewDayDiet,
 ): Promise<DayDiet | null> {
   try {
-    const updatedDayDiet = await supabaseGateway.updateDayDietById(
-      dayId,
-      dayDiet,
-    )
+    const updatedDayDiet = await getGateway().updateDayDietById(dayId, dayDiet)
 
     if (updatedDayDiet !== null) {
       dayCacheStore.upsertToCache(updatedDayDiet)
@@ -119,7 +129,7 @@ export async function updateDayDietById(
 
 export async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {
   try {
-    await supabaseGateway.deleteDayDietById(dayId)
+    await getGateway().deleteDayDietById(dayId)
     dayCacheStore.removeFromCache({ by: 'id', value: dayId })
   } catch (error) {
     logging.error('DayDiet delete error:', error)

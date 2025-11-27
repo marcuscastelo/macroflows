@@ -7,6 +7,7 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { GuestGuard } from '~/shared/guards/GuestGuard'
+import { enableGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 export default function LoginPage() {
@@ -27,6 +28,11 @@ export default function LoginPage() {
     } finally {
       setIsSigningIn(false)
     }
+  }
+
+  const handleGuestMode = () => {
+    enableGuestMode()
+    navigate('/diet')
   }
 
   return (
@@ -110,7 +116,7 @@ export default function LoginPage() {
                 <Button
                   type="button"
                   class="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 py-3 px-4 rounded-lg font-medium transition-colors"
-                  onClick={() => navigate('/diet')}
+                  onClick={handleGuestMode}
                 >
                   Continuar sem login
                 </Button>
