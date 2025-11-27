@@ -350,7 +350,7 @@ export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
           <div class="px-3 py-2 border-t border-gray-700 text-xs text-gray-500">
             <Show
               when={!isMixedItem()}
-              fallback={<span>Toque curto = Menu • Toque longo = Menu</span>}
+              fallback={<span>Toque para abrir menu</span>}
             >
               <span>
                 1º toque = respeita limites • 2º toque = ignora limites
