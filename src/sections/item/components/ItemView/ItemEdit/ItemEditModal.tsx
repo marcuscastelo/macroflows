@@ -219,7 +219,6 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   // Clipboard functionality
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: itemSchema,
-    getDataToCopy: () => itemDraft(),
     onPaste: (data) => {
       setItemDraft(data)
     },
@@ -319,7 +318,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             onEditChild={handleEditChild}
             viewMode={viewMode()}
             clipboardActions={{
-              onCopy: clipboardActions.copy,
+              onCopy: () => clipboardActions.copy(itemDraft()),
               onPaste: () => void clipboardActions.paste().catch(console.error),
             }}
             onAddNewItem={() => {

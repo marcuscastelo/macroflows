@@ -44,7 +44,6 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   // Clipboard actions for children
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
-    getDataToCopy: () => props.itemDraft(), // TODO: copy self vs children? (expandable?)
     onPaste: (data) => {
       const itemsToAdd = ClipboardPayloadExt.extractItems(data)
 
@@ -198,7 +197,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={clipboardActions.copy}
+          onCopy={() => clipboardActions.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
           onPaste={() => void clipboardActions.paste().catch(console.error)}
           onClear={() => {}} // Empty function since canClear is false
         />

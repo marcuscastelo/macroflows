@@ -42,7 +42,6 @@ export function RecipeEditView(props: RecipeEditViewProps) {
 
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
-    getDataToCopy: () => recipe(),
     onPaste: (data) => {
       // Check if data is array of Items
       if (Array.isArray(data) && data.every(isItem)) {
@@ -92,7 +91,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={clipboardActions.copy}
+        onCopy={() => clipboardActions.copy(recipe())}
         onPaste={() => void clipboardActions.paste().catch(console.error)}
         onClear={onClearItems}
       />

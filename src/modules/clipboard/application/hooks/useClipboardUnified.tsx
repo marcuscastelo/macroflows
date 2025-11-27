@@ -133,15 +133,13 @@ const readAndParseClipboard = async <T extends ClipboardPayload>(
  */
 export function useCopyPasteActions<T extends ClipboardPayload>({
   acceptedClipboardSchema,
-  getDataToCopy,
   onPaste,
 }: {
   acceptedClipboardSchema: z.ZodType<T>
-  getDataToCopy: () => T
   onPaste: (data: T) => void
 }) {
-  const copy = () => {
-    const dataToCopy = getDataToCopy()
+  const copy = (data: T) => {
+    const dataToCopy = data
     clipboardStore.copy(dataToCopy)
     showSuccess('Conteúdo copiado para a área de transferência.')
   }

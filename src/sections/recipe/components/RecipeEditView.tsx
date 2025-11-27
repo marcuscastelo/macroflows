@@ -52,7 +52,6 @@ export function RecipeEditHeader(props: {
 
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
-    getDataToCopy: () => recipe(),
     onPaste: (data) => {
       const itemsToAdd = ClipboardPayloadExt.extractItems(data)
       const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
@@ -87,7 +86,7 @@ export function RecipeEditHeader(props: {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={clipboardActions.copy}
+        onCopy={() => clipboardActions.copy(recipe())}
         onPaste={() => void clipboardActions.paste().catch(console.error)}
         onClear={onClearItems}
       />

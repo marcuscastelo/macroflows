@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
+import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
@@ -83,7 +83,6 @@ export function MealEditViewHeader(props: {
   const { meal } = useMealContext()
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
-    getDataToCopy: () => meal(),
     onPaste: (data) => {
       const itemsToAdd = ClipboardPayloadExt.extractItems(data)
       const updatedMeal = addItemsToMeal(meal(), itemsToAdd)
@@ -105,30 +104,26 @@ export function MealEditViewHeader(props: {
   }
 
   return (
-    <Show when={meal()}>
-      {(mealSignal) => (
-        <div
-          class="flex"
-          tabindex={0}
+    <div
+      class="flex"
+      tabindex={0}
+      onPaste={() => void clipboardActions.paste().catch(console.error)}
+    >
+      <div class="my-2">
+        <h5 class="text-3xl">{meal().name}</h5>
+        <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
+      </div>
+      {props.mode !== 'summary' && (
+        <ClipboardActionButtons
+          canCopy={meal().items.length > 0}
+          canPaste={true}
+          canClear={meal().items.length > 0}
+          onCopy={() => clipboardActions.copy(meal())}
           onPaste={() => void clipboardActions.paste().catch(console.error)}
-        >
-          <div class="my-2">
-            <h5 class="text-3xl">{mealSignal().name}</h5>
-            <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
-          </div>
-          {props.mode !== 'summary' && (
-            <ClipboardActionButtons
-              canCopy={mealSignal().items.length > 0}
-              canPaste={true}
-              canClear={mealSignal().items.length > 0}
-              onCopy={clipboardActions.copy}
-              onPaste={() => void clipboardActions.paste().catch(console.error)}
-              onClear={onClearItems}
-            />
-          )}
-        </div>
+          onClear={onClearItems}
+        />
       )}
-    </Show>
+    </div>
   )
 }
 
