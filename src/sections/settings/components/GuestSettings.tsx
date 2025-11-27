@@ -1,3 +1,4 @@
+import { useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
 import {
@@ -14,14 +15,16 @@ import { logging } from '~/shared/utils/logging'
  * Allows resetting demo data and exiting guest mode.
  */
 export function GuestSettings() {
+  const navigate = useNavigate()
+
   const handleResetDemoData = () => {
     try {
       resetGuestDatabase()
       showSuccess(
         'Dados demo resetados! Recarregue a página para ver as mudanças.',
       )
-      // Force a page reload to refresh all data
-      window.location.reload()
+      // Navigate to diet page to refresh data
+      navigate('/diet', { replace: true })
     } catch (error) {
       logging.error('Failed to reset demo data:', error)
       showError('Erro ao resetar dados demo.')
@@ -32,8 +35,8 @@ export function GuestSettings() {
     try {
       disableGuestMode()
       showSuccess('Modo demo desativado.')
-      // Redirect to login page
-      window.location.href = '/login'
+      // Navigate to login page
+      navigate('/login', { replace: true })
     } catch (error) {
       logging.error('Failed to exit guest mode:', error)
       showError('Erro ao sair do modo demo.')

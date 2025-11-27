@@ -12,12 +12,9 @@ const supabaseWeightGateway = createSupabaseWeightGateway()
 const guestWeightRepository = createGuestWeightRepository()
 
 /**
- * Returns the appropriate repository based on guest mode state
+ * Creates a Supabase weight repository
  */
-function getRepository(): WeightRepository {
-  if (isInGuestMode()) {
-    return guestWeightRepository
-  }
+function createSupabaseWeightRepository(): WeightRepository {
   return {
     async fetchUserWeights(userId: User['uuid']): Promise<readonly Weight[]> {
       return supabaseWeightGateway.fetchUserWeights(userId)
@@ -37,22 +34,13 @@ function getRepository(): WeightRepository {
   }
 }
 
+const supabaseWeightRepository = createSupabaseWeightRepository()
+
+/**
+ * Creates a weight repository based on guest mode state.
+ * In guest mode, returns a repository backed by the in-memory guest database.
+ * When authenticated, returns a repository backed by Supabase.
+ */
 export function createWeightRepository(): WeightRepository {
-  return {
-    async fetchUserWeights(userId: User['uuid']): Promise<readonly Weight[]> {
-      return getRepository().fetchUserWeights(userId)
-    },
-    async insertWeight(newWeight: NewWeight): Promise<Weight> {
-      return getRepository().insertWeight(newWeight)
-    },
-    async updateWeight(
-      weightId: Weight['id'],
-      weight: Weight,
-    ): Promise<Weight> {
-      return getRepository().updateWeight(weightId, weight)
-    },
-    async deleteWeight(id: Weight['id']): Promise<void> {
-      return getRepository().deleteWeight(id)
-    },
-  }
+  return isInGuestMode() ? guestWeightRepository : supabaseWeightRepository
 }
