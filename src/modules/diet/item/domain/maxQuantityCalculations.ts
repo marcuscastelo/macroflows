@@ -26,6 +26,16 @@ export type MaxQuantityResult = {
   readonly grams: number
   readonly preview: MacroPreview
   readonly limitedBy: MacroType | null
+  /** Whether the calculation ignored other macro constraints */
+  readonly ignoredOtherMacros: boolean
+}
+
+/**
+ * Options for MAX quantity calculations
+ */
+export type MaxQuantityOptions = {
+  /** When true, ignores other macro constraints and only considers the target macro's remaining */
+  readonly ignoreOtherMacros?: boolean
 }
 
 /**
@@ -68,13 +78,16 @@ export function calculateMacroPreview(
  * @param targetMacro - The macro to maximize
  * @param itemMacrosPer100g - The macros per 100g of the item
  * @param remainingTargets - The remaining macro targets available
+ * @param options - Optional settings for the calculation
  * @returns The max grams and any limiting macro
  */
 export function getMaxForMacro(
   targetMacro: MacroType,
   itemMacrosPer100g: MacroNutrientsRecord,
   remainingTargets: MacroNutrientsRecord,
+  options: MaxQuantityOptions = {},
 ): MaxQuantityResult {
+  const { ignoreOtherMacros = false } = options
   const { carbPerGram, proteinPerGram, fatPerGram } =
     getMacrosPerGram(itemMacrosPer100g)
 
@@ -100,11 +113,23 @@ export function getMaxForMacro(
       grams: 0,
       preview: { carbs: 0, protein: 0, fat: 0 },
       limitedBy: null,
+      ignoredOtherMacros: ignoreOtherMacros,
     }
   }
 
   // Calculate the desired grams to fill the target macro
   const desiredGrams = Math.max(0, targetRemaining / targetPerGram)
+
+  // If ignoring other macros, skip constraints check
+  if (ignoreOtherMacros) {
+    const roundedGrams = Math.round(desiredGrams * 100) / 100
+    return {
+      grams: roundedGrams,
+      preview: calculateMacroPreview(roundedGrams, itemMacrosPer100g),
+      limitedBy: null,
+      ignoredOtherMacros: true,
+    }
+  }
 
   // Check constraints from other macros
   const constraints: Array<{ grams: number; macro: MacroType }> = []
@@ -148,6 +173,7 @@ export function getMaxForMacro(
     grams: roundedGrams,
     preview: calculateMacroPreview(roundedGrams, itemMacrosPer100g),
     limitedBy,
+    ignoredOtherMacros: false,
   }
 }
 
@@ -193,6 +219,7 @@ export function getMaxBalanced(
       grams: 0,
       preview: { carbs: 0, protein: 0, fat: 0 },
       limitedBy: null,
+      ignoredOtherMacros: false,
     }
   }
 
@@ -214,6 +241,7 @@ export function getMaxBalanced(
     grams: roundedGrams,
     preview: calculateMacroPreview(roundedGrams, itemMacrosPer100g),
     limitedBy,
+    ignoredOtherMacros: false,
   }
 }
 
@@ -263,15 +291,17 @@ export function getDominantMacro(
  * @param mode - The MAX quantity mode
  * @param itemMacrosPer100g - The macros per 100g of the item
  * @param remainingTargets - The remaining macro targets available
+ * @param options - Optional settings for the calculation
  * @returns The max quantity result
  */
 export function calculateMaxQuantity(
   mode: MaxQuantityMode,
   itemMacrosPer100g: MacroNutrientsRecord,
   remainingTargets: MacroNutrientsRecord,
+  options: MaxQuantityOptions = {},
 ): MaxQuantityResult {
   if (mode === 'balanced') {
     return getMaxBalanced(itemMacrosPer100g, remainingTargets)
   }
-  return getMaxForMacro(mode, itemMacrosPer100g, remainingTargets)
+  return getMaxForMacro(mode, itemMacrosPer100g, remainingTargets, options)
 }
