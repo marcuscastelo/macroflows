@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createClipboardStore } from '~/modules/clipboard/application/clipboardStore'
+import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import {
   type ClipboardEntry,
   type ClipboardPayload,

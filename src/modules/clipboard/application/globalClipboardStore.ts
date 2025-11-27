@@ -1,7 +1,7 @@
 import {
   type ClipboardStore,
   createClipboardStore,
-} from '~/modules/clipboard/application/clipboardStore'
+} from '~/modules/clipboard/application/store/clipboardStore'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 
 let globalStore: ClipboardStore | null = null

@@ -14,9 +14,6 @@ export type ClipboardStoreConfig = {
 
 export type ClipboardSubscriber = (entries: ClipboardEntry[]) => void
 
-/**
- * In-memory clipboard store with optional persistence
- */
 export function createClipboardStore(config?: ClipboardStoreConfig) {
   const maxEntries = config?.maxEntries ?? 20
   const persistence = config?.persistence
