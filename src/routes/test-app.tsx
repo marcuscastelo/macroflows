@@ -52,15 +52,7 @@ function GoogleLoginButton() {
     try {
       await signIn({ provider: 'google', redirectTo: window.location.origin })
     } catch (error) {
-      // TODO: ban inline imports
-      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
-      import('~/shared/utils/logging')
-        .then(({ logging }) => {
-          logging.error('TestApp login error:', error)
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('TestApp login error:', error)
     }
   }
 
@@ -76,13 +68,7 @@ function LogoutButton() {
     try {
       await signOut()
     } catch (error) {
-      import('~/shared/utils/logging')
-        .then(({ logging }) => {
-          logging.error('TestApp logout error:', error)
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('TestApp logout error:', error)
     }
   }
 

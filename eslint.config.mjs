@@ -134,39 +134,14 @@ export default [
       'no-console': 'off', // Ban all console usage by default
       // TODO: Re-enable console restriction after refactoring logging & observability system
       // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1056
+      // Ban inline dynamic imports in application code
+      // Dynamic imports should only be used for legitimate code-splitting via lazyImport or lazy()
+      // For allowed patterns, see: src/shared/solid/lazyImport.ts and lazy component files
       'no-restricted-syntax': [
-        'off',
+        'error',
         {
-          selector: "CallExpression[callee.object.name='console']",
-          message: 'Direct console usage is forbidden. Use errorHandler.apiError or logging utility functions instead.'
-        },
-        {
-          selector: "CallExpression[callee.object.name='JSON'][callee.property.name='parse'], CallExpression[callee.object.type='Identifier'][callee.property.name='parse']",
-          message: 'Direct JSON.parse or Zod schema .parse() calls are forbidden. Use parseWithStack for stack trace and consistency.'
-        },
-        {
-          selector: "MemberExpression[object.name='localStorage']",
-          message: 'Direct localStorage usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
-        },
-        {
-          selector: "MemberExpression[object.name='navigator']",
-          message: 'Direct navigator API usage is restricted to infrastructure layer only. Use repository abstractions in application/domain layers.'
-        },
-        {
-          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='startTransaction']",
-          message: 'Sentry.startTransaction is deprecated in v8. Use Sentry.startSpan instead.'
-        },
-        {
-          selector: "CallExpression[callee.property.name='startChild']",
-          message: 'span.startChild is deprecated in v8. Use Sentry.startSpan with proper parent span context instead.'
-        },
-        {
-          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='getCurrentHub']",
-          message: 'Sentry.getCurrentHub is deprecated in v8. Use Sentry.getCurrentScope instead.'
-        },
-        {
-          selector: "CallExpression[callee.object.name='Sentry'][callee.property.name='configureScope']",
-          message: 'Sentry.configureScope is deprecated in v8. Use Sentry.withScope instead.'
+          selector: 'ImportExpression',
+          message: 'Inline dynamic imports are forbidden. Use static imports at the top of the file, or use lazyImport() for code-splitting. See src/shared/solid/lazyImport.ts for approved patterns.'
         },
       ],
 
@@ -281,6 +256,27 @@ export default [
       'simple-import-sort/imports': 'off',
       'simple-import-sort/exports': 'off',
       'prettier/prettier': 'off',
+    },
+  },
+  {
+    // Allow dynamic imports for code-splitting and lazy loading
+    // These files use dynamic imports for legitimate code-splitting purposes
+    files: [
+      // Lazy loading utility
+      'src/shared/solid/lazyImport.ts',
+      // App entry point with lazy components
+      'src/app.tsx',
+      // Lazy-loaded component files that use lazyImport()
+      'src/routes/**/*.tsx',
+      'src/sections/**/*.tsx',
+      // Infrastructure code that needs dynamic imports for SSR/client detection
+      'src/modules/observability/**/*.ts',
+      // Test files that need dynamic imports for mocking
+      '**/*.test.ts',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
 ]
