@@ -1,11 +1,15 @@
 // TODO: Unify Recipe and Recipe components into a single component?
 
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
-import { z } from 'zod/v4'
 
-import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import { mealSchema } from '~/modules/diet/meal/domain/meal'
-import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import {
+  type ClipboardPayload,
+  clipboardPayloadSchema,
+} from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
 import {
   addItemsToRecipe,
@@ -19,16 +23,11 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemListView } from '~/sections/item/components/ItemListView'
 import { SingleItemConversionIndicator } from '~/sections/recipe/components/SingleItemConversionIndicator'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { regenerateId } from '~/shared/utils/idUtils'
-import { logging } from '~/shared/utils/logging'
-import { isItem } from '~/shared/utils/typeUtils'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -53,42 +52,13 @@ export type RecipeEditViewProps = {
 export function RecipeEditHeader(props: {
   onUpdateRecipe: (Recipe: Recipe) => void
 }) {
-  const acceptedClipboardSchema = mealSchema
-    .or(recipeSchema)
-    .or(itemSchema)
-    .or(z.array(itemSchema))
-
   const { recipe } = useRecipeEditContext()
 
-  const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema,
-    getDataToCopy: () => recipe(),
-    onPaste: (data) => {
-      // Check if data is array of Items
-      if (Array.isArray(data) && data.every(isItem)) {
-        const itemsToAdd = data
-          .filter((item) => item.reference.type === 'food') // Only food items in recipes
-          .map((item) => regenerateId(item))
-        const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
-        props.onUpdateRecipe(newRecipe)
-        return
-      }
-
-      // Check if data is single Item
-      if (isItem(data)) {
-        if (data.reference.type === 'food') {
-          const item = data
-          const regeneratedItem = regenerateId(item)
-          const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
-          props.onUpdateRecipe(newRecipe)
-        }
-        return
-      }
-
-      // Handle other supported clipboard formats
-      logging.warn('Unsupported paste format:', data)
-    },
-  })
+  const onPaste = (data: ClipboardPayload) => {
+    const itemsToAdd = ClipboardPayloadExt.extractItems(data)
+    const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
+    props.onUpdateRecipe(newRecipe)
+  }
 
   const recipeCalories = RecipeExt.of(recipe()).macros().calories()
 
@@ -104,7 +74,13 @@ export function RecipeEditHeader(props: {
   }
 
   return (
-    <div class="flex" tabindex={0} onPaste={(e) => handlePaste(e)}>
+    <div
+      class="flex"
+      tabindex={0}
+      onPaste={() =>
+        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+      }
+    >
       <div class="my-2">
         <h5 class="text-3xl text-blue-500">{recipe().name}</h5>
         <p class="italic text-gray-400">{recipeCalories.toFixed(0)}kcal</p>
@@ -113,8 +89,10 @@ export function RecipeEditHeader(props: {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={handleCopy}
-        onPaste={handlePaste}
+        onCopy={() => clipboardUseCases.copy(recipe())}
+        onPaste={() =>
+          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        }
         onClear={onClearItems}
       />
     </div>
@@ -126,7 +104,6 @@ export function RecipeEditContent(props: {
   onNewItem: () => void
 }) {
   const { recipe, setRecipe } = useRecipeEditContext()
-  const clipboard = useClipboard()
 
   return (
     <>
@@ -149,7 +126,7 @@ export function RecipeEditContent(props: {
             props.onEditItem(Item)
           },
           onCopy: (Item: Item) => {
-            clipboard.write(JSON.stringify(Item))
+            clipboardUseCases.copy(Item)
           },
           onDelete: (item: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), item.id))

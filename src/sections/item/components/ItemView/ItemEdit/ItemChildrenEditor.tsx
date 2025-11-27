@@ -1,6 +1,11 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
-import { z } from 'zod/v4'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import {
+  type ClipboardPayload,
+  clipboardPayloadSchema,
+} from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/item/domain/validateItemHierarchy'
 import {
@@ -10,7 +15,6 @@ import {
   isGroupItem,
   isRecipeItem,
   type Item,
-  itemSchema,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
@@ -19,8 +23,6 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
@@ -34,8 +36,6 @@ export type ItemChildrenEditorProps = {
 }
 
 export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
-  const clipboard = useClipboard()
-
   const children = () => {
     const item = props.itemDraft()
     return isGroupItem(item) || isRecipeItem(item)
@@ -43,62 +43,54 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       : []
   }
 
-  // Clipboard schema accepts Item or array of Items
-  const acceptedClipboardSchema = itemSchema.or(z.array(itemSchema))
+  const onPaste = (data: ClipboardPayload) => {
+    const itemsToAdd = ClipboardPayloadExt.extractItems(data)
 
-  // Clipboard actions for children
-  const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema,
-    getDataToCopy: () => children(),
-    onPaste: (data) => {
-      const itemsToAdd = Array.isArray(data) ? data : [data]
+    const itemAsChildOfSingletonGroup = () =>
+      createGroupItem({
+        id: props.itemDraft().id,
+        name: props.itemDraft().name,
+        quantity: props.itemDraft().quantity,
+        reference: {
+          type: 'group',
+          children: [
+            createItem({
+              id: generateId(),
+              name: props.itemDraft().name,
+              quantity: props.itemDraft().quantity,
+              reference: props.itemDraft().reference,
+            }),
+          ],
+        },
+      })
 
-      const itemAsChildOfSingletonGroup = () =>
-        createGroupItem({
-          id: props.itemDraft().id,
-          name: props.itemDraft().name,
-          quantity: props.itemDraft().quantity,
-          reference: {
-            type: 'group',
-            children: [
-              createItem({
-                id: generateId(),
-                name: props.itemDraft().name,
-                quantity: props.itemDraft().quantity,
-                reference: props.itemDraft().reference,
-              }),
-            ],
-          },
-        })
+    let groupItem =
+      asParentItem(props.itemDraft()) ?? itemAsChildOfSingletonGroup()
 
-      let groupItem =
-        asParentItem(props.itemDraft()) ?? itemAsChildOfSingletonGroup()
-
-      for (const newChild of itemsToAdd) {
-        // Regenerate ID to avoid conflicts
-        const childWithNewId = {
-          ...newChild,
-          id: regenerateId(newChild).id,
-        }
-
-        // Validate hierarchy to prevent circular references
-        const tempItem = ParentItemExt.addChildToParentItem(
-          groupItem,
-          childWithNewId,
-        )
-        if (!validateItemHierarchy(tempItem)) {
-          logging.warn(
-            `Skipping item ${childWithNewId.name} - would create circular reference`,
-          )
-          continue
-        }
-
-        groupItem = tempItem
+    for (const newChild of itemsToAdd) {
+      // Regenerate ID to avoid conflicts
+      const childWithNewId = {
+        ...newChild,
+        id: regenerateId(newChild).id,
       }
 
-      props.setItemDraft(groupItem)
-    },
-  })
+      // Validate hierarchy to prevent circular references
+      const tempItem = ParentItemExt.addChildToParentItem(
+        groupItem,
+        childWithNewId,
+      )
+      if (!validateItemHierarchy(tempItem)) {
+        logging.warn(
+          `Skipping item ${childWithNewId.name} - would create circular reference`,
+        )
+        continue
+      }
+
+      groupItem = tempItem
+    }
+
+    props.setItemDraft(groupItem)
+  }
 
   const updateChildQuantity = (childId: number, newQuantity: number) => {
     logging.debug('[GroupChildrenEditor] updateChildQuantity', {
@@ -203,13 +195,22 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={handleCopy}
-          onPaste={handlePaste}
+          onCopy={() => clipboardUseCases.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+          // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1358
+          onPaste={() =>
+            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+          }
           onClear={() => {}} // Empty function since canClear is false
         />
       </div>
 
-      <div class="mt-3 space-y-2" tabindex={0} onPaste={(e) => handlePaste(e)}>
+      <div
+        class="mt-3 space-y-2"
+        tabindex={0}
+        onPaste={() =>
+          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        }
+      >
         <For each={children()}>
           {(child) => (
             <GroupChildEditor
@@ -220,7 +221,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onEditChild={props.onEditChild}
               onCopyChild={(childToCopy) => {
                 // Copy the specific child item to clipboard
-                clipboard.write(JSON.stringify(childToCopy))
+                clipboardUseCases.copy(childToCopy)
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
@@ -327,8 +328,6 @@ type GroupChildEditorProps = {
 }
 
 function GroupChildEditor(props: GroupChildEditorProps) {
-  const clipboard = useClipboard()
-
   const handleEditChild = () => {
     if (props.onEditChild) {
       props.onEditChild(props.child)
@@ -340,7 +339,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
       props.onCopyChild(props.child)
     } else {
       // Fallback: copy to clipboard directly
-      clipboard.write(JSON.stringify(props.child))
+      clipboardUseCases.copy(props.child)
     }
   }
 

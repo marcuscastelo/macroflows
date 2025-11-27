@@ -9,9 +9,11 @@ import {
   untrack,
 } from 'solid-js'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
+import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
 import {
   asGroupItem,
   asParentItem,
@@ -30,14 +32,11 @@ import {
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
-import {
-  openItemEditModal,
-  openRecipeEditModal,
-  openTemplateSearchModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
+import { openRecipeEditModal } from '~/sections/recipe/ui/openRecipeEditModal'
+import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -149,10 +148,12 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   })
 
   const canApply = () => {
+    const item = itemDraft()
     logging.debug('[ItemEditModal] canApply', {
-      quantity: itemDraft().quantity,
+      quantity: item.quantity,
+      name: item.name,
     })
-    return itemDraft().quantity > 0
+    return canApplyItem(item)
   }
 
   const handleEditChild = (child: Item) => {
@@ -215,18 +216,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     // The parent component should handle removing this item
   }
 
-  // Clipboard functionality
-  const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema: itemSchema,
-    getDataToCopy: () => itemDraft(),
-    onPaste: (data) => {
-      setItemDraft(data)
-    },
-  })
-
   return (
     <div class="flex flex-col h-full">
-      <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
+      <div
+        class="flex-1 p-4"
+        tabindex={0}
+        onPaste={() => clipboardUseCases.confirmPaste(itemSchema, setItemDraft)}
+      >
         {/* Toggle button for recipes */}
         <Show
           when={
@@ -307,8 +303,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
           onEditChild={handleEditChild}
           viewMode={viewMode()}
           clipboardActions={{
-            onCopy: handleCopy,
-            onPaste: handlePaste,
+            onCopy: () => clipboardUseCases.copy(itemDraft()),
+            onPaste: () =>
+              clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
           }}
           onAddNewItem={() => {
             openTemplateSearchModal({

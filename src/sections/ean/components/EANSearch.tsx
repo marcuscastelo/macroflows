@@ -6,10 +6,10 @@ import {
   Show,
 } from 'solid-js'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
@@ -24,7 +24,6 @@ export type EANSearchProps = {
 
 export function EANSearch(props: EANSearchProps) {
   const [loading, setLoading] = createSignal(false)
-  const clipboard = useClipboard()
 
   const EAN_LENGTH = 13
 
@@ -114,7 +113,7 @@ export function EANSearch(props: EANSearchProps) {
                         // TODO : default handlers for ItemView
                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
-                          clipboard.write(JSON.stringify(item))
+                          clipboardUseCases.copy(item)
                         },
                       }}
                       mode="read-only"

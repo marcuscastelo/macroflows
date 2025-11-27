@@ -17,7 +17,7 @@ import { RemoveFromRecentButton } from '~/sections/common/components/buttons/Rem
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
-import { openDeleteConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
+import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
 import { logging } from '~/shared/utils/logging'
 
 export function TemplateSearchResults(props: {
