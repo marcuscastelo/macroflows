@@ -27,7 +27,7 @@ import {
 } from '~/shared/modal/helpers/specializedModalHelpers'
 import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isItem, isMeal } from '~/shared/utils/typeUtils'
+import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -85,28 +85,11 @@ export function MealEditViewHeader(props: {
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const acceptedClipboardSchema = mealSchema
-    .or(recipeSchema)
-    .or(itemSchema)
-    .or(z.array(itemSchema))
-
+  const acceptedClipboardSchema = mealSchema.or(recipeSchema).or(itemSchema)
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema,
     getDataToCopy: () => meal(),
     onPaste: (data) => {
-      if (Array.isArray(data)) {
-        const firstItem = data[0]
-        if (firstItem && isItem(firstItem)) {
-          const ItemsToAdd = data.map((item) => ({
-            ...item,
-            id: regenerateId(item).id,
-          }))
-          const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
-          props.onUpdateMeal(updatedMeal)
-          return
-        }
-      }
-
       if (isMeal(data)) {
         const ItemsToAdd = data.items.map((item) => ({
           ...item,
@@ -127,6 +110,18 @@ export function MealEditViewHeader(props: {
         return
       }
 
+      // TODO: Support pasting Recipes as well, sub-item? or expand items?
+      // if (isRecipe(data)) {
+      //   const itemsToAdd = data.items.map((item) => ({
+      //     ...item,
+      //     id: regenerateId(item).id,
+      //   }))
+      //   const updatedMeal = addItemsToMeal(meal(), itemsToAdd)
+      //   props.onUpdateMeal(updatedMeal)
+      //   return
+      // }
+
+      // data satisfies never
       logging.warn('Unsupported paste format:', { data })
     },
   })
