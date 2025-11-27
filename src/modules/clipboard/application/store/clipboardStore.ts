@@ -35,7 +35,11 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
 
       setEntries((prev) => {
         // Evict entries if we exceed max, prioritizing pinned entries
-        let newEntries = [entry, ...prev.filter(e => e.pinned), ...prev.filter(e => !e.pinned)]
+        let newEntries = [
+          entry,
+          ...prev.filter((e) => e.pinned),
+          ...prev.filter((e) => !e.pinned),
+        ]
         newEntries = newEntries.slice(0, maxEntries)
         return newEntries
       })

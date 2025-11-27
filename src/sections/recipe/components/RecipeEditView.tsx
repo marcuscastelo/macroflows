@@ -25,7 +25,7 @@ import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemListView } from '~/sections/item/components/ItemListView'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>

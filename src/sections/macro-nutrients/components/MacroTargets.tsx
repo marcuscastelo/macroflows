@@ -21,11 +21,11 @@ import {
   createNewMacroProfile,
   type MacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { openRestoreProfileModal } from '~/modules/diet/macro-profile/ui/RestoreProfileModal'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { showError } from '~/modules/toast/application/toastManager'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
-import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
