@@ -11,7 +11,6 @@ import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
-import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
 import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
 
@@ -56,23 +55,6 @@ function useClipboard() {
     clear: () => {
       clipboardStore.clear()
     },
-  }
-}
-
-export function createClipboardSchemaFilter(
-  acceptedClipboardSchema: z.ZodType,
-) {
-  return (clipboard: string) => {
-    if (clipboard === '') return false
-    let parsedClipboard: unknown
-    try {
-      parsedClipboard = jsonParseWithStack(clipboard)
-    } catch {
-      // Error parsing JSON. Probably clipboard is some random text from the user
-      return false
-    }
-
-    return acceptedClipboardSchema.safeParse(parsedClipboard).success
   }
 }
 
