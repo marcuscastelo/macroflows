@@ -19,7 +19,7 @@ import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain
 import { cn } from '~/shared/cn'
 import { logging } from '~/shared/utils/logging'
 
-export type MaxQuantityButtonProps = {
+export type ItemMaxQuantityButtonProps = {
   currentValue: number
   macroTargets: MacroNutrientsRecord
   itemMacros: MacroNutrientsRecord
@@ -76,7 +76,9 @@ function formatGrams(grams: number): string {
   return `${Math.round(grams)}g`
 }
 
-export function MaxQuantityButton(props: MaxQuantityButtonProps): JSX.Element {
+export function ItemMaxQuantityButton(
+  props: ItemMaxQuantityButtonProps,
+): JSX.Element {
   const [isOpen, setIsOpen] = createSignal(false)
   const [selectedMode, setSelectedMode] = createSignal<MaxQuantityMode | null>(
     null,
