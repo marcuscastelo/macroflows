@@ -1,11 +1,12 @@
-import { createEffect, createSignal, onCleanup } from 'solid-js'
+import { createEffect, createRoot, createSignal, onCleanup } from 'solid-js'
 import { type z } from 'zod/v4'
 
-import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalClipboardStore'
+import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import {
   type ClipboardEntry,
   clipboardPayloadSchema,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import {
   showError,
@@ -22,11 +23,29 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 export type ClipboardFilter = (clipboard: string) => boolean
 
+const clipboardStore = createRoot(() => {
+  // Default to RAM-only (no persistence)
+  const globalStore = createClipboardStore({
+    maxEntries: 20,
+    persistence: createNoOpPersistence(),
+  })
+
+  // Clean expired entries every hour
+  setInterval(
+    () => {
+      globalStore.cleanExpired()
+    },
+    60 * 60 * 1000,
+  )
+
+  return globalStore
+})
+
 /**
  * Unified store hook (wraps the global clipboard store)
  */
 export function useClipboardStore() {
-  const store = getGlobalClipboardStore()
+  const store = clipboardStore
   const [entries, setEntries] = createSignal<ClipboardEntry[]>(store.readAll())
 
   createEffect(() => {
