@@ -7,7 +7,7 @@ import {
 } from '~/modules/clipboard/application/useClipboardUnified'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
-import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
+import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
 import {
   addItemsToRecipe,
@@ -47,13 +47,13 @@ export function RecipeEditView(props: RecipeEditViewProps) {
 
   const acceptedClipboardSchema = z.union([
     itemSchema,
-    itemSchema.array(),
     mealSchema,
+    recipeSchema,
   ])
 
   const { handleCopy, handlePaste } = useCopyPasteActions({
     acceptedClipboardSchema,
-    getDataToCopy: () => [...recipe().items],
+    getDataToCopy: () => recipe(),
     onPaste: (data) => {
       // Check if data is array of Items
       if (Array.isArray(data) && data.every(isItem)) {
@@ -96,7 +96,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
     <div
       class="flex flex-col gap-2 w-full"
       tabindex={0}
-      onPaste={() => handlePaste()}
+      onPaste={() => void handlePaste().catch(console.error)}
     >
       {props.header}
       <ClipboardActionButtons
@@ -104,7 +104,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         canPaste={true}
         canClear={recipe().items.length > 0}
         onCopy={handleCopy}
-        onPaste={handlePaste}
+        onPaste={() => void handlePaste().catch(console.error)}
         onClear={onClearItems}
       />
       <NameInput />
