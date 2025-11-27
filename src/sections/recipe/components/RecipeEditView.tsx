@@ -50,7 +50,7 @@ export function RecipeEditHeader(props: {
 }) {
   const { recipe } = useRecipeEditContext()
 
-  const { handleCopy, handlePaste } = useCopyPasteActions({
+  const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => recipe(),
     onPaste: (data) => {
@@ -77,7 +77,7 @@ export function RecipeEditHeader(props: {
     <div
       class="flex"
       tabindex={0}
-      onPaste={() => void handlePaste().catch(console.error)}
+      onPaste={() => void clipboardActions.paste().catch(console.error)}
     >
       <div class="my-2">
         <h5 class="text-3xl text-blue-500">{recipe().name}</h5>
@@ -87,8 +87,8 @@ export function RecipeEditHeader(props: {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={handleCopy}
-        onPaste={() => void handlePaste().catch(console.error)}
+        onCopy={clipboardActions.copy}
+        onPaste={() => void clipboardActions.paste().catch(console.error)}
         onClear={onClearItems}
       />
     </div>

@@ -42,7 +42,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
   }
 
   // Clipboard actions for children
-  const { handleCopy, handlePaste } = useCopyPasteActions({
+  const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => props.itemDraft(), // TODO: copy self vs children? (expandable?)
     onPaste: (data) => {
@@ -198,8 +198,8 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={handleCopy}
-          onPaste={() => void handlePaste().catch(console.error)}
+          onCopy={clipboardActions.copy}
+          onPaste={() => void clipboardActions.paste().catch(console.error)}
           onClear={() => {}} // Empty function since canClear is false
         />
       </div>
@@ -207,7 +207,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <div
         class="mt-3 space-y-2"
         tabindex={0}
-        onPaste={() => void handlePaste().catch(console.error)}
+        onPaste={() => void clipboardActions.paste().catch(console.error)}
       >
         <For each={children()}>
           {(child) => (

@@ -81,7 +81,7 @@ export function MealEditViewHeader(props: {
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const { handleCopy, handlePaste } = useCopyPasteActions({
+  const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => meal(),
     onPaste: (data) => {
@@ -110,7 +110,7 @@ export function MealEditViewHeader(props: {
         <div
           class="flex"
           tabindex={0}
-          onPaste={() => void handlePaste().catch(console.error)}
+          onPaste={() => void clipboardActions.paste().catch(console.error)}
         >
           <div class="my-2">
             <h5 class="text-3xl">{mealSignal().name}</h5>
@@ -121,8 +121,8 @@ export function MealEditViewHeader(props: {
               canCopy={mealSignal().items.length > 0}
               canPaste={true}
               canClear={mealSignal().items.length > 0}
-              onCopy={handleCopy}
-              onPaste={() => void handlePaste().catch(console.error)}
+              onCopy={clipboardActions.copy}
+              onPaste={() => void clipboardActions.paste().catch(console.error)}
               onClear={onClearItems}
             />
           )}

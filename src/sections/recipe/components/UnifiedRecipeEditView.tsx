@@ -40,7 +40,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
   const recipe = untrack(() => props.recipe)
   const setRecipe = untrack(() => props.setRecipe)
 
-  const { handleCopy, handlePaste } = useCopyPasteActions({
+  const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => recipe(),
     onPaste: (data) => {
@@ -85,15 +85,15 @@ export function RecipeEditView(props: RecipeEditViewProps) {
     <div
       class="flex flex-col gap-2 w-full"
       tabindex={0}
-      onPaste={() => void handlePaste().catch(console.error)}
+      onPaste={() => void clipboardActions.paste().catch(console.error)}
     >
       {props.header}
       <ClipboardActionButtons
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={handleCopy}
-        onPaste={() => void handlePaste().catch(console.error)}
+        onCopy={clipboardActions.copy}
+        onPaste={() => void clipboardActions.paste().catch(console.error)}
         onClear={onClearItems}
       />
       <NameInput />

@@ -217,7 +217,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   }
 
   // Clipboard functionality
-  const { handleCopy, handlePaste } = useCopyPasteActions({
+  const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: itemSchema,
     getDataToCopy: () => itemDraft(),
     onPaste: (data) => {
@@ -230,7 +230,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       <div
         class="flex-1 p-4"
         tabindex={0}
-        onPaste={() => void handlePaste().catch(console.error)}
+        onPaste={() => void clipboardActions.paste().catch(console.error)}
       >
         <Show
           when={
@@ -319,8 +319,8 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             onEditChild={handleEditChild}
             viewMode={viewMode()}
             clipboardActions={{
-              onCopy: handleCopy,
-              onPaste: () => void handlePaste().catch(console.error),
+              onCopy: clipboardActions.copy,
+              onPaste: () => void clipboardActions.paste().catch(console.error),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({
