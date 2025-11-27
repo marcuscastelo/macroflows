@@ -1,10 +1,8 @@
-import { type Accessor, createMemo, createResource, Show } from 'solid-js'
+import { type Accessor, Show } from 'solid-js'
 
-import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
-import { isRecipeItem, type Item } from '~/modules/diet/item/schema/itemSchema'
-import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { getItemTypeDisplay } from '~/sections/item/utils/unifiedItemDisplayUtils'
-import { logging } from '~/shared/utils/logging'
 
 export type ItemViewNameProps = {
   item: Accessor<Item>
@@ -13,35 +11,13 @@ export type ItemViewNameProps = {
 export function ItemViewName(props: ItemViewNameProps) {
   const typeDisplay = () => getItemTypeDisplay(props.item())
 
-  const [originalRecipe] = createResource(
-    () => {
-      const item = props.item()
-      return isRecipeItem(item) ? item.reference.id : null
-    },
-    async (recipeId: number) => {
-      try {
-        return await fetchRecipeById(recipeId)
-      } catch (error) {
-        logging.warn('Failed to fetch recipe for comparison:', { error })
-        return null
-      }
-    },
-  )
+  const recipeResource = () =>
+    recipeItemUseCases.createRecipeResource(props.item())
 
-  const isManuallyEdited = createMemo(() => {
-    const item = props.item()
-    const recipe = originalRecipe()
-
-    if (recipe === null || recipe === undefined || originalRecipe.loading) {
-      return false
-    }
-
-    // Compare original recipe items with current recipe items
-    // If they're different, the recipe was manually edited
-    return !ItemExt.of(item).isInSyncWithRecipe(recipe.items)
-  })
-
-  const warningIndicator = () => (isManuallyEdited() ? '⚠️' : '')
+  const warningIndicator = () =>
+    recipeItemUseCases.isManuallyEdited(props.item(), recipeResource().value)
+      ? '⚠️'
+      : ''
 
   return (
     <h5 class={`mb-2 text-lg font-bold tracking-tight ${typeDisplay().color}`}>

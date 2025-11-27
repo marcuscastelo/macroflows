@@ -2,7 +2,6 @@ import {
   type Accessor,
   createEffect,
   createMemo,
-  createResource,
   createSignal,
   mergeProps,
   Show,
@@ -10,7 +9,7 @@ import {
 } from 'solid-js'
 
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
@@ -27,7 +26,6 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import {
   deleteRecipe,
-  fetchRecipeById,
   updateRecipe,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
@@ -112,30 +110,15 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     }
   })
 
+  const recipeResource = () =>
+    recipeItemUseCases.createRecipeResource(itemDraft())
+
   // Recipe synchronization
-  const [originalRecipe] = createResource(
-    () => {
-      const currentItem = itemDraft()
-      return isRecipeItem(currentItem) ? currentItem.reference.id : null
-    },
-    async (recipeId: number) => {
-      return await fetchRecipeById(recipeId)
-    },
-  )
+  const resourceValue = () => recipeResource().value
 
   // Check if the recipe was manually edited
-  const isManuallyEdited = createMemo(() => {
-    const currentItem = itemDraft()
-    const recipe = originalRecipe()
-
-    if (recipe === null || recipe === undefined || originalRecipe.loading) {
-      return false
-    }
-
-    // Compare original recipe items with current recipe items
-    // If they're different, the recipe was manually edited
-    return !ItemExt.of(currentItem).isInSyncWithRecipe(recipe.items)
-  })
+  const isManuallyEdited = () =>
+    recipeItemUseCases.isManuallyEdited(itemDraft(), resourceValue())
 
   const quantitySignal = () =>
     itemDraft().quantity === 0 ? undefined : itemDraft().quantity
@@ -177,7 +160,8 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   }
 
   const handleSyncWithOriginalRecipe = () => {
-    const recipe = originalRecipe()
+    const resourceValue_ = resourceValue()
+    const recipe = resourceValue_()
     if (!recipe) return
 
     const currentItem = itemDraft()
@@ -257,7 +241,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             </div>
 
             {/* Sync button - only show if recipe was manually edited */}
-            <Show when={isManuallyEdited() && originalRecipe()}>
+            <Show when={isManuallyEdited() && resourceValue()}>
               <div
                 class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
                 onClick={handleSyncWithOriginalRecipe}
@@ -268,7 +252,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             </Show>
 
             {/* Edit recipe button - only show for recipe items */}
-            <Show when={isRecipeItem(itemDraft()) && originalRecipe()}>
+            <Show when={isRecipeItem(itemDraft()) && resourceValue()()}>
               {(originalRecipe) => (
                 <button
                   class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
