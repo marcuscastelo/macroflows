@@ -130,7 +130,7 @@ reportedBy: <agent-name.vXX>
 
 ## Clean Architecture
 - Domain: pure logic, no side effects. Do not call observability or UI utilities from domain code.
-- Application: orchestrates, catches domain errors, maps them to user feedback and telemetry using `showError`, `showPromise`, and `logging`.
+- Application: orchestrates, catches domain errors, uses `showError` for toasts and `logging` for telemetry.
 
 ## Error Handling
 - Domain: only throws pure errors. Do not import or call side-effect utilities from domain code.
@@ -163,8 +163,8 @@ reportedBy: <agent-name.vXX>
 - Never use Portuguese for identifiers, variables, functions, or comments. Only UI text may be in English or pt-BR as required.
 - Prefer small, atomic commits. Always suggest a commit message after making changes.
 - Always update or remove related tests when changing code.
-- Application layer must always call handleApiError with context.
-- Never use handleApiError in domain code.
+- Application layer should use `showError` and `logging` for error feedback and telemetry.
+- Never use side-effect utilities (like `showError`) in domain code.
 - Never use `.catch(() => {})` in promises.
 - Never remove TODOs from the codebase, regardless of context.
 

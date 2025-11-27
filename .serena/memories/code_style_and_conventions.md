@@ -27,8 +27,8 @@
 - **Default parameters over nullish coalescing**: `{ param = 'default' }` instead of `param ?? 'default'`
 
 ## Error Handling Standards
-- **Domain Layer**: Only throw pure domain errors with context
-- **Application Layer**: Always catch domain errors and call `handleApiError` with context
+- **Domain Layer**: Only throw pure domain errors with descriptive messages and context via `cause`
+- **Application Layer**: Catch domain errors and use `showError` for toasts and `logging` for telemetry
 - **Error Context Requirements**:
   - `component`: Specific component/module name
   - `operation`: Specific operation being performed

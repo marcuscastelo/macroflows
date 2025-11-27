@@ -253,7 +253,7 @@ const qualityIntegration = {
   
   contextualGates: {
     architectureCompliance: 'verify clean architecture adherence',
-    errorHandling: 'confirm proper handleApiError usage',
+    errorHandling: 'confirm proper showError and logging usage',
     testCoverage: 'validate test updates for changes'
   },
   

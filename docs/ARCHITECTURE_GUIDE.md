@@ -328,21 +328,32 @@ All code, comments, documentation, and commit messages must be written strictly 
 
 ## 🛑 Error Handling Standard
 
-All domain and application errors should be handled with the repository's current observability and user-feedback utilities.
+All domain and application errors should use standard JavaScript `Error` instances with descriptive messages and context via the `cause` property.
 
-- **Domain layer:** Throw pure errors and do not import side-effecting utilities (keep domain logic pure).
-- **Application layer:** Catch domain errors and map them to user-facing feedback and telemetry using `showError`, `showPromise`, and the `logging` / observability modules under `src/modules/observability`.
-- **UI/Controller:** May call `showError` for UI-specific error presentation.
+- **Domain layer:** Throw pure errors with descriptive messages and optional context via `cause`. Never use side-effect utilities.
+- **Application layer:** Catch domain errors and provide user feedback using:
+  - `showError` from `~/modules/toast/application/toastManager` for user-facing toasts
+  - `logging` from `~/shared/utils/logging` for telemetry and Sentry integration
+- Always provide context (component, operation, additional data) for traceability.
 
-Important: a previously used helper named `handleApiError` was removed from the codebase. Documentation and examples that reference `handleApiError` should be updated to use `showError` for toasts and `logging` / Sentry for telemetry.
-
-Recommended pattern:
-
+**Canonical Pattern:**
 ```typescript
+// Domain (pure)
+throw new Error('Something went wrong', {
+  cause: { code: 'VALIDATION_ERROR', groupId, groupRecipeId }
+})
+
+// Application (toast + telemetry)
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 try {
   await domainFunc()
 } catch (e) {
-  logging.error('Operation failed', { error: e, component: 'MyComponent', operation: 'doThing' })
+  logging.error('isRecipedGroupUpToDate failed', e, { 
+    component: 'itemGroupDomain',
+    additionalData: { groupId, groupRecipeId }
+  })
   showError(e, { context: 'user-action' })
   throw e
 }

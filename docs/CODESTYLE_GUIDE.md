@@ -121,34 +121,38 @@ export async function createFood(food: NewFood): Promise<void> {
 
 ### Domain Layer (`~/modules/*/domain/`)
 **Purpose**: Pure business logic, no side effects
-- **Never import or use side-effect utilities** (e.g., `handleApiError`, logging, toasts, API calls).
+- **Never import or use side-effect utilities** (e.g., logging, toasts, API calls).
 - **Only throw standard errors** (e.g., `throw new Error('descriptive message', { cause: { context } })`)
-- If you need to provide error context, use custom error classes with properties, but do not depend on external modules.
+- If you need to provide error context, use the `cause` property with a context object.
 
 ```typescript
 // GOOD (domain):
 throw new Error('Group mismatch: cannot mix different groups', { 
-  cause: { groupId, recipeId } 
+  cause: { code: 'GROUP_CONFLICT', groupId, recipeId } 
 })
 
 // BAD (domain):
-import { handleApiError } from '~/shared/error/errorHandler'
-handleApiError(...)
+import { showError } from '~/modules/toast/application/toastManager'
+showError(...)  // Side effects are not allowed in domain
 ```
 
 ### Application Layer (`~/modules/*/application/`)
 **Purpose**: Use cases, orchestration, data conversion, error handling
-- Responsible for catching errors from the domain and mapping them to user feedback and telemetry.
+- Responsible for catching errors from the domain and displaying user feedback via `showError` (from `~/modules/toast/application/toastManager`).
+- Use `logging` (from `~/shared/utils/logging`) for telemetry and observability.
 - Handles all user feedback (toasts, logging, etc.).
 
 Use the centralized toast and logging utilities rather than a removed `handleApiError` helper. Recommended pattern:
 
 ```typescript
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 try {
   await domainFunc()
+  await domainFunc()
 } catch (e) {
-  // Map error context to toast and telemetry
-  logging.error('ItemGroupForm.submitGroup failed', { error: e, component: 'ItemGroupForm', operation: 'submitGroup' })
+  logging.error('submitGroup failed', e, { component: 'ItemGroupForm' })
   showError(e, { context: 'user-action' })
   throw e
 }
@@ -238,24 +242,26 @@ If you need to add a new exception:
 
 ## 🛑 Error Handling Standard
 
-- **Domain layer:** Only throws pure errors. Do not import side-effect utilities or directly call observability services from domain code.
-- **Application layer:** Catch domain errors and map them to user-facing feedback and telemetry using existing utilities (`showError`, `showPromise`) and `logging` / observability modules.
-- **UI/Controller:** May call `showError` for UI-specific error presentation.
+- **Domain layer:** Only throws pure errors with descriptive messages and context via `cause`. Never imports or uses side-effect utilities.
+- **Application layer:** Always catches errors from domain and handles user feedback via `showError` (toasts) and `logging` (telemetry/observability).
+- **UI/Controller:** May also call `showError` for UI-specific errors.
 
-Notes:
-- The repository no longer uses a `handleApiError` helper. Documentation and code should use `showError(error, options)` for toasts and `logging` / `src/modules/observability` for telemetry and error reporting.
-- Prefer attaching context via `Error`'s `cause` or via a `context` property on the error object so handlers can read `err.cause?.code` or `err.context?.code`.
-
-**Example (recommended):**
+**Canonical Pattern:**
 ```typescript
-// Domain
-throw new Error('Group mismatch: cannot mix different groups', { cause: { code: 'GROUP_CONFLICT', groupId, recipeId } })
+// Domain (pure)
+throw new Error('Group mismatch: cannot mix different groups', { 
+  cause: { code: 'GROUP_CONFLICT', groupId, recipeId } 
+})
 
-// Application
+// Application (map to toast + telemetry)
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 try {
   await domainFunc()
+  await domainFunc()
 } catch (e) {
-  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  logging.error('submitGroup failed', e, { component: 'ItemGroupForm' })
   showError(e, { context: 'user-action' })
   throw e
 }

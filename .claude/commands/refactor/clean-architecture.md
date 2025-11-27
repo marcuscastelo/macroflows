@@ -53,7 +53,7 @@ This command performs comprehensive refactoring to ensure clean architecture com
 
 **Rules:**
 - **Pure logic only** - No side effects
-- **Never call `handleApiError`** - Only throws pure errors
+- **Never use side-effect utilities** - Only throws pure errors with context via `cause`
 - **No external dependencies** - Framework-agnostic code
 - **Business rules** - Core business logic and entities
 
@@ -61,7 +61,7 @@ This command performs comprehensive refactoring to ensure clean architecture com
 ```typescript
 // Before: Domain with side effects
 export function updateDayDiet(dayDiet: DayDiet) {
-  handleApiError(new Error('Invalid'), { component: 'domain' }) // ❌
+  showError(new Error('Invalid'), { context: 'domain' }) // ❌
   toast.success('Updated') // ❌
   return dayDiet
 }
@@ -80,7 +80,7 @@ export function updateDayDiet(dayDiet: DayDiet): DayDiet {
 **Rules:**
 - **Orchestrates domain logic** - Coordinates between layers
 - **Handles all side effects** - API calls, error handling, toasts
-- **Catches domain errors** - Always calls `handleApiError` with context
+- **Catches domain errors** - Uses `showError` for toasts and `logging` for telemetry
 - **State management** - SolidJS signals and effects
 
 **Refactoring Actions:**
@@ -94,6 +94,9 @@ export function useDayDietUpdater() {
 }
 
 // After: Proper application orchestration
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 export function useDayDietUpdater() {
   const updateDayDiet = async (dayDiet: DayDiet) => {
     try {
@@ -102,11 +105,11 @@ export function useDayDietUpdater() {
       toast.success('Day diet updated successfully')
       return result
     } catch (e) {
-      handleApiError(e, {
+      logging.error('updateDayDiet failed', e, {
         component: 'DayDietUpdater',
-        operation: 'updateDayDiet',
         additionalData: { dayDietId: dayDiet.id }
       })
+      showError(e, { context: 'user-action' })
       throw e
     }
   }
@@ -181,7 +184,8 @@ export function MealEditor() {
       await mealRepository.save(meal())
       toast.success('Meal saved')
     } catch (e) {
-      handleApiError(e, { component: 'MealEditor' })
+      logging.error('saveMeal failed', e, { component: 'MealEditor' })
+      showError(e, { context: 'user-action' })
     } finally {
       setLoading(false)
     }
@@ -190,6 +194,9 @@ export function MealEditor() {
 
 // After: Extracted hook
 // ~/modules/diet/meal/application/useMealEditor.ts
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 export function useMealEditor() {
   const [meal, setMeal] = createSignal<Meal>()
   const [loading, setLoading] = createSignal(false)
@@ -200,11 +207,11 @@ export function useMealEditor() {
       await mealRepository.save(meal())
       toast.success('Meal saved')
     } catch (e) {
-      handleApiError(e, {
+      logging.error('saveMeal failed', e, {
         component: 'MealEditor',
-        operation: 'saveMeal',
         additionalData: { mealId: meal()?.id }
       })
+      showError(e, { context: 'user-action' })
     } finally {
       setLoading(false)
     }
@@ -253,9 +260,11 @@ export function groupWeightsByPeriod(weights: Weight[]) {
 ```typescript
 // Before: Relative imports
 import { DayDiet } from '../../domain/dayDiet' // ❌
+import { showError } from '../../../toast/application/toastManager' // ❌
 
 // After: Absolute imports
 import { DayDiet } from '~/modules/diet/day-diet/domain/dayDiet' // ✅
+import { showError } from '~/modules/toast/application/toastManager' // ✅
 ```
 
 ### Static Import Enforcement

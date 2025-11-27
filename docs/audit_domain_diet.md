@@ -25,7 +25,7 @@ This audit reviews the entire "diet" module's domain layer for DDD adherence, mo
 - **ID Generation:** Several submodules (e.g., meal, item, item-group) perform ID generation in domain code, breaking DDD purity. This must be refactored to infrastructure or application layers.
 - **Schema/Type Logic:** Zod schemas are consistently used, but transformation logic is sometimes mixed with validation. Isolate transformation for clarity.
 - **Architecture Modernization:** Submodules should follow day-diet standard: Gateway layer for Supabase interaction, Repository layer for cache management and error handling, Store layer for reactive state with signals, Service layer for complex business logic, and UseCase layer for user operations with toast integration.
-- **Error Handling:** No direct use of `handleApiError` in domain (correct), but custom error classes for domain invariants are generally missing.
+- **Error Handling:** No direct use of side-effect utilities in domain (correct), but custom error classes for domain invariants are generally missing.
 - **Test Coverage:** Test files exist for most submodules, but coverage of invariants and edge cases should be improved.
 
 ## Urgency

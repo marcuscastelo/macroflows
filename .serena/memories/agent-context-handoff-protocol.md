@@ -303,7 +303,7 @@ const errorHandlingStrategy = {
 #### Clean Architecture Compliance
 - **Layer awareness**: Preserve architectural decisions across handoffs
 - **Domain purity**: Maintain domain layer isolation context
-- **Error handling**: Consistent `handleApiError` pattern application
+- **Error handling**: Consistent `showError` and `logging` pattern application
 - **Import standards**: Preserve absolute import requirement context
 
 This protocol ensures that the AI workflow optimization benefits are realized through systematic context preservation and intelligent agent coordination.
