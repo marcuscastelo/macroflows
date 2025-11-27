@@ -1,6 +1,7 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createBlankDay } from '~/modules/diet/day-diet/application/usecases/createBlankDay'
+import { insertDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
 
 // Mock the dayCrud module
@@ -20,14 +21,7 @@ vi.mock('~/modules/toast/application/toastManager', () => ({
 }))
 
 describe('createBlankDay', () => {
-  let mockInsertDayDiet: ReturnType<typeof vi.fn>
-
-  beforeAll(async () => {
-    const dayCrudModule = await import(
-      '~/modules/diet/day-diet/application/usecases/dayCrud'
-    )
-    mockInsertDayDiet = vi.mocked(dayCrudModule.insertDayDiet)
-  })
+  const mockInsertDayDiet = vi.mocked(insertDayDiet)
   const mockCreateDefaultMeals = vi.mocked(createDefaultMeals)
 
   beforeEach(() => {
