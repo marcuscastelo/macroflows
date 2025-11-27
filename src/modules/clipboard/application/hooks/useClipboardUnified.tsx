@@ -3,7 +3,7 @@ import { type z } from 'zod/v4'
 
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import {
-  type ClipboardEntry,
+  type ClipboardPayload,
   clipboardPayloadSchema,
 } from '~/modules/clipboard/domain/clipboardEntry'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
@@ -118,7 +118,7 @@ export function createClipboardSchemaFilter(
 /**
  * Hook that provides copy / paste actions for a given schema and handlers
  */
-export function useCopyPasteActions<T extends ClipboardEntry['payload']>({
+export function useCopyPasteActions<T extends ClipboardPayload>({
   acceptedClipboardSchema,
   getDataToCopy,
   onPaste,
@@ -127,14 +127,10 @@ export function useCopyPasteActions<T extends ClipboardEntry['payload']>({
   getDataToCopy: () => T
   onPaste: (data: T) => void
 }) {
-  const {
-    read: readFromClipboard,
-    write: writeToClipboard,
-    clear: clearClipboard,
-  } = useClipboard()
+  const { read: readFromClipboard, clear: clearClipboard } = useClipboard()
 
   const handleCopy = () => {
-    writeToClipboard(JSON.stringify(getDataToCopy()))
+    clipboardStore.copy(getDataToCopy())
   }
 
   const processClipboardText = async (
@@ -280,7 +276,6 @@ export function useCopyPasteActions<T extends ClipboardEntry['payload']>({
   }
 
   return {
-    writeToClipboard,
     clearClipboard,
     handleCopy,
     handlePaste,
