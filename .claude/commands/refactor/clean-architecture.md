@@ -253,11 +253,9 @@ export function groupWeightsByPeriod(weights: Weight[]) {
 ```typescript
 // Before: Relative imports
 import { DayDiet } from '../../domain/dayDiet' // ❌
-import { handleApiError } from '../../../shared/error/errorHandler' // ❌
 
 // After: Absolute imports
 import { DayDiet } from '~/modules/diet/day-diet/domain/dayDiet' // ✅
-import { handleApiError } from '~/shared/error/errorHandler' // ✅
 ```
 
 ### Static Import Enforcement
