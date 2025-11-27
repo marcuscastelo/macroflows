@@ -1,5 +1,4 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
-import { z } from 'zod/v4'
 
 import {
   useClipboard,
@@ -53,7 +52,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     acceptedClipboardSchema,
     getDataToCopy: () => props.itemDraft(), // TODO: copy self vs children? (expandable?)
     onPaste: (data) => {
-      const itemsToAdd = Array.isArray(data) ? data : [data]
+      const itemsToAdd = asParentItem(data)?.reference.children ?? [data]
 
       const itemAsChildOfSingletonGroup = () =>
         createGroupItem({
@@ -206,12 +205,16 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canPaste={true}
           canClear={false} // We don't need clear functionality here
           onCopy={handleCopy}
-          onPaste={handlePaste}
+          onPaste={() => void handlePaste().catch(console.error)}
           onClear={() => {}} // Empty function since canClear is false
         />
       </div>
 
-      <div class="mt-3 space-y-2" tabindex={0} onPaste={() => handlePaste()}>
+      <div
+        class="mt-3 space-y-2"
+        tabindex={0}
+        onPaste={() => void handlePaste().catch(console.error)}
+      >
         <For each={children()}>
           {(child) => (
             <GroupChildEditor
