@@ -1,6 +1,6 @@
 import { For, type JSXElement, Show } from 'solid-js'
 
-import { useClipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
+import { clipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
 import {
   type ClipboardEntry,
   isItemPayload,
@@ -146,10 +146,8 @@ function ClipboardEntryRow(props: {
  * Clipboard panel that displays recent clipboard entries
  */
 export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
-  const clipboard = useClipboardStore()
-
   const handleClearAll = () => {
-    clipboard.clear()
+    clipboardStore.clear()
   }
 
   return (
@@ -183,19 +181,19 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         {/* Content */}
         <div class="flex-1 overflow-y-auto p-4">
           <Show
-            when={clipboard.entries().length > 0}
+            when={clipboardStore.entries().length > 0}
             fallback={
               <div class="text-center text-gray-500 py-8">
                 No items in clipboard
               </div>
             }
           >
-            <For each={clipboard.entries()}>
+            <For each={clipboardStore.entries()}>
               {(entry) => (
                 <ClipboardEntryRow
                   entry={entry}
-                  onRemove={clipboard.remove}
-                  onTogglePin={clipboard.togglePin}
+                  onRemove={(id) => clipboardStore.remove(id)}
+                  onTogglePin={(id) => clipboardStore.togglePin(id)}
                   onPaste={props.onPaste}
                 />
               )}
@@ -204,7 +202,7 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         </div>
 
         {/* Footer */}
-        <Show when={clipboard.entries().length > 0}>
+        <Show when={clipboardStore.entries().length > 0}>
           <div class="p-4 border-t border-gray-700">
             <Button
               type="button"
