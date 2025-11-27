@@ -108,9 +108,9 @@ const store = createClipboardStore({
 
 ### ClipboardPayload Types
 
-- `{ __type: 'UnifiedItem', value: UnifiedItem }`
-- `{ __type: 'Meal', value: Meal }`
-- `{ __type: 'Recipe', value: Recipe }`
+- `{ __type: 'UnifiedItem', ...itemFields }`
+- `{ __type: 'Meal', ...mealFields }`
+- `{ __type: 'Recipe', ...recipeFields }`
 
 ### ClipboardEntry
 
