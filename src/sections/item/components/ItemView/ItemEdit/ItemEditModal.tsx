@@ -227,7 +227,11 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
   return (
     <div class="flex flex-col h-full">
-      <div class="flex-1 p-4" tabindex={0} onPaste={() => handlePaste()}>
+      <div
+        class="flex-1 p-4"
+        tabindex={0}
+        onPaste={() => void handlePaste().catch(console.error)}
+      >
         <Show
           when={
             isFoodItem(itemDraft()) ||
@@ -316,7 +320,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             viewMode={viewMode()}
             clipboardActions={{
               onCopy: handleCopy,
-              onPaste: handlePaste,
+              onPaste: () => void handlePaste().catch(console.error),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({

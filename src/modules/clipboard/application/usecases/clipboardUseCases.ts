@@ -1,7 +1,7 @@
 import { type ClipboardEntry } from '~/modules/clipboard/domain/clipboardEntry'
 
 export const clipboardUseCases = {
-  save(clipboardEntry: ClipboardEntry): void {
+  save(_clipboardEntry: ClipboardEntry): void {
     // Implement saving logic here
   },
 
