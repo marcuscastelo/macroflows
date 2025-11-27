@@ -6,11 +6,15 @@ import {
   type ClipboardEntry,
   clipboardPayloadSchema,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
+import { ItemListView } from '~/sections/item/components/ItemListView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
+import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
+import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
@@ -152,26 +156,111 @@ export function useCopyPasteActions<T>({
     writeToClipboard(JSON.stringify(getDataToCopy()))
   }
 
-  const handlePaste = () => {
-    const processClipboardText = async (
-      clipboardText: string,
-      clearWhenFromApi = true,
-    ) => {
-      console.debug('Processing clipboard text:', clipboardText)
-      const data = deserializeClipboard(clipboardText, acceptedClipboardSchema)
-      if (data === null) {
-        throw new Error('Invalid clipboard data: ' + clipboardText)
-      }
-      onPaste(data)
-      if (clearWhenFromApi) clearClipboard()
+  const processClipboardText = async (
+    clipboardText: string,
+    clearWhenFromApi = true,
+  ) => {
+    console.debug('Processing clipboard text:', clipboardText)
+    const data = deserializeClipboard(clipboardText, acceptedClipboardSchema)
+    if (data === null) {
+      throw new Error('Invalid clipboard data: ' + clipboardText)
     }
+    onPaste(data)
+    if (clearWhenFromApi) clearClipboard()
+  }
 
-    openConfirmModal('Tem certeza que deseja colar os itens?', {
-      title: 'Colar itens',
-      confirmText: 'Colar',
-      cancelText: 'Cancelar',
-      onConfirm: () => readFromClipboard().then(processClipboardText),
-    })
+  const readAndParseClipboard = async () => {
+    const clipboardText = await readFromClipboard()
+    const parsed = deserializeClipboard(clipboardText, acceptedClipboardSchema)
+    return { clipboardText, parsed }
+  }
+
+  const isItemPayload = (d: unknown) => {
+    if (d === null || typeof d !== 'object') return false
+    if (Array.isArray(d)) {
+      return (
+        d.length > 0 &&
+        typeof d[0] === 'object' &&
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        (d[0] as any).__type === 'UnifiedItem'
+      )
+    }
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    return (d as any).__type === 'UnifiedItem'
+  }
+
+  const openItemsPreviewModal = (itemsArray: Item[], clipboardText: string) => {
+    const [itemsSignal] = createSignal(itemsArray)
+
+    const modalId = openContentModal(
+      () => (
+        <div>
+          <div class="mb-4">{`Os seguintes itens serão colados:`}</div>
+          <ItemListView items={itemsSignal} handlers={{}} />
+        </div>
+      ),
+      {
+        title: 'Colar itens',
+        footer: () => (
+          <div class="flex gap-2 justify-end">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onClick={() => {
+                closeModal(modalId)
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onClick={() => {
+                processClipboardText(clipboardText)
+                  .finally(() => closeModal(modalId))
+                  .catch((err) => {
+                    showError(`Erro ao colar itens: ${JSON.stringify(err)}`)
+                  })
+              }}
+            >
+              Colar
+            </button>
+          </div>
+        ),
+        closeOnOutsideClick: false,
+        closeOnEscape: true,
+        showCloseButton: true,
+      },
+    )
+  }
+
+  const handlePaste = async () => {
+    try {
+      const { clipboardText, parsed } = await readAndParseClipboard()
+
+      if (parsed !== null && isItemPayload(parsed)) {
+        const itemsArray = Array.isArray(parsed) ? parsed : [parsed]
+        const items = itemSchema.array().parse(itemsArray) // Validate items
+        openItemsPreviewModal(items, clipboardText)
+        return
+      } else {
+        showError('O conteúdo da área de transferência não é um item válido.')
+      }
+
+      openConfirmModal('Tem certeza que deseja colar os itens?', {
+        title: 'Colar itens',
+        confirmText: 'Colar',
+        cancelText: 'Cancelar',
+        onConfirm: () => readFromClipboard().then(processClipboardText),
+      })
+    } catch (err) {
+      openConfirmModal('Tem certeza que deseja colar os itens?', {
+        title: 'Colar itens',
+        confirmText: 'Colar',
+        cancelText: 'Cancelar',
+        onConfirm: () => readFromClipboard().then(processClipboardText),
+      })
+    }
   }
 
   return {
