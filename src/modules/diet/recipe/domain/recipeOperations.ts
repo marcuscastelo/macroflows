@@ -12,6 +12,10 @@ export function updateRecipePreparedMultiplier(
   recipe: Recipe,
   preparedMultiplier: number,
 ): Recipe {
+  if (preparedMultiplier <= 0 || !Number.isFinite(preparedMultiplier)) {
+    throw new Error('Prepared multiplier must be a positive number')
+  }
+
   return {
     ...recipe,
     prepared_multiplier: preparedMultiplier,
@@ -149,4 +153,54 @@ export function createScaledRecipe(
     // The prepared multiplier remains the same since it's a ratio
     // The new raw quantity will be scaled, but the multiplier stays constant
   }
+}
+
+/**
+ * Checks if a recipe is a single-item conversion recipe.
+ * A single-item conversion recipe has exactly one ingredient and uses the multiplier
+ * to represent a conversion ratio (e.g., cooked vs raw weight).
+ *
+ * @param recipe - The recipe to check
+ * @returns True if the recipe has exactly one item
+ */
+export function isSingleItemRecipe(recipe: Recipe): boolean {
+  return recipe.items.length === 1
+}
+
+/**
+ * Validates that a prepared multiplier is valid (positive and non-zero).
+ *
+ * @param multiplier - The multiplier value to validate
+ * @returns True if the multiplier is valid
+ */
+export function isValidPreparedMultiplier(multiplier: number): boolean {
+  return multiplier > 0 && Number.isFinite(multiplier)
+}
+
+/**
+ * Gets the conversion description for a single-item recipe.
+ * Example: "1 cooked pasta = 2.22 raw pasta"
+ *
+ * @param recipe - The single-item recipe
+ * @returns A human-readable conversion description, or null if not a single-item recipe
+ */
+export function getSingleItemConversionDescription(
+  recipe: Recipe,
+): string | null {
+  if (!isSingleItemRecipe(recipe)) {
+    return null
+  }
+
+  const item = recipe.items[0]
+  if (!item) {
+    return null
+  }
+
+  const multiplier = recipe.prepared_multiplier
+  const multiplierDisplay =
+    multiplier === 1
+      ? '1'
+      : multiplier.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+
+  return `1g ${recipe.name} = ${multiplierDisplay}g ${item.name}`
 }

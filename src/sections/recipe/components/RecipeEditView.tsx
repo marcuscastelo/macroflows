@@ -1,6 +1,6 @@
 // TODO: Unify Recipe and Recipe components into a single component?
 
-import { type Accessor, type JSXElement, type Setter } from 'solid-js'
+import { type Accessor, type JSXElement, type Setter, Show } from 'solid-js'
 import { z } from 'zod/v4'
 
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
@@ -10,6 +10,8 @@ import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
 import {
   addItemsToRecipe,
   clearRecipeItems,
+  getSingleItemConversionDescription,
+  isSingleItemRecipe,
   removeItemFromRecipe,
   updateRecipeName,
   updateRecipePreparedMultiplier,
@@ -183,6 +185,7 @@ export function RecipeEditContent(props: {
           <div class="text-gray-400 ml-1">Mult.</div>
         </div>
       </div>
+      <SingleItemConversionIndicator />
     </>
   )
 }
@@ -253,5 +256,35 @@ function PreparedMultiplier() {
         style={{ width: '100%' }}
       />
     </div>
+  )
+}
+
+/**
+ * Shows a conversion indicator for single-item recipes.
+ * Example: "1g Macarrão cozido = 2,22g Macarrão cru"
+ */
+function SingleItemConversionIndicator() {
+  const { recipe } = useRecipeEditContext()
+
+  const conversionDescription = () =>
+    getSingleItemConversionDescription(recipe())
+  const isSingle = () => isSingleItemRecipe(recipe())
+
+  return (
+    <Show when={isSingle()}>
+      <div class="mt-2 p-3 bg-info/10 border border-info/30 rounded-lg">
+        <div class="flex items-center gap-2">
+          <span class="text-info text-lg">⚖️</span>
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-info">
+              Receita de conversão
+            </span>
+            <span class="text-xs text-base-content/70">
+              {conversionDescription()}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Show>
   )
 }
