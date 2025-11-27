@@ -1,6 +1,6 @@
 import { type JSXElement } from 'solid-js'
 
-import { useClipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
+import { clipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 
@@ -16,8 +16,7 @@ type ClipboardToggleButtonProps = {
 export function ClipboardToggleButton(
   props: ClipboardToggleButtonProps,
 ): JSXElement {
-  const clipboard = useClipboardStore()
-  const entryCount = () => clipboard.entries().length
+  const entryCount = () => clipboardStore.entries().length
 
   return (
     <Button
