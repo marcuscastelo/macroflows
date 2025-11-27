@@ -109,63 +109,34 @@ export type Database = {
           },
         ]
       }
-      days_bkp: {
+      days_bkp261125: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: number
           meals: Json
           owner: number | null
           target_day: string
+          user_id: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: number
           meals?: Json
           owner?: number | null
           target_day: string
+          user_id?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: number
           meals?: Json
           owner?: number | null
           target_day?: string
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'days_bkp_owner_fkey'
-            columns: ['owner']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      days_test_bkp: {
-        Row: {
-          created_at: string | null
-          id: number
-          meals: Json
-          owner: number | null
-          target_day: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          meals?: Json
-          owner?: number | null
-          target_day: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          meals?: Json
-          owner?: number | null
-          target_day?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'days_test_bkp_owner_fkey'
+            foreignKeyName: 'days_bkp261125_owner_fkey'
             columns: ['owner']
             isOneToOne: false
             referencedRelation: 'users'
@@ -331,7 +302,7 @@ export type Database = {
           id: number
           macro_profile: Json | null
           name: string
-          uuid: string | null
+          uuid: string
         }
         Insert: {
           birthdate?: string
@@ -343,7 +314,7 @@ export type Database = {
           id?: number
           macro_profile?: Json | null
           name: string
-          uuid?: string | null
+          uuid: string
         }
         Update: {
           birthdate?: string
@@ -355,7 +326,7 @@ export type Database = {
           id?: number
           macro_profile?: Json | null
           name?: string
-          uuid?: string | null
+          uuid?: string
         }
         Relationships: []
       }
@@ -430,26 +401,6 @@ export type Database = {
       }
     }
     Functions: {
-      gtrgm_compress: {
-        Args: { '': unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { '': unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { '': unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { '': unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { '': unknown }
-        Returns: unknown
-      }
       search_favorite_foods_with_scoring: {
         Args: { p_limit?: number; p_search_term: string; p_user_uuid: string }
         Returns: {
@@ -483,26 +434,16 @@ export type Database = {
           template_items: Json
           template_macros: Json
           template_name: string
-          template_owner: number
+          template_owner: string
           template_prepared_multiplier: number
           template_source: Json
           times_used: number
           type: string
-          user_id_new: string
+          user_id: string
         }[]
       }
-      set_limit: {
-        Args: { '': number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { '': string }
-        Returns: string[]
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { '': string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never
