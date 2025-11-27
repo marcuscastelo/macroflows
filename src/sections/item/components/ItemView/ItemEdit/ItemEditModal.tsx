@@ -228,148 +228,131 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   return (
     <div class="flex flex-col h-full">
       <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
+        {/* Toggle button for recipes */}
         <Show
           when={
-            isFoodItem(itemDraft()) ||
             isRecipeItem(itemDraft()) ||
-            isGroupItem(itemDraft())
+            isFoodItem(itemDraft()) ||
+            asGroupItem(itemDraft())?.reference.children.length === 1
           }
         >
-          {/* Toggle button for recipes */}
-          <Show
-            when={
-              isRecipeItem(itemDraft()) ||
-              isFoodItem(itemDraft()) ||
-              asGroupItem(itemDraft())?.reference.children.length === 1
-            }
-          >
-            <div class="mb-4 flex justify-center items-center gap-3 ">
-              <div class="flex rounded-lg border border-gray-600 w-full bg-gray-800 p-1">
-                <button
-                  class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
-                    viewMode() === 'normal'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                  onClick={() => setViewMode('normal')}
-                >
-                  <Show when={isRecipeItem(itemDraft())}>📖 Receita</Show>
-                  <Show when={!isRecipeItem(itemDraft())}>🍽️ Alimento</Show>
-                </button>
-                <button
-                  class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
-                    viewMode() === 'group'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                  onClick={() => setViewMode('group')}
-                >
-                  📦 Tratar como Grupo
-                </button>
-              </div>
-
-              {/* Sync button - only show if recipe was manually edited */}
-              <Show when={isManuallyEdited() && originalRecipe()}>
-                <div
-                  class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
-                  onClick={handleSyncWithOriginalRecipe}
-                  title="Sincronizar com receita original"
-                >
-                  <DownloadIcon />
-                </div>
-              </Show>
-
-              {/* Edit recipe button - only show for recipe items */}
-              <Show when={isRecipeItem(itemDraft()) && originalRecipe()}>
-                {(originalRecipe) => (
-                  <button
-                    class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
-                    onClick={() => {
-                      openRecipeEditModal({
-                        recipe: () => originalRecipe(),
-                        onSaveRecipe: (updatedRecipe) => {
-                          void handleSaveRecipe(updatedRecipe)
-                        },
-                        onRefetch: () => {},
-                        onDelete: (recipeId) => {
-                          void handleDeleteRecipe(recipeId)
-                        },
-                      })
-                    }}
-                    title="Editar receita original"
-                  >
-                    ✏️
-                  </button>
-                )}
-              </Show>
+          <div class="mb-4 flex justify-center items-center gap-3 ">
+            <div class="flex rounded-lg border border-gray-600 w-full bg-gray-800 p-1">
+              <button
+                class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
+                  viewMode() === 'normal'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                onClick={() => setViewMode('normal')}
+              >
+                <Show when={isRecipeItem(itemDraft())}>📖 Receita</Show>
+                <Show when={!isRecipeItem(itemDraft())}>🍽️ Alimento</Show>
+              </button>
+              <button
+                class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
+                  viewMode() === 'group'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                onClick={() => setViewMode('group')}
+              >
+                📦 Tratar como Grupo
+              </button>
             </div>
-          </Show>
 
-          <ItemEditBody
-            canApply={canApply()}
-            itemDraft={itemDraft}
-            parentifiedItemDraft={parentifiedItemDraft}
-            setItemDraft={setItemDraft}
-            macroOverflow={props.macroOverflow}
-            quantityField={quantityField}
-            onEditChild={handleEditChild}
-            viewMode={viewMode()}
-            clipboardActions={{
-              onCopy: handleCopy,
-              onPaste: handlePaste,
-            }}
-            onAddNewItem={() => {
-              openTemplateSearchModal({
-                targetName: itemDraft().name,
-                title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
-                onNewItem: (newItem) => {
-                  const item_ = itemDraft()
-                  if (isGroupItem(item_)) {
-                    const updatedItem = ParentItemExt.addChildToParentItem(
-                      item_,
-                      {
-                        ...newItem,
-                        id: generateId(),
+            {/* Sync button - only show if recipe was manually edited */}
+            <Show when={isManuallyEdited() && originalRecipe()}>
+              <div
+                class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
+                onClick={handleSyncWithOriginalRecipe}
+                title="Sincronizar com receita original"
+              >
+                <DownloadIcon />
+              </div>
+            </Show>
+
+            {/* Edit recipe button - only show for recipe items */}
+            <Show when={isRecipeItem(itemDraft()) && originalRecipe()}>
+              {(originalRecipe) => (
+                <button
+                  class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
+                  onClick={() => {
+                    openRecipeEditModal({
+                      recipe: () => originalRecipe(),
+                      onSaveRecipe: (updatedRecipe) => {
+                        void handleSaveRecipe(updatedRecipe)
                       },
-                    )
-                    setItemDraft(updatedItem)
-                  } else {
-                    const currentItem = itemDraft()
-                    const groupItem = createItem({
-                      id: currentItem.id,
-                      name: currentItem.name,
-                      quantity: currentItem.quantity,
-                      reference: {
-                        type: 'group',
-                        children: [
-                          createItem({
-                            ...currentItem,
-                            id: generateId(),
-                          }),
-                          {
-                            ...newItem,
-                            id: generateId(),
-                          },
-                        ],
+                      onRefetch: () => {},
+                      onDelete: (recipeId) => {
+                        void handleDeleteRecipe(recipeId)
                       },
                     })
-                    setItemDraft(groupItem)
-                  }
-                },
-              })
-            }}
-            showAddItemButton={props.showAddItemButton}
-          />
+                  }}
+                  title="Editar receita original"
+                >
+                  ✏️
+                </button>
+              )}
+            </Show>
+          </div>
         </Show>
-        <Show
-          when={
-            !isFoodItem(itemDraft()) &&
-            !isRecipeItem(itemDraft()) &&
-            !isGroupItem(itemDraft())
-          }
-        >
-          <UnsupportedItemMessage />
-        </Show>
+
+        <ItemEditBody
+          canApply={canApply()}
+          itemDraft={itemDraft}
+          parentifiedItemDraft={parentifiedItemDraft}
+          setItemDraft={setItemDraft}
+          macroOverflow={props.macroOverflow}
+          quantityField={quantityField}
+          onEditChild={handleEditChild}
+          viewMode={viewMode()}
+          clipboardActions={{
+            onCopy: handleCopy,
+            onPaste: handlePaste,
+          }}
+          onAddNewItem={() => {
+            openTemplateSearchModal({
+              targetName: itemDraft().name,
+              title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
+              onNewItem: (newItem) => {
+                const item_ = itemDraft()
+                if (isGroupItem(item_)) {
+                  const updatedItem = ParentItemExt.addChildToParentItem(
+                    item_,
+                    {
+                      ...newItem,
+                      id: generateId(),
+                    },
+                  )
+                  setItemDraft(updatedItem)
+                } else {
+                  const currentItem = itemDraft()
+                  const groupItem = createItem({
+                    id: currentItem.id,
+                    name: currentItem.name,
+                    quantity: currentItem.quantity,
+                    reference: {
+                      type: 'group',
+                      children: [
+                        createItem({
+                          ...currentItem,
+                          id: generateId(),
+                        }),
+                        {
+                          ...newItem,
+                          id: generateId(),
+                        },
+                      ],
+                    },
+                  })
+                  setItemDraft(groupItem)
+                }
+              },
+            })
+          }}
+          showAddItemButton={props.showAddItemButton}
+        />
       </div>
 
       <div class="p-4 border-t border-gray-600 flex justify-end gap-2">
