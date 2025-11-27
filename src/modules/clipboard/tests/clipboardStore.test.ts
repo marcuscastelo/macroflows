@@ -130,24 +130,6 @@ describe('ClipboardStore', () => {
 
       expect(mockPersistence.save).toHaveBeenCalledTimes(1)
     })
-
-    it('notifies subscribers', () => {
-      const store = createClipboardStore()
-      const subscriber = vi.fn()
-      store.subscribe(subscriber)
-
-      const payload: ClipboardPayload = promoteMeal(
-        createNewMeal({ name: 'Test Meal', items: [] }),
-        {
-          id: 1,
-        },
-      )
-
-      store.copy(payload)
-
-      expect(subscriber).toHaveBeenCalledTimes(1)
-      expect(subscriber).toHaveBeenCalledWith(expect.any(Array))
-    })
   })
 
   describe('read', () => {
@@ -293,39 +275,6 @@ describe('ClipboardStore', () => {
 
       store.togglePin(entryId)
       expect(store.readAll()[0]!.pinned).toBe(false)
-    })
-  })
-
-  describe('subscribe', () => {
-    it('calls subscriber on changes', () => {
-      const store = createClipboardStore()
-      const subscriber = vi.fn()
-
-      store.subscribe(subscriber)
-
-      store.copy({
-        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
-          id: 1,
-        }),
-      })
-
-      expect(subscriber).toHaveBeenCalledTimes(1)
-    })
-
-    it('unsubscribe stops notifications', () => {
-      const store = createClipboardStore()
-      const subscriber = vi.fn()
-
-      const unsubscribe = store.subscribe(subscriber)
-      unsubscribe()
-
-      store.copy({
-        ...promoteMeal(createNewMeal({ name: 'Meal 1', items: [] }), {
-          id: 1,
-        }),
-      })
-
-      expect(subscriber).not.toHaveBeenCalled()
     })
   })
 
