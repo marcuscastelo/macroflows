@@ -31,6 +31,7 @@ import { currentUserId } from '~/modules/user/application/user'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
 import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
 import {
@@ -43,7 +44,6 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import { openItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id

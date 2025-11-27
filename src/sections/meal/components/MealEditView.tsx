@@ -21,10 +21,8 @@ import {
   MealContextProvider,
   useMealContext,
 } from '~/sections/meal/context/MealContext'
-import {
-  openClearItemsConfirmModal,
-  openDeleteConfirmModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
+import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
 import { logging } from '~/shared/utils/logging'
 
 // TODO: Remove deprecated props and their usages

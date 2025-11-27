@@ -35,11 +35,9 @@ import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
 import { UnsupportedItemMessage } from '~/sections/item/components/ItemView/ItemEdit/UnsupportedItemMessage'
-import {
-  openItemEditModal,
-  openRecipeEditModal,
-  openTemplateSearchModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
+import { openRecipeEditModal } from '~/sections/recipe/ui/openRecipeEditModal'
+import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 

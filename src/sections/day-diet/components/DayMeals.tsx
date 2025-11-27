@@ -10,17 +10,15 @@ import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
 import { DeleteDayButton } from '~/sections/day-diet/components/DeleteDayButton'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import {
   MealEditView,
   MealEditViewActions,
   MealEditViewContent,
   MealEditViewHeader,
 } from '~/sections/meal/components/MealEditView'
+import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
-import {
-  openItemEditModal,
-  openTemplateSearchModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 const handleEditItem = (
