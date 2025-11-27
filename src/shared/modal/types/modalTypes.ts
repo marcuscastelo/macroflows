@@ -9,7 +9,7 @@ export type ModalBody = JSXElement
 
 export type BaseModalConfig = {
   id?: ModalId
-  title?: ModalTitle | Accessor<ModalTitle>
+  title?: ModalTitle | ((modalId: ModalId) => ModalTitle)
   priority?: ModalPriority
   closeOnOutsideClick?: boolean
   closeOnEscape?: boolean
@@ -27,7 +27,7 @@ export type ErrorModalConfig = BaseModalConfig & {
 export type ContentModalConfig = BaseModalConfig & {
   type: 'content'
   content: ModalBody | ((modalId: ModalId) => ModalBody)
-  footer?: ModalBody | Accessor<ModalBody>
+  footer?: ModalBody | ((modalId: ModalId) => ModalBody)
 }
 
 export type ConfirmationModalConfig = BaseModalConfig & {

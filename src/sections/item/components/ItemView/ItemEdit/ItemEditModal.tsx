@@ -9,6 +9,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
@@ -31,7 +32,6 @@ import {
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
 import { UnsupportedItemMessage } from '~/sections/item/components/ItemView/ItemEdit/UnsupportedItemMessage'
@@ -219,18 +219,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     // The parent component should handle removing this item
   }
 
-  // Clipboard functionality
-  const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema: itemSchema,
-    getDataToCopy: () => itemDraft(),
-    onPaste: (data) => {
-      setItemDraft(data)
-    },
-  })
-
   return (
     <div class="flex flex-col h-full">
-      <div class="flex-1 p-4" tabindex={0} onPaste={(e) => handlePaste(e)}>
+      <div
+        class="flex-1 p-4"
+        tabindex={0}
+        onPaste={() => clipboardUseCases.confirmPaste(itemSchema, setItemDraft)}
+      >
         <Show
           when={
             isFoodItem(itemDraft()) ||
@@ -318,8 +313,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             onEditChild={handleEditChild}
             viewMode={viewMode()}
             clipboardActions={{
-              onCopy: handleCopy,
-              onPaste: handlePaste,
+              onCopy: () => clipboardUseCases.copy(itemDraft()),
+              onPaste: () =>
+                clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({

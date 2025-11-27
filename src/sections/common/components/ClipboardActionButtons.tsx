@@ -1,5 +1,6 @@
-import { type JSXElement } from 'solid-js'
+import { type JSXElement, Show } from 'solid-js'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { CopyButton } from '~/sections/common/components/CopyButton'
 import { PasteIcon } from '~/sections/common/components/icons/PasteIcon'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
@@ -19,24 +20,24 @@ export function ClipboardActionButtons(
 ): JSXElement {
   return (
     <div class={'ml-auto flex gap-2'}>
-      {props.canCopy && (
+      <Show when={props.canCopy}>
         <CopyButton
           value={() => null}
           onCopy={() => props.onCopy()}
           class={COPY_BUTTON_STYLES}
           stopPropagation={false}
         />
-      )}
-      {props.canPaste && (
-        <div class={COPY_BUTTON_STYLES} onClick={props.onPaste}>
+      </Show>
+      <Show when={props.canPaste && clipboardUseCases.entryCount() > 0}>
+        <div class={COPY_BUTTON_STYLES} onClick={() => props.onPaste()}>
           <PasteIcon />
         </div>
-      )}
-      {props.canClear && (
-        <div class={COPY_BUTTON_STYLES} onClick={props.onClear}>
+      </Show>
+      <Show when={props.canClear}>
+        <div class={COPY_BUTTON_STYLES} onClick={(e) => props.onClear(e)}>
           <TrashIcon />
         </div>
-      )}
+      </Show>
     </div>
   )
 }
