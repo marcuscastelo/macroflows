@@ -18,7 +18,9 @@ export function deserializeClipboard<T extends z.ZodType<unknown>>(
       return null
     }
   } catch (error) {
-    logging.error('Clipboard deserializeClipboard - Invalid JSON:', error)
+    logging.error(`Clipboard deserializeClipboard - Invalid JSON`, error, {
+      clipboard,
+    })
     return null
   }
   const result = allowedSchema.safeParse(parsed)
@@ -26,6 +28,7 @@ export function deserializeClipboard<T extends z.ZodType<unknown>>(
     logging.error(
       'Clipboard deserializeClipboard - Invalid data:',
       result.error,
+      { clipboard, parsed },
     )
     return null
   }
