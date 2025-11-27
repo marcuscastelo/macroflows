@@ -277,8 +277,8 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         </div>
       </Show>
 
-      {/* Convert to Recipe button - only visible when there are multiple children */}
-      <Show when={children().length > 1 && !isRecipeItem(props.itemDraft())}>
+      {/* Convert to Recipe button - only visible when there are children */}
+      <Show when={children().length > 0 && !isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
             class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white w-full flex items-center justify-center gap-2"
