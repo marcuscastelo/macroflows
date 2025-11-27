@@ -12,8 +12,6 @@ export type ClipboardStoreConfig = {
   persistence?: ClipboardPersistence
 }
 
-export type ClipboardSubscriber = (entries: ClipboardEntry[]) => void
-
 export function createClipboardStore(config?: ClipboardStoreConfig) {
   const maxEntries = config?.maxEntries ?? 20
   const persistence = config?.persistence
@@ -90,12 +88,6 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
       )
       persist()
     },
-
-    /**
-     * Subscribe to clipboard changes
-     */
-    // Note: subscribe removed. Consumers should use `readAll()` or the
-    // `entries` accessor to observe changes via Solid's reactivity.
 
     /**
      * Clean expired entries (if persistence is enabled)
