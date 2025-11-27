@@ -196,6 +196,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canPaste={true}
           canClear={false} // We don't need clear functionality here
           onCopy={() => clipboardUseCases.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+                                                                   // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1358
           onPaste={() =>
             clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
           }
