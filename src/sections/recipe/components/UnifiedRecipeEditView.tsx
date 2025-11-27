@@ -1,10 +1,8 @@
 import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 import { z } from 'zod/v4'
 
-import {
-  useClipboard,
-  useCopyPasteActions,
-} from '~/modules/clipboard/application/useClipboardUnified'
+import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
@@ -40,8 +38,6 @@ export type RecipeEditViewProps = {
 }
 
 export function RecipeEditView(props: RecipeEditViewProps) {
-  const clipboard = useClipboard()
-
   const recipe = untrack(() => props.recipe)
   const setRecipe = untrack(() => props.setRecipe)
 
@@ -130,7 +126,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
             props.onEditItem(Item)
           },
           onCopy: (Item: Item) => {
-            clipboard.write(JSON.stringify(Item))
+            clipboardUseCases.save(Item)
           },
           onDelete: (Item: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), Item.id))

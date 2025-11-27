@@ -1,6 +1,6 @@
-import { type JSXElement } from 'solid-js'
+import { type JSXElement, Show } from 'solid-js'
 
-import { clipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 
@@ -16,8 +16,6 @@ type ClipboardToggleButtonProps = {
 export function ClipboardToggleButton(
   props: ClipboardToggleButtonProps,
 ): JSXElement {
-  const entryCount = () => clipboardStore.entries().length
-
   return (
     <Button
       type="button"
@@ -40,11 +38,11 @@ export function ClipboardToggleButton(
       </svg>
 
       {/* Badge with entry count */}
-      {entryCount() > 0 && (
+      <Show when={clipboardUseCases.entryCount() > 0}>
         <span class="absolute -top-1 -right-1 badge badge-sm badge-error">
-          {entryCount()}
+          {clipboardUseCases.entryCount()}
         </span>
-      )}
+      </Show>
     </Button>
   )
 }

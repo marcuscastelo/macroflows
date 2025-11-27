@@ -1,9 +1,7 @@
 import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
 
-import {
-  useClipboard,
-  useCopyPasteActions,
-} from '~/modules/clipboard/application/useClipboardUnified'
+import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
@@ -172,7 +170,6 @@ export function MealEditViewContent(props: {
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const clipboard = useClipboard()
 
   logging.debug('meal.value:', meal())
 
@@ -186,7 +183,7 @@ export function MealEditViewContent(props: {
       handlers={{
         onEdit: props.onEditItem,
         onCopy: (item) => {
-          clipboard.write(JSON.stringify(item))
+          clipboardUseCases.save(item)
         },
         onDelete: (item) => {
           openDeleteConfirmModal({

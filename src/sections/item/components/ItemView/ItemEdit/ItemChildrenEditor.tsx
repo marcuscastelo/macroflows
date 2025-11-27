@@ -1,9 +1,7 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
-import {
-  useClipboard,
-  useCopyPasteActions,
-} from '~/modules/clipboard/application/useClipboardUnified'
+import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/item/domain/validateItemHierarchy'
 import {
@@ -35,8 +33,6 @@ export type ItemChildrenEditorProps = {
 }
 
 export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
-  const clipboard = useClipboard()
-
   const children = () => {
     const item = props.itemDraft()
     return isGroupItem(item) || isRecipeItem(item)
@@ -225,7 +221,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onEditChild={props.onEditChild}
               onCopyChild={(childToCopy) => {
                 // Copy the specific child item to clipboard
-                clipboard.write(JSON.stringify(childToCopy))
+                clipboardUseCases.save(childToCopy)
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
@@ -332,8 +328,6 @@ type GroupChildEditorProps = {
 }
 
 function GroupChildEditor(props: GroupChildEditorProps) {
-  const clipboard = useClipboard()
-
   const handleEditChild = () => {
     if (props.onEditChild) {
       props.onEditChild(props.child)
@@ -345,7 +339,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
       props.onCopyChild(props.child)
     } else {
       // Fallback: copy to clipboard directly
-      clipboard.write(JSON.stringify(props.child))
+      clipboardUseCases.save(props.child)
     }
   }
 

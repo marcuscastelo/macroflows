@@ -9,7 +9,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCopyPasteActions } from '~/modules/clipboard/application/useClipboardUnified'
+import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'

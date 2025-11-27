@@ -1,6 +1,6 @@
 import { For, type JSXElement, Show } from 'solid-js'
 
-import { clipboardStore } from '~/modules/clipboard/application/useClipboardUnified'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardEntry,
   isItemPayload,
@@ -146,10 +146,6 @@ function ClipboardEntryRow(props: {
  * Clipboard panel that displays recent clipboard entries
  */
 export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
-  const handleClearAll = () => {
-    clipboardStore.clear()
-  }
-
   return (
     <Show when={props.isOpen}>
       <div class="fixed top-0 right-0 h-full w-80 bg-gray-800 text-white shadow-lg z-50 flex flex-col">
@@ -181,19 +177,19 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         {/* Content */}
         <div class="flex-1 overflow-y-auto p-4">
           <Show
-            when={clipboardStore.entries().length > 0}
+            when={clipboardUseCases.entryCount() > 0}
             fallback={
               <div class="text-center text-gray-500 py-8">
                 No items in clipboard
               </div>
             }
           >
-            <For each={clipboardStore.entries()}>
+            <For each={clipboardUseCases.entries()}>
               {(entry) => (
                 <ClipboardEntryRow
                   entry={entry}
-                  onRemove={(id) => clipboardStore.remove(id)}
-                  onTogglePin={(id) => clipboardStore.togglePin(id)}
+                  onRemove={(id) => clipboardUseCases.remove(id)}
+                  onTogglePin={(id) => clipboardUseCases.togglePin(id)}
                   onPaste={props.onPaste}
                 />
               )}
@@ -202,12 +198,12 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         </div>
 
         {/* Footer */}
-        <Show when={clipboardStore.entries().length > 0}>
+        <Show when={clipboardUseCases.entryCount() > 0}>
           <div class="p-4 border-t border-gray-700">
             <Button
               type="button"
               class="btn btn-sm btn-error w-full"
-              onClick={handleClearAll}
+              onClick={() => clipboardUseCases.clear()}
             >
               Clear All Unpinned
             </Button>
