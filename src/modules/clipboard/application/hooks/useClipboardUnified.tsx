@@ -1,12 +1,7 @@
 import { createRoot } from 'solid-js'
-import { type z } from 'zod/v4'
 
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { type ClipboardPayload } from '~/modules/clipboard/domain/clipboardEntry'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
-import { openPasteConfirmModal } from '~/modules/clipboard/ui/PasteConfirmModal'
-import { showError } from '~/modules/toast/application/toastManager'
 
 export type ClipboardFilter = (clipboard: string) => boolean
 
@@ -26,23 +21,3 @@ export const clipboardStore = createRoot(() => {
 
   return store
 })
-
-export function useCopyPasteActions<T extends ClipboardPayload>({
-  acceptedClipboardSchema,
-}: {
-  acceptedClipboardSchema: z.ZodType<T>
-}) {
-  const paste = async (onPaste: (data: T) => void) => {
-    const parsed = clipboardUseCases.fetchLatestParsing(acceptedClipboardSchema)
-    if (parsed === null) {
-      showError('A área de transferência está vazia ou o conteúdo é inválido.')
-      return
-    }
-
-    openPasteConfirmModal(parsed, onPaste)
-  }
-
-  return {
-    paste,
-  }
-}

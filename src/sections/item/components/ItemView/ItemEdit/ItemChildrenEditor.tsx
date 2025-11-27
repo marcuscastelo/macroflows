@@ -1,6 +1,5 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
-import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardPayload,
@@ -92,11 +91,6 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
 
     props.setItemDraft(groupItem)
   }
-
-  // Clipboard actions for children
-  const clipboardActions = useCopyPasteActions({
-    acceptedClipboardSchema: clipboardPayloadSchema,
-  })
 
   const updateChildQuantity = (childId: number, newQuantity: number) => {
     logging.debug('[GroupChildrenEditor] updateChildQuantity', {
@@ -201,9 +195,9 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={() => clipboardUseCases.save(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+          onCopy={() => clipboardUseCases.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
           onPaste={() =>
-            void clipboardActions.paste(onPaste).catch(console.error)
+            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={() => {}} // Empty function since canClear is false
         />
@@ -213,7 +207,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         class="mt-3 space-y-2"
         tabindex={0}
         onPaste={() =>
-          void clipboardActions.paste(onPaste).catch(console.error)
+          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
         }
       >
         <For each={children()}>
@@ -226,7 +220,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onEditChild={props.onEditChild}
               onCopyChild={(childToCopy) => {
                 // Copy the specific child item to clipboard
-                clipboardUseCases.save(childToCopy)
+                clipboardUseCases.copy(childToCopy)
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
@@ -344,7 +338,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
       props.onCopyChild(props.child)
     } else {
       // Fallback: copy to clipboard directly
-      clipboardUseCases.save(props.child)
+      clipboardUseCases.copy(props.child)
     }
   }
 

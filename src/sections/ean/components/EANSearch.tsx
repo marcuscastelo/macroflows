@@ -113,7 +113,7 @@ export function EANSearch(props: EANSearchProps) {
                         // TODO : default handlers for ItemView
                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
-                          clipboardUseCases.save(item)
+                          clipboardUseCases.copy(item)
                         },
                       }}
                       mode="read-only"

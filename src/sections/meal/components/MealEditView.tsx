@@ -1,6 +1,5 @@
 import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
-import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardPayload,
@@ -91,10 +90,6 @@ export function MealEditViewHeader(props: {
     props.onUpdateMeal(updatedMeal)
   }
 
-  const clipboardActions = useCopyPasteActions({
-    acceptedClipboardSchema: clipboardPayloadSchema,
-  })
-
   const mealCalories = () => MealExt.of(meal()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
@@ -112,7 +107,9 @@ export function MealEditViewHeader(props: {
     <div
       class="flex"
       tabindex={0}
-      onPaste={() => void clipboardActions.paste(onPaste).catch(console.error)}
+      onPaste={() =>
+        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+      }
     >
       <div class="my-2">
         <h5 class="text-3xl">{meal().name}</h5>
@@ -123,9 +120,9 @@ export function MealEditViewHeader(props: {
           canCopy={meal().items.length > 0}
           canPaste={true}
           canClear={meal().items.length > 0}
-          onCopy={() => clipboardUseCases.save(meal())}
+          onCopy={() => clipboardUseCases.copy(meal())}
           onPaste={() =>
-            void clipboardActions.paste(onPaste).catch(console.error)
+            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={onClearItems}
         />
@@ -153,7 +150,7 @@ export function MealEditViewContent(props: {
       handlers={{
         onEdit: props.onEditItem,
         onCopy: (item) => {
-          clipboardUseCases.save(item)
+          clipboardUseCases.copy(item)
         },
         onDelete: (item) => {
           openDeleteConfirmModal({

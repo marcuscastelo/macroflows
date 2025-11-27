@@ -8,7 +8,7 @@ import { logging } from '~/shared/utils/logging'
 
 export const openPasteConfirmModal = <T extends ClipboardPayload>(
   payload: T,
-  onPaste: (data: T) => void,
+  onPasteConfirmed: (data: T) => void,
 ) => {
   try {
     const extractedItems = () => ClipboardPayloadExt.extractItems(payload)
@@ -20,7 +20,7 @@ export const openPasteConfirmModal = <T extends ClipboardPayload>(
         footer: () => (
           <PasteConfirmModalFooter
             modalId={modalId}
-            onPaste={() => onPaste(payload)}
+            onPasteConfirmed={() => onPasteConfirmed(payload)}
           />
         ),
         closeOnOutsideClick: false,
@@ -48,7 +48,7 @@ function PasteConfirmModal(props: { items: Item[] }) {
 
 function PasteConfirmModalFooter(props: {
   modalId: string
-  onPaste: () => void
+  onPasteConfirmed: () => void
 }) {
   return (
     <div class="flex gap-2 justify-end">
@@ -65,7 +65,7 @@ function PasteConfirmModalFooter(props: {
         type="button"
         class="btn btn-primary"
         onClick={() => {
-          props.onPaste()
+          props.onPasteConfirmed()
           closeModal(props.modalId)
         }}
       >

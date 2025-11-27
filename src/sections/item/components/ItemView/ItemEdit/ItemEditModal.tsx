@@ -9,7 +9,6 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
@@ -217,19 +216,12 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     // The parent component should handle removing this item
   }
 
-  // Clipboard functionality
-  const clipboardActions = useCopyPasteActions({
-    acceptedClipboardSchema: itemSchema,
-  })
-
   return (
     <div class="flex flex-col h-full">
       <div
         class="flex-1 p-4"
         tabindex={0}
-        onPaste={() =>
-          void clipboardActions.paste(setItemDraft).catch(console.error)
-        }
+        onPaste={() => clipboardUseCases.confirmPaste(itemSchema, setItemDraft)}
       >
         <Show
           when={
@@ -318,9 +310,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             onEditChild={handleEditChild}
             viewMode={viewMode()}
             clipboardActions={{
-              onCopy: () => clipboardUseCases.save(itemDraft()),
+              onCopy: () => clipboardUseCases.copy(itemDraft()),
               onPaste: () =>
-                void clipboardActions.paste(setItemDraft).catch(console.error),
+                clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
             }}
             onAddNewItem={() => {
               openTemplateSearchModal({

@@ -5,6 +5,7 @@ import {
   type ClipboardEntry,
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { openPasteConfirmModal } from '~/modules/clipboard/ui/PasteConfirmModal'
 import {
   showError,
   showSuccess,
@@ -12,9 +13,22 @@ import {
 import { logging } from '~/shared/utils/logging'
 
 export const clipboardUseCases = {
-  save(payload: ClipboardPayload): void {
+  copy(payload: ClipboardPayload): void {
     clipboardStore.copy(payload)
     showSuccess('Conteúdo copiado para a área de transferência.')
+  },
+
+  confirmPaste<T extends ClipboardPayload>(
+    acceptedClipboardSchema: z.ZodType<T>,
+    onPasteConfirmed: (data: T) => void,
+  ) {
+    const parsed = clipboardUseCases.fetchLatestParsing(acceptedClipboardSchema)
+    if (parsed === null) {
+      showError('A área de transferência está vazia ou o conteúdo é inválido.')
+      return
+    }
+
+    openPasteConfirmModal(parsed, onPasteConfirmed)
   },
 
   remove(id: string): void {
