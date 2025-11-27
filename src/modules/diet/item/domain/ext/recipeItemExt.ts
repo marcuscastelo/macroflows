@@ -3,6 +3,7 @@ import {
   type Item,
   type RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 
 export const RecipeItemExt = {
   syncWithOriginal(
@@ -30,42 +31,37 @@ export const RecipeItemExt = {
 
   scaleQuantityAndChildren(
     recipeItem: RecipeItem,
+    recipe: Recipe,
     newQuantity: number,
   ): RecipeItem {
     if (newQuantity <= 0) {
       throw new Error('New quantity must be greater than 0')
     }
 
-    const currentQuantity = recipeItem.quantity
-    if (currentQuantity <= 0) {
-      throw new Error('Current quantity must be greater than 0')
-    }
+    const mainQuantity = newQuantity
+    const totalChildQuantity = newQuantity / recipe.prepared_multiplier
 
-    const scalingFactor = newQuantity / currentQuantity
-
-    // Scale all children proportionally with minimum values
-    const scaledChildren = recipeItem.reference.children.map((child) => {
-      const scaledQuantity = child.quantity * scalingFactor
-      const roundedQuantity = Math.round(scaledQuantity * 10000) / 10000 // Round to 4 decimal places
-
-      // Ensure minimum quantity of 0.0001g for ingredients to prevent zero-lock
-      const finalQuantity = Math.max(roundedQuantity, 0.0001)
-
-      return {
-        ...child,
-        quantity: finalQuantity,
-      }
-    })
-
-    // Ensure minimum quantity of 0.01g for main item
-    const finalMainQuantity = Math.max(
-      Math.round(newQuantity * 100) / 100,
-      0.01,
+    const currentChildQuantitySum = recipeItem.reference.children.reduce(
+      (sum, child) => sum + child.quantity,
+      0,
     )
+
+    const childPercentages = recipeItem.reference.children.map((child) => ({
+      child,
+      percentage:
+        currentChildQuantitySum > 0
+          ? child.quantity / currentChildQuantitySum
+          : 1 / recipeItem.reference.children.length,
+    }))
+
+    const scaledChildren = childPercentages.map(({ child, percentage }) => ({
+      ...child,
+      quantity: Math.round(totalChildQuantity * percentage * 100) / 100,
+    }))
 
     return {
       ...recipeItem,
-      quantity: finalMainQuantity,
+      quantity: mainQuantity,
       reference: {
         ...recipeItem.reference,
         children: scaledChildren,
@@ -80,8 +76,8 @@ export const RecipeItemExt = {
       value: item,
       syncWithOriginal: (originalRecipeItems: readonly Item[]) =>
         RecipeItemExt.syncWithOriginal(item, originalRecipeItems),
-      scaleQuantityAndChildren: (newQuantity: number) =>
-        RecipeItemExt.scaleQuantityAndChildren(item, newQuantity),
+      scaleQuantityAndChildren: (newQuantity: number, recipe: Recipe) =>
+        RecipeItemExt.scaleQuantityAndChildren(item, recipe, newQuantity),
     }
   },
 }

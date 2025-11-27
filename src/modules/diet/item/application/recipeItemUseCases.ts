@@ -13,9 +13,16 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 
 export const recipeItemUseCases = {
-  withEditedQuantity: (item: RecipeItem, newQuantity: number): RecipeItem => {
+  withEditedQuantity: (
+    item: RecipeItem,
+    recipe: Recipe,
+    newQuantity: number,
+  ): RecipeItem => {
     try {
-      return RecipeItemExt.of(item).scaleQuantityAndChildren(newQuantity)
+      return RecipeItemExt.of(item).scaleQuantityAndChildren(
+        newQuantity,
+        recipe,
+      )
     } catch (error) {
       showError(
         'Não foi possível ajustar a quantidade da receita. Verifique se todos os itens possuem quantidade válida.',

@@ -28,9 +28,25 @@ export type ItemQuantityControlsProps = {
 }
 
 export function ItemQuantityControls(props: ItemQuantityControlsProps) {
+  const recipeResource = recipeItemUseCases.createRecipeResource(() =>
+    props.itemDraft(),
+  )
+
   createEffect(() => {
     const newQuantity = props.quantityField.value() ?? 0.1
     const currentItem = untrack(props.itemDraft)
+    const recipe = recipeResource.value()
+
+    if (
+      recipeResource.value.loading ||
+      recipe === null ||
+      recipe === undefined
+    ) {
+      logging.debug(
+        '[QuantityControls] Recipe resource loading or unavailable, skipping quantity update',
+      )
+      return
+    }
 
     logging.debug(
       '[QuantityControls] Update unified item quantity from field',
@@ -39,7 +55,7 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
 
     if (isRecipeItem(currentItem)) {
       props.setItemDraft(
-        recipeItemUseCases.withEditedQuantity(currentItem, newQuantity),
+        recipeItemUseCases.withEditedQuantity(currentItem, recipe, newQuantity),
       )
     } else {
       // For food items, just update quantity
