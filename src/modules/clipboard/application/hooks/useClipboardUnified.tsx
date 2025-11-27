@@ -2,16 +2,10 @@ import { createRoot, createSignal } from 'solid-js'
 import { type z } from 'zod/v4'
 
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
-import {
-  type ClipboardPayload,
-  clipboardPayloadSchema,
-} from '~/modules/clipboard/domain/clipboardEntry'
+import { type ClipboardPayload } from '~/modules/clipboard/domain/clipboardEntry'
 import { createNoOpPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import {
-  showError,
-  showSuccess,
-} from '~/modules/toast/application/toastManager'
+import { showError } from '~/modules/toast/application/toastManager'
 import { ItemListView } from '~/sections/item/components/ItemListView'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { openContentModal } from '~/shared/modal/helpers/modalHelpers'
@@ -19,7 +13,6 @@ import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { deserializeClipboard } from '~/shared/utils/clipboardUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
-import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { isItem, isMeal, isRecipe } from '~/shared/utils/typeUtils'
 
 export type ClipboardFilter = (clipboard: string) => boolean
@@ -45,37 +38,6 @@ export const clipboardStore = createRoot(() => {
  * Hook for reading/writing clipboard via the in-app clipboard store
  */
 function useClipboard() {
-  const handleWrite = (text: string, onError?: (error: unknown) => void) => {
-    try {
-      // Treat empty string as a clear request for the clipboard store
-      if (text === '') {
-        clipboardStore.clear()
-        return
-      }
-
-      // If the incoming text is JSON, parse it first so Zod receives an object
-      let parsed: unknown = text
-      try {
-        parsed = jsonParseWithStack(text)
-      } catch {
-        // If it's not valid JSON, leave as-is and let Zod validation fail
-      }
-
-      console.debug('Parsed clipboard payload:', parsed)
-      const payload = parseWithStack(clipboardPayloadSchema, parsed)
-      clipboardStore.copy(payload)
-
-      if (text.length > 0) {
-        showSuccess(`Copiado com sucesso`)
-      }
-    } catch (err) {
-      showError(
-        `Failed to parse or copy using clipboard store: ${JSON.stringify(err)}`,
-      )
-      onError?.(err)
-    }
-  }
-
   const handleRead = async () => {
     try {
       const clipboard = clipboardStore.read()
@@ -90,10 +52,9 @@ function useClipboard() {
   }
 
   return {
-    write: handleWrite,
     read: handleRead,
     clear: () => {
-      handleWrite('')
+      clipboardStore.clear()
     },
   }
 }
