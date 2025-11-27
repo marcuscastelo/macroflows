@@ -61,7 +61,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       ? getRecipePreparedQuantity(template)
       : DEFAULT_QUANTITY
 
-    const controller = openItemEditModal({
+    const modalId = openItemEditModal({
       targetMealName: props.targetName,
       item: () => templateToItem(template, initialQuantity),
       macroOverflow: () => ({ enable: true }),
@@ -70,14 +70,14 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       onApply: (templateItem: TemplateItem) => {
         const Item = createItemFromTemplate(template, templateItem)
 
-        handleNewItem(Item, templateItem, () => controller.close()).catch(
+        handleNewItem(Item, templateItem, () => closeModal(modalId)).catch(
           (err) => {
             logging.error('TemplateSearchModal handleNewItem error:', err)
             showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
           },
         )
       },
-      onClose: () => controller.close(),
+      onClose: () => closeModal(modalId),
     })
   }
 

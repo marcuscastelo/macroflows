@@ -8,7 +8,6 @@ import {
   type RecipeEditModalProps,
 } from '~/sections/recipe/components/RecipeEditModal'
 import { closeModal, openEditModal } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
 
 /**
  * Configuration for recipe edit modals.
@@ -20,12 +19,8 @@ export type RecipeEditModalConfig = RecipeEditModalProps & {
 /**
  * Opens a recipe edit modal.
  */
-export function openRecipeEditModal(
-  config: RecipeEditModalConfig,
-): ModalController {
+export function openRecipeEditModal(config: RecipeEditModalConfig) {
   const title = config.title ?? `Editar receita - ${config.recipe().name}`
-
-  let controller: ModalController
 
   const modalId = openEditModal(
     () => (
@@ -33,20 +28,20 @@ export function openRecipeEditModal(
         recipe={config.recipe}
         onSaveRecipe={(recipe) => {
           config.onSaveRecipe(recipe)
-          controller.close()
+          closeModal(modalId)
         }}
         onRefetch={config.onRefetch}
         onCancel={() => {
           config.onCancel?.()
-          controller.close()
+          closeModal(modalId)
         }}
         onDelete={(recipeId) => {
           config.onDelete(recipeId)
-          controller.close()
+          closeModal(modalId)
         }}
         onClose={() => {
           config.onClose?.()
-          controller.close()
+          closeModal(modalId)
         }}
       />
     ),
@@ -58,10 +53,5 @@ export function openRecipeEditModal(
     },
   )
 
-  controller = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }

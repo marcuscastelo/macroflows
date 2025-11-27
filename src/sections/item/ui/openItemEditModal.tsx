@@ -8,7 +8,6 @@ import {
   type ItemEditModalProps,
 } from '~/sections/item/components/ItemView/ItemEdit/ItemEditModal'
 import { closeModal, openEditModal } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
 
 /**
  * Configuration for item edit modals.
@@ -21,12 +20,8 @@ export type ItemEditModalConfig = ItemEditModalProps & {
 /**
  * Opens an item edit modal.
  */
-export function openItemEditModal(
-  config: ItemEditModalConfig,
-): ModalController {
+export function openItemEditModal(config: ItemEditModalConfig) {
   const title = config.title ?? 'Editar Item'
-
-  let controller: ModalController
 
   const modalId = openEditModal(
     () => (
@@ -37,15 +32,15 @@ export function openItemEditModal(
         macroOverflow={config.macroOverflow}
         onApply={(item) => {
           config.onApply(item)
-          controller.close()
+          closeModal(modalId)
         }}
         onCancel={() => {
           config.onCancel?.()
-          controller.close()
+          closeModal(modalId)
         }}
         onClose={() => {
           config.onClose?.()
-          controller.close()
+          closeModal(modalId)
         }}
         showAddItemButton={config.showAddItemButton}
         onAddNewItem={config.onAddNewItem}
@@ -60,10 +55,5 @@ export function openItemEditModal(
     },
   )
 
-  controller = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }

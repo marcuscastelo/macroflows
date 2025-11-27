@@ -11,7 +11,6 @@ import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
 
 /**
  * Configuration for template search modals.
@@ -23,12 +22,8 @@ export type TemplateSearchModalConfig = TemplateSearchModalProps & {
 /**
  * Opens a template search modal.
  */
-export function openTemplateSearchModal(
-  config: TemplateSearchModalConfig,
-): ModalController {
+export function openTemplateSearchModal(config: TemplateSearchModalConfig) {
   const title = config.title ?? `Adicionar item - ${config.targetName}`
-
-  let controller: ModalController
 
   const modalId = openContentModal(
     () => (
@@ -37,11 +32,11 @@ export function openTemplateSearchModal(
         onNewItem={config.onNewItem}
         onFinish={() => {
           config.onFinish?.()
-          controller.close()
+          closeModal(modalId)
         }}
         onClose={() => {
           config.onClose?.()
-          controller.close()
+          closeModal(modalId)
         }}
       />
     ),
@@ -53,10 +48,5 @@ export function openTemplateSearchModal(
     },
   )
 
-  controller = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }

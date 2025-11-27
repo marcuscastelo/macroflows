@@ -3,11 +3,7 @@
  * Provides a standardized clear items confirmation UI pattern.
  */
 
-import {
-  closeModal,
-  openConfirmModal,
-} from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
+import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 
 /**
  * Configuration for clear items confirmation modals.
@@ -25,7 +21,7 @@ export type ClearItemsConfirmModalConfig = {
  */
 export function openClearItemsConfirmModal(
   config: ClearItemsConfirmModalConfig,
-): ModalController {
+) {
   const context = config.context ?? 'os itens'
   const title = config.title ?? 'Limpar itens'
   const message = config.message ?? `Tem certeza que deseja limpar ${context}?`
@@ -42,10 +38,5 @@ export function openClearItemsConfirmModal(
     },
   })
 
-  const controller: ModalController = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }

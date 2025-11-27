@@ -15,7 +15,6 @@ import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
 
 /**
@@ -100,12 +99,8 @@ function RestoreProfileModalFooter(props: {
 /**
  * Opens a restore profile modal.
  */
-export function openRestoreProfileModal(
-  config: RestoreProfileModalConfig,
-): ModalController {
+export function openRestoreProfileModal(config: RestoreProfileModalConfig) {
   const title = 'Restaurar perfil antigo'
-
-  let controller: ModalController
 
   const modalId = openContentModal(
     () => (
@@ -119,7 +114,7 @@ export function openRestoreProfileModal(
         <RestoreProfileModalFooter
           currentProfile={config.currentProfile}
           onCancel={config.onCancel}
-          onClose={() => controller.close()}
+          onClose={() => closeModal(modalId)}
         />
       ),
       onClose: () => {
@@ -128,10 +123,5 @@ export function openRestoreProfileModal(
     },
   )
 
-  controller = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }

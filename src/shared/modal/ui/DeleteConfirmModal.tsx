@@ -3,11 +3,7 @@
  * Provides a standardized delete confirmation UI pattern.
  */
 
-import {
-  closeModal,
-  openConfirmModal,
-} from '~/shared/modal/helpers/modalHelpers'
-import type { ModalController } from '~/shared/modal/types/modalTypes'
+import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 
 /**
  * Configuration for delete confirmation modals.
@@ -24,9 +20,7 @@ export type DeleteConfirmModalConfig = {
 /**
  * Opens a standardized delete confirmation modal.
  */
-export function openDeleteConfirmModal(
-  config: DeleteConfirmModalConfig,
-): ModalController {
+export function openDeleteConfirmModal(config: DeleteConfirmModalConfig) {
   const itemType = config.itemType ?? 'item'
   const title = config.title ?? `Excluir ${itemType}`
   const message =
@@ -45,10 +39,5 @@ export function openDeleteConfirmModal(
     },
   })
 
-  const controller: ModalController = {
-    modalId,
-    close: () => closeModal(modalId),
-  }
-
-  return controller
+  return modalId
 }
