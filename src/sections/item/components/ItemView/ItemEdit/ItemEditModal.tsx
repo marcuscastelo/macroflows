@@ -110,8 +110,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     }
   })
 
-  const recipeResource = () =>
-    recipeItemUseCases.createRecipeResource(itemDraft())
+  const recipeResource = createMemo(() =>
+    recipeItemUseCases.createRecipeResource(itemDraft()),
+  )
 
   // Recipe synchronization
   const resourceValue = () => recipeResource().value

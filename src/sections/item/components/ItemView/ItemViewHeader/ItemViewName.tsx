@@ -1,4 +1,4 @@
-import { type Accessor, Show } from 'solid-js'
+import { type Accessor, createMemo, Show } from 'solid-js'
 
 import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
@@ -11,8 +11,9 @@ export type ItemViewNameProps = {
 export function ItemViewName(props: ItemViewNameProps) {
   const typeDisplay = () => getItemTypeDisplay(props.item())
 
-  const recipeResource = () =>
-    recipeItemUseCases.createRecipeResource(props.item())
+  const recipeResource = createMemo(() =>
+    recipeItemUseCases.createRecipeResource(props.item()),
+  )
 
   const warningIndicator = () =>
     recipeItemUseCases.isManuallyEdited(props.item(), recipeResource().value)
