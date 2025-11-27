@@ -21,14 +21,6 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
   // Load initial entries from persistence if available
   const initialEntries = persistence?.load() ?? []
   const [entries, setEntries] = createSignal<ClipboardEntry[]>(initialEntries)
-  const subscribers: ClipboardSubscriber[] = []
-
-  const notifySubscribers = () => {
-    const currentEntries = entries()
-    subscribers.forEach((subscriber) => {
-      subscriber(currentEntries)
-    })
-  }
 
   const persist = () => {
     if (persistence !== undefined) {
@@ -56,7 +48,6 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
       })
 
       persist()
-      notifySubscribers()
     },
 
     /**
@@ -80,7 +71,6 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
     clear(): void {
       setEntries((prev) => prev.filter((e) => e.pinned))
       persist()
-      notifySubscribers()
     },
 
     /**
@@ -89,7 +79,6 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
     remove(id: string): void {
       setEntries((prev) => prev.filter((e) => e.id !== id))
       persist()
-      notifySubscribers()
     },
 
     /**
@@ -100,22 +89,13 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
         prev.map((e) => (e.id === id ? { ...e, pinned: !e.pinned } : e)),
       )
       persist()
-      notifySubscribers()
     },
 
     /**
      * Subscribe to clipboard changes
      */
-    subscribe(subscriber: ClipboardSubscriber): () => void {
-      subscribers.push(subscriber)
-      // Return unsubscribe function
-      return () => {
-        const index = subscribers.indexOf(subscriber)
-        if (index > -1) {
-          subscribers.splice(index, 1)
-        }
-      }
-    },
+    // Note: subscribe removed. Consumers should use `readAll()` or the
+    // `entries` accessor to observe changes via Solid's reactivity.
 
     /**
      * Clean expired entries (if persistence is enabled)
@@ -126,10 +106,11 @@ export function createClipboardStore(config?: ClipboardStoreConfig) {
         if (cleaned.length !== entries().length) {
           setEntries(cleaned)
           persist()
-          notifySubscribers()
         }
       }
     },
+    // Expose entries accessor for Solid reactivity
+    entries,
   }
 }
 
