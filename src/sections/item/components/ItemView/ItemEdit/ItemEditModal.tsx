@@ -12,6 +12,7 @@ import {
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
+import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
 import {
   asGroupItem,
   asParentItem,
@@ -155,13 +156,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       quantity: item.quantity,
       name: item.name,
     })
-    // Check quantity is valid
-    if (item.quantity <= 0) return false
-    // For parent items (GroupItem/RecipeItem), also check name is not empty
-    if (isGroupItem(item) || isRecipeItem(item)) {
-      if (item.name.trim().length === 0) return false
-    }
-    return true
+    return canApplyItem(item)
   }
 
   const handleEditChild = (child: Item) => {
