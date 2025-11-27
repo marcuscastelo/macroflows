@@ -127,14 +127,15 @@ reportedBy: <agent-name.vXX>
 ## Naming & Structure
 - Use descriptive, action-based names. Avoid generic names. Organize by module.
 
+
 ## Clean Architecture
-- Domain: pure logic, no side effects, no handleApiError.
-- Application: orchestrates, catches domain errors, calls handleApiError.
+- Domain: pure logic, no side effects. Do not call observability or UI utilities from domain code.
+- Application: orchestrates, catches domain errors, maps them to user feedback and telemetry using `showError`, `showPromise`, and `logging`.
 
 ## Error Handling
-- Domain: only throws pure errors.
-- Application: always calls handleApiError with context.
-- Never log/throw errors in app code without handleApiError.
+- Domain: only throws pure errors. Do not import or call side-effect utilities from domain code.
+- Application: catch domain errors and use `showError` for user-facing messages and `logging` + `src/modules/observability` for telemetry; ensure context is attached to errors via `cause` or a `context` property.
+-- Never log/throw errors silently in app code; always record structured logs and surface friendly toasts when appropriate.
 
 ## Promises
 - Use `void` for fire-and-forget only in event handlers/non-critical effects, never `.catch(() => {})`.

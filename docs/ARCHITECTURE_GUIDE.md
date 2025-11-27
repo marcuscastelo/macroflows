@@ -328,23 +328,23 @@ All code, comments, documentation, and commit messages must be written strictly 
 
 ## 🛑 Error Handling Standard
 
-All domain and application errors must be reported using the shared error handler utility:
+All domain and application errors should be handled with the repository's current observability and user-feedback utilities.
 
-- Use `handleApiError` from `~/shared/error/errorHandler` to log, report, or propagate errors.
-- Never throw or log errors directly in domain/application code without also calling `handleApiError`.
-- Always provide context (component, operation, additionalData) for traceability.
+- **Domain layer:** Throw pure errors and do not import side-effecting utilities (keep domain logic pure).
+- **Application layer:** Catch domain errors and map them to user-facing feedback and telemetry using `showError`, `showPromise`, and the `logging` / observability modules under `src/modules/observability`.
+- **UI/Controller:** May call `showError` for UI-specific error presentation.
 
-**Example:**
+Important: a previously used helper named `handleApiError` was removed from the codebase. Documentation and examples that reference `handleApiError` should be updated to use `showError` for toasts and `logging` / Sentry for telemetry.
+
+Recommended pattern:
+
 ```typescript
-import { handleApiError } from '~/shared/error/errorHandler'
-
-if (somethingWentWrong) {
-  handleApiError(new Error('Something went wrong'), {
-    component: 'itemGroupDomain',
-    operation: 'isRecipedGroupUpToDate',
-    additionalData: { groupId, groupRecipeId }
-  })
-  throw new Error('Something went wrong')
+try {
+  await domainFunc()
+} catch (e) {
+  logging.error('Operation failed', { error: e, component: 'MyComponent', operation: 'doThing' })
+  showError(e, { context: 'user-action' })
+  throw e
 }
 ```
 

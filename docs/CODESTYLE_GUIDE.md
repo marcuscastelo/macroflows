@@ -138,18 +138,18 @@ handleApiError(...)
 
 ### Application Layer (`~/modules/*/application/`)
 **Purpose**: Use cases, orchestration, data conversion, error handling
-- Responsible for catching errors from the domain and calling `handleApiError` with full context.
+- Responsible for catching errors from the domain and mapping them to user feedback and telemetry.
 - Handles all user feedback (toasts, logging, etc.).
+
+Use the centralized toast and logging utilities rather than a removed `handleApiError` helper. Recommended pattern:
 
 ```typescript
 try {
-  domainFunc()
+  await domainFunc()
 } catch (e) {
-  handleApiError(e, {
-    component: 'ItemGroupForm',
-    operation: 'submitGroup',
-    additionalData: { userId }
-  })
+  // Map error context to toast and telemetry
+  logging.error('ItemGroupForm.submitGroup failed', { error: e, component: 'ItemGroupForm', operation: 'submitGroup' })
+  showError(e, { context: 'user-action' })
   throw e
 }
 ```
@@ -176,24 +176,25 @@ try {
 
 ## 🛑 Error Handling Standard
 
-- **Domain layer:** Only throws pure errors. Never imports or uses `handleApiError` or any side-effect utility.
-- **Application layer:** Always catches errors from domain and calls `handleApiError` with context (`component`, `operation`, `additionalData`).
-- **UI/Controller:** May also call `handleApiError` for UI-specific errors.
+- **Domain layer:** Only throws pure errors. Do not import side-effect utilities or directly call observability services from domain code.
+- **Application layer:** Catch domain errors and map them to user-facing feedback and telemetry using existing utilities (`showError`, `showPromise`) and `logging` / observability modules.
+- **UI/Controller:** May call `showError` for UI-specific error presentation.
 
-**Example:**
+Notes:
+- The repository no longer uses a `handleApiError` helper. Documentation and code should use `showError(error, options)` for toasts and `logging` / `src/modules/observability` for telemetry and error reporting.
+- Prefer attaching context via `Error`'s `cause` or via a `context` property on the error object so handlers can read `err.cause?.code` or `err.context?.code`.
+
+**Example (recommended):**
 ```typescript
 // Domain
-throw new GroupConflictError('Group mismatch', { groupId, recipeId })
+throw new Error('Group mismatch: cannot mix different groups', { cause: { code: 'GROUP_CONFLICT', groupId, recipeId } })
 
 // Application
 try {
-  domainFunc()
+  await domainFunc()
 } catch (e) {
-  handleApiError(e, {
-    component: 'ItemGroupForm',
-    operation: 'submitGroup',
-    additionalData: { userId }
-  })
+  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  showError(e, { context: 'user-action' })
   throw e
 }
 ```
