@@ -1,11 +1,10 @@
 import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
-import { z } from 'zod/v4'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import { mealSchema } from '~/modules/diet/meal/domain/meal'
-import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { clipboardPayloadSchema } from '~/modules/clipboard/domain/clipboardEntry'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
 import {
   addItemsToRecipe,
@@ -41,14 +40,8 @@ export function RecipeEditView(props: RecipeEditViewProps) {
   const recipe = untrack(() => props.recipe)
   const setRecipe = untrack(() => props.setRecipe)
 
-  const acceptedClipboardSchema = z.union([
-    itemSchema,
-    mealSchema,
-    recipeSchema,
-  ])
-
   const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema,
+    acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => recipe(),
     onPaste: (data) => {
       // Check if data is array of Items

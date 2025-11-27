@@ -2,16 +2,17 @@ import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { clipboardPayloadSchema } from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
-import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Meal } from '~/modules/diet/meal/domain/meal'
 import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
   addItemsToMeal,
   clearMealItems,
   removeItemFromMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ItemListView } from '~/sections/item/components/ItemListView'
 import {
@@ -22,9 +23,7 @@ import {
   openClearItemsConfirmModal,
   openDeleteConfirmModal,
 } from '~/shared/modal/helpers/specializedModalHelpers'
-import { regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
-import { isItem, isMeal } from '~/shared/utils/typeUtils'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -82,44 +81,13 @@ export function MealEditViewHeader(props: {
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const acceptedClipboardSchema = mealSchema.or(recipeSchema).or(itemSchema)
   const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema,
+    acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => meal(),
     onPaste: (data) => {
-      if (isMeal(data)) {
-        const ItemsToAdd = data.items.map((item) => ({
-          ...item,
-          id: regenerateId(item).id,
-        }))
-        const updatedMeal = addItemsToMeal(meal(), ItemsToAdd)
-        props.onUpdateMeal(updatedMeal)
-        return
-      }
-
-      if (isItem(data)) {
-        const regeneratedItem = {
-          ...data,
-          id: regenerateId(data).id,
-        }
-        const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
-        props.onUpdateMeal(updatedMeal)
-        return
-      }
-
-      // TODO: Support pasting Recipes as well, sub-item? or expand items?
-      // if (isRecipe(data)) {
-      //   const itemsToAdd = data.items.map((item) => ({
-      //     ...item,
-      //     id: regenerateId(item).id,
-      //   }))
-      //   const updatedMeal = addItemsToMeal(meal(), itemsToAdd)
-      //   props.onUpdateMeal(updatedMeal)
-      //   return
-      // }
-
-      // data satisfies never
-      logging.warn('Unsupported paste format:', { data })
+      const itemsToAdd = ClipboardPayloadExt.extractItems(data)
+      const updatedMeal = addItemsToMeal(meal(), itemsToAdd)
+      props.onUpdateMeal(updatedMeal)
     },
   })
 

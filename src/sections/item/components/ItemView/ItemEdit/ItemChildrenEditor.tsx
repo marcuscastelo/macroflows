@@ -2,6 +2,8 @@ import { type Accessor, For, type Setter, Show } from 'solid-js'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { clipboardPayloadSchema } from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { validateItemHierarchy } from '~/modules/diet/item/domain/validateItemHierarchy'
 import {
@@ -11,7 +13,6 @@ import {
   isGroupItem,
   isRecipeItem,
   type Item,
-  itemSchema,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
@@ -40,15 +41,12 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       : []
   }
 
-  // Clipboard schema accepts Item or array of Items
-  const acceptedClipboardSchema = itemSchema
-
   // Clipboard actions for children
   const { handleCopy, handlePaste } = useCopyPasteActions({
-    acceptedClipboardSchema,
+    acceptedClipboardSchema: clipboardPayloadSchema,
     getDataToCopy: () => props.itemDraft(), // TODO: copy self vs children? (expandable?)
     onPaste: (data) => {
-      const itemsToAdd = asParentItem(data)?.reference.children ?? [data]
+      const itemsToAdd = ClipboardPayloadExt.extractItems(data)
 
       const itemAsChildOfSingletonGroup = () =>
         createGroupItem({
