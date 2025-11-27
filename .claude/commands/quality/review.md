@@ -72,7 +72,7 @@ Each generated review file contains:
 ### Code Quality
 - **Clean Architecture:** Layer separation and dependencies
 - **Type Safety:** TypeScript usage and null checks
-- **Error Handling:** Proper `handleApiError` usage
+- **Error Handling:** Proper `showError` and `logging` usage
 - **Testing:** Test coverage and quality
 - **Performance:** Efficiency and optimization opportunities
 

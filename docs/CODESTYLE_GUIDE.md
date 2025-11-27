@@ -121,35 +121,36 @@ export async function createFood(food: NewFood): Promise<void> {
 
 ### Domain Layer (`~/modules/*/domain/`)
 **Purpose**: Pure business logic, no side effects
-- **Never import or use side-effect utilities** (e.g., `handleApiError`, logging, toasts, API calls).
+- **Never import or use side-effect utilities** (e.g., logging, toasts, API calls).
 - **Only throw standard errors** (e.g., `throw new Error('descriptive message', { cause: { context } })`)
-- If you need to provide error context, use custom error classes with properties, but do not depend on external modules.
+- If you need to provide error context, use the `cause` property with a context object.
 
 ```typescript
 // GOOD (domain):
 throw new Error('Group mismatch: cannot mix different groups', { 
-  cause: { groupId, recipeId } 
+  cause: { code: 'GROUP_CONFLICT', groupId, recipeId } 
 })
 
 // BAD (domain):
-import { handleApiError } from '~/shared/error/errorHandler'
-handleApiError(...)
+import { showError } from '~/modules/toast/application/toastManager'
+showError(...)  // Side effects are not allowed in domain
 ```
 
 ### Application Layer (`~/modules/*/application/`)
 **Purpose**: Use cases, orchestration, data conversion, error handling
-- Responsible for catching errors from the domain and calling `handleApiError` with full context.
+- Responsible for catching errors from the domain and displaying user feedback via `showError` (from `~/modules/toast/application/toastManager`).
+- Use `logging` (from `~/shared/utils/logging`) for telemetry and observability.
 - Handles all user feedback (toasts, logging, etc.).
 
 ```typescript
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 try {
-  domainFunc()
+  await domainFunc()
 } catch (e) {
-  handleApiError(e, {
-    component: 'ItemGroupForm',
-    operation: 'submitGroup',
-    additionalData: { userId }
-  })
+  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  showError(e, { context: 'user-action' })
   throw e
 }
 ```
@@ -176,24 +177,26 @@ try {
 
 ## 🛑 Error Handling Standard
 
-- **Domain layer:** Only throws pure errors. Never imports or uses `handleApiError` or any side-effect utility.
-- **Application layer:** Always catches errors from domain and calls `handleApiError` with context (`component`, `operation`, `additionalData`).
-- **UI/Controller:** May also call `handleApiError` for UI-specific errors.
+- **Domain layer:** Only throws pure errors with descriptive messages and context via `cause`. Never imports or uses side-effect utilities.
+- **Application layer:** Always catches errors from domain and handles user feedback via `showError` (toasts) and `logging` (telemetry/observability).
+- **UI/Controller:** May also call `showError` for UI-specific errors.
 
-**Example:**
+**Canonical Pattern:**
 ```typescript
-// Domain
-throw new GroupConflictError('Group mismatch', { groupId, recipeId })
+// Domain (pure)
+throw new Error('Group mismatch: cannot mix different groups', { 
+  cause: { code: 'GROUP_CONFLICT', groupId, recipeId } 
+})
 
-// Application
+// Application (map to toast + telemetry)
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
 try {
-  domainFunc()
+  await domainFunc()
 } catch (e) {
-  handleApiError(e, {
-    component: 'ItemGroupForm',
-    operation: 'submitGroup',
-    additionalData: { userId }
-  })
+  logging.error('submitGroup failed', { error: e, component: 'ItemGroupForm' })
+  showError(e, { context: 'user-action' })
   throw e
 }
 ```

@@ -122,7 +122,7 @@ gh issue list --milestone "v0.14.0" --state open
   - Patterns: User-facing feature limitations
   - Suggestion: Audit all limitation messages for issue tracking
 
-- "throw new Error" without handleApiError
+- "throw new Error" without error handling context
   - Locations: domain layer violations
   - Suggestion: Architecture review for error handling
 ```
@@ -205,7 +205,7 @@ Creates structured discovery report and suggests next actions:
 ## Integration with Project Standards
 
 - **Clean Architecture:** Identifies layer violations during discovery
-- **Error Handling:** Finds missing `handleApiError` usage patterns  
+- **Error Handling:** Finds missing error feedback patterns using `showError` and `logging`  
 - **Import Standards:** Validates absolute import usage in discovered files
 - **Quality Gates:** Ensures discoveries align with `pnpm check` standards
 - **Solo Workflow:** Optimized for single developer context and decisions

@@ -3,8 +3,8 @@
 See `.github/copilot-instructions.md` for the full instructions.
 
 - Use descriptive, action-based names.
-- Never use handleApiError in domain code.
-- Application layer must call handleApiError with context.
+- Never use side-effect utilities (like `showError`) in domain code.
+- Application layer should use `showError` for toasts and `logging` for telemetry.
 - Use `void` for fire-and-forget promises only in event handlers.
 - All code/comments in English (UI text in pt-BR if required).
 - Never use `any`, always prefer type aliases.

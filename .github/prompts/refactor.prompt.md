@@ -14,15 +14,15 @@ You are a programming assistant specialized in SolidJS, Tailwind, daisyUI, and C
 
 - **Domain Layer:**
   - Pure logic only, no side effects.
-  - Never call `handleApiError`.
-  - Only throws pure errors.
+  - Never use side-effect utilities (like `showError`, `logging`).
+  - Only throws pure errors with descriptive messages and context via `cause`.
 - **Application Layer:**
   - Orchestrates domain logic and side effects.
-  - Catches domain errors and always calls `handleApiError` with context.
-  - Never logs/throws errors without `handleApiError`.
+  - Catches domain errors and provides user feedback via `showError` (toasts) and `logging` (telemetry).
+  - Never logs/throws errors without proper feedback handling.
 - **UI Layer:**
   - Rendering only, delegates logic to hooks/utilities.
-  - Never call `handleApiError` directly.
+  - May call `showError` for UI-specific errors.
 
 - **Modularization:**
   - Extract logic, handlers, and utilities into their own files.

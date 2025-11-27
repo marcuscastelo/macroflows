@@ -131,7 +131,7 @@ console.log('Auth state:', getAuthState())
 - [x] Google OAuth integration code
 - [x] Auth state management (SolidJS signals)
 - [x] Auto-initialization na startup
-- [x] Error handling com handleApiError
+- [x] Error handling with `showError` and `logging`
 - [x] TypeScript types para auth
 - [x] Testes básicos
 

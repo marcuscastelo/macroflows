@@ -128,13 +128,13 @@ reportedBy: <agent-name.vXX>
 - Use descriptive, action-based names. Avoid generic names. Organize by module.
 
 ## Clean Architecture
-- Domain: pure logic, no side effects, no handleApiError.
-- Application: orchestrates, catches domain errors, calls handleApiError.
+- Domain: pure logic, no side effects.
+- Application: orchestrates, catches domain errors, uses `showError` for toasts and `logging` for telemetry.
 
 ## Error Handling
-- Domain: only throws pure errors.
-- Application: always calls handleApiError with context.
-- Never log/throw errors in app code without handleApiError.
+- Domain: only throws pure errors with descriptive messages and context via `cause`.
+- Application: catches errors and provides user feedback via `showError` (toasts) and `logging` (telemetry).
+- Never log/throw errors in app code without proper feedback handling.
 
 ## Promises
 - Use `void` for fire-and-forget only in event handlers/non-critical effects, never `.catch(() => {})`.
@@ -162,8 +162,8 @@ reportedBy: <agent-name.vXX>
 - Never use Portuguese for identifiers, variables, functions, or comments. Only UI text may be in English or pt-BR as required.
 - Prefer small, atomic commits. Always suggest a commit message after making changes.
 - Always update or remove related tests when changing code.
-- Application layer must always call handleApiError with context.
-- Never use handleApiError in domain code.
+- Application layer should use `showError` and `logging` for error feedback and telemetry.
+- Never use side-effect utilities (like `showError`) in domain code.
 - Never use `.catch(() => {})` in promises.
 - Never remove TODOs from the codebase, regardless of context.
 
