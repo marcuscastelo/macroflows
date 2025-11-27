@@ -13,21 +13,18 @@ export const openPasteConfirmModal = <T extends ClipboardPayload>(
   try {
     const extractedItems = () => ClipboardPayloadExt.extractItems(payload)
 
-    const modalId = openContentModal(
-      () => <PasteConfirmModal items={extractedItems()} />,
-      {
-        title: 'Colar itens',
-        footer: () => (
-          <PasteConfirmModalFooter
-            modalId={modalId}
-            onPasteConfirmed={() => onPasteConfirmed(payload)}
-          />
-        ),
-        closeOnOutsideClick: false,
-        closeOnEscape: true,
-        showCloseButton: true,
-      },
-    )
+    openContentModal(() => <PasteConfirmModal items={extractedItems()} />, {
+      title: 'Colar itens',
+      footer: (modalId) => (
+        <PasteConfirmModalFooter
+          modalId={modalId}
+          onPasteConfirmed={() => onPasteConfirmed(payload)}
+        />
+      ),
+      closeOnOutsideClick: false,
+      closeOnEscape: true,
+      showCloseButton: true,
+    })
 
     return
   } catch (err) {

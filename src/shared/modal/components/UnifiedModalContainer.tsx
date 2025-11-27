@@ -15,18 +15,27 @@ import type { ModalState } from '~/shared/modal/types/modalTypes'
  * Resolves a value that could be static or an Accessor.
  * For JSXElement types, this should NOT be used as JSXElement can be a function.
  */
+function resolveStringValueWithParam<T extends string>(
+  value: T | ((modalId: string) => T) | undefined,
+  modalId: string,
+): T | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'function' ? value(modalId) : value
+}
+
 function resolveStringValue<T extends string>(
   value: T | Accessor<T> | undefined,
 ): T | undefined {
   if (value === undefined) return undefined
-  return typeof value === 'function' ? value() : value
+  if (typeof value === 'function') return value()
+  return value
 }
 
 /**
  * Renders individual modal content based on modal type.
  */
 function ModalRenderer(props: ModalState) {
-  const title = () => resolveStringValue(props.title)
+  const title = () => resolveStringValueWithParam(props.title, props.id)
 
   return (
     <Modal {...props}>
@@ -99,7 +108,7 @@ function ModalRenderer(props: ModalState) {
         <Modal.Footer>
           {props.type === 'content'
             ? typeof props.footer === 'function'
-              ? props.footer()
+              ? props.footer(props.id)
               : props.footer
             : null}
         </Modal.Footer>

@@ -63,12 +63,12 @@ export function openConfirmModal(
 export function openContentModal(
   content: ModalBody | ((modalId: ModalId) => ModalBody),
   options: {
-    title?: ModalTitle | Accessor<ModalTitle>
+    title?: ModalTitle | ((modalId: ModalId) => ModalTitle)
     priority?: ModalPriority
     closeOnOutsideClick?: boolean
     closeOnEscape?: boolean
     showCloseButton?: boolean
-    footer?: ModalBody | Accessor<ModalBody>
+    footer?: ModalBody | ((modalId: ModalId) => ModalBody)
     onClose?: () => void
   } = {},
 ): ModalId {
