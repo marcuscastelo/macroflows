@@ -158,7 +158,7 @@ export function RecipeEditContent(props: {
                 showError(
                   error instanceof Error
                     ? error
-                    : new Error('Multiplicador inválido'),
+                    : new Error('Multiplicador deve ser um número positivo'),
                   { context: 'user-action' },
                 )
               }
@@ -243,7 +243,7 @@ function PreparedMultiplier() {
             showError(
               error instanceof Error
                 ? error
-                : new Error('Multiplicador inválido'),
+                : new Error('Multiplicador deve ser um número positivo'),
               { context: 'user-action' },
             )
           }
