@@ -31,6 +31,7 @@ import { currentUserId } from '~/modules/user/application/user'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
 import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
 import {
@@ -43,7 +44,6 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import { openItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
@@ -61,7 +61,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       ? getRecipePreparedQuantity(template)
       : DEFAULT_QUANTITY
 
-    const controller = openItemEditModal({
+    const modalId = openItemEditModal({
       targetMealName: props.targetName,
       item: () => templateToItem(template, initialQuantity),
       macroOverflow: () => ({ enable: true }),
@@ -70,14 +70,14 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       onApply: (templateItem: TemplateItem) => {
         const Item = createItemFromTemplate(template, templateItem)
 
-        handleNewItem(Item, templateItem, () => controller.close()).catch(
+        handleNewItem(Item, templateItem, () => closeModal(modalId)).catch(
           (err) => {
             logging.error('TemplateSearchModal handleNewItem error:', err)
             showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
           },
         )
       },
-      onClose: () => controller.close(),
+      onClose: () => closeModal(modalId),
     })
   }
 
