@@ -1,4 +1,4 @@
-import { createResource, type Resource } from 'solid-js'
+import { type Accessor, createResource, type Resource } from 'solid-js'
 
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
@@ -30,9 +30,10 @@ export const recipeItemUseCases = {
     }
   },
 
-  createRecipeResource: (item: Item) => {
+  createRecipeResource: (item: Accessor<Item>) => {
+    const item_ = item()
     const resource = createResource(
-      () => (isRecipeItem(item) ? item.reference.id : null),
+      () => (isRecipeItem(item_) ? item_.reference.id : null),
       async (recipeId: number) => {
         try {
           return await fetchRecipeById(recipeId)

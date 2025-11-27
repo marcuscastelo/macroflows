@@ -110,16 +110,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     }
   })
 
-  const recipeResource = createMemo(() =>
-    recipeItemUseCases.createRecipeResource(itemDraft()),
+  const recipeResource = recipeItemUseCases.createRecipeResource(() =>
+    itemDraft(),
   )
-
-  // Recipe synchronization
-  const resourceValue = () => recipeResource().value
 
   // Check if the recipe was manually edited
   const isManuallyEdited = () =>
-    recipeItemUseCases.isManuallyEdited(itemDraft(), resourceValue())
+    recipeItemUseCases.isManuallyEdited(itemDraft(), recipeResource.value)
 
   const quantitySignal = () =>
     itemDraft().quantity === 0 ? undefined : itemDraft().quantity
@@ -161,8 +158,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   }
 
   const handleSyncWithOriginalRecipe = () => {
-    const resourceValue_ = resourceValue()
-    const recipe = resourceValue_()
+    const recipe = recipeResource.value()
     if (!recipe) return
 
     const currentItem = itemDraft()
@@ -242,7 +238,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             </div>
 
             {/* Sync button - only show if recipe was manually edited */}
-            <Show when={isManuallyEdited() && resourceValue()}>
+            <Show when={isManuallyEdited() && recipeResource.value()}>
               <div
                 class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
                 onClick={handleSyncWithOriginalRecipe}
@@ -253,7 +249,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
             </Show>
 
             {/* Edit recipe button - only show for recipe items */}
-            <Show when={isRecipeItem(itemDraft()) && resourceValue()()}>
+            <Show when={isRecipeItem(itemDraft()) && recipeResource.value()}>
               {(originalRecipe) => (
                 <button
                   class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
