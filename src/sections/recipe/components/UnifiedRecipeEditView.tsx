@@ -2,7 +2,10 @@ import { type Accessor, type JSXElement, type Setter, untrack } from 'solid-js'
 
 import { useCopyPasteActions } from '~/modules/clipboard/application/hooks/useClipboardUnified'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { clipboardPayloadSchema } from '~/modules/clipboard/domain/clipboardEntry'
+import {
+  type ClipboardPayload,
+  clipboardPayloadSchema,
+} from '~/modules/clipboard/domain/clipboardEntry'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
@@ -39,33 +42,32 @@ export type RecipeEditViewProps = {
 export function RecipeEditView(props: RecipeEditViewProps) {
   const recipe = untrack(() => props.recipe)
   const setRecipe = untrack(() => props.setRecipe)
+  const onPaste = (data: ClipboardPayload) => {
+    // Check if data is array of Items
+    if (Array.isArray(data) && data.every(isItem)) {
+      const itemsToAdd = data
+        .filter((item) => item.reference.type === 'food') // Only food items in recipes
+        .map((item) => regenerateId(item))
+      const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
+      setRecipe(newRecipe)
+      return
+    }
 
+    // Check if data is single Item
+    if (isItem(data)) {
+      if (data.reference.type === 'food') {
+        const regeneratedItem = regenerateId(data)
+        const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
+        setRecipe(newRecipe)
+      }
+      return
+    }
+
+    // Handle other supported clipboard formats
+    logging.warn('Unsupported paste format:', data)
+  }
   const clipboardActions = useCopyPasteActions({
     acceptedClipboardSchema: clipboardPayloadSchema,
-    onPaste: (data) => {
-      // Check if data is array of Items
-      if (Array.isArray(data) && data.every(isItem)) {
-        const itemsToAdd = data
-          .filter((item) => item.reference.type === 'food') // Only food items in recipes
-          .map((item) => regenerateId(item))
-        const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
-        setRecipe(newRecipe)
-        return
-      }
-
-      // Check if data is single Item
-      if (isItem(data)) {
-        if (data.reference.type === 'food') {
-          const regeneratedItem = regenerateId(data)
-          const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
-          setRecipe(newRecipe)
-        }
-        return
-      }
-
-      // Handle other supported clipboard formats
-      logging.warn('Unsupported paste format:', data)
-    },
   })
 
   const recipeCalories = RecipeExt.of(recipe()).macros().calories()
@@ -84,7 +86,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
     <div
       class="flex flex-col gap-2 w-full"
       tabindex={0}
-      onPaste={() => void clipboardActions.paste().catch(console.error)}
+      onPaste={() => void clipboardActions.paste(onPaste).catch(console.error)}
     >
       {props.header}
       <ClipboardActionButtons
@@ -92,7 +94,9 @@ export function RecipeEditView(props: RecipeEditViewProps) {
         canPaste={true}
         canClear={recipe().items.length > 0}
         onCopy={() => clipboardUseCases.save(recipe())}
-        onPaste={() => void clipboardActions.paste().catch(console.error)}
+        onPaste={() =>
+          void clipboardActions.paste(onPaste).catch(console.error)
+        }
         onClear={onClearItems}
       />
       <NameInput />

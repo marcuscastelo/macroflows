@@ -29,12 +29,10 @@ export const clipboardStore = createRoot(() => {
 
 export function useCopyPasteActions<T extends ClipboardPayload>({
   acceptedClipboardSchema,
-  onPaste,
 }: {
   acceptedClipboardSchema: z.ZodType<T>
-  onPaste: (data: T) => void
 }) {
-  const paste = async () => {
+  const paste = async (onPaste: (data: T) => void) => {
     const parsed = clipboardUseCases.fetchLatestParsing(acceptedClipboardSchema)
     if (parsed === null) {
       showError('A área de transferência está vazia ou o conteúdo é inválido.')
