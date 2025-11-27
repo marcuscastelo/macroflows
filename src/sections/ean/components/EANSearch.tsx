@@ -6,8 +6,10 @@ import {
   Show,
 } from 'solid-js'
 
-import { getGlobalClipboardStore } from '~/modules/clipboard/application/globalClipboardStore'
-import { useClipboard } from '~/modules/clipboard/application/useClipboardUnified'
+import {
+  clipboardStore,
+  useClipboard,
+} from '~/modules/clipboard/application/useClipboardUnified'
 import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
@@ -26,7 +28,6 @@ export type EANSearchProps = {
 export function EANSearch(props: EANSearchProps) {
   const [loading, setLoading] = createSignal(false)
   const clipboard = useClipboard()
-  const clipboardStore = getGlobalClipboardStore()
 
   const EAN_LENGTH = 13
 
