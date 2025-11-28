@@ -11,61 +11,63 @@ const [cachedProfiles, setCachedProfiles] = createSignal<
   readonly MacroProfile[]
 >([])
 
-export const macroProfileCacheStore = {
-  getCache: () => cachedProfiles(),
+export function createMacroProfileCacheStore() {
+  return {
+    getCache: () => cachedProfiles(),
 
-  upsertToCache: (profile: MacroProfile) => {
-    setCachedProfiles((current) => {
-      const index = current.findIndex((p) => p.id === profile.id)
-      if (index >= 0) {
-        // Update existing
-        const newProfiles = [...current]
-        newProfiles[index] = profile
-        return newProfiles
-      } else {
-        // Add new
-        return [...current, profile]
-      }
-    })
-  },
-
-  upsertManyToCache: (profiles: readonly MacroProfile[]) => {
-    setCachedProfiles((current) => {
-      const updatedProfiles = [...current]
-
-      for (const profile of profiles) {
-        const index = updatedProfiles.findIndex((p) => p.id === profile.id)
+    upsertToCache: (profile: MacroProfile) => {
+      setCachedProfiles((current) => {
+        const index = current.findIndex((p) => p.id === profile.id)
         if (index >= 0) {
-          updatedProfiles[index] = profile
+          // Update existing
+          const newProfiles = [...current]
+          newProfiles[index] = profile
+          return newProfiles
         } else {
-          updatedProfiles.push(profile)
+          // Add new
+          return [...current, profile]
         }
-      }
+      })
+    },
 
-      return updatedProfiles
-    })
-  },
+    upsertManyToCache: (profiles: readonly MacroProfile[]) => {
+      setCachedProfiles((current) => {
+        const updatedProfiles = [...current]
 
-  removeFromCache: (key: CacheKey) => {
-    setCachedProfiles((current) => {
-      switch (key.by) {
-        case 'id':
-          return current.filter((p) => p.id !== key.value)
-        case 'user_id':
-          return current.filter((p) => p.user_id !== key.value)
-        default:
-          return current
-      }
-    })
-  },
+        for (const profile of profiles) {
+          const index = updatedProfiles.findIndex((p) => p.id === profile.id)
+          if (index >= 0) {
+            updatedProfiles[index] = profile
+          } else {
+            updatedProfiles.push(profile)
+          }
+        }
 
-  clearCache: () => setCachedProfiles([]),
+        return updatedProfiles
+      })
+    },
 
-  getProfilesByUserId: (userId: User['uuid']) => {
-    return cachedProfiles().filter((p) => p.user_id === userId)
-  },
+    removeFromCache: (key: CacheKey) => {
+      setCachedProfiles((current) => {
+        switch (key.by) {
+          case 'id':
+            return current.filter((p) => p.id !== key.value)
+          case 'user_id':
+            return current.filter((p) => p.user_id !== key.value)
+          default:
+            return current
+        }
+      })
+    },
 
-  getProfileById: (id: MacroProfile['id']) => {
-    return cachedProfiles().find((p) => p.id === id) ?? null
-  },
+    clearCache: () => setCachedProfiles([]),
+
+    getProfilesByUserId: (userId: User['uuid']) => {
+      return cachedProfiles().filter((p) => p.user_id === userId)
+    },
+
+    getProfileById: (id: MacroProfile['id']) => {
+      return cachedProfiles().find((p) => p.id === id) ?? null
+    },
+  }
 }

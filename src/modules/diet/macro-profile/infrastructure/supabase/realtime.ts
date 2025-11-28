@@ -1,4 +1,3 @@
-import { macroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
 import {
   type MacroProfile,
   macroProfileSchema,
@@ -9,25 +8,11 @@ import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
-/**
- * Sets up granular realtime subscription for macro profile changes
- * @param onMacroProfileChange - Callback for granular updates with event details
- */
-export function setupMacroProfileRealtimeSubscription(
-  onMacroProfileChange: (event: {
-    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-    old?: MacroProfile
-    new?: MacroProfile
-  }) => void,
-): void {
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_MACRO_PROFILES,
-    macroProfileSchema,
-    onMacroProfileChange,
-  )
-}
-
-export function initializeMacroProfileRealtime(): void {
+export function initializeMacroProfileRealtime(callbacks: {
+  onInsert: (profile: MacroProfile) => void
+  onUpdate: (profile: MacroProfile) => void
+  onDelete: (profile: MacroProfile) => void
+}): void {
   if (initialized) {
     return
   }
@@ -42,24 +27,21 @@ export function initializeMacroProfileRealtime(): void {
       switch (event.eventType) {
         case 'INSERT': {
           if (event.new) {
-            macroProfileCacheStore.upsertToCache(event.new)
+            callbacks.onInsert(event.new)
           }
           break
         }
 
         case 'UPDATE': {
           if (event.new) {
-            macroProfileCacheStore.upsertToCache(event.new)
+            callbacks.onUpdate(event.new)
           }
           break
         }
 
         case 'DELETE': {
           if (event.old) {
-            macroProfileCacheStore.removeFromCache({
-              by: 'id',
-              value: event.old.id,
-            })
+            callbacks.onDelete(event.old)
           }
           break
         }
