@@ -1,6 +1,9 @@
-# Macroflows
+# Macroflows 
+###  [![EN](https://img.shields.io/badge/lang-EN_(cur.)-lightgray)](README.md) [![PT-BR](https://img.shields.io/badge/lang-PT--BR-blue)](docs/locale/pt-br/README.md)
 
-**A nutrition tracking platform built with modular architecture and modern web technologies.**
+https://macroflows.vercel.app
+
+A modular, high-performance nutrition tracking platform built with SolidJS, strong typing, and clean architecture principles.
 
 ![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
@@ -9,6 +12,54 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
 
 ---
+
+## Screenshots
+
+<p>Click on the thumbnails to open/close each image individually — this way you don't have to scroll the page to see the content.</p>
+
+<table>
+  <tr>
+    <td>
+      <details>
+        <summary>Diet Page</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/bf294e75-117c-447b-8953-6452877dfb46" alt="Diet Page" width="768"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Food Search</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/1b982883-b36b-49ab-a4be-a45d3d574c78" alt="Food Search" width="771"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Weight Tracking</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/e8939ee8-4e28-4e10-b870-8ab51044e54e" alt="Weight Tracking" width="764"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Macro Profile</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/0066ad09-2d49-49aa-929a-5ef639373329" alt="Macro Profile" width="777"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+</table>
+
 
 ## Overview
 
@@ -21,25 +72,26 @@ For now, it is focused on being a personal project to track my own nutrition, bu
 ## Features
 
 ### Nutrition & Progress
-- Macro tracking: carbs, protein, and fat
-- Real-time calorie calculation
-- Personalized macro profiles (grams per kg)
-- Daily goal visualization with charts
+- Macro tracking (carbs, protein, fat)
+- Real-time calorie and macro calculations
+- Personalized macro profiles (g/kg)
+- Daily progress visualization with charts
 
 ### Body Data
 - Body fat estimation (U.S. Navy method)
-- Weight tracking with trends
+- Weight logging with trend visualization
 
 ### Food Management
-- EAN scanning for quick entry
+- EAN barcode scanning
 - Searchable food database
-- Custom recipe builder with automatic macros
+- User recent searches, favorites, and history
+- Custom recipe builder with automatic macro calculation
 - Meal planning and reusable templates
 
 ### User Interface
 - Responsive design
-- Real-time updates via SolidJS signals
-- Simplified navigation
+- Fine-grained real-time updates (SolidJS signals)
+- Simple, fast navigation optimized for daily use
 
 ---
 
@@ -47,42 +99,48 @@ For now, it is focused on being a personal project to track my own nutrition, bu
 
 ```
 src/
-├── modules/           # Domain logic and business entities
-├── sections/          # UI and presentation layer
-├── legacy/            # Utility and legacy code (under migration)
-└── shared/            # Common logic (e.g. error handling)
+└── modules/                
+    ├── diet/               # Diet tracking module
+    │   ├── application/    # Use cases and business logic
+    │   ├── domain/         # Core domain entities and types
+    │   ├── infrastructure/ # Data sources (API, DB)
+    │   └── ui/             # UI components specific to diet module
+    ├── body/               # Body data module
+    │   ├── ...             # Similar structure as diet module
+    ├── clipboard/          # Clipboard management module
+    │   ├── ...             # Similar structure as diet module
+    └── ...                 # Other modules (auth, recipes, food search, etc.)
 ```
-
-### Design Principles
-- **Domain-Driven Design + Clean Architecture**
-- **Repository Pattern with Supabase**
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: SolidJS, TypeScript, TailwindCSS
-- **Backend**: Supabase (PostgreSQL + Realtime), Vercel
-- **Validation & Visualization**: Zod, ApexCharts
-- **Dev Tools**: ESLint, Prettier, html5-qrcode
+- **Frontend:** SolidJS, TypeScript, TailwindCSS  
+- **Backend:** Supabase (PostgreSQL, Realtime) 
+  - Note: for simplicity, the backend is tightly coupled with the frontend in this project.
+- **Validation & Charts:** Zod, ApexCharts  
+- **Dev Tools:** ESLint, Prettier, html5-qrcode  
 
 ---
 
 ## Getting Started
 
 ### Requirements
-- Node.js 18+
+- Node.js 20+
 - Supabase account
 
 ### Setup
 
 > **Environment Variables:**
-> Copy `.env.example` to `.env.local` and fill in the required values. This file lists all environment variables needed to run the project. Do not commit secrets to version control.
+> Copy `.env.example` to `.env.local` and fill in the required values. This file lists all environment variables needed to run the project.
+> Do not commit secrets to version control.
 
 ```bash
 git clone https://github.com/marcuscastelo/macroflows.git
 cd macroflows
 npm install
+
 cp .env.example .env.local  # Add your Supabase credentials
 npm run dev
 ```
@@ -95,12 +153,6 @@ npm run dev
 - PWA support
 - ML-based food recognition
 - Social features (sharing, collaboration)
-
----
-
-## Contributing
-
-Contributions are welcome. Please maintain consistency with the codebase’s structure and quality standards.
 
 ---
 
