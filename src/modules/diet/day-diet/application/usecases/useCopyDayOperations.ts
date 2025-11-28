@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js'
+import { createResource, createSignal } from 'solid-js'
 
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
@@ -51,13 +51,33 @@ export async function copyDay(params: {
 }
 
 export function useCopyDayUseCase() {
-  const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
-  const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
+  const [params, setParams] = createSignal<
+    { userId: User['uuid']; beforeDay: string; limit: number } | undefined
+  >(undefined)
+
+  const fetcher = async (p?: {
+    userId: User['uuid']
+    beforeDay: string
+    limit: number
+  }) => {
+    if (!p) {
+      const empty: readonly DayDiet[] = []
+      return empty
+    }
+
+    const days = await dayUseCases.fetchDayDietsByUserIdBeforeDate(
+      p.userId,
+      p.beforeDay,
+      p.limit,
+    )
+    return days
+  }
+
+  const [previousDays, { mutate }] = createResource(params, fetcher)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
   const [isCopying, setIsCopying] = createSignal(false)
 
   return {
-    previousDays: () => previousDays(),
     copyingDay: () => copyingDay(),
     isCopying: () => isCopying(),
     handleStartCopying: (fromDay: string) => {
@@ -69,33 +89,28 @@ export function useCopyDayUseCase() {
       setCopyingDay(null)
     },
 
-    loadPreviousDays: async (
+    // previousDays is a Solid resource. Use `fetchPreviousDays` to load data into it.
+    previousDays,
+    fetchPreviousDays: (
       userId: User['uuid'],
       beforeDay: string,
       limit: number = 30,
-    ): Promise<void> => {
-      if (isLoadingPreviousDays()) return
-
-      setIsLoadingPreviousDays(true)
-      try {
-        const days = await dayUseCases.fetchDayDietsByUserIdBeforeDate(
-          userId,
-          beforeDay,
-          limit,
-        )
-        setPreviousDays(days)
-      } catch (error) {
-        logging.error('CopyDayOperations loadPreviousDays error:', error)
-        setPreviousDays([])
-        throw error
-      } finally {
-        setIsLoadingPreviousDays(false)
-      }
+    ): void => {
+      setParams({ userId, beforeDay, limit })
     },
 
+    mutatePreviousDays: (
+      v:
+        | readonly DayDiet[]
+        | ((
+            p: readonly DayDiet[] | undefined,
+          ) => readonly DayDiet[] | undefined),
+    ) => mutate(v),
+
     resetState: (): void => {
-      setPreviousDays([])
-      setIsLoadingPreviousDays(false)
+      setParams(undefined)
+      const empty: readonly DayDiet[] = []
+      void mutate(empty)
       setCopyingDay(null)
       setIsCopying(false)
     },

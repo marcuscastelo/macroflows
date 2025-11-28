@@ -1,6 +1,5 @@
 import { type Accessor, createEffect, createSignal, untrack } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
@@ -57,10 +56,15 @@ export function createDayCacheStore() {
       currentTargetDay,
       userId,
       currentDayDiet,
+      fetchDayDietByUserIdAndTargetDay,
     }: {
       currentTargetDay: string
       userId: User['uuid']
       currentDayDiet: Accessor<DayDiet | null>
+      fetchDayDietByUserIdAndTargetDay: (
+        userId: User['uuid'],
+        targetDay: string,
+      ) => Promise<DayDiet | null>
     }) {
       logging.debug(`Effect - Refetch/Manage cache`)
       const existingDays = untrack(() => untrack(dayDiets))
@@ -70,10 +74,7 @@ export function createDayCacheStore() {
       if (existingDays.find((d) => d.user_id !== userId) !== undefined) {
         logging.debug(`User changed! Purge cache`)
         this.clearCache()
-        void dayUseCases.fetchDayDietByUserIdAndTargetDay(
-          userId,
-          currentTargetDay,
-        )
+        void fetchDayDietByUserIdAndTargetDay(userId, currentTargetDay)
         return
       }
 
@@ -84,10 +85,7 @@ export function createDayCacheStore() {
         logging.debug(
           `No day diet found for user ${userId} on ${currentTargetDay}, fetching...`,
         )
-        void dayUseCases.fetchDayDietByUserIdAndTargetDay(
-          userId,
-          currentTargetDay,
-        )
+        void fetchDayDietByUserIdAndTargetDay(userId, currentTargetDay)
       }
     },
   }

@@ -71,6 +71,7 @@ export const dayUseCases = createRoot(() => {
       userId,
       currentTargetDay,
       currentDayDiet: obj.currentDayDiet,
+      fetchDayDietByUserIdAndTargetDay: obj.fetchDayDietByUserIdAndTargetDay,
     })
   })
 

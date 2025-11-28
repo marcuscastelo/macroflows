@@ -1,4 +1,4 @@
-import { type Accessor } from 'solid-js'
+import { type Accessor, Suspense } from 'solid-js'
 
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
@@ -29,7 +29,7 @@ export function CopyLastDayButton(props: {
     handleFinishCopying,
     isCopying,
     copyingDay,
-    loadPreviousDays,
+    fetchPreviousDays,
     resetState,
   } = useCopyDayUseCase()
 
@@ -37,9 +37,12 @@ export function CopyLastDayButton(props: {
     void copyDay({
       fromDay: day,
       toDay: props.selectedDay,
-      previousDays: previousDays(),
-      existingDay: [...previousDays(), dayUseCases.currentDayDiet()]
-        .filter((d) => d !== null)
+      previousDays: previousDays.latest ?? [],
+      existingDay: [
+        ...(previousDays.latest ?? []),
+        dayUseCases.currentDayDiet(),
+      ]
+        .filter((d): d is DayDiet => d !== null)
         .find((d) => d.target_day === props.selectedDay),
       onStartCopying: handleStartCopying,
       onFinishCopying: handleFinishCopying,
@@ -53,20 +56,22 @@ export function CopyLastDayButton(props: {
         onClick={() => {
           const userId = currentUserId()
 
-          void loadPreviousDays(userId, props.selectedDay)
+          void fetchPreviousDays(userId, props.selectedDay)
 
           openContentModal(
             (modalId) => (
-              <CopyLastDayModal
-                previousDays={previousDays()}
-                copying={isCopying()}
-                copyingDay={copyingDay()}
-                onCopy={handleCopy}
-                onClose={() => {
-                  resetState()
-                  closeModal(modalId)
-                }}
-              />
+              <Suspense>
+                <CopyLastDayModal
+                  previousDays={previousDays.latest ?? []}
+                  copying={isCopying()}
+                  copyingDay={copyingDay()}
+                  onCopy={handleCopy}
+                  onClose={() => {
+                    resetState()
+                    closeModal(modalId)
+                  }}
+                />
+              </Suspense>
             ),
             {
               title: 'Copiar dia anterior',
