@@ -1,4 +1,13 @@
-# Macroflows
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
+  <span style="font-weight: bold; font-size: 2em;">Macroflows</span>
+  <div style="">
+    <!-- English version -->
+    <i>English</i>
+    |
+    <!-- Portuguese version -->
+    <a href="docs/locale/pt-br/README.md">Português (Brasil)</a>
+  </div>
+</div>
 
 A modular, high-performance nutrition tracking platform built with SolidJS, strong typing, and clean architecture principles.
 
@@ -39,6 +48,7 @@ For now, it is focused on being a personal project to track my own nutrition, bu
 ### Food Management
 - EAN barcode scanning
 - Searchable food database
+- User recent searches, favorites, and history
 - Custom recipe builder with automatic macro calculation
 - Meal planning and reusable templates
 
