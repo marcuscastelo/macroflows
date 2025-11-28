@@ -307,8 +307,12 @@ function createDemoMacroProfile(): MacroProfile {
   return promoteToMacroProfile(
     {
       user_id: GUEST_USER_ID,
-      target_day: new Date(),
-      gramsPerKgCarbs: 4,
+      target_day: new Date(
+        Date.now() -
+          7 * 24 * 60 * 60 * 1000 +
+          nextMacroProfileId * 24 * 60 * 60 * 1000,
+      ),
+      gramsPerKgCarbs: nextMacroProfileId,
       gramsPerKgProtein: 2,
       gramsPerKgFat: 0.8,
       __type: 'NewMacroProfile',
@@ -345,7 +349,7 @@ function createSeededDatabase(): GuestDatabase {
     foods,
     dayDiets: [createDemoDayDiet(today, foods)],
     weights: createDemoWeights(),
-    macroProfiles: [createDemoMacroProfile()],
+    macroProfiles: [createDemoMacroProfile(), createDemoMacroProfile()],
   }
 }
 

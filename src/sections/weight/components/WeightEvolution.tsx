@@ -2,6 +2,7 @@ import { For, Suspense } from 'solid-js'
 
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
+import { currentUserId } from '~/modules/user/application/user'
 import {
   setWeightChartType,
   WEIGHT_CHART_OPTIONS,
@@ -9,6 +10,7 @@ import {
 } from '~/modules/weight/application/chart/weightChartSettings'
 import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
 import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -64,7 +66,13 @@ export function WeightEvolution() {
               }
 
               weightUseCases
-                .insertWeight(weight)
+                .insertWeight(
+                  createNewWeight({
+                    user_id: currentUserId(),
+                    weight,
+                    target_timestamp: new Date(Date.now()),
+                  }),
+                )
                 .then(() => weightField.setRawValue(''))
                 .catch(() => {})
             }}
