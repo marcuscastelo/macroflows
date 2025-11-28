@@ -4,19 +4,28 @@ import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
 import { weightSchema } from '~/modules/weight/domain/weight/weight'
+import { createGuestWeightRepository } from '~/modules/weight/infrastructure/weight/guest/guestWeightRepository'
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const storageRepository = createLocalStorageWeightCacheRepository()
-const weightRepository = createSupabaseWeightGateway()
+const supabaseWeightRepository = createSupabaseWeightGateway()
+const guestWeightRepository = createGuestWeightRepository()
+
+function getWeightRepository():
+  | typeof supabaseWeightRepository
+  | typeof guestWeightRepository {
+  return isGuestMode() ? guestWeightRepository : supabaseWeightRepository
+}
 
 async function fetchUserWeights(userId: User['uuid']) {
   try {
-    const weights = await weightRepository.fetchUserWeights(userId)
+    const weights = await getWeightRepository().fetchUserWeights(userId)
     storageRepository.setCachedWeights(userId, weights)
     weightCacheStore.setWeights(weights)
     return weights
@@ -27,37 +36,27 @@ async function fetchUserWeights(userId: User['uuid']) {
 }
 
 const userId = currentUserId()
-if (userId !== undefined) {
-  const cachedWeights = parseWithStack(
-    weightSchema.array(),
-    storageRepository.getCachedWeights(userId),
-  )
-  if (cachedWeights.length > 0) {
-    weightCacheStore.setWeights(cachedWeights)
-  }
+const cachedWeights = parseWithStack(
+  weightSchema.array(),
+  storageRepository.getCachedWeights(userId),
+)
+if (cachedWeights.length > 0) {
+  weightCacheStore.setWeights(cachedWeights)
 }
 
 onMount(() => {
   const userId = currentUserId()
-  if (userId === undefined) {
-    logging.error('User ID is undefined')
-    return
-  }
   void fetchUserWeights(userId)
 })
 
 createEffect(() => {
   const userId = currentUserId()
-  if (userId === undefined) {
-    logging.error('User ID is undefined')
-    return
-  }
   void fetchUserWeights(userId)
 })
 
 // CRUD operations service - temporary until fully migrated
 export const weightCrudService = createWeightCrudService({
-  weightRepository,
+  weightRepository: getWeightRepository(),
   weightCacheRepository: storageRepository,
 })
 
@@ -65,10 +64,6 @@ export const userWeights = weightCacheStore.weights
 
 export function refetchUserWeights() {
   const userId = currentUserId()
-  if (userId === undefined) {
-    logging.error('User ID is undefined')
-    return
-  }
   void fetchUserWeights(userId)
 }
 

@@ -1,6 +1,5 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
-import { AuthGuard } from '~/modules/auth/ui/guards/AuthGuard'
 import {
   acceptDayChange,
   dayChangeData,
@@ -62,35 +61,33 @@ export default function DietPage() {
   })
 
   return (
-    <AuthGuard>
-      <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
-        <TopBar />
-        <Show when={currentDayDiet()} fallback={<div />}>
-          {(currentDayDiet) => (
-            <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
-          )}
-        </Show>
-        {mode() !== 'edit' && (
-          <Alert class="mt-2" color="yellow">
-            Mostrando refeições do dia {targetDay()}!
-          </Alert>
+    <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
+      <TopBar />
+      <Show when={currentDayDiet()} fallback={<div />}>
+        {(currentDayDiet) => (
+          <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
         )}
-        <Show
-          when={currentDayDiet()}
-          fallback={<DayNotFound selectedDay={targetDay()} />}
-        >
-          {(currentDayDiet) => (
-            <Suspense fallback={<LoadingRing />}>
-              <DayMeals
-                dayDiet={currentDayDiet()}
-                selectedDay={targetDay()}
-                mode={mode()}
-                onRequestEditMode={handleRequestEditMode}
-              />
-            </Suspense>
-          )}
-        </Show>
-      </Suspense>
-    </AuthGuard>
+      </Show>
+      {mode() !== 'edit' && (
+        <Alert class="mt-2" color="yellow">
+          Mostrando refeições do dia {targetDay()}!
+        </Alert>
+      )}
+      <Show
+        when={currentDayDiet()}
+        fallback={<DayNotFound selectedDay={targetDay()} />}
+      >
+        {(currentDayDiet) => (
+          <Suspense fallback={<LoadingRing />}>
+            <DayMeals
+              dayDiet={currentDayDiet()}
+              selectedDay={targetDay()}
+              mode={mode()}
+              onRequestEditMode={handleRequestEditMode}
+            />
+          </Suspense>
+        )}
+      </Show>
+    </Suspense>
   )
 }

@@ -31,12 +31,8 @@ export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-// Current user ID now is derived from auth, or guest user ID in guest mode
 export const currentUserId = () => {
-  if (isGuestMode()) {
-    return GUEST_USER_ID
-  }
-  return getCurrentUser()?.id
+  return getCurrentUser()?.id ?? GUEST_USER_ID
 }
 
 createEffect(() => {
@@ -96,7 +92,7 @@ export async function fetchUsers(): Promise<readonly User[]> {
  */
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const user = await getRepository().fetchUser(currentUserId() ?? '')
+    const user = await getRepository().fetchUser(currentUserId())
     setCurrentUser(user)
 
     return user
