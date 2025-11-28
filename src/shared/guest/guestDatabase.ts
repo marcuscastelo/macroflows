@@ -34,6 +34,7 @@ import {
   GUEST_USER_ID,
   GUEST_USER_NAME,
 } from '~/shared/guest/guestConstants'
+import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -307,11 +308,7 @@ function createDemoMacroProfile(): MacroProfile {
   return promoteToMacroProfile(
     {
       user_id: GUEST_USER_ID,
-      target_day: new Date(
-        Date.now() -
-          7 * 24 * 60 * 60 * 1000 +
-          nextMacroProfileId * 24 * 60 * 60 * 1000,
-      ),
+      target_day: new Date(getTodayYYYYMMDD()),
       gramsPerKgCarbs: nextMacroProfileId,
       gramsPerKgProtein: 2,
       gramsPerKgFat: 0.8,

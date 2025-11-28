@@ -19,6 +19,8 @@ export const userMacroProfiles = () => {
 export const latestMacroProfile = () => {
   const profiles = userMacroProfiles()
   const latest = getLatestMacroProfile(profiles)
+  console.debug('Latest macro profile:', { latest })
+  console.debug('All profiles:', { profiles })
   if (latest === null) {
     const userId = currentUserId()
     return createDefaultMacroProfile(userId)
