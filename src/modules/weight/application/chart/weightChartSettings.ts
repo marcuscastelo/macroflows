@@ -8,6 +8,27 @@ import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/wei
 export type WeightChartType = '7d' | '14d' | '30d' | '6m' | '1y' | 'all'
 
 /**
+ * Valid weight chart type values
+ */
+const validWeightChartTypes = [
+  '7d',
+  '14d',
+  '30d',
+  '6m',
+  '1y',
+  'all',
+] as const satisfies readonly WeightChartType[]
+
+/**
+ * Type guard to check if a value is a valid WeightChartType
+ * @param value - The value to check
+ * @returns True if the value is a valid WeightChartType
+ */
+export function isWeightChartType(value: string): value is WeightChartType {
+  return validWeightChartTypes.some((type) => type === value)
+}
+
+/**
  * Available chart type options with display labels
  */
 export const WEIGHT_CHART_OPTIONS = [
@@ -31,12 +52,9 @@ function getStoredChartType(): WeightChartType {
   }
 
   const stored = storageRepository.getChartType()
-  const validTypes = ['7d', '14d', '30d', '6m', '1y', 'all'] as const
 
-  // TODO: Make tuple.includes narrow item type if tuple is const
-  if (stored !== null && validTypes.includes(stored)) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return stored as WeightChartType
+  if (stored !== null && isWeightChartType(stored)) {
+    return stored
   }
 
   return 'all'
