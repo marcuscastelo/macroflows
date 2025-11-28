@@ -3,21 +3,14 @@ import { createEffect, createSignal } from 'solid-js'
 import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
 
 /**
- * Chart type options for weight evolution visualization
- */
-export type WeightChartType = '7d' | '14d' | '30d' | '6m' | '1y' | 'all'
-
-/**
  * Valid weight chart type values
  */
-const validWeightChartTypes = [
-  '7d',
-  '14d',
-  '30d',
-  '6m',
-  '1y',
-  'all',
-] as const satisfies readonly WeightChartType[]
+const validWeightChartTypes = ['7d', '14d', '30d', '6m', '1y', 'all'] as const
+
+/**
+ * Chart type options for weight evolution visualization
+ */
+export type WeightChartType = (typeof validWeightChartTypes)[number]
 
 /**
  * Type guard to check if a value is a valid WeightChartType
