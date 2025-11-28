@@ -14,17 +14,51 @@ A modular, high-performance nutrition tracking platform built with SolidJS, stro
 ---
 
 ## Screenshots
-![Diet Page](docs/screenshots/diet-page.png)
-<img width="768" height="1021" alt="image" src="https://github.com/user-attachments/assets/bf294e75-117c-447b-8953-6452877dfb46" />
 
-![Food Search](docs/screenshots/food-search.png)
-<img width="771" height="1020" alt="image" src="https://github.com/user-attachments/assets/1b982883-b36b-49ab-a4be-a45d3d574c78" />
+<p>Clique nas miniaturas para abrir/fechar cada imagem individualmente — assim você não precisa rolar a página para ver o conteúdo.</p>
 
-![Weight Tracking](docs/screenshots/weight-tracking.png)
-<img width="764" height="1018" alt="image" src="https://github.com/user-attachments/assets/e8939ee8-4e28-4e10-b870-8ab51044e54e" />
-
-![Macro Profile](docs/screenshots/macro-profile.png)
-<img width="777" height="1015" alt="image" src="https://github.com/user-attachments/assets/0066ad09-2d49-49aa-929a-5ef639373329" />
+<table>
+  <tr>
+    <td>
+      <details>
+        <summary>Diet Page</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/bf294e75-117c-447b-8953-6452877dfb46" alt="Diet Page" width="768"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Food Search</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/1b982883-b36b-49ab-a4be-a45d3d574c78" alt="Food Search" width="771"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Weight Tracking</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/e8939ee8-4e28-4e10-b870-8ab51044e54e" alt="Weight Tracking" width="764"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Macro Profile</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/0066ad09-2d49-49aa-929a-5ef639373329" alt="Macro Profile" width="777"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+</table>
 
 
 ## Overview
