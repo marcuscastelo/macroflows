@@ -1,7 +1,7 @@
 import { createEffect } from 'solid-js'
 
-import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
-import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
+import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
+import { dayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
 import { initializeDayEffects } from '~/modules/diet/day-diet/infrastructure/signals/dayEffects'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'

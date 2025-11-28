@@ -1,8 +1,8 @@
+import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import {
   type DayDiet,
   dayDietSchema,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'

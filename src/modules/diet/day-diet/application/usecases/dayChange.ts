@@ -1,7 +1,7 @@
 import { batch } from 'solid-js'
 
-import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
-import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
+import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
+import { dayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 
 export const dayChangeData = dayChangeStore.dayChangeData

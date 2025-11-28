@@ -1,3 +1,4 @@
+import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import {
   type DayDiet,
   type NewDayDiet,
@@ -5,7 +6,6 @@ import {
 import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
 import { createGuestDayGateway } from '~/modules/diet/day-diet/infrastructure/guest/guestDayGateway'
-import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
 import { isGuestMode } from '~/shared/guest/guestState'

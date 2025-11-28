@@ -3,13 +3,13 @@ import { createEffect, createRoot, onCleanup, onMount, untrack } from 'solid-js'
 import { createCacheManagementService } from '~/modules/diet/day-diet/application/services/cacheManagement'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createTargetDayResetService } from '~/modules/diet/day-diet/application/services/targetDayReset'
+import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
+import { dayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
 import { fetchTargetDay } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import {
   currentDayDiet,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
-import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
-import { dayChangeStore } from '~/modules/diet/day-diet/infrastructure/signals/dayChangeStore'
 import { dayStateStore } from '~/modules/diet/day-diet/infrastructure/signals/dayStateStore'
 import { currentUserId } from '~/modules/user/application/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
