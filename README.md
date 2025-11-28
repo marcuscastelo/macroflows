@@ -15,9 +15,17 @@ A modular, high-performance nutrition tracking platform built with SolidJS, stro
 
 ## Screenshots
 ![Diet Page](docs/screenshots/diet-page.png)
+<img width="768" height="1021" alt="image" src="https://github.com/user-attachments/assets/bf294e75-117c-447b-8953-6452877dfb46" />
+
 ![Food Search](docs/screenshots/food-search.png)
+<img width="771" height="1020" alt="image" src="https://github.com/user-attachments/assets/1b982883-b36b-49ab-a4be-a45d3d574c78" />
+
 ![Weight Tracking](docs/screenshots/weight-tracking.png)
+<img width="764" height="1018" alt="image" src="https://github.com/user-attachments/assets/e8939ee8-4e28-4e10-b870-8ab51044e54e" />
+
 ![Macro Profile](docs/screenshots/macro-profile.png)
+<img width="777" height="1015" alt="image" src="https://github.com/user-attachments/assets/0066ad09-2d49-49aa-929a-5ef639373329" />
+
 
 ## Overview
 
