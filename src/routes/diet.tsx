@@ -1,5 +1,6 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
+import { AuthGuard } from '~/modules/auth/ui/guards/AuthGuard'
 import {
   acceptDayChange,
   dayChangeData,
@@ -18,7 +19,6 @@ import DayMacros from '~/sections/day-diet/components/DayMacros'
 import DayMeals from '~/sections/day-diet/components/DayMeals'
 import DayNotFound from '~/sections/day-diet/components/DayNotFound'
 import TopBar from '~/sections/day-diet/components/TopBar'
-import { AuthGuard } from '~/shared/guards/AuthGuard'
 import {
   closeModal,
   openContentModal,

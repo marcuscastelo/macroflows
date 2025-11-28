@@ -3,10 +3,10 @@ import { createSignal, Show } from 'solid-js'
 
 import { signIn } from '~/modules/auth/application/services/authService'
 import { isAuthLoading } from '~/modules/auth/application/store/authState'
+import { GuestGuard } from '~/modules/auth/ui/guards/GuestGuard'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
-import { GuestGuard } from '~/shared/guards/GuestGuard'
 import { logging } from '~/shared/utils/logging'
 
 export default function LoginPage() {
