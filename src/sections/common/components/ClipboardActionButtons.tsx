@@ -5,6 +5,7 @@ import { CopyButton } from '~/sections/common/components/CopyButton'
 import { PasteIcon } from '~/sections/common/components/icons/PasteIcon'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { CLIPBOARD_ACTION_BUTTON_STYLES } from '~/sections/common/styles/buttonStyles'
+import { cn } from '~/shared/cn'
 
 type ClipboardActionButtonsProps = {
   canCopy: boolean
@@ -47,7 +48,10 @@ export function ClipboardActionButtons(
       <Show when={props.canClear}>
         <button
           type="button"
-          class={`${CLIPBOARD_ACTION_BUTTON_STYLES} text-red-400 hover:text-red-300`}
+          class={cn(
+            CLIPBOARD_ACTION_BUTTON_STYLES,
+            'text-red-400 hover:text-red-300',
+          )}
           onClick={(e) => props.onClear(e)}
           aria-label="Clear clipboard"
           title="Clear clipboard"
