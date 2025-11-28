@@ -1,4 +1,3 @@
-import { updateDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
@@ -28,7 +27,7 @@ export async function updateMeal(
 
     const updatedDayDiet = updateMealInDayDiet(currentDayDiet_, mealId, newMeal)
     const newDay = demoteNewDayDiet(updatedDayDiet)
-    await updateDayDiet(currentDayDiet_.id, newDay)
+    await dayUseCases.updateDayDietById(currentDayDiet_.id, newDay)
 
     return true
   } catch (error) {

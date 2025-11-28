@@ -17,6 +17,7 @@ import {
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
+import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
@@ -159,7 +160,15 @@ export const dayUseCases = createRoot(() => {
     },
     insertDayDiet: async (dayDiet: NewDayDiet) => {
       try {
-        const insertedDayDiet = await dayRepository.insertDayDiet(dayDiet)
+        const insertedDayDiet = await showPromise(
+          dayRepository.insertDayDiet(dayDiet),
+          {
+            loading: 'Criando dia de dieta...',
+            success: 'Dia de dieta criado com sucesso',
+            error: 'Erro ao criar dia de dieta',
+          },
+          { context: 'user-action' },
+        )
         if (insertedDayDiet !== null) {
           dayCacheStore.upsertToCache(insertedDayDiet)
         }
@@ -171,9 +180,14 @@ export const dayUseCases = createRoot(() => {
     },
     updateDayDietById: async (dayId: DayDiet['id'], dayDiet: NewDayDiet) => {
       try {
-        const updatedDayDiet = await dayRepository.updateDayDietById(
-          dayId,
-          dayDiet,
+        const updatedDayDiet = await showPromise(
+          dayRepository.updateDayDietById(dayId, dayDiet),
+          {
+            loading: 'Atualizando dieta...',
+            success: 'Dieta atualizada com sucesso',
+            error: 'Erro ao atualizar dieta',
+          },
+          { context: 'user-action' },
         )
         if (updatedDayDiet !== null) {
           dayCacheStore.upsertToCache(updatedDayDiet)
@@ -186,7 +200,15 @@ export const dayUseCases = createRoot(() => {
     },
     deleteDayDietById: async (dayId: DayDiet['id']) => {
       try {
-        await dayRepository.deleteDayDietById(dayId)
+        await showPromise(
+          dayRepository.deleteDayDietById(dayId),
+          {
+            loading: 'Deletando dieta...',
+            success: 'Dieta deletada com sucesso',
+            error: 'Erro ao deletar dieta',
+          },
+          { context: 'user-action' },
+        )
         dayCacheStore.removeFromCache({ by: 'id', value: dayId })
       } catch (error) {
         logging.error('DayDiet delete error:', error)

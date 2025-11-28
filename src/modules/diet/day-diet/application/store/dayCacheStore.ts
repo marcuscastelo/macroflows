@@ -1,6 +1,6 @@
 import { type Accessor, createEffect, createSignal, untrack } from 'solid-js'
 
-import { fetchTargetDay } from '~/modules/diet/day-diet/application/usecases/dayCrud'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
@@ -70,7 +70,10 @@ export function createDayCacheStore() {
       if (existingDays.find((d) => d.user_id !== userId) !== undefined) {
         logging.debug(`User changed! Purge cache`)
         this.clearCache()
-        void fetchTargetDay(userId, currentTargetDay)
+        void dayUseCases.fetchDayDietByUserIdAndTargetDay(
+          userId,
+          currentTargetDay,
+        )
         return
       }
 
@@ -81,7 +84,10 @@ export function createDayCacheStore() {
         logging.debug(
           `No day diet found for user ${userId} on ${currentTargetDay}, fetching...`,
         )
-        void fetchTargetDay(userId, currentTargetDay)
+        void dayUseCases.fetchDayDietByUserIdAndTargetDay(
+          userId,
+          currentTargetDay,
+        )
       }
     },
   }

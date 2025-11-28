@@ -46,7 +46,7 @@ describe('CopyDayOperations', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    operations = useCopyDayUseCase(mockRepository)
+    operations = useCopyDayUseCase()
   })
 
   describe('initial state', () => {
