@@ -1,17 +1,6 @@
-<table>
-<tr>
-<td>
-  
-# Macroflows
+# Macroflows 
+### <sup>[English](README.md) · [PT-BR](docs/locale/pt-br/README.md)</sup>
 
-</td>
-<td align="right">
-
-[English](README.md) • [Português (Brasil)](docs/locale/pt-br/README.md)
-
-</td>
-</tr>
-</table>
 
 Uma plataforma modular e de alto desempenho para rastreamento nutricional, construída com SolidJS, tipagem forte e princípios de arquitetura limpa.
 
