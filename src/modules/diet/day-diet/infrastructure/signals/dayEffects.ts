@@ -2,7 +2,6 @@ import { createEffect, createRoot, onCleanup, onMount, untrack } from 'solid-js'
 
 import { createCacheManagementService } from '~/modules/diet/day-diet/application/services/cacheManagement'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
-import { createTargetDayResetService } from '~/modules/diet/day-diet/application/services/targetDayReset'
 import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { dayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
 import { fetchTargetDay } from '~/modules/diet/day-diet/application/usecases/dayCrud'
@@ -15,10 +14,11 @@ import { currentUserId } from '~/modules/user/application/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
-const runTargetDayReset = createTargetDayResetService({
-  getTodayYYYYMMDD,
-  setTargetDay: dayStateStore.setTargetDay,
-})
+const runTargetDayReset = () => {
+  logging.debug(`Effect - Reset to today!`)
+  const today = getTodayYYYYMMDD()
+  dayStateStore.setTargetDay(today)
+}
 
 const runCacheManagement = createCacheManagementService({
   getExistingDays: () => untrack(dayCacheStore.dayDiets),
