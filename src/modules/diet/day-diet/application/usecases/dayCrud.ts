@@ -6,7 +6,7 @@ import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 
-function createCrud(repository = createDayDietRepository()) {
+function useDayCrudUseCase(repository = createDayDietRepository()) {
   const fetchTargetDay = async (
     userId: User['uuid'],
     targetDay: string,
@@ -75,7 +75,7 @@ function createCrud(repository = createDayDietRepository()) {
 }
 
 // Default instance for production use
-const defaultCrud = createCrud()
+const defaultCrud = useDayCrudUseCase()
 
 export const {
   fetchTargetDay,
@@ -85,4 +85,4 @@ export const {
   deleteDayDiet,
 } = defaultCrud
 
-export { createCrud }
+export { useDayCrudUseCase as createCrud }
