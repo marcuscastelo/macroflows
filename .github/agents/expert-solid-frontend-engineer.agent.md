@@ -130,8 +130,11 @@ function UserProfile({ id }: { id: string }) {
 
 ```ts
 // src/routes/users/[id].tsx
-import { createServerData$ } from "solid-start/server";
-import { createServerAction$ } from "solid-start/server";
+// Server helpers are exported from the official package namespace
+// (package: @solidjs/start). Import paths may vary by version; in SolidStart 1.x
+// the server helpers are available under "@solidjs/start/server".
+import { createServerData$ } from "@solidjs/start/server";
+import { createServerAction$ } from "@solidjs/start/server";
 
 export function routeData({ params }) {
   return createServerData$(async (id: string) => {
