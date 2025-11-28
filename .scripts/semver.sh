@@ -10,8 +10,7 @@ MAX_RETRIES="${SEMVER_MAX_RETRIES:-3}"
 INITIAL_RETRY_DELAY="${SEMVER_INITIAL_RETRY_DELAY:-2}"
 MAX_RETRY_DELAY="${SEMVER_MAX_RETRY_DELAY:-60}"
 DEBUG_MODE="${SEMVER_DEBUG:-false}"
-# Flag to track if we should use fallback mode
-USE_FALLBACK="${SEMVER_USE_FALLBACK:-false}"
+GITHUB_API_BASE="https://api.github.com/repos/$OWNER_REPO"
 
 debug_log() {
   if [ "$DEBUG_MODE" = "true" ]; then
@@ -32,19 +31,20 @@ safe_api_call() {
   local attempt=0
   local delay="$INITIAL_RETRY_DELAY"
   local response http_status rate_limit_remaining rate_limit_reset
+  local header_file
+  header_file=$(mktemp) || { echo "Warning: Failed to create temp file" >&2; return 1; }
   
   while [ $attempt -lt "$MAX_RETRIES" ]; do
     debug_log "API call attempt $((attempt + 1))/$MAX_RETRIES for $url"
     
-    response=$(curl -s -w "\n%{http_code}" -D /tmp/semver_api_headers_$$.txt "$url" 2>&1)
+    response=$(curl -s -w "\n%{http_code}" -D "$header_file" "$url" 2>&1)
     http_status=$(echo "$response" | tail -n1)
     response=$(echo "$response" | sed '$d')
     
     # Extract rate limit info from headers if available
-    if [ -f /tmp/semver_api_headers_$$.txt ]; then
-      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" /tmp/semver_api_headers_$$.txt | awk '{print $2}' | tr -d '\r')
-      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" /tmp/semver_api_headers_$$.txt | awk '{print $2}' | tr -d '\r')
-      rm -f /tmp/semver_api_headers_$$.txt
+    if [ -f "$header_file" ]; then
+      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" "$header_file" | awk '{print $2}' | tr -d '\r')
+      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" "$header_file" | awk '{print $2}' | tr -d '\r')
       
       debug_log "Rate limit remaining: ${rate_limit_remaining:-unknown}"
     fi
@@ -54,11 +54,13 @@ safe_api_call() {
         # Verify response is valid JSON before returning
         if is_valid_json "$response"; then
           debug_log "API call successful (HTTP 200, valid JSON)"
+          rm -f "$header_file"
           echo "$response"
           return 0
         else
           echo "Warning: GitHub API returned non-JSON response" >&2
           debug_log "Non-JSON response: $response"
+          rm -f "$header_file"
           return 1
         fi
         ;;
@@ -77,11 +79,13 @@ safe_api_call() {
         else
           echo "Warning: GitHub API access forbidden (HTTP 403)" >&2
         fi
+        rm -f "$header_file"
         return 1
         ;;
       
       404)
         echo "Warning: GitHub API resource not found (HTTP 404)" >&2
+        rm -f "$header_file"
         return 1
         ;;
       
@@ -97,6 +101,7 @@ safe_api_call() {
           attempt=$((attempt + 1))
           continue
         fi
+        rm -f "$header_file"
         return 1
         ;;
       
@@ -109,6 +114,7 @@ safe_api_call() {
           echo "Warning: Unexpected HTTP status $http_status from GitHub API" >&2
           debug_log "Response: $response"
         fi
+        rm -f "$header_file"
         return 1
         ;;
     esac
@@ -116,6 +122,7 @@ safe_api_call() {
     attempt=$((attempt + 1))
   done
   
+  rm -f "$header_file"
   echo "Warning: GitHub API call failed after $MAX_RETRIES attempts" >&2
   return 1
 }
@@ -201,20 +208,21 @@ get_commit_count_between() {
   local attempt=0
   local delay="$INITIAL_RETRY_DELAY"
   local response http_status rate_limit_remaining rate_limit_reset
+  local header_file
+  header_file=$(mktemp) || { echo "?" ; return 1; }
   
   while [ $attempt -lt "$MAX_RETRIES" ]; do
     debug_log "API call attempt $((attempt + 1))/$MAX_RETRIES for commit count between $from_sha and $to_sha"
     
-    response=$(curl -s -w "\n%{http_code}" -D /tmp/semver_headers_$$.txt \
-      "https://api.github.com/repos/$OWNER_REPO/compare/$from_sha...$to_sha" 2>&1)
+    response=$(curl -s -w "\n%{http_code}" -D "$header_file" \
+      "${GITHUB_API_BASE}/compare/$from_sha...$to_sha" 2>&1)
     http_status=$(echo "$response" | tail -n1)
     response=$(echo "$response" | sed '$d')
     
     # Extract rate limit info from headers if available
-    if [ -f /tmp/semver_headers_$$.txt ]; then
-      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
-      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" /tmp/semver_headers_$$.txt | awk '{print $2}' | tr -d '\r')
-      rm -f /tmp/semver_headers_$$.txt
+    if [ -f "$header_file" ]; then
+      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" "$header_file" | awk '{print $2}' | tr -d '\r')
+      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" "$header_file" | awk '{print $2}' | tr -d '\r')
       
       debug_log "Rate limit remaining: ${rate_limit_remaining:-unknown}"
       if [ -n "$rate_limit_reset" ]; then
@@ -231,8 +239,10 @@ get_commit_count_between() {
         if [ -z "$count" ]; then
           echo "Error: could not parse commit count from GitHub API response" >&2
           echo "$response" >&2
+          rm -f "$header_file"
           exit 1
         fi
+        rm -f "$header_file"
         echo "$count"
         return 0
         ;;
@@ -262,6 +272,7 @@ get_commit_count_between() {
       404)
         echo "Error: GitHub API resource not found (HTTP 404)" >&2
         echo "The comparison between $from_sha and $to_sha may not exist" >&2
+        rm -f "$header_file"
         echo "?"
         return 1
         ;;
@@ -289,15 +300,18 @@ get_commit_count_between() {
     # If we've exhausted retries for retryable errors, fall through
     if [ $attempt -ge $((MAX_RETRIES - 1)) ]; then
       echo "Error: GitHub API call failed after $MAX_RETRIES attempts" >&2
+      rm -f "$header_file"
       echo "?"
       return 1
     fi
     
     # For non-retryable errors, exit early
+    rm -f "$header_file"
     echo "?"
     return 1
   done
   
+  rm -f "$header_file"
   echo "?"
   return 1
 }
@@ -335,7 +349,7 @@ get_dev_version() {
 
   # Try to get RC branch from GitHub API with proper error handling
   rc_branch=""
-  branches_response=$(safe_api_call "https://api.github.com/repos/$OWNER_REPO/branches")
+  branches_response=$(safe_api_call "${GITHUB_API_BASE}/branches")
   if [ $? -eq 0 ] && [ -n "$branches_response" ]; then
     rc_branch=$(echo "$branches_response" | jq -r '.[].name' 2>/dev/null | grep '^rc/' | sort | tail -n1)
   else
@@ -392,21 +406,41 @@ main() {
   get_dev_version "$current_branch"
 }
 
+# Check if version string looks valid (starts with 'v' followed by a digit or is a dev/rc version)
+is_valid_version() {
+  local version="$1"
+  # Valid versions: v1.2.3, v1.2.3-dev.0.5, v1.2.3-rc.1, v0.0.0-dev.0+hash
+  [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]
+}
+
 # Wrapper that catches errors and falls back gracefully
 run_with_fallback() {
   local current_branch
   current_branch=$(get_current_branch)
   
   # Try the main function, capture output and exit status
-  local version exit_status
-  version=$(main 2>&1)
-  exit_status=$?
+  # Redirect stderr to a separate file to check for errors
+  local version exit_status stderr_output
+  local stderr_file
+  stderr_file=$(mktemp) || stderr_file="/dev/null"
   
-  if [ $exit_status -eq 0 ] && [ -n "$version" ] && [[ ! "$version" =~ ^(Error|Warning):.*$ ]]; then
+  version=$(main 2>"$stderr_file")
+  exit_status=$?
+  stderr_output=$(cat "$stderr_file" 2>/dev/null)
+  rm -f "$stderr_file"
+  
+  # Check if version generation succeeded:
+  # 1. Exit status is 0
+  # 2. Version is not empty
+  # 3. Version looks valid (starts with v and version number)
+  if [ $exit_status -eq 0 ] && [ -n "$version" ] && is_valid_version "$version"; then
     echo "$version"
     return 0
   else
-    debug_log "Main version generation failed, using fallback"
+    debug_log "Main version generation failed (exit=$exit_status, version='$version'), using fallback"
+    if [ -n "$stderr_output" ]; then
+      debug_log "Stderr: $stderr_output"
+    fi
     get_fallback_version "$current_branch"
     return 0
   fi
