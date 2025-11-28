@@ -1,7 +1,10 @@
 import { type Accessor } from 'solid-js'
 
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
-import { useCopyDayUseCase } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
+import {
+  copyDay,
+  useCopyDayUseCase,
+} from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -20,7 +23,28 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  const { state, copyDay, loadPreviousDays, resetState } = useCopyDayUseCase()
+  const {
+    previousDays,
+    handleStartCopying,
+    handleFinishCopying,
+    isCopying,
+    copyingDay,
+    loadPreviousDays,
+    resetState,
+  } = useCopyDayUseCase()
+
+  const handleCopy = (day: string) => {
+    void copyDay({
+      fromDay: day,
+      toDay: props.selectedDay,
+      previousDays: previousDays(),
+      existingDay: [...previousDays(), dayUseCases.currentDayDiet()]
+        .filter((d) => d !== null)
+        .find((d) => d.target_day === props.selectedDay),
+      onStartCopying: handleStartCopying,
+      onFinishCopying: handleFinishCopying,
+    })
+  }
 
   return (
     <>
@@ -34,22 +58,10 @@ export function CopyLastDayButton(props: {
           openContentModal(
             (modalId) => (
               <CopyLastDayModal
-                previousDays={state().previousDays}
-                copying={state().isCopying}
-                copyingDay={state().copyingDay}
-                onCopy={(day) => {
-                  void copyDay({
-                    fromDay: day,
-                    toDay: props.selectedDay,
-                    previousDays: state().previousDays,
-                    existingDay: [
-                      ...state().previousDays,
-                      dayUseCases.currentDayDiet(),
-                    ]
-                      .filter((d) => d !== null)
-                      .find((d) => d.target_day === props.selectedDay),
-                  })
-                }}
+                previousDays={previousDays()}
+                copying={isCopying()}
+                copyingDay={copyingDay()}
+                onCopy={handleCopy}
                 onClose={() => {
                   resetState()
                   closeModal(modalId)

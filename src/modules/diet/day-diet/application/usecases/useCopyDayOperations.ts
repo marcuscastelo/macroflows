@@ -8,6 +8,48 @@ import {
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
+export async function copyDay(params: {
+  fromDay: string
+  toDay: string
+  existingDay?: DayDiet
+  previousDays: readonly DayDiet[]
+  onStartCopying: (fromDay: string) => void
+  onFinishCopying: () => void
+}) {
+  const { fromDay, toDay, existingDay, previousDays } = params
+
+  params.onStartCopying(fromDay)
+
+  try {
+    const copyFrom = previousDays.find((d) => d.target_day === fromDay)
+    if (!copyFrom) {
+      throw new Error(`No matching previous day found for ${fromDay}`, {
+        cause: {
+          fromDay,
+          availableDays: previousDays.map((d) => d.target_day),
+        },
+      })
+    }
+
+    const newDay = createNewDayDiet({
+      target_day: toDay,
+      user_id: copyFrom.user_id,
+      meals: copyFrom.meals,
+    })
+
+    if (existingDay) {
+      await dayUseCases.updateDayDietById(existingDay.id, newDay)
+    } else {
+      await dayUseCases.insertDayDiet(newDay)
+    }
+  } catch (error) {
+    logging.error('CopyDayOperations copyDay error:', error)
+    throw error
+  } finally {
+    params.onFinishCopying()
+  }
+}
+
 export function useCopyDayUseCase() {
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
@@ -15,12 +57,17 @@ export function useCopyDayUseCase() {
   const [isCopying, setIsCopying] = createSignal(false)
 
   return {
-    state: () => ({
-      previousDays: previousDays(),
-      isLoadingPreviousDays: isLoadingPreviousDays(),
-      copyingDay: copyingDay(),
-      isCopying: isCopying(),
-    }),
+    previousDays: () => previousDays(),
+    copyingDay: () => copyingDay(),
+    isCopying: () => isCopying(),
+    handleStartCopying: (fromDay: string) => {
+      setCopyingDay(fromDay)
+      setIsCopying(true)
+    },
+    handleFinishCopying: () => {
+      setIsCopying(false)
+      setCopyingDay(null)
+    },
 
     loadPreviousDays: async (
       userId: User['uuid'],
@@ -43,48 +90,6 @@ export function useCopyDayUseCase() {
         throw error
       } finally {
         setIsLoadingPreviousDays(false)
-      }
-    },
-
-    copyDay: async (params: {
-      fromDay: string
-      toDay: string
-      existingDay?: DayDiet
-      previousDays: readonly DayDiet[]
-    }): Promise<void> => {
-      const { fromDay, toDay, existingDay, previousDays } = params
-
-      setCopyingDay(fromDay)
-      setIsCopying(true)
-
-      try {
-        const copyFrom = previousDays.find((d) => d.target_day === fromDay)
-        if (!copyFrom) {
-          throw new Error(`No matching previous day found for ${fromDay}`, {
-            cause: {
-              fromDay,
-              availableDays: previousDays.map((d) => d.target_day),
-            },
-          })
-        }
-
-        const newDay = createNewDayDiet({
-          target_day: toDay,
-          user_id: copyFrom.user_id,
-          meals: copyFrom.meals,
-        })
-
-        if (existingDay) {
-          await dayUseCases.updateDayDietById(existingDay.id, newDay)
-        } else {
-          await dayUseCases.insertDayDiet(newDay)
-        }
-      } catch (error) {
-        logging.error('CopyDayOperations copyDay error:', error)
-        throw error
-      } finally {
-        setIsCopying(false)
-        setCopyingDay(null)
       }
     },
 
