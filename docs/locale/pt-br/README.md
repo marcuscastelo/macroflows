@@ -1,6 +1,5 @@
 # Macroflows 
-### <sup>[English](README.md) · [PT-BR](docs/locale/pt-br/README.md)</sup>
-
+###  [![PT-BR](https://img.shields.io/badge/lang-PT--BR-blue)](docs/locale/pt-br/README.md) [![EN](https://img.shields.io/badge/lang-EN-gray)](README.md)
 
 Uma plataforma modular e de alto desempenho para rastreamento nutricional, construída com SolidJS, tipagem forte e princípios de arquitetura limpa.
 
