@@ -290,7 +290,6 @@ const Component = lazy(() => import('./Component')) // ✅
 
 2. **Verify success message:**
    - Must see "COPILOT: All checks passed!"
-   - Check with `.scripts/cat1.sh`, `.scripts/cat2.sh`, `.scripts/cat3.sh`
 
 3. **Architecture validation:**
    - No cross-layer violations

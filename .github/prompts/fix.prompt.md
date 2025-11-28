@@ -1,7 +1,7 @@
 ---
-description: 'Automate codebase checks and error correction using npm run check, explicit output checking via custom scripts, and agent-driven fixes. Enforces strict output checking for check results. After every code correction, always re-run npm run copilot:check and validation scripts until "COPILOT: All checks passed!" appears. Never produce "Next step:" and always fix all errors in one go, without prompting the user.'
-mode: 'agent'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'activePullRequest']
+description: 'Automate codebase checks and error correction using npm run check, explicit output checking via custom scripts, and agent-driven fixes. Enforces strict output checking for check results. After every code correction, always re-run npm run copilot:check and validation scripts until "COPILOT: All checks passed!" appears. Never produce "Next step:" and always fix all errors in one go, without prompting the user for confirmation or further input.'
+agent: expert-solid-frontend-engineer
+tools: ['changes', 'search/codebase', 'edit/editFiles', 'extensions', 'fetch', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'search/searchResults', 'runCommands/terminalLastCommand', 'runCommands/terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'github.vscode-pull-request-github/activePullRequest']
 ---
 
 # Automated Code Check and Fix Agent

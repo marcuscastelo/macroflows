@@ -1,13 +1,40 @@
-export const PasteIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="30"
-    height="30"
-    viewBox="0 0 512 512"
-  >
-    <path
-      d="M320 96V80C320 53.49 298.5 32 272 32H215.4C204.3 12.89 183.6 0 160 0S115.7 12.89 104.6 32H48C21.49 32 0 53.49 0 80v320C0 426.5 21.49 448 48 448l144 .0013L192 176C192 131.8 227.8 96 272 96H320zM160 88C146.8 88 136 77.25 136 64S146.8 40 160 40S184 50.75 184 64S173.3 88 160 88zM416 128v96h96L416 128zM384 224L384 128h-112C245.5 128 224 149.5 224 176v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48V256h-95.99C398.4 256 384 241.6 384 224z"
-      fill="white"
-    />
-  </svg>
-)
+import { type JSX } from 'solid-js'
+
+type PasteIconProps = {
+  size?: number
+  'aria-label'?: string
+  class?: string
+}
+
+const DEFAULT_SIZE = 24
+const DEFAULT_LABEL = 'Paste'
+
+/**
+ * Paste icon SVG component with accessibility support
+ * @param props - Icon properties including size and ARIA attributes
+ */
+export function PasteIcon(props: PasteIconProps): JSX.Element {
+  const size = () => props.size ?? DEFAULT_SIZE
+  const label = () => props['aria-label'] ?? DEFAULT_LABEL
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size()}
+      height={size()}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      role="img"
+      aria-label={label()}
+      class={props.class}
+    >
+      <title>{label()}</title>
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    </svg>
+  )
+}
