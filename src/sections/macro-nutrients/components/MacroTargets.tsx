@@ -19,7 +19,10 @@ import {
 } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
 import {
   createNewMacroProfile,
+  isSavedMacroProfile,
+  isUnsavedMacroProfile,
   type MacroProfile,
+  type MaybeSavedMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { openRestoreProfileModal } from '~/modules/diet/macro-profile/ui/RestoreProfileModal'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
@@ -39,7 +42,7 @@ export type MacroRepresentation = {
 
 const calculateMacroRepresentation = (
   profile: Pick<
-    MacroProfile,
+    MaybeSavedMacroProfile,
     'gramsPerKgCarbs' | 'gramsPerKgFat' | 'gramsPerKgProtein'
   >,
   weight: number,
@@ -86,19 +89,19 @@ const calculateMacroRepresentation = (
 
 export type MacroTargetProps = {
   weight: Accessor<Weight['weight']>
-  currentProfile: Accessor<MacroProfile>
+  currentProfile: Accessor<MaybeSavedMacroProfile>
   previousMacroProfile: Accessor<MacroProfile | null>
   className?: string
   mode: 'edit' | 'view'
 }
 
-const onSaveMacroProfile = (profile: MacroProfile) => {
+const onSaveMacroProfile = (profile: MaybeSavedMacroProfile) => {
   logging.info('[ProfilePage] Saving profile', profile)
   if (profile.target_day.getTime() > new Date(getTodayYYYYMMDD()).getTime()) {
     showError('Data alvo não pode ser no futuro')
     return
   } else if (
-    profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
+    isSavedMacroProfile(profile) &&
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Updating profile', profile)
@@ -117,12 +120,12 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
       showError(error, {}, 'Erro ao atualizar perfil de macro')
     })
   } else if (
-    profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
+    isUnsavedMacroProfile(profile) ||
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Inserting profile', profile)
 
-    // Past day, insert with new date
+    // Past day or unsaved profile, insert with new date
     void insertMacroProfile(
       createNewMacroProfile({
         ...profile,
@@ -185,8 +188,15 @@ export function MacroTarget(props: MacroTargetProps) {
                     <Button
                       class="btn-primary btn-sm"
                       onClick={() => {
+                        const currentProfile = props.currentProfile()
+                        if (!isSavedMacroProfile(currentProfile)) {
+                          showError(
+                            'Não é possível restaurar perfil para um perfil não salvo',
+                          )
+                          return
+                        }
                         openRestoreProfileModal({
-                          currentProfile: props.currentProfile(),
+                          currentProfile,
                           previousMacroProfile: previousMacroProfile(),
                         })
                       }}
@@ -235,7 +245,7 @@ export function MacroTarget(props: MacroTargetProps) {
 
 function MacroTargetSetting(props: {
   headerColor: string
-  currentProfile: MacroProfile
+  currentProfile: MaybeSavedMacroProfile
   weight: number
   target: MacroRepresentation
   field: 'carbs' | 'protein' | 'fat'

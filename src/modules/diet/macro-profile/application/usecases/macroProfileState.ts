@@ -1,3 +1,4 @@
+import { type MaybeSavedMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   createDefaultMacroProfile,
   getLatestMacroProfile,
@@ -21,7 +22,7 @@ export const userMacroProfiles = () => {
   return macroProfileCacheStore.getProfilesByUserId(userId)
 }
 
-export const latestMacroProfile = () => {
+export const latestMacroProfile = (): MaybeSavedMacroProfile | null => {
   const profiles = userMacroProfiles()
   const latest = getLatestMacroProfile(profiles)
   if (latest === null) {

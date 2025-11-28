@@ -1,4 +1,8 @@
-import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
+import {
+  createNewMacroProfile,
+  type MacroProfile,
+  type UnsavedMacroProfile,
+} from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 
@@ -70,14 +74,18 @@ export function getEffectiveMacroProfile(
   return found === undefined ? null : found
 }
 
-export function createDefaultMacroProfile(userId: User['uuid']): MacroProfile {
-  return {
-    id: -1,
+/**
+ * Creates a default macro profile for a user who doesn't have one yet.
+ * Returns an UnsavedMacroProfile (without an id) since it hasn't been persisted.
+ */
+export function createDefaultMacroProfile(
+  userId: User['uuid'],
+): UnsavedMacroProfile {
+  return createNewMacroProfile({
     user_id: userId,
     target_day: new Date(getTodayYYYYMMDD()),
     gramsPerKgCarbs: 0,
     gramsPerKgProtein: 0,
     gramsPerKgFat: 0,
-    __type: 'MacroProfile',
-  }
+  })
 }

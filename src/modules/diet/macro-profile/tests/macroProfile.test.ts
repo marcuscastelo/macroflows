@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   createNewMacroProfile,
   demoteToNewMacroProfile,
+  isSavedMacroProfile,
+  isUnsavedMacroProfile,
   type MacroProfile,
   macroProfileSchema,
+  type MaybeSavedMacroProfile,
   type NewMacroProfile,
   newMacroProfileSchema,
   promoteToMacroProfile,
@@ -219,17 +222,106 @@ describe('MacroProfile Domain', () => {
   })
 
   describe('createDefaultMacroProfile', () => {
-    it('should create a default macro profile with zeros for new users', () => {
+    it('should create an unsaved macro profile with zeros for new users', () => {
       const userId = 'test-user-123'
       const defaultProfile = createDefaultMacroProfile(userId)
 
-      expect(defaultProfile.id).toBe(-1)
+      // UnsavedMacroProfile (aka NewMacroProfile) should not have an id
+      expect('id' in defaultProfile).toBe(false)
       expect(defaultProfile.user_id).toBe(userId)
       expect(defaultProfile.gramsPerKgCarbs).toBe(0)
       expect(defaultProfile.gramsPerKgProtein).toBe(0)
       expect(defaultProfile.gramsPerKgFat).toBe(0)
-      expect(defaultProfile.__type).toBe('MacroProfile')
+      expect(defaultProfile.__type).toBe('NewMacroProfile')
       expect(defaultProfile.target_day).toBeInstanceOf(Date)
+    })
+  })
+
+  describe('isSavedMacroProfile', () => {
+    it('should return true for a saved MacroProfile with an id', () => {
+      const savedProfile: MacroProfile = {
+        id: 123,
+        user_id: '42',
+        target_day: new Date('2023-01-01'),
+        gramsPerKgCarbs: 5.0,
+        gramsPerKgProtein: 2.2,
+        gramsPerKgFat: 1.0,
+        __type: 'MacroProfile',
+      }
+
+      expect(isSavedMacroProfile(savedProfile)).toBe(true)
+    })
+
+    it('should return false for an unsaved profile without an id', () => {
+      const unsavedProfile: NewMacroProfile = {
+        user_id: '42',
+        target_day: new Date('2023-01-01'),
+        gramsPerKgCarbs: 5.0,
+        gramsPerKgProtein: 2.2,
+        gramsPerKgFat: 1.0,
+        __type: 'NewMacroProfile',
+      }
+
+      expect(isSavedMacroProfile(unsavedProfile)).toBe(false)
+    })
+
+    it('should return false for default profile from createDefaultMacroProfile', () => {
+      const defaultProfile = createDefaultMacroProfile('test-user-123')
+      expect(isSavedMacroProfile(defaultProfile)).toBe(false)
+    })
+
+    it('should narrow type correctly when returning true', () => {
+      const profile: MaybeSavedMacroProfile = {
+        id: 123,
+        user_id: '42',
+        target_day: new Date('2023-01-01'),
+        gramsPerKgCarbs: 5.0,
+        gramsPerKgProtein: 2.2,
+        gramsPerKgFat: 1.0,
+        __type: 'MacroProfile',
+      }
+
+      if (isSavedMacroProfile(profile)) {
+        // TypeScript should narrow to MacroProfile, allowing id access
+        expect(profile.id).toBe(123)
+      } else {
+        // This branch should not be reached
+        expect.fail('Expected isSavedMacroProfile to return true')
+      }
+    })
+  })
+
+  describe('isUnsavedMacroProfile', () => {
+    it('should return true for an unsaved profile without an id', () => {
+      const unsavedProfile: NewMacroProfile = {
+        user_id: '42',
+        target_day: new Date('2023-01-01'),
+        gramsPerKgCarbs: 5.0,
+        gramsPerKgProtein: 2.2,
+        gramsPerKgFat: 1.0,
+        __type: 'NewMacroProfile',
+      }
+
+      expect(isUnsavedMacroProfile(unsavedProfile)).toBe(true)
+    })
+
+    it('should return false for a saved MacroProfile with an id', () => {
+      const savedProfile: MacroProfile = {
+        id: 123,
+        user_id: '42',
+        target_day: new Date('2023-01-01'),
+        gramsPerKgCarbs: 5.0,
+        gramsPerKgProtein: 2.2,
+        gramsPerKgFat: 1.0,
+        __type: 'MacroProfile',
+      }
+
+      expect(isUnsavedMacroProfile(savedProfile)).toBe(false)
+    })
+
+    it('should return true for default profile from createDefaultMacroProfile', () => {
+      const defaultProfile = createDefaultMacroProfile('test-user-123')
+      expect(isUnsavedMacroProfile(defaultProfile)).toBe(true)
     })
   })
 })
