@@ -5,4 +5,5 @@ import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
  * Tracks whether the user is currently in guest/demo mode.
  */
 
-export const isGuestMode = () => getCurrentUser() === null
+export const isGuestMode = () =>
+  getCurrentUser() === null && window.location.pathname !== '/login'
