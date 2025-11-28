@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { createCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
+import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
@@ -21,7 +21,7 @@ export function CopyLastDayButton(props: {
   selectedDay: string
 }) {
   const { state, copyDay, loadPreviousDays, resetState } =
-    createCopyDayOperations()
+    useCopyDayOperations()
 
   return (
     <>

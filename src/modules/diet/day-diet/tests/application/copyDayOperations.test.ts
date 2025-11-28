@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
+import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -42,11 +42,11 @@ function makeMockDayDiet(
 }
 
 describe('CopyDayOperations', () => {
-  let operations: ReturnType<typeof createCopyDayOperations>
+  let operations: ReturnType<typeof useCopyDayOperations>
 
   beforeEach(() => {
     vi.clearAllMocks()
-    operations = createCopyDayOperations(mockRepository)
+    operations = useCopyDayOperations(mockRepository)
   })
 
   describe('initial state', () => {

@@ -8,9 +8,7 @@ import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
-export function createCopyDayOperations(
-  repository = createDayDietRepository(),
-) {
+export function useCopyDayOperations(repository = createDayDietRepository()) {
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
