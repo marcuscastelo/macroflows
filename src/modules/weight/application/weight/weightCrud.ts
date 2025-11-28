@@ -1,12 +1,12 @@
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
+import { weightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import {
   type NewWeight,
   type Weight,
 } from '~/modules/weight/domain/weight/weight'
 import { type WeightCacheRepository } from '~/modules/weight/domain/weight/weightCacheRepository'
 import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
-import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
 import { logging } from '~/shared/utils/logging'
 
 export function createWeightCrudService(deps: {
