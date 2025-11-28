@@ -1,6 +1,7 @@
 ---
 description: "Prompt for generating an AGENTS.md file for a repository"
-mode: "agent"
+name: create-agentsmd
+agent: prompt-engineer
 ---
 
 # Create high‑quality AGENTS.md file

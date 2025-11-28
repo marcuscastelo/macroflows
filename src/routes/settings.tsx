@@ -4,6 +4,7 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { AuthSettings } from '~/sections/settings/components/AuthSettings'
+import { DataSettings } from '~/sections/settings/components/DataSettings'
 import { ToastSettings } from '~/sections/settings/components/ToastSettings'
 import { Toggle } from '~/sections/settings/components/Toggle'
 
@@ -102,6 +103,10 @@ export default function Page() {
 
             <div class="mt-8">
               <AuthSettings />
+            </div>
+
+            <div class="mt-8">
+              <DataSettings />
             </div>
 
             <div class="mt-8">
