@@ -1,13 +1,6 @@
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
-  <span style="font-weight: bold; font-size: 2em;">Macroflows</span>
-  <div style="">
-    <!-- English version -->
-    <i>English</i>
-    |
-    <!-- Portuguese version -->
-    <a href="docs/locale/pt-br/README.md">Português (Brasil)</a>
-  </div>
-</div>
+# Macroflows 
+###  [![EN](https://img.shields.io/badge/lang-EN_(cur.)-lightgray)](docs/locale/pt-br/README.md) [![PT-BR](https://img.shields.io/badge/lang-PT--BR-blue)](README.md)
+
 
 A modular, high-performance nutrition tracking platform built with SolidJS, strong typing, and clean architecture principles.
 
