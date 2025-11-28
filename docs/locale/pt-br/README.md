@@ -1,13 +1,17 @@
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
-  <span style="font-weight: bold; font-size: 2em;">Macroflows</span>
-  <div style="">
-    <!-- English version -->
-    <a href="README.md">English</a>
-    |
-    <!-- Portuguese version -->
-    <i>Português (Brasil)</i>
-  </div>
-</div>
+<table>
+<tr>
+<td>
+  
+# Macroflows
+
+</td>
+<td align="right">
+
+[English](README.md) • [Português (Brasil)](docs/locale/pt-br/README.md)
+
+</td>
+</tr>
+</table>
 
 Uma plataforma modular e de alto desempenho para rastreamento nutricional, construída com SolidJS, tipagem forte e princípios de arquitetura limpa.
 
