@@ -12,5 +12,22 @@ fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$DIR/.."
-VERSION=$("$DIR/semver.sh")
+
+# Try to get version from semver.sh, with fallback on failure
+VERSION=""
+if VERSION=$("$DIR/semver.sh" 2>&1); then
+  # semver.sh succeeded
+  :
+else
+  # semver.sh failed, use fallback
+  echo "Warning: semver.sh failed, using fallback version from git describe" >&2
+  VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-unknown")
+fi
+
+# Ensure we have a version
+if [ -z "$VERSION" ]; then
+  echo "Warning: Could not determine version, using fallback" >&2
+  VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-unknown")
+fi
+
 echo '{"version": "'$VERSION'"}' > "$ROOT/src/app-version.json"

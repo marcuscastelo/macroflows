@@ -10,10 +10,141 @@ MAX_RETRIES="${SEMVER_MAX_RETRIES:-3}"
 INITIAL_RETRY_DELAY="${SEMVER_INITIAL_RETRY_DELAY:-2}"
 MAX_RETRY_DELAY="${SEMVER_MAX_RETRY_DELAY:-60}"
 DEBUG_MODE="${SEMVER_DEBUG:-false}"
+# Flag to track if we should use fallback mode
+USE_FALLBACK="${SEMVER_USE_FALLBACK:-false}"
 
 debug_log() {
   if [ "$DEBUG_MODE" = "true" ]; then
     echo "[DEBUG] $*" >&2
+  fi
+}
+
+# Check if a string is valid JSON
+is_valid_json() {
+  local input="$1"
+  echo "$input" | jq empty 2>/dev/null
+}
+
+# Safe API call with JSON validation and rate limit handling
+# Returns the JSON response on success, empty string on failure
+safe_api_call() {
+  local url="$1"
+  local attempt=0
+  local delay="$INITIAL_RETRY_DELAY"
+  local response http_status rate_limit_remaining rate_limit_reset
+  
+  while [ $attempt -lt "$MAX_RETRIES" ]; do
+    debug_log "API call attempt $((attempt + 1))/$MAX_RETRIES for $url"
+    
+    response=$(curl -s -w "\n%{http_code}" -D /tmp/semver_api_headers_$$.txt "$url" 2>&1)
+    http_status=$(echo "$response" | tail -n1)
+    response=$(echo "$response" | sed '$d')
+    
+    # Extract rate limit info from headers if available
+    if [ -f /tmp/semver_api_headers_$$.txt ]; then
+      rate_limit_remaining=$(grep -i "^x-ratelimit-remaining:" /tmp/semver_api_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rate_limit_reset=$(grep -i "^x-ratelimit-reset:" /tmp/semver_api_headers_$$.txt | awk '{print $2}' | tr -d '\r')
+      rm -f /tmp/semver_api_headers_$$.txt
+      
+      debug_log "Rate limit remaining: ${rate_limit_remaining:-unknown}"
+    fi
+    
+    case "$http_status" in
+      200)
+        # Verify response is valid JSON before returning
+        if is_valid_json "$response"; then
+          debug_log "API call successful (HTTP 200, valid JSON)"
+          echo "$response"
+          return 0
+        else
+          echo "Warning: GitHub API returned non-JSON response" >&2
+          debug_log "Non-JSON response: $response"
+          return 1
+        fi
+        ;;
+      
+      403)
+        if echo "$response" | grep -qi "rate limit"; then
+          echo "Warning: GitHub API rate limit exceeded" >&2
+          if [ -n "$rate_limit_reset" ]; then
+            local current_time
+            current_time=$(date +%s)
+            local wait_time=$((rate_limit_reset - current_time))
+            if [ $wait_time -gt 0 ]; then
+              echo "Rate limit resets in $wait_time seconds" >&2
+            fi
+          fi
+        else
+          echo "Warning: GitHub API access forbidden (HTTP 403)" >&2
+        fi
+        return 1
+        ;;
+      
+      404)
+        echo "Warning: GitHub API resource not found (HTTP 404)" >&2
+        return 1
+        ;;
+      
+      5*)
+        echo "Warning: GitHub API server error (HTTP $http_status)" >&2
+        if [ $attempt -lt $((MAX_RETRIES - 1)) ]; then
+          echo "Retrying after ${delay}s..." >&2
+          sleep $delay
+          delay=$((delay * 2))
+          if [ $delay -gt "$MAX_RETRY_DELAY" ]; then
+            delay="$MAX_RETRY_DELAY"
+          fi
+          attempt=$((attempt + 1))
+          continue
+        fi
+        return 1
+        ;;
+      
+      *)
+        # Check if response looks like a network error or blocked message
+        if echo "$response" | grep -qiE "(blocked|refused|timeout|connection)"; then
+          echo "Warning: Network error accessing GitHub API" >&2
+          debug_log "Network error response: $response"
+        else
+          echo "Warning: Unexpected HTTP status $http_status from GitHub API" >&2
+          debug_log "Response: $response"
+        fi
+        return 1
+        ;;
+    esac
+    
+    attempt=$((attempt + 1))
+  done
+  
+  echo "Warning: GitHub API call failed after $MAX_RETRIES attempts" >&2
+  return 1
+}
+
+# Get fallback version using only local git operations
+get_fallback_version() {
+  local current_branch="$1"
+  local tag_version commit_count commit_hash
+  
+  debug_log "Using fallback version generation (local git only)"
+  
+  # Try to get the latest tag and commit count since that tag
+  tag_version=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+  commit_count=$(git rev-list --count "${tag_version}..HEAD" 2>/dev/null || echo "0")
+  commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  
+  # Determine suffix based on branch
+  local suffix=""
+  if [[ "$current_branch" =~ ^rc/ ]]; then
+    suffix="-rc"
+  elif [[ "$current_branch" != "stable" ]]; then
+    suffix="-dev"
+  fi
+  
+  # Build the fallback version
+  if [ "$commit_count" = "0" ] && [ -z "$suffix" ]; then
+    echo "$tag_version"
+  else
+    echo "${tag_version}${suffix}.${commit_count}+${commit_hash}"
   fi
 }
 
@@ -184,25 +315,41 @@ get_rc_version() {
   rc_sha=$(get_sha_for_branch "$current_branch")
 
   rc_count=$(get_commit_count_between "$stable_sha" "$rc_sha")
+  # Handle case where commit count failed
+  if [ "$rc_count" = "?" ]; then
+    debug_log "Commit count failed for RC, using fallback"
+    get_fallback_version "$current_branch"
+    return
+  fi
   echo "${base_version}-rc.${rc_count}"
 }
 
 get_dev_version() {
   local current_branch="$1"
   local base_version stable_sha rc_branch rc_sha dev_sha rc_count dev_count issue_number
+  local branches_response
 
   base_version=$(get_next_minor_version "$(get_latest_release_tag)")
   stable_sha=$(get_sha_for_branch stable)
   dev_sha=$(get_sha_for_branch "$current_branch")
 
-  rc_branch=$(curl -s "https://api.github.com/repos/marcuscastelo/macroflows/branches" \
-  | jq -r '.[].name' \
-  | grep '^rc/' \
-  | sort \
-  | tail -n1)
+  # Try to get RC branch from GitHub API with proper error handling
+  rc_branch=""
+  branches_response=$(safe_api_call "https://api.github.com/repos/$OWNER_REPO/branches")
+  if [ $? -eq 0 ] && [ -n "$branches_response" ]; then
+    rc_branch=$(echo "$branches_response" | jq -r '.[].name' 2>/dev/null | grep '^rc/' | sort | tail -n1)
+  else
+    debug_log "Could not fetch branches from GitHub API, proceeding without RC branch info"
+  fi
 
   if [ -z "$rc_branch" ]; then
     dev_count=$(get_commit_count_between "$stable_sha" "$dev_sha")
+    # Handle case where commit count failed
+    if [ "$dev_count" = "?" ]; then
+      debug_log "Commit count failed, using fallback"
+      get_fallback_version "$current_branch"
+      return
+    fi
     echo "${base_version}-dev.0.${dev_count}"
     return
   fi
@@ -211,6 +358,14 @@ get_dev_version() {
 
   rc_count=$(get_commit_count_between "$stable_sha" "$rc_sha")
   dev_count=$(get_commit_count_between "$rc_sha" "$dev_sha")
+  
+  # Handle case where commit counts failed
+  if [ "$rc_count" = "?" ] || [ "$dev_count" = "?" ]; then
+    debug_log "Commit count failed, using fallback"
+    get_fallback_version "$current_branch"
+    return
+  fi
+  
   issue_number=$(get_issue_number "$current_branch")
 
   local version="${base_version}-dev.${rc_count}.${dev_count}"
@@ -235,6 +390,26 @@ main() {
   fi
 
   get_dev_version "$current_branch"
+}
+
+# Wrapper that catches errors and falls back gracefully
+run_with_fallback() {
+  local current_branch
+  current_branch=$(get_current_branch)
+  
+  # Try the main function, capture output and exit status
+  local version exit_status
+  version=$(main 2>&1)
+  exit_status=$?
+  
+  if [ $exit_status -eq 0 ] && [ -n "$version" ] && [[ ! "$version" =~ ^(Error|Warning):.*$ ]]; then
+    echo "$version"
+    return 0
+  else
+    debug_log "Main version generation failed, using fallback"
+    get_fallback_version "$current_branch"
+    return 0
+  fi
 }
 
 show_help() {
@@ -303,4 +478,4 @@ if [ "$1" = "--verbose" ]; then
   set -x
 fi
 
-main "$@"
+run_with_fallback "$@"
