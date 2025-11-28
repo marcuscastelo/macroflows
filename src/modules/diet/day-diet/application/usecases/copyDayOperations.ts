@@ -31,7 +31,7 @@ export type CopyDayOperations = {
   resetState: () => void
 }
 
-function createCopyDayOperations(
+export function createCopyDayOperations(
   repository = createDayDietRepository(),
 ): CopyDayOperations {
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
@@ -126,9 +126,3 @@ function createCopyDayOperations(
     resetState,
   }
 }
-
-const defaultOperations = createCopyDayOperations()
-
-export { createCopyDayOperations }
-export const { state, loadPreviousDays, copyDay, resetState } =
-  defaultOperations
