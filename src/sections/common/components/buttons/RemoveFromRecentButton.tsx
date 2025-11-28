@@ -6,10 +6,7 @@ import {
 } from '~/modules/diet/template/domain/template'
 import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
-import {
-  showError,
-  showPromise,
-} from '~/modules/toast/application/toastManager'
+import { showPromise } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { logging } from '~/shared/utils/logging'
@@ -28,10 +25,6 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
     const templateId = props.template.id
 
     const userId = currentUserId()
-    if (userId === undefined) {
-      showError('Usuário não autenticado')
-      return
-    }
 
     void showPromise(
       deleteRecentFoodByReference(userId, templateType, templateId),

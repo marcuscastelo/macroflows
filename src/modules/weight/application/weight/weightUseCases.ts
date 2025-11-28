@@ -1,4 +1,3 @@
-import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import {
   userWeights,
@@ -12,10 +11,6 @@ import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
 async function insertWeight(weight: Weight['weight']) {
   const userId = currentUserId()
-  if (userId === undefined) {
-    showError('Usuário não autenticado')
-    return
-  }
 
   await weightCrudService.insertWeight(
     createNewWeight({

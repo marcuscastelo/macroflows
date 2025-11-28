@@ -142,10 +142,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
 
     try {
       const userId = currentUserId()
-      if (userId === undefined) {
-        showError('Usuário não autenticado')
-        return
-      }
+
       // Create new unified recipe directly from Item children
       const newUnifiedRecipe = createNewRecipe({
         name:

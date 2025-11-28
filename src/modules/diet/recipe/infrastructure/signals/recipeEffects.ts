@@ -22,10 +22,7 @@ export function initializeRecipeEffects() {
     createEffect(() => {
       const userId = currentUserId()
       logging.debug(`Recipe cache effect - user changed to ${userId}`)
-      if (userId === undefined) {
-        logging.error('User ID is undefined')
-        return
-      }
+
       runCacheManagement({ userId })
     })
   })
