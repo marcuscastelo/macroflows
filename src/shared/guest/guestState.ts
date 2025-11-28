@@ -1,4 +1,4 @@
-import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
+import { getCurrentUser } from '~/modules/auth/application/store/authState'
 
 /**
  * Guest mode state management.

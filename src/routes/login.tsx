@@ -2,7 +2,7 @@ import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
 import { signIn } from '~/modules/auth/application/services/authService'
-import { isAuthLoading } from '~/modules/auth/application/usecases/authState'
+import { isAuthLoading } from '~/modules/auth/application/store/authState'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'

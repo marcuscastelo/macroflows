@@ -7,7 +7,7 @@ import {
 import {
   getCurrentUser,
   isAuthenticated,
-} from '~/modules/auth/application/usecases/authState'
+} from '~/modules/auth/application/store/authState'
 import {
   currentDayDiet,
   setTargetDay,

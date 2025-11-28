@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
+import { getCurrentUser } from '~/modules/auth/application/store/authState'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 

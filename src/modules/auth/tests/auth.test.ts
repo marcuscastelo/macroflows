@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import * as authModule1 from '~/modules/auth/application/services/authService'
-import * as authModule2 from '~/modules/auth/application/usecases/authState'
+import * as authModule2 from '~/modules/auth/application/store/authState'
 import { createAuthGatewayMock } from '~/modules/auth/tests/utils/mockAuthGateway'
 
 const authModule = {

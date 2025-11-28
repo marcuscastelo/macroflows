@@ -1,6 +1,6 @@
 import { type Accessor, createSignal, Show } from 'solid-js'
 
-import { getAuthState } from '~/modules/auth/application/usecases/authState'
+import { getAuthState } from '~/modules/auth/application/store/authState'
 import { type User } from '~/modules/user/domain/user'
 import { UserInitialFallback } from '~/sections/common/components/icons/UserInitialFallback'
 

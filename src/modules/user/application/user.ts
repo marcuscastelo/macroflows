@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
+import { getCurrentUser } from '~/modules/auth/application/store/authState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import {
   demoteUserToNewUser,

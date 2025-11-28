@@ -4,7 +4,7 @@ import { createEffect, type JSXElement, Show } from 'solid-js'
 import {
   isAuthenticated,
   isAuthLoading,
-} from '~/modules/auth/application/usecases/authState'
+} from '~/modules/auth/application/store/authState'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type GuestGuardProps = {

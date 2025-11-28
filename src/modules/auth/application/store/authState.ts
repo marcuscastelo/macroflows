@@ -1,5 +1,15 @@
+import { createSignal } from 'solid-js'
+
 import { type AuthState, type AuthUser } from '~/modules/auth/domain/auth'
-import { authState } from '~/modules/auth/infrastructure/signals/authState'
+
+// Auth state signals
+export const [authState, setAuthState] = createSignal<AuthState>({
+  user: null,
+  session: null,
+  isLoading: true,
+  isAuthenticated: false,
+})
+
 /**
  * Get current auth state
  */
