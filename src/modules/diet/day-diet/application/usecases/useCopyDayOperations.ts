@@ -1,14 +1,14 @@
 import { createSignal } from 'solid-js'
 
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
   type DayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
-export function useCopyDayUseCase(repository = createDayDietRepository()) {
+export function useCopyDayUseCase() {
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
@@ -30,7 +30,7 @@ export function useCopyDayUseCase(repository = createDayDietRepository()) {
 
     setIsLoadingPreviousDays(true)
     try {
-      const days = await repository.fetchDayDietsByUserIdBeforeDate(
+      const days = await dayUseCases.fetchDayDietsByUserIdBeforeDate(
         userId,
         beforeDay,
         limit,
@@ -74,9 +74,9 @@ export function useCopyDayUseCase(repository = createDayDietRepository()) {
       })
 
       if (existingDay) {
-        await repository.updateDayDietById(existingDay.id, newDay)
+        await dayUseCases.updateDayDietById(existingDay.id, newDay)
       } else {
-        await repository.insertDayDiet(newDay)
+        await dayUseCases.insertDayDiet(newDay)
       }
     } catch (error) {
       logging.error('CopyDayOperations copyDay error:', error)

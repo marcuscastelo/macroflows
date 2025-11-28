@@ -1,4 +1,3 @@
-import { dayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import {
   type DayDiet,
   type NewDayDiet,
@@ -9,14 +8,10 @@ import { createGuestDayGateway } from '~/modules/diet/day-diet/infrastructure/gu
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
 import { isGuestMode } from '~/shared/guest/guestState'
-import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseDayGateway()
 const guestGateway = createGuestDayGateway()
 
-/**
- * Returns the appropriate gateway based on guest mode state
- */
 function getGateway(): DayGateway {
   return isGuestMode() ? guestGateway : supabaseGateway
 }
@@ -32,106 +27,40 @@ export function createDayDietRepository(): DayRepository {
   }
 }
 
-export async function fetchDayDietById(
-  dayId: DayDiet['id'],
-): Promise<DayDiet | null> {
-  try {
-    const dayDiet = await getGateway().fetchDayDietById(dayId)
-    if (dayDiet === null) {
-      dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-      return null
-    }
-
-    dayCacheStore.upsertToCache(dayDiet)
-    return dayDiet
-  } catch (error) {
-    logging.error('DayDiet fetch error:', error)
-    dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-    return null
-  }
+async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet | null> {
+  return await getGateway().fetchDayDietById(dayId)
 }
 
-export async function fetchDayDietByUserIdAndTargetDay(
+async function fetchDayDietByUserIdAndTargetDay(
   userId: User['uuid'],
   targetDay: string,
 ): Promise<DayDiet | null> {
-  try {
-    const currentDayDiet = await getGateway().fetchDayDietByUserIdAndTargetDay(
-      userId,
-      targetDay,
-    )
-
-    if (currentDayDiet === null) {
-      dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
-      return null
-    }
-    dayCacheStore.upsertToCache(currentDayDiet)
-    return currentDayDiet
-  } catch (error) {
-    logging.error('DayDiet fetch error:', error)
-    dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
-    return null
-  }
+  return await getGateway().fetchDayDietByUserIdAndTargetDay(userId, targetDay)
 }
 
-export async function fetchDayDietsByUserIdBeforeDate(
+async function fetchDayDietsByUserIdBeforeDate(
   userId: User['uuid'],
   beforeDay: string,
   limit: number = 30,
 ): Promise<readonly DayDiet[]> {
-  try {
-    const previousDays = await getGateway().fetchDayDietsByUserIdBeforeDate(
-      userId,
-      beforeDay,
-      limit,
-    )
-    for (const day of previousDays) {
-      dayCacheStore.upsertToCache(day)
-    }
-    return previousDays
-  } catch (error) {
-    logging.error('DayDiet fetch error:', error)
-    return []
-  }
+  return await getGateway().fetchDayDietsByUserIdBeforeDate(
+    userId,
+    beforeDay,
+    limit,
+  )
 }
 
-export async function insertDayDiet(
-  dayDiet: NewDayDiet,
-): Promise<DayDiet | null> {
-  try {
-    const insertedDayDiet = await getGateway().insertDayDiet(dayDiet)
-    if (insertedDayDiet !== null) {
-      dayCacheStore.upsertToCache(insertedDayDiet)
-    }
-    return insertedDayDiet
-  } catch (error) {
-    logging.error('DayDiet insert error:', error)
-    return null
-  }
+async function insertDayDiet(dayDiet: NewDayDiet): Promise<DayDiet | null> {
+  return await getGateway().insertDayDiet(dayDiet)
 }
 
-export async function updateDayDietById(
+async function updateDayDietById(
   dayId: DayDiet['id'],
   dayDiet: NewDayDiet,
 ): Promise<DayDiet | null> {
-  try {
-    const updatedDayDiet = await getGateway().updateDayDietById(dayId, dayDiet)
-
-    if (updatedDayDiet !== null) {
-      dayCacheStore.upsertToCache(updatedDayDiet)
-    }
-    return updatedDayDiet
-  } catch (error) {
-    logging.error('DayDiet update error:', error)
-    return null
-  }
+  return await getGateway().updateDayDietById(dayId, dayDiet)
 }
 
-export async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {
-  try {
-    await getGateway().deleteDayDietById(dayId)
-    dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-  } catch (error) {
-    logging.error('DayDiet delete error:', error)
-  }
+async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {
+  return await getGateway().deleteDayDietById(dayId)
 }

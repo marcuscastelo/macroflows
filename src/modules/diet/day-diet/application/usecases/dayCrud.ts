@@ -1,17 +1,17 @@
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 
-function useDayCrudUseCase(repository = createDayDietRepository()) {
+function useDayCrudUseCase() {
   const fetchTargetDay = async (
     userId: User['uuid'],
     targetDay: string,
   ): Promise<void> => {
-    await repository.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
+    await dayUseCases.fetchDayDietByUserIdAndTargetDay(userId, targetDay)
   }
 
   const fetchPreviousDayDiets = async (
@@ -19,7 +19,7 @@ function useDayCrudUseCase(repository = createDayDietRepository()) {
     beforeDay: string,
     limit: number = 30,
   ): Promise<readonly DayDiet[]> => {
-    return await repository.fetchDayDietsByUserIdBeforeDate(
+    return await dayUseCases.fetchDayDietsByUserIdBeforeDate(
       userId,
       beforeDay,
       limit,
@@ -28,7 +28,7 @@ function useDayCrudUseCase(repository = createDayDietRepository()) {
 
   const insertDayDiet = async (dayDiet: NewDayDiet): Promise<void> => {
     await showPromise(
-      repository.insertDayDiet(dayDiet),
+      dayUseCases.insertDayDiet(dayDiet),
       {
         loading: 'Criando dia de dieta...',
         success: 'Dia de dieta criado com sucesso',
@@ -43,7 +43,7 @@ function useDayCrudUseCase(repository = createDayDietRepository()) {
     dayDiet: NewDayDiet,
   ): Promise<void> => {
     await showPromise(
-      repository.updateDayDietById(dayId, dayDiet),
+      dayUseCases.updateDayDietById(dayId, dayDiet),
       {
         loading: 'Atualizando dieta...',
         success: 'Dieta atualizada com sucesso',
@@ -55,7 +55,7 @@ function useDayCrudUseCase(repository = createDayDietRepository()) {
 
   const deleteDayDiet = async (dayId: DayDiet['id']): Promise<void> => {
     await showPromise(
-      repository.deleteDayDietById(dayId),
+      dayUseCases.deleteDayDietById(dayId),
       {
         loading: 'Deletando dieta...',
         success: 'Dieta deletada com sucesso',
