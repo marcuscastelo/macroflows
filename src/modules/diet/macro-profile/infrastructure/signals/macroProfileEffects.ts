@@ -2,7 +2,7 @@ import { createEffect, createRoot, untrack } from 'solid-js'
 
 import { fetchUserMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
-import { macroProfileStateStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileStateStore'
+import { macroProfileStateStore } from '~/modules/diet/macro-profile/application/store/macroProfileStateStore'
 import { currentUserId } from '~/modules/user/application/user'
 import { logging } from '~/shared/utils/logging'
 
