@@ -1,7 +1,7 @@
 import { type Accessor } from 'solid-js'
 
-import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
 import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'

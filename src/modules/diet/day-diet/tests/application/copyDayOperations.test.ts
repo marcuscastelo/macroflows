@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
+import { useCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import {
   createNewDayDiet,
   type DayDiet,
