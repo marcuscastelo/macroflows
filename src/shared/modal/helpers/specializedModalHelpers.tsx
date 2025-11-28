@@ -3,7 +3,7 @@
  * These functions encapsulate the most frequent modal usage patterns to reduce code duplication.
  */
 
-import { deleteMacroProfile } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   showError,
@@ -319,7 +319,8 @@ export function openRestoreProfileModal(
             type="button"
             class="btn btn-primary"
             onClick={() => {
-              deleteMacroProfile(config.currentProfile.id)
+              macroProfileUseCases
+                .deleteMacroProfile(config.currentProfile.id)
                 .then(() => {
                   showSuccess(
                     'Perfil antigo restaurado com sucesso, se necessário, atualize a página',

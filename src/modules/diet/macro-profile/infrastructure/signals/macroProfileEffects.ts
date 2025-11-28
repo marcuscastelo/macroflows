@@ -1,7 +1,7 @@
 import { createEffect, createRoot, untrack } from 'solid-js'
 
 import { macroProfileStateStore } from '~/modules/diet/macro-profile/application/store/macroProfileStateStore'
-import { fetchUserMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { currentUserId } from '~/modules/user/application/user'
 import { logging } from '~/shared/utils/logging'
@@ -35,7 +35,7 @@ export function initializeMacroProfileEffects() {
       const userId = macroProfileStateStore.selectedUserId()
       if (userId !== null) {
         logging.debug(`Fetching macro profiles for user ${userId}`)
-        void fetchUserMacroProfiles(userId)
+        void macroProfileUseCases.fetchUserMacroProfiles(userId)
       }
     })
   })

@@ -13,10 +13,7 @@ import {
   FAT_CALORIES,
   PROTEIN_CALORIES,
 } from '~/modules/diet/macro-nutrients/domain/macroExt'
-import {
-  insertMacroProfile,
-  updateMacroProfile,
-} from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import {
   createNewMacroProfile,
   type MacroProfile,
@@ -104,18 +101,20 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     logging.info('[ProfilePage] Updating profile', profile)
 
     // Same day, update
-    updateMacroProfile(
-      profile.id,
-      createNewMacroProfile({
-        user_id: profile.user_id,
-        target_day: profile.target_day,
-        gramsPerKgCarbs: profile.gramsPerKgCarbs,
-        gramsPerKgProtein: profile.gramsPerKgProtein,
-        gramsPerKgFat: profile.gramsPerKgFat,
-      }),
-    ).catch((error) => {
-      showError(error, {}, 'Erro ao atualizar perfil de macro')
-    })
+    macroProfileUseCases
+      .updateMacroProfile(
+        profile.id,
+        createNewMacroProfile({
+          user_id: profile.user_id,
+          target_day: profile.target_day,
+          gramsPerKgCarbs: profile.gramsPerKgCarbs,
+          gramsPerKgProtein: profile.gramsPerKgProtein,
+          gramsPerKgFat: profile.gramsPerKgFat,
+        }),
+      )
+      .catch((error) => {
+        showError(error, {}, 'Erro ao atualizar perfil de macro')
+      })
   } else if (
     profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
@@ -123,7 +122,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     logging.info('[ProfilePage] Inserting profile', profile)
 
     // Past day, insert with new date
-    void insertMacroProfile(
+    void macroProfileUseCases.insertMacroProfile(
       createNewMacroProfile({
         ...profile,
         target_day: new Date(getTodayYYYYMMDD()),
