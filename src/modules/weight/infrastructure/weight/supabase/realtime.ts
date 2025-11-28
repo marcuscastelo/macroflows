@@ -1,4 +1,4 @@
-import { weightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { weightSchema } from '~/modules/weight/domain/weight/weight'
 import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/weight/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
@@ -21,21 +21,21 @@ export function initializeWeightRealtime(): void {
       switch (event.eventType) {
         case 'INSERT': {
           if (event.new !== undefined) {
-            weightCacheStore.upsertToCache(event.new)
+            weightUseCases.temp_bypass_get_store().upsertToCache(event.new)
           }
           break
         }
 
         case 'UPDATE': {
           if (event.new) {
-            weightCacheStore.upsertToCache(event.new)
+            weightUseCases.temp_bypass_get_store().upsertToCache(event.new)
           }
           break
         }
 
         case 'DELETE': {
           if (event.old) {
-            weightCacheStore.removeFromCache({
+            weightUseCases.temp_bypass_get_store().removeFromCache({
               by: 'id',
               value: event.old.id,
             })

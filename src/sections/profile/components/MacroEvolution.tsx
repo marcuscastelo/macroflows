@@ -7,7 +7,7 @@ import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProf
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
@@ -19,11 +19,11 @@ export function MacroEvolution() {
         Evolução de Macronutrientes
       </h5>
       <div class="mx-5 lg:mx-20">
-        <AllMacrosChart weights={userWeights} />
-        <CaloriesChart weights={userWeights} />
-        <ProteinChart weights={userWeights} />
-        <FatChart weights={userWeights} />
-        <CarbsChart weights={userWeights} />
+        <AllMacrosChart weights={weightUseCases.weights} />
+        <CaloriesChart weights={weightUseCases.weights} />
+        <ProteinChart weights={weightUseCases.weights} />
+        <FatChart weights={weightUseCases.weights} />
+        <CarbsChart weights={weightUseCases.weights} />
       </div>
     </div>
   )

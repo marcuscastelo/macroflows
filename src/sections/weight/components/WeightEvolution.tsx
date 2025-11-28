@@ -9,7 +9,6 @@ import {
 } from '~/modules/weight/application/chart/weightChartSettings'
 import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
 import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -44,7 +43,7 @@ export function WeightEvolution() {
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
-              weights={userWeights}
+              weights={weightUseCases.weights}
               desiredWeight={weightChartUseCases.desiredWeight()}
               type={weightChartType()}
             />
@@ -77,7 +76,7 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...userWeights()].reverse().slice(0, 10)}
+              each={[...weightUseCases.weights()].reverse().slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

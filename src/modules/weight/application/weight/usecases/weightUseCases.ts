@@ -1,13 +1,15 @@
+import { createRoot } from 'solid-js'
+
 import { currentUserId } from '~/modules/user/application/user'
-import {
-  userWeights,
-  weightCrudService,
-} from '~/modules/weight/application/weight/weightState'
+import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
+import { weightCrudService } from '~/modules/weight/application/weight/weightState'
 import {
   createNewWeight,
   type Weight,
 } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
+
+const cache = createRoot(() => createWeightCacheStore())
 
 async function insertWeight(weight: Weight['weight']) {
   const userId = currentUserId()
@@ -22,8 +24,10 @@ async function insertWeight(weight: Weight['weight']) {
 }
 
 export const weightUseCases = {
-  latest: () => WeightsExt.of(userWeights()).latest(),
-  oldest: () => WeightsExt.of(userWeights()).oldest(),
-  effectiveAt: (date: Date) => WeightsExt.of(userWeights()).effectiveAt(date),
+  weights: () => cache.weights(),
+  temp_bypass_get_store: () => cache,
+  latest: () => WeightsExt.of(cache.weights()).latest(),
+  oldest: () => WeightsExt.of(cache.weights()).oldest(),
+  effectiveAt: (date: Date) => WeightsExt.of(cache.weights()).effectiveAt(date),
   insertWeight,
 }

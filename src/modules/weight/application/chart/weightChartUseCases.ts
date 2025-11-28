@@ -1,5 +1,5 @@
 import { currentUser } from '~/modules/user/application/user'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
@@ -183,7 +183,7 @@ function desiredWeight(): number {
 
 function weightProgress() {
   return calculateWeightProgress(
-    userWeights(),
+    weightUseCases.weights(),
     desiredWeight(),
     currentUser()?.diet ?? 'cut',
   )

@@ -1,6 +1,6 @@
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
-import { weightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import {
   type NewWeight,
   type Weight,
@@ -34,7 +34,7 @@ export function createWeightCrudService(deps: {
           error: 'Falha ao inserir peso',
         },
       )
-      weightCacheStore.upsertToCache(weight)
+      weightUseCases.temp_bypass_get_store().upsertToCache(weight)
       return weight
     } catch (error) {
       logging.error('Weight operation error:', error)
@@ -52,7 +52,7 @@ export function createWeightCrudService(deps: {
           error: 'Falha ao atualizar peso',
         },
       )
-      weightCacheStore.upsertToCache(weight)
+      weightUseCases.temp_bypass_get_store().upsertToCache(weight)
       return weight
     } catch (error) {
       logging.error('Weight operation error:', error)
@@ -67,7 +67,9 @@ export function createWeightCrudService(deps: {
         success: 'Peso deletado com sucesso',
         error: 'Falha ao deletar peso',
       })
-      weightCacheStore.removeFromCache({ by: 'id', value: weightId })
+      weightUseCases
+        .temp_bypass_get_store()
+        .removeFromCache({ by: 'id', value: weightId })
     } catch (error) {
       logging.error('Weight operation error:', error)
       throw error
