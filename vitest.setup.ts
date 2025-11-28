@@ -1,5 +1,20 @@
 import { vi } from 'vitest'
 
+// Mock logging module to prevent console output during tests
+vi.mock('~/shared/utils/logging', () => ({
+  __esModule: true,
+  logging: {
+    debug: (_message: string, _data?: Record<string, unknown>) => {},
+    info: (_message: string, _data?: Record<string, unknown>) => {},
+    warn: (_message: string, _data?: Record<string, unknown>) => {},
+    error: (
+      _message: string,
+      _error?: unknown,
+      _data?: Record<string, unknown>,
+    ) => {},
+  },
+}))
+
 vi.mock('solid-toast', () => ({
   __esModule: true,
   default: {
