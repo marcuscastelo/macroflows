@@ -17,13 +17,15 @@ import {
   updateRecipePreparedMultiplier,
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
+import { showError } from '~/modules/toast/application/toastManager'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemListView } from '~/sections/item/components/ItemListView'
+import { SingleItemConversionIndicator } from '~/sections/recipe/components/SingleItemConversionIndicator'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -122,12 +124,21 @@ export function RecipeEditView(props: RecipeEditViewProps) {
             )}
             preparedMultiplier={recipe().prepared_multiplier}
             onPreparedQuantityChange={({ newMultiplier }) => {
-              const newRecipe = updateRecipePreparedMultiplier(
-                recipe(),
-                newMultiplier(),
-              )
+              try {
+                const newRecipe = updateRecipePreparedMultiplier(
+                  recipe(),
+                  newMultiplier(),
+                )
 
-              setRecipe(newRecipe)
+                setRecipe(newRecipe)
+              } catch (error) {
+                showError(
+                  error instanceof Error
+                    ? error
+                    : new Error('Multiplicador deve ser um número positivo'),
+                  { context: 'user-action' },
+                )
+              }
             }}
           />
           <div class="text-gray-400 ml-1">Peso (pronto)</div>
@@ -145,6 +156,7 @@ export function RecipeEditView(props: RecipeEditViewProps) {
           <div class="text-gray-400 ml-1">Multiplicador</div>
         </div>
       </div>
+      <SingleItemConversionIndicator />
       {props.content}
     </div>
   )
@@ -224,12 +236,21 @@ function PreparedMultiplier() {
           event.target.select()
         }}
         onFieldCommit={(newMultiplier) => {
-          const newRecipe = updateRecipePreparedMultiplier(
-            recipe(),
-            newMultiplier ?? 1,
-          )
+          try {
+            const newRecipe = updateRecipePreparedMultiplier(
+              recipe(),
+              newMultiplier ?? 1,
+            )
 
-          setRecipe(newRecipe)
+            setRecipe(newRecipe)
+          } catch (error) {
+            showError(
+              error instanceof Error
+                ? error
+                : new Error('Multiplicador deve ser um número positivo'),
+              { context: 'user-action' },
+            )
+          }
         }}
         style={{ width: '100%' }}
       />

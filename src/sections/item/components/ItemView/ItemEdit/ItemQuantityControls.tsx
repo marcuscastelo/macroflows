@@ -6,8 +6,8 @@ import {
   untrack,
 } from 'solid-js'
 
+import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
-import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import {
   isFoodItem,
   isRecipeItem,
@@ -28,9 +28,25 @@ export type ItemQuantityControlsProps = {
 }
 
 export function ItemQuantityControls(props: ItemQuantityControlsProps) {
+  const recipeResource = recipeItemUseCases.createRecipeResource(() =>
+    props.itemDraft(),
+  )
+
   createEffect(() => {
     const newQuantity = props.quantityField.value() ?? 0.1
     const currentItem = untrack(props.itemDraft)
+    const recipe = recipeResource.value()
+
+    if (
+      recipeResource.value.loading ||
+      recipe === null ||
+      recipe === undefined
+    ) {
+      logging.debug(
+        '[QuantityControls] Recipe resource loading or unavailable, skipping quantity update',
+      )
+      return
+    }
 
     logging.debug(
       '[QuantityControls] Update unified item quantity from field',
@@ -38,21 +54,9 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
     )
 
     if (isRecipeItem(currentItem)) {
-      // For recipe items, scale children proportionally
-      try {
-        const scaledItem = RecipeItemExt.scaleQuantityAndChildren(
-          currentItem,
-          newQuantity,
-        )
-        props.setItemDraft({ ...scaledItem })
-      } catch (error) {
-        logging.debug('[QuantityControls] Error scaling recipe:', { error })
-        // Fallback to simple quantity update if scaling fails
-        props.setItemDraft({
-          ...currentItem,
-          quantity: newQuantity,
-        })
-      }
+      props.setItemDraft(
+        recipeItemUseCases.withEditedQuantity(currentItem, recipe, newQuantity),
+      )
     } else {
       // For food items, just update quantity
       props.setItemDraft({

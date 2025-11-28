@@ -13,16 +13,14 @@ import {
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import {
   RecipeEditContent,
   RecipeEditHeader,
 } from '~/sections/recipe/components/RecipeEditView'
 import { RecipeEditContextProvider } from '~/sections/recipe/context/RecipeEditContext'
-import {
-  openDeleteConfirmModal,
-  openItemEditModal,
-  openTemplateSearchModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
+import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
+import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
 import { logging } from '~/shared/utils/logging'
 
 export type RecipeEditModalProps = {

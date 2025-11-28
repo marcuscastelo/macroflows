@@ -2,7 +2,6 @@ import {
   type Accessor,
   createEffect,
   createMemo,
-  createResource,
   createSignal,
   mergeProps,
   Show,
@@ -10,7 +9,7 @@ import {
 } from 'solid-js'
 
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
@@ -27,20 +26,16 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import {
   deleteRecipe,
-  fetchRecipeById,
   updateRecipe,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
-import { UnsupportedItemMessage } from '~/sections/item/components/ItemView/ItemEdit/UnsupportedItemMessage'
-import {
-  openItemEditModal,
-  openRecipeEditModal,
-  openTemplateSearchModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
-import { generateId } from '~/shared/utils/idUtils'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
+import { openRecipeEditModal } from '~/sections/recipe/ui/openRecipeEditModal'
+import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
+import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemEditModalProps = {
@@ -115,30 +110,13 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
     }
   })
 
-  // Recipe synchronization
-  const [originalRecipe] = createResource(
-    () => {
-      const currentItem = itemDraft()
-      return isRecipeItem(currentItem) ? currentItem.reference.id : null
-    },
-    async (recipeId: number) => {
-      return await fetchRecipeById(recipeId)
-    },
+  const recipeResource = recipeItemUseCases.createRecipeResource(() =>
+    itemDraft(),
   )
 
   // Check if the recipe was manually edited
-  const isManuallyEdited = createMemo(() => {
-    const currentItem = itemDraft()
-    const recipe = originalRecipe()
-
-    if (recipe === null || recipe === undefined || originalRecipe.loading) {
-      return false
-    }
-
-    // Compare original recipe items with current recipe items
-    // If they're different, the recipe was manually edited
-    return !ItemExt.of(currentItem).isInSyncWithRecipe(recipe.items)
-  })
+  const isManuallyEdited = () =>
+    recipeItemUseCases.isManuallyEdited(itemDraft(), recipeResource.value)
 
   const quantitySignal = () =>
     itemDraft().quantity === 0 ? undefined : itemDraft().quantity
@@ -180,7 +158,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   }
 
   const handleSyncWithOriginalRecipe = () => {
-    const recipe = originalRecipe()
+    const recipe = recipeResource.value()
     if (!recipe) return
 
     const currentItem = itemDraft()
@@ -226,149 +204,126 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
         tabindex={0}
         onPaste={() => clipboardUseCases.confirmPaste(itemSchema, setItemDraft)}
       >
+        {/* Toggle button for recipes */}
         <Show
           when={
-            isFoodItem(itemDraft()) ||
             isRecipeItem(itemDraft()) ||
-            isGroupItem(itemDraft())
+            isFoodItem(itemDraft()) ||
+            asGroupItem(itemDraft())?.reference.children.length === 1
           }
         >
-          {/* Toggle button for recipes */}
-          <Show
-            when={
-              isRecipeItem(itemDraft()) ||
-              isFoodItem(itemDraft()) ||
-              asGroupItem(itemDraft())?.reference.children.length === 1
-            }
-          >
-            <div class="mb-4 flex justify-center items-center gap-3 ">
-              <div class="flex rounded-lg border border-gray-600 w-full bg-gray-800 p-1">
-                <button
-                  class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
-                    viewMode() === 'normal'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                  onClick={() => setViewMode('normal')}
-                >
-                  <Show when={isRecipeItem(itemDraft())}>📖 Receita</Show>
-                  <Show when={!isRecipeItem(itemDraft())}>🍽️ Alimento</Show>
-                </button>
-                <button
-                  class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
-                    viewMode() === 'group'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                  onClick={() => setViewMode('group')}
-                >
-                  📦 Tratar como Grupo
-                </button>
-              </div>
-
-              {/* Sync button - only show if recipe was manually edited */}
-              <Show when={isManuallyEdited() && originalRecipe()}>
-                <div
-                  class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
-                  onClick={handleSyncWithOriginalRecipe}
-                  title="Sincronizar com receita original"
-                >
-                  <DownloadIcon />
-                </div>
-              </Show>
-
-              {/* Edit recipe button - only show for recipe items */}
-              <Show when={isRecipeItem(itemDraft()) && originalRecipe()}>
-                {(originalRecipe) => (
-                  <button
-                    class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
-                    onClick={() => {
-                      openRecipeEditModal({
-                        recipe: () => originalRecipe(),
-                        onSaveRecipe: (updatedRecipe) => {
-                          void handleSaveRecipe(updatedRecipe)
-                        },
-                        onRefetch: () => {},
-                        onDelete: (recipeId) => {
-                          void handleDeleteRecipe(recipeId)
-                        },
-                      })
-                    }}
-                    title="Editar receita original"
-                  >
-                    ✏️
-                  </button>
-                )}
-              </Show>
+          <div class="mb-4 flex justify-center items-center gap-3 ">
+            <div class="flex rounded-lg border border-gray-600 w-full bg-gray-800 p-1">
+              <button
+                class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
+                  viewMode() === 'normal'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                onClick={() => setViewMode('normal')}
+              >
+                <Show when={isRecipeItem(itemDraft())}>📖 Receita</Show>
+                <Show when={!isRecipeItem(itemDraft())}>🍽️ Alimento</Show>
+              </button>
+              <button
+                class={`px-3 py-1 rounded-md text-sm transition-colors flex-1 ${
+                  viewMode() === 'group'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                onClick={() => setViewMode('group')}
+              >
+                📦 Tratar como Grupo
+              </button>
             </div>
-          </Show>
 
-          <ItemEditBody
-            canApply={canApply()}
-            itemDraft={itemDraft}
-            parentifiedItemDraft={parentifiedItemDraft}
-            setItemDraft={setItemDraft}
-            macroOverflow={props.macroOverflow}
-            quantityField={quantityField}
-            onEditChild={handleEditChild}
-            viewMode={viewMode()}
-            clipboardActions={{
-              onCopy: () => clipboardUseCases.copy(itemDraft()),
-              onPaste: () =>
-                clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
-            }}
-            onAddNewItem={() => {
-              openTemplateSearchModal({
-                targetName: itemDraft().name,
-                title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
-                onNewItem: (newItem) => {
-                  const item_ = itemDraft()
-                  if (isGroupItem(item_)) {
-                    const updatedItem = ParentItemExt.addChildToParentItem(
-                      item_,
-                      {
-                        ...newItem,
-                        id: generateId(),
+            {/* Sync button - only show if recipe was manually edited */}
+            <Show when={isManuallyEdited() && recipeResource.value()}>
+              <div
+                class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
+                onClick={handleSyncWithOriginalRecipe}
+                title="Sincronizar com receita original"
+              >
+                <DownloadIcon />
+              </div>
+            </Show>
+
+            {/* Edit recipe button - only show for recipe items */}
+            <Show when={isRecipeItem(itemDraft()) && recipeResource.value()}>
+              {(originalRecipe) => (
+                <button
+                  class="btn btn-sm btn-ghost text-white rounded-md flex items-center gap-1"
+                  onClick={() => {
+                    openRecipeEditModal({
+                      recipe: () => originalRecipe(),
+                      onSaveRecipe: (updatedRecipe) => {
+                        void handleSaveRecipe(updatedRecipe)
                       },
-                    )
-                    setItemDraft(updatedItem)
-                  } else {
-                    const currentItem = itemDraft()
-                    const groupItem = createItem({
-                      id: currentItem.id,
-                      name: currentItem.name,
-                      quantity: currentItem.quantity,
-                      reference: {
-                        type: 'group',
-                        children: [
-                          createItem({
-                            ...currentItem,
-                            id: generateId(),
-                          }),
-                          {
-                            ...newItem,
-                            id: generateId(),
-                          },
-                        ],
+                      onRefetch: () => {},
+                      onDelete: (recipeId) => {
+                        void handleDeleteRecipe(recipeId)
                       },
                     })
-                    setItemDraft(groupItem)
-                  }
-                },
-              })
-            }}
-            showAddItemButton={props.showAddItemButton}
-          />
+                  }}
+                  title="Editar receita original"
+                >
+                  ✏️
+                </button>
+              )}
+            </Show>
+          </div>
         </Show>
-        <Show
-          when={
-            !isFoodItem(itemDraft()) &&
-            !isRecipeItem(itemDraft()) &&
-            !isGroupItem(itemDraft())
-          }
-        >
-          <UnsupportedItemMessage />
-        </Show>
+
+        <ItemEditBody
+          canApply={canApply()}
+          itemDraft={itemDraft}
+          parentifiedItemDraft={parentifiedItemDraft}
+          setItemDraft={setItemDraft}
+          macroOverflow={props.macroOverflow}
+          quantityField={quantityField}
+          onEditChild={handleEditChild}
+          viewMode={viewMode()}
+          clipboardActions={{
+            onCopy: () => clipboardUseCases.copy(itemDraft()),
+            onPaste: () =>
+              clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
+          }}
+          onAddNewItem={() => {
+            openTemplateSearchModal({
+              targetName: itemDraft().name,
+              title: `Adicionar novo subitem ao item "${itemDraft().name}"`,
+              onNewItem: (newItem) => {
+                const item_ = itemDraft()
+                if (isGroupItem(item_)) {
+                  const updatedItem = ParentItemExt.addChildToParentItem(
+                    item_,
+                    {
+                      ...newItem,
+                      id: generateId(),
+                    },
+                  )
+                  setItemDraft(updatedItem)
+                } else {
+                  const currentItem = itemDraft()
+                  const groupItem = createItem({
+                    id: currentItem.id,
+                    name: currentItem.name,
+                    quantity: currentItem.quantity,
+                    reference: {
+                      type: 'group',
+                      children: [
+                        regenerateId(currentItem),
+                        regenerateId(newItem),
+                      ],
+                    },
+                  })
+                  setItemDraft(groupItem)
+                }
+              },
+            })
+          }}
+          showAddItemButton={props.showAddItemButton}
+        />
       </div>
 
       <div class="p-4 border-t border-gray-600 flex justify-end gap-2">
