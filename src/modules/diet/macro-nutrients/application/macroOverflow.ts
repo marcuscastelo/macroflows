@@ -1,7 +1,4 @@
-import {
-  currentDayDiet,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
@@ -16,14 +13,14 @@ import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
 function getContext() {
-  const currentDayDiet_ = currentDayDiet()
+  const currentDayDiet_ = dayUseCases.currentDayDiet()
   if (currentDayDiet_ === null) {
     logging.warn('No current day diet available for overflow check')
     return null
   }
 
   const macroTarget_ = macroTargetUseCases.macroTargetAt(
-    stringToDate(targetDay()),
+    stringToDate(dayUseCases.targetDay()),
   )
   if (macroTarget_ === null) {
     logging.warn('No macro target set for the day')

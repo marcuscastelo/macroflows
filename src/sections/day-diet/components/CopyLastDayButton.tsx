@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { useCopyDayUseCase } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { currentUserId } from '~/modules/user/application/user'
@@ -42,7 +42,10 @@ export function CopyLastDayButton(props: {
                     fromDay: day,
                     toDay: props.selectedDay,
                     previousDays: state().previousDays,
-                    existingDay: [...state().previousDays, currentDayDiet()]
+                    existingDay: [
+                      ...state().previousDays,
+                      dayUseCases.currentDayDiet(),
+                    ]
                       .filter((d) => d !== null)
                       .find((d) => d.target_day === props.selectedDay),
                   })

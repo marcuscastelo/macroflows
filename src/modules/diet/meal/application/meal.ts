@@ -1,5 +1,5 @@
 import { updateDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
@@ -17,7 +17,7 @@ export async function updateMeal(
   newMeal: Meal,
 ): Promise<boolean> {
   try {
-    const currentDayDiet_ = currentDayDiet()
+    const currentDayDiet_ = dayUseCases.currentDayDiet()
     if (currentDayDiet_ === null) {
       logging.error(
         'Meal application error:',

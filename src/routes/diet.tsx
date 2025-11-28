@@ -1,9 +1,5 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
-import {
-  currentDayDiet,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
@@ -26,7 +22,11 @@ export default function DietPage() {
   }
 
   createEffect(() => {
-    setMode(targetDay() === dayUseCases.currentToday() ? 'edit' : 'read-only')
+    setMode(
+      dayUseCases.targetDay() === dayUseCases.currentToday()
+        ? 'edit'
+        : 'read-only',
+    )
   })
 
   // Show day change modal when day changes
@@ -58,25 +58,25 @@ export default function DietPage() {
   return (
     <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
       <TopBar />
-      <Show when={currentDayDiet()} fallback={<div />}>
+      <Show when={dayUseCases.currentDayDiet()} fallback={<div />}>
         {(currentDayDiet) => (
           <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
         )}
       </Show>
       {mode() !== 'edit' && (
         <Alert class="mt-2" color="yellow">
-          Mostrando refeições do dia {targetDay()}!
+          Mostrando refeições do dia {dayUseCases.targetDay()}!
         </Alert>
       )}
       <Show
-        when={currentDayDiet()}
-        fallback={<DayNotFound selectedDay={targetDay()} />}
+        when={dayUseCases.currentDayDiet()}
+        fallback={<DayNotFound selectedDay={dayUseCases.targetDay()} />}
       >
         {(currentDayDiet) => (
           <Suspense fallback={<LoadingRing />}>
             <DayMeals
               dayDiet={currentDayDiet()}
-              selectedDay={targetDay()}
+              selectedDay={dayUseCases.targetDay()}
               mode={mode()}
               onRequestEditMode={handleRequestEditMode}
             />
