@@ -8,38 +8,15 @@ import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
-export type CopyDayState = {
-  previousDays: readonly DayDiet[]
-  isLoadingPreviousDays: boolean
-  copyingDay: string | null
-  isCopying: boolean
-}
-
-export type CopyDayOperations = {
-  state: () => CopyDayState
-  loadPreviousDays: (
-    userId: User['uuid'],
-    beforeDay: string,
-    limit?: number,
-  ) => Promise<void>
-  copyDay: (params: {
-    fromDay: string
-    toDay: string
-    existingDay?: DayDiet | undefined
-    previousDays: readonly DayDiet[]
-  }) => Promise<void>
-  resetState: () => void
-}
-
 export function createCopyDayOperations(
   repository = createDayDietRepository(),
-): CopyDayOperations {
+) {
   const [previousDays, setPreviousDays] = createSignal<readonly DayDiet[]>([])
   const [isLoadingPreviousDays, setIsLoadingPreviousDays] = createSignal(false)
   const [copyingDay, setCopyingDay] = createSignal<string | null>(null)
   const [isCopying, setIsCopying] = createSignal(false)
 
-  const state = (): CopyDayState => ({
+  const state = () => ({
     previousDays: previousDays(),
     isLoadingPreviousDays: isLoadingPreviousDays(),
     copyingDay: copyingDay(),
