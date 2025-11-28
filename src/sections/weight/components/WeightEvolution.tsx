@@ -8,8 +8,8 @@ import {
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
 import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { userWeights } from '~/modules/weight/application/weight/weightState'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
 import { FloatInput } from '~/sections/common/components/FloatInput'

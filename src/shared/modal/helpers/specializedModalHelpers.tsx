@@ -9,7 +9,7 @@ import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import {
   ItemEditModal,
   type ItemEditModalProps,
