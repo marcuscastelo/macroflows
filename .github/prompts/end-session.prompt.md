@@ -1,7 +1,7 @@
 ---
 description: 'Summarize all new learnings from the session and suggest clear, actionable improvements for prompts and instructions. Output files must include the agent (reportedBy) responsible for the suggestions in the filename and at the top of the file. The reportedBy field and filename must always match the agent that actually produced the content. If multiple agents suggest improvements, create multiple files.'
-mode: 'agent'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'memory', 'activePullRequest', 'add_observations', 'create_entities', 'create_relations', 'delete_entities', 'delete_observations', 'delete_relations', 'open_nodes', 'read_graph', 'search_nodes']
+agent: prompt-engineer
+tools: ['changes', 'search/codebase', 'edit/editFiles', 'extensions', 'fetch', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'search/searchResults', 'runCommands/terminalLastCommand', 'runCommands/terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'memory/*', 'github.vscode-pull-request-github/activePullRequest', 'memory/add_observations', 'memory/create_entities', 'memory/create_relations', 'memory/delete_entities', 'memory/delete_observations', 'memory/delete_relations', 'memory/open_nodes', 'memory/read_graph', 'memory/search_nodes']
 ---
 
 # End-Session Summary Agent
