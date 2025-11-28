@@ -1,15 +1,10 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
 import {
-  acceptDayChange,
-  dayChangeData,
-  dismissDayChangeModal,
-} from '~/modules/diet/day-diet/application/usecases/dayChange'
-import {
   currentDayDiet,
-  currentToday,
   targetDay,
 } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { PageLoading } from '~/sections/common/components/PageLoading'
@@ -31,20 +26,20 @@ export default function DietPage() {
   }
 
   createEffect(() => {
-    setMode(targetDay() === currentToday() ? 'edit' : 'read-only')
+    setMode(targetDay() === dayUseCases.currentToday() ? 'edit' : 'read-only')
   })
 
   // Show day change modal when day changes
   createEffect(() => {
-    const changeData = dayChangeData()
+    const changeData = dayUseCases.dayChangeData()
     if (changeData) {
       let modalId = openContentModal(
         (modalId) => (
           <DayChangeModal
             modalId={modalId}
-            newDay={currentToday}
-            onGoToToday={acceptDayChange}
-            onStayOnDay={dismissDayChangeModal}
+            newDay={dayUseCases.currentToday}
+            onGoToToday={dayUseCases.acceptDayChange}
+            onStayOnDay={dayUseCases.dismissDayChangeModal}
           />
         ),
         {
