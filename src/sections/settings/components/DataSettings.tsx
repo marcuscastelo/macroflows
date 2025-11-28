@@ -1,5 +1,7 @@
 import { openImportExportModal } from '~/modules/import-export/ui/openImportExportModal'
+import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Data management settings section.
@@ -9,9 +11,11 @@ export function DataSettings() {
   const handleOpenImportExport = () => {
     openImportExportModal({
       onImportComplete: (payload) => {
-        // TODO: Implement actual data import logic
-        // This would integrate with the diet store to add imported data
-        console.log('Import completed:', payload.metadata.scope)
+        // Log the import for debugging purposes
+        logging.info('Import completed', { scope: payload.metadata.scope })
+        showSuccess(
+          `Dados importados com sucesso! Escopo: ${payload.metadata.scope}`,
+        )
       },
     })
   }

@@ -184,23 +184,24 @@ export function ImportExportModalContent(props: ImportExportModalContentProps) {
                 </div>
               }
             >
-              <div class="space-y-3">
-                <div class="bg-gray-800 rounded p-3">
-                  <div class="text-sm text-gray-300">
-                    <span class="font-medium">Escopo:</span>{' '}
-                    {getScopeLabel(props.exportData!.metadata.scope)}
+              {(exportData) => (
+                <div class="space-y-3">
+                  <div class="bg-gray-800 rounded p-3">
+                    <div class="text-sm text-gray-300">
+                      <span class="font-medium">Escopo:</span>{' '}
+                      {getScopeLabel(exportData().metadata.scope)}
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                      Versão do esquema: {exportData().metadata.schemaVersion}
+                    </div>
                   </div>
-                  <div class="text-xs text-gray-400 mt-1">
-                    Versão do esquema:{' '}
-                    {props.exportData!.metadata.schemaVersion}
-                  </div>
-                </div>
 
-                <Button class="btn-primary w-full" onClick={handleExport}>
-                  <DownloadIcon />
-                  Baixar JSON
-                </Button>
-              </div>
+                  <Button class="btn-primary w-full" onClick={handleExport}>
+                    <DownloadIcon />
+                    Baixar JSON
+                  </Button>
+                </div>
+              )}
             </Show>
           </div>
 

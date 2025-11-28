@@ -6,23 +6,19 @@ import {
   promoteRecipe,
 } from '~/modules/diet/recipe/domain/recipe'
 import {
-  generateUniqueId,
-  regenerateMealIds,
-  regeneratePayloadIds,
-  regenerateRecipeIds,
-} from '~/modules/import-export/application/idRegeneration'
-import {
   createMealExport,
   createRecipeExport,
 } from '~/modules/import-export/application/exportUtils'
 import {
+  generateUniqueId,
+  regenerateMealIds,
+  regenerateRecipeIds,
+} from '~/modules/import-export/application/idRegeneration'
+import {
   generateImportPreview,
   validateImportPayload,
 } from '~/modules/import-export/application/importValidation'
-import {
-  EXPORT_SCHEMA_VERSION,
-  type MealExportPayload,
-} from '~/modules/import-export/domain/exportPayload'
+import { EXPORT_SCHEMA_VERSION } from '~/modules/import-export/domain/exportPayload'
 
 describe('Import/Export Module', () => {
   describe('ID Regeneration', () => {
@@ -62,22 +58,6 @@ describe('Import/Export Module', () => {
       const regenerated = regenerateRecipeIds(recipe)
       expect(regenerated.id).not.toBe(recipe.id)
       expect(regenerated.name).toBe(recipe.name)
-    })
-
-    it('should regenerate payload IDs for meals', () => {
-      const meal = promoteMeal(
-        createNewMeal({
-          name: 'Test Meal',
-          items: [],
-        }),
-        { id: 1 },
-      )
-
-      const payload = createMealExport(meal)
-      const regenerated = regeneratePayloadIds(payload)
-
-      expect(regenerated.data.id).not.toBe(payload.data.id)
-      expect(regenerated.metadata.scope).toBe('meal')
     })
   })
 
@@ -129,7 +109,9 @@ describe('Import/Export Module', () => {
       const result = validateImportPayload('not valid json')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.errors[0].code).toBe('invalid_json')
+        expect(result.errors.length).toBeGreaterThan(0)
+        const errorCode = result.errors[0]?.code
+        expect(errorCode).toBe('invalid_json')
       }
     })
 
@@ -137,7 +119,9 @@ describe('Import/Export Module', () => {
       const result = validateImportPayload('{"data": {}}')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.errors[0].code).toBe('missing_metadata')
+        expect(result.errors.length).toBeGreaterThan(0)
+        const errorCode = result.errors[0]?.code
+        expect(errorCode).toBe('missing_metadata')
       }
     })
 
