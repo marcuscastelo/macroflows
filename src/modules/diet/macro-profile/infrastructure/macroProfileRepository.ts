@@ -1,3 +1,4 @@
+import { macroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
 import {
   type MacroProfile,
   type NewMacroProfile,
@@ -5,7 +6,6 @@ import {
 import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
 import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
 import { createGuestMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/guest/guestMacroProfileGateway'
-import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { createSupabaseMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileGateway'
 import { type User } from '~/modules/user/domain/user'
 import { isGuestMode } from '~/shared/guest/guestState'

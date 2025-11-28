@@ -1,8 +1,8 @@
+import { macroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
 import {
   type MacroProfile,
   macroProfileSchema,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
