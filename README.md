@@ -15,7 +15,7 @@ A modular, high-performance nutrition tracking platform built with SolidJS, stro
 
 ## Screenshots
 
-<p>Clique nas miniaturas para abrir/fechar cada imagem individualmente — assim você não precisa rolar a página para ver o conteúdo.</p>
+<p>Click on the thumbnails to open/close each image individually — this way you don't have to scroll the page to see the content.</p>
 
 <table>
   <tr>

@@ -14,10 +14,51 @@ Uma plataforma modular e de alto desempenho para rastreamento nutricional, const
 ---
 
 ## Capturas de tela
-![Página de dieta](docs/screenshots/diet-page.png)
-![Busca de alimentos](docs/screenshots/food-search.png)
-![Registro de peso](docs/screenshots/weight-tracking.png)
-![Perfil de macronutrientes](docs/screenshots/macro-profile.png)
+
+<p>Clique nas miniaturas para abrir/fechar cada imagem individualmente — assim você não precisa rolar a página para ver o conteúdo.</p>
+
+<table>
+  <tr>
+    <td>
+      <details>
+        <summary>Página de Dieta</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/bf294e75-117c-447b-8953-6452877dfb46" alt="Diet Page" width="768"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Busca de Alimentos</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/1b982883-b36b-49ab-a4be-a45d3d574c78" alt="Food Search" width="771"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Registro de Peso</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/e8939ee8-4e28-4e10-b870-8ab51044e54e" alt="Weight Tracking" width="764"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <details>
+        <summary>Perfil de Macronutrientes</summary>
+        <p>
+          <img src="https://github.com/user-attachments/assets/0066ad09-2d49-49aa-929a-5ef639373329" alt="Macro Profile" width="777"/>
+        </p>
+      </details>
+    </td>
+  </tr>
+</table>
 
 ## Visão Geral
 
