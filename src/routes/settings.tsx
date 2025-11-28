@@ -4,7 +4,6 @@ import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { AuthSettings } from '~/sections/settings/components/AuthSettings'
-import { GuestSettings } from '~/sections/settings/components/GuestSettings'
 import { ToastSettings } from '~/sections/settings/components/ToastSettings'
 import { Toggle } from '~/sections/settings/components/Toggle'
 
@@ -76,8 +75,6 @@ export default function Page() {
             Configurações
           </h1>
           <div class="mt-10 px-5 mx-16">
-            <GuestSettings />
-
             <For each={items}>
               {({ name, description, checked, setChecked }, idx) => (
                 <div class="">

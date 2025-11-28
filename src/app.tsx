@@ -15,6 +15,7 @@ import {
 import { BackendOutageBanner } from '~/sections/common/components/BackendOutageBanner'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { Providers } from '~/sections/common/context/Providers'
+import { GuestDataWarning } from '~/sections/settings/components/GuestDataWarning'
 
 const SentryRouter = withSentryRouterRouting(Router)
 
@@ -60,6 +61,7 @@ export default function App() {
                   style={{ width: `${width()}px` }}
                 >
                   <div class="mx-auto w-full flex flex-col justify-between p-1 px-1 -mt-5 sm:mt-0 sm:px-5">
+                    <GuestDataWarning />
                     {props.children}
                   </div>
                   <BottomNavigation />

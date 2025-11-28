@@ -10,11 +10,7 @@ import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { disableGuestMode, isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
-/**
- * Settings component for guest mode users.
- * Allows resetting demo data and exiting guest mode.
- */
-export function GuestSettings() {
+export function GuestDataWarning() {
   const navigate = useNavigate()
 
   const handleResetDemoData = () => {
