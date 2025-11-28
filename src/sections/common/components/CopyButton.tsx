@@ -8,11 +8,19 @@ type CopyButtonProps<T> = {
   value: Accessor<T>
   class?: string
   stopPropagation?: boolean
+  'aria-label'?: string
 }
 
+/**
+ * Copy button component with accessibility support.
+ * Provides a button that triggers a copy action with the provided value.
+ */
 export function CopyButton<T>(props: CopyButtonProps<T>): JSXElement {
+  const ariaLabel = () => props['aria-label'] ?? 'Copy'
+
   return (
-    <div
+    <button
+      type="button"
       class={props.class ?? COPY_BUTTON_STYLES}
       onClick={(e) => {
         if (props.stopPropagation ?? true) {
@@ -21,8 +29,10 @@ export function CopyButton<T>(props: CopyButtonProps<T>): JSXElement {
         }
         props.onCopy(props.value())
       }}
+      aria-label={ariaLabel()}
+      title={ariaLabel()}
     >
-      <CopyIcon />
-    </div>
+      <CopyIcon size={20} aria-hidden="true" />
+    </button>
   )
 }
