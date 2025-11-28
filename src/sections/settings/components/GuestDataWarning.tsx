@@ -7,7 +7,7 @@ import {
 } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
-import { disableGuestMode, isGuestMode } from '~/shared/guest/guestState'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 export function GuestDataWarning() {
@@ -29,9 +29,7 @@ export function GuestDataWarning() {
 
   const handleExitGuestMode = () => {
     try {
-      disableGuestMode()
       showSuccess('Modo demo desativado.')
-      // Navigate to login page
       navigate('/login', { replace: true })
     } catch (error) {
       logging.error('Failed to exit guest mode:', error)

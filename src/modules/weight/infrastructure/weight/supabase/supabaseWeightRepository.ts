@@ -6,7 +6,7 @@ import {
 import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
 import { createGuestWeightRepository } from '~/modules/weight/infrastructure/weight/guest/guestWeightRepository'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-import { isInGuestMode } from '~/shared/guest/guestState'
+import { isGuestMode } from '~/shared/guest/guestState'
 
 const supabaseWeightGateway = createSupabaseWeightGateway()
 const guestWeightRepository = createGuestWeightRepository()
@@ -42,5 +42,5 @@ const supabaseWeightRepository = createSupabaseWeightRepository()
  * When authenticated, returns a repository backed by Supabase.
  */
 export function createWeightRepository(): WeightRepository {
-  return isInGuestMode() ? guestWeightRepository : supabaseWeightRepository
+  return isGuestMode() ? guestWeightRepository : supabaseWeightRepository
 }

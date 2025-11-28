@@ -8,7 +8,7 @@ import { createGuestMacroProfileGateway } from '~/modules/diet/macro-profile/inf
 import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
 import { createSupabaseMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileGateway'
 import { type User } from '~/modules/user/domain/user'
-import { isInGuestMode } from '~/shared/guest/guestState'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseMacroProfileGateway()
@@ -18,7 +18,7 @@ const guestGateway = createGuestMacroProfileGateway()
  * Returns the appropriate gateway based on guest mode state
  */
 function getGateway(): MacroProfileGateway {
-  return isInGuestMode() ? guestGateway : supabaseGateway
+  return isGuestMode() ? guestGateway : supabaseGateway
 }
 
 export function createMacroProfileRepository(): MacroProfileRepository {

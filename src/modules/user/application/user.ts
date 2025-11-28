@@ -14,7 +14,7 @@ import {
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
-import { isInGuestMode } from '~/shared/guest/guestState'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 const supabaseUserRepository = createSupabaseUserRepository()
@@ -24,7 +24,7 @@ const guestUserRepository = createGuestUserRepository()
  * Returns the appropriate repository based on guest mode state
  */
 function getRepository(): UserRepository {
-  return isInGuestMode() ? guestUserRepository : supabaseUserRepository
+  return isGuestMode() ? guestUserRepository : supabaseUserRepository
 }
 
 export const [users, setUsers] = createSignal<readonly User[]>([])
@@ -33,7 +33,7 @@ export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
 // Current user ID now is derived from auth, or guest user ID in guest mode
 export const currentUserId = () => {
-  if (isInGuestMode()) {
+  if (isGuestMode()) {
     return GUEST_USER_ID
   }
   return getCurrentUser()?.id

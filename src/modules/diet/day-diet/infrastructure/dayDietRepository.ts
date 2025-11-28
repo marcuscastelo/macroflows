@@ -8,7 +8,7 @@ import { createGuestDayGateway } from '~/modules/diet/day-diet/infrastructure/gu
 import { dayCacheStore } from '~/modules/diet/day-diet/infrastructure/signals/dayCacheStore'
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
-import { isInGuestMode } from '~/shared/guest/guestState'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseDayGateway()
@@ -18,7 +18,7 @@ const guestGateway = createGuestDayGateway()
  * Returns the appropriate gateway based on guest mode state
  */
 function getGateway(): DayGateway {
-  return isInGuestMode() ? guestGateway : supabaseGateway
+  return isGuestMode() ? guestGateway : supabaseGateway
 }
 
 export function createDayDietRepository(): DayRepository {

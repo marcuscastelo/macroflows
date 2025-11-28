@@ -7,7 +7,6 @@ import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { GuestGuard } from '~/shared/guards/GuestGuard'
-import { enableGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
 export default function LoginPage() {
@@ -31,7 +30,6 @@ export default function LoginPage() {
   }
 
   const handleGuestMode = () => {
-    enableGuestMode()
     navigate('/diet')
   }
 
