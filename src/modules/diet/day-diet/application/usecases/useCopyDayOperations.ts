@@ -13,12 +13,8 @@ export async function copyDay(params: {
   toDay: string
   existingDay?: DayDiet
   previousDays: readonly DayDiet[]
-  onStartCopying: (fromDay: string) => void
-  onFinishCopying: () => void
 }) {
   const { fromDay, toDay, existingDay, previousDays } = params
-
-  params.onStartCopying(fromDay)
 
   try {
     const copyFrom = previousDays.find((d) => d.target_day === fromDay)
@@ -45,8 +41,6 @@ export async function copyDay(params: {
   } catch (error) {
     logging.error('CopyDayOperations copyDay error:', error)
     throw error
-  } finally {
-    params.onFinishCopying()
   }
 }
 

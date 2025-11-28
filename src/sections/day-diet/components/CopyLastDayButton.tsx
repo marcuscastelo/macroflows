@@ -6,6 +6,7 @@ import {
   useCopyDayUseCase,
 } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
@@ -13,6 +14,7 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { lazyImport } from '~/shared/solid/lazyImport'
+import { logging } from '~/shared/utils/logging'
 
 const { CopyLastDayModal } = lazyImport(
   () => import('~/sections/day-diet/components/CopyLastDayModal'),
@@ -33,20 +35,26 @@ export function CopyLastDayButton(props: {
     resetState,
   } = useCopyDayUseCase()
 
-  const handleCopy = (day: string) => {
-    void copyDay({
-      fromDay: day,
-      toDay: props.selectedDay,
-      previousDays: previousDays.latest ?? [],
-      existingDay: [
-        ...(previousDays.latest ?? []),
-        dayUseCases.currentDayDiet(),
-      ]
-        .filter((d): d is DayDiet => d !== null)
-        .find((d) => d.target_day === props.selectedDay),
-      onStartCopying: handleStartCopying,
-      onFinishCopying: handleFinishCopying,
-    })
+  const handleCopy = async (day: string) => {
+    handleStartCopying(day)
+    try {
+      await copyDay({
+        fromDay: day,
+        toDay: props.selectedDay,
+        previousDays: previousDays.latest ?? [],
+        existingDay: [
+          ...(previousDays.latest ?? []),
+          dayUseCases.currentDayDiet(),
+        ]
+          .filter((d): d is DayDiet => d !== null)
+          .find((d) => d.target_day === props.selectedDay),
+      })
+    } catch (error) {
+      logging.error('CopyLastDayButton handleCopy error:', error)
+      showError('Erro ao copiar o dia. Por favor, tente novamente.')
+    } finally {
+      handleFinishCopying()
+    }
   }
 
   return (
@@ -65,7 +73,7 @@ export function CopyLastDayButton(props: {
                   previousDays={previousDays.latest ?? []}
                   copying={isCopying()}
                   copyingDay={copyingDay()}
-                  onCopy={handleCopy}
+                  onCopy={(day) => void handleCopy(day)}
                   onClose={() => {
                     resetState()
                     closeModal(modalId)
