@@ -1,5 +1,3 @@
-// TODO: Unify Recipe and Recipe components into a single component?
-
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
