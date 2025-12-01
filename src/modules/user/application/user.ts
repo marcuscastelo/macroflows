@@ -27,8 +27,6 @@ function getRepository(): UserRepository {
   return isGuestMode() ? guestUserRepository : supabaseUserRepository
 }
 
-export const [users, setUsers] = createSignal<readonly User[]>([])
-
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
 export const currentUserId = () => {
@@ -75,12 +73,10 @@ export async function fetchUsers(): Promise<readonly User[]> {
   try {
     const users = await getRepository().fetchUsers()
     const newCurrentUser = users.find((user) => user.uuid === currentUserId())
-    setUsers(users)
     setCurrentUser(newCurrentUser ?? null)
     return users
   } catch (error) {
     logging.error('User application error:', error)
-    setUsers([])
     setCurrentUser(null)
     return []
   }
