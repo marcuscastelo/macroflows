@@ -1,11 +1,8 @@
-import { type NewUser, type User, userSchema } from '~/modules/user/domain/user'
+import { type NewUser, type User } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { SUPABASE_TABLE_USERS } from '~/modules/user/infrastructure/supabase/constants'
 import { subapaseUserMapper } from '~/modules/user/infrastructure/supabase/supabaseUserMapper'
-import {
-  registerSubapabaseRealtimeCallback,
-  supabase,
-} from '~/shared/supabase/supabase'
+import { supabase } from '~/shared/supabase/supabase'
 import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 
 export function createSupabaseUserRepository(): UserRepository {
@@ -16,18 +13,6 @@ export function createSupabaseUserRepository(): UserRepository {
     updateUser,
     deleteUser,
   }
-}
-
-/**
- * Sets up realtime subscription for user changes
- * @param onUsersChange - Callback function to call when data changes
- */
-export function setupUserRealtimeSubscription(onUsersChange: () => void): void {
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_USERS,
-    userSchema,
-    onUsersChange,
-  )
 }
 
 const fetchUsers = async (): Promise<User[]> => {

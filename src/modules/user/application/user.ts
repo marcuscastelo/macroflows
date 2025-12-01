@@ -9,10 +9,7 @@ import {
 } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
-import {
-  createSupabaseUserRepository,
-  setupUserRealtimeSubscription,
-} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
@@ -55,13 +52,6 @@ function bootstrap() {
  * At app start, fetch all users
  */
 createEffect(() => {
-  bootstrap()
-})
-
-/**
- * When realtime event occurs, fetch all users again
- */
-setupUserRealtimeSubscription(() => {
   bootstrap()
 })
 
