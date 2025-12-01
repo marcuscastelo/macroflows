@@ -12,18 +12,11 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
  */
 export function createGuestUserRepository(): UserRepository {
   return {
-    fetchUsers,
     fetchUser,
     insertUser,
     updateUser,
     deleteUser,
   }
-}
-
-async function fetchUsers(): Promise<readonly User[]> {
-  const db = getGuestDatabase()
-  logging.debug('[guestUserRepository] fetchUsers', { count: 1 })
-  return [db.user]
 }
 
 async function fetchUser(userId: User['uuid']): Promise<User | null> {

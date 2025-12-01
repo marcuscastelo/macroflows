@@ -7,24 +7,11 @@ import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 
 export function createSupabaseUserRepository(): UserRepository {
   return {
-    fetchUsers,
     fetchUser,
     insertUser,
     updateUser,
     deleteUser,
   }
-}
-
-const fetchUsers = async (): Promise<User[]> => {
-  const { data: users, error } = await supabase
-    .from(SUPABASE_TABLE_USERS)
-    .select()
-
-  if (error !== null) {
-    throw wrapErrorWithStack(error)
-  }
-
-  return users.map(subapaseUserMapper.toDomain)
 }
 
 const fetchUser = async (userId: User['uuid']): Promise<User | null> => {
