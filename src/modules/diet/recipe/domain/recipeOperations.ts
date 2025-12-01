@@ -102,6 +102,7 @@ export function getRecipePreparedQuantity(recipe: Recipe): number {
  * @returns Object containing scaled items and the scaling factor used
  */
 // TODO: investigate duplicate function in recipeOperations.ts with RecipeItemExt.scaleQuantityAndChildren
+// Issue URL: https://github.com/marcuscastelo/macroflows/issues/1388
 export function scaleRecipeByPreparedQuantity(
   recipe: Recipe,
   desiredPreparedQuantity: number,
