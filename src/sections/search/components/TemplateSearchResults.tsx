@@ -26,6 +26,22 @@ export function TemplateSearchResults(props: {
   onTemplateSelected: (template: Template) => void
   refetch: (info?: unknown) => unknown
 }) {
+  const notFoundAlert = () => {
+    if (props.filteredTemplates.length > 0) {
+      return null
+    }
+
+    if (debouncedTab() === 'recent' && props.search === '') {
+      return 'Sem alimentos recentes. Eles aparecerão aqui assim que você adicionar seu primeiro alimento'
+    }
+
+    if (debouncedTab() === 'favorites' && props.search === '') {
+      return 'Sem favoritos. Adicione alimentos ou receitas aos favoritos para vê-los aqui.'
+    }
+
+    return `Nenhum alimento encontrado para a busca "${props.search}".`
+  }
+
   return (
     <>
       <Show
@@ -38,13 +54,9 @@ export function TemplateSearchResults(props: {
           />
         }
       >
-        <Show when={props.filteredTemplates.length === 0}>
+        <Show when={notFoundAlert()}>
           <Alert color="yellow" class="mt-2">
-            {debouncedTab() === 'recent' && props.search === ''
-              ? 'Sem alimentos recentes. Eles aparecerão aqui assim que você adicionar seu primeiro alimento'
-              : debouncedTab() === 'favorites' && props.search === ''
-                ? 'Sem favoritos. Adicione alimentos ou receitas aos favoritos para vê-los aqui.'
-                : `Nenhum alimento encontrado para a busca "${props.search}".`}
+            {notFoundAlert()}
           </Alert>
         </Show>
 
