@@ -1,4 +1,5 @@
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
+import { Items } from '~/modules/diet/item/domain/ext/itemsExt'
 import {
   type Item,
   type RecipeItem,
@@ -69,6 +70,10 @@ export const RecipeItemExt = {
     }
   },
 
+  isInSyncWithRecipe(item: RecipeItem, recipeItems: readonly Item[]): boolean {
+    return Items.equals(recipeItems, item.reference.children)
+  },
+
   of(item: RecipeItem) {
     const itemExt = ItemExt.of(item)
     return {
@@ -78,6 +83,8 @@ export const RecipeItemExt = {
         RecipeItemExt.syncWithOriginal(item, originalRecipeItems),
       scaleQuantityAndChildren: (newQuantity: number, recipe: Recipe) =>
         RecipeItemExt.scaleQuantityAndChildren(item, recipe, newQuantity),
+      isInSyncWithRecipe: (recipeItems: readonly Item[]) =>
+        RecipeItemExt.isInSyncWithRecipe(item, recipeItems),
     }
   },
 }

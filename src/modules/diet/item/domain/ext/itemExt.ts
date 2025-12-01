@@ -1,6 +1,5 @@
 import { FoodItemExt } from '~/modules/diet/item/domain/ext/foodItemExt'
 import { GroupItemExt } from '~/modules/diet/item/domain/ext/groupItemExt'
-import { Items } from '~/modules/diet/item/domain/ext/itemsExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import {
   type FoodItem,
@@ -90,14 +89,6 @@ export const ItemExt = {
     return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
   },
 
-  isInSyncWithRecipe(item: Item, recipeItems: readonly Item[]): boolean {
-    if (!isRecipeItem(item)) {
-      throw new Error('isInSyncWithRecipe can only be called on RecipeItem')
-    }
-
-    return Items.equals(recipeItems, item.reference.children)
-  },
-
   of(item: Item) {
     return {
       // Self reference
@@ -107,8 +98,7 @@ export const ItemExt = {
       reference: () => item.reference,
       // Derived props
       macros: () => MacroNutrientsExt.of(ItemExt.macros(item)),
-      isInSyncWithRecipe: (recipeItems: readonly Item[]) =>
-        ItemExt.isInSyncWithRecipe(item, recipeItems),
+
       // Type guards
       isFoodItem: () => isFoodItem(item),
       isRecipeItem: () => isRecipeItem(item),
