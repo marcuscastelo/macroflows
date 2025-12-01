@@ -1,24 +1,13 @@
 import { For, Show } from 'solid-js'
 
-import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { templateToItem } from '~/modules/diet/template/application/templateToItem'
-import {
-  isTemplateFood,
-  isTemplateRecipe,
-  type Template,
-} from '~/modules/diet/template/domain/template'
+import { type Template } from '~/modules/diet/template/domain/template'
 import {
   debouncedTab,
   templates,
 } from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
-import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
-import { ItemView } from '~/sections/item/components/ItemView'
-import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
-import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
-import { logging } from '~/shared/utils/logging'
+import { TemplateSearchResultItem } from '~/sections/search/components/TemplateSearchResultItem'
 
 export function TemplateSearchResults(props: {
   search: string
@@ -62,57 +51,13 @@ export function TemplateSearchResults(props: {
 
         <div class="flex-1 min-h-0 max-h-[60vh] overflow-y-auto scrollbar-gutter-outside scrollbar-clean bg-gray-800 mt-1 pr-4">
           <For each={props.filteredTemplates}>
-            {(template) => {
-              // Calculate appropriate display quantity for each template
-              const displayQuantity = () => {
-                if (isTemplateFood(template)) {
-                  return 100 // Standard 100g for foods
-                } else {
-                  // For recipes, show the prepared quantity rounded to nearest RECIPE_ROUNDING_FACTOR
-                  const recipe = template
-                  logging.debug('recipe', recipe)
-                  const preparedQuantity = getRecipePreparedQuantity(recipe)
-                  logging.debug('recipe.preparedQuantity', { preparedQuantity })
-                  return preparedQuantity
-                }
-              }
-
-              return (
-                <>
-                  <ItemView
-                    mode="read-only"
-                    item={() => templateToItem(template, displayQuantity())}
-                    class="mt-1"
-                    handlers={{
-                      onClick: () => {
-                        props.onTemplateSelected(template)
-                      },
-                      onDelete: isTemplateRecipe(template)
-                        ? () => {
-                            openDeleteConfirmModal({
-                              itemName: template.name,
-                              itemType: 'receita',
-                              onConfirm: () => {
-                                const refetch = props.refetch
-                                void deleteRecipe(template.id).then(() => {
-                                  refetch()
-                                })
-                              },
-                            })
-                          }
-                        : undefined,
-                    }}
-                    primaryActions={<ItemFavorite foodId={template.id} />}
-                    secondaryActions={
-                      <RemoveFromRecentButton
-                        template={template}
-                        refetch={props.refetch}
-                      />
-                    }
-                  />
-                </>
-              )
-            }}
+            {(template) => (
+              <TemplateSearchResultItem
+                template={template}
+                onTemplateSelected={props.onTemplateSelected}
+                refetch={props.refetch}
+              />
+            )}
           </For>
         </div>
       </Show>
