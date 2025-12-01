@@ -42,22 +42,14 @@ export const RecipeItemExt = {
     const mainQuantity = Math.max(0.01, Math.round(newQuantity * 100) / 100)
     const totalChildQuantity = mainQuantity / recipe.prepared_multiplier
 
-    const currentChildQuantitySum = recipeItem.reference.children.reduce(
-      (sum, child) => sum + child.quantity,
-      0,
+    const normalizedChildren = Items.normalizedQuantitiesShallow(
+      recipeItem.reference.children,
     )
 
-    const childPercentages = recipeItem.reference.children.map((child) => ({
-      child,
-      percentage:
-        currentChildQuantitySum > 0
-          ? child.quantity / currentChildQuantitySum
-          : 1 / recipeItem.reference.children.length,
-    }))
-
-    const scaledChildren = childPercentages.map(({ child, percentage }) => ({
-      ...child,
-      quantity: Math.round(totalChildQuantity * percentage * 100) / 100,
+    const scaledChildren = normalizedChildren.map((normalizedChild) => ({
+      ...normalizedChild,
+      quantity:
+        Math.round(totalChildQuantity * normalizedChild.quantity * 100) / 100,
     }))
 
     return {
@@ -70,8 +62,16 @@ export const RecipeItemExt = {
     }
   },
 
-  isInSyncWithRecipe(item: RecipeItem, recipeItems: readonly Item[]): boolean {
-    return Items.equals(recipeItems, item.reference.children)
+  isInSyncWithRecipe(item: RecipeItem, recipe: Recipe): boolean {
+    const itemChildren = item.reference.children
+    const recipeChildren = recipe.items
+
+    const normalizedItemChildren =
+      Items.normalizedQuantitiesShallow(itemChildren)
+    const normalizedRecipeChildren =
+      Items.normalizedQuantitiesShallow(recipeChildren)
+
+    return Items.equals(normalizedItemChildren, normalizedRecipeChildren)
   },
 
   of(item: RecipeItem) {
@@ -83,8 +83,8 @@ export const RecipeItemExt = {
         RecipeItemExt.syncWithOriginal(item, originalRecipeItems),
       scaleQuantityAndChildren: (newQuantity: number, recipe: Recipe) =>
         RecipeItemExt.scaleQuantityAndChildren(item, recipe, newQuantity),
-      isInSyncWithRecipe: (recipeItems: readonly Item[]) =>
-        RecipeItemExt.isInSyncWithRecipe(item, recipeItems),
+      isInSyncWithRecipe: (recipe: Recipe) =>
+        RecipeItemExt.isInSyncWithRecipe(item, recipe),
     }
   },
 }

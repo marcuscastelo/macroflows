@@ -76,6 +76,6 @@ export const recipeItemUseCases = {
       return false
     }
 
-    return !RecipeItemExt.of(item).isInSyncWithRecipe(recipe.items)
+    return !RecipeItemExt.of(item).isInSyncWithRecipe(recipe)
   },
 }
