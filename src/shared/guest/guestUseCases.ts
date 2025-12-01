@@ -1,5 +1,6 @@
 import { signOut } from '~/modules/auth/application/services/authService'
 import { showPromise } from '~/modules/toast/application/toastManager'
+import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
@@ -42,6 +43,7 @@ export const guestUseCases = {
 
   enterGuestMode: (onSuccess: () => void) => {
     if (guestUseCases.hasAcceptedGuestTerms()) {
+      resetGuestDatabase()
       onSuccess()
       return
     }
@@ -60,6 +62,7 @@ export const guestUseCases = {
             error: 'Erro ao entrar em modo convidado. Tente novamente.',
           })
             .then(() => {
+              resetGuestDatabase()
               onSuccess()
             })
             .catch((error) => {
