@@ -18,7 +18,7 @@ Core rules (short)
 - Use the matching template from `docs/` and produce Markdown output.
 - For bugs, include a `Related Files` section listing relevant paths discovered by searching the codebase.
 - Use `printf` with a heredoc to write the issue body to a temp file and call `gh issue create --body-file` (zsh-compatible; prefer double quotes).
-- Output only the final `gh` command in a fenced markdown code block.
+- Output only the final `gh` command in a fenced markdown code block delimited by four backticks.
  - Never include "Additional context" sections or any agent-personal offers in the issue body. Do not append sentences like "If you want, I can open and inspect..." or other invitations to inspect code — the issue body must contain only the structured template content and investigation-derived facts.
 
 Workflow (refined)
@@ -56,7 +56,7 @@ Workflow (refined)
    - Do NOT append any extra free-form suggestions, personal offers to inspect files, or an "Additional context" paragraph to the prepared issue body. The generated issue body must not contain solicitation lines (for example: "If you want, I can open and inspect ...").
 
 7) Output
-   - After assembling everything, output only the final `gh` command inside a fenced markdown code block.
+   - After assembling everything, output only the final `gh` command inside a fenced markdown code block delimited by four backticks.
 
 8) Session feedback
    - Confirm creation with the user and offer to edit content or labels.
@@ -73,5 +73,4 @@ Safety and shell notes
 - When creating files in `/tmp`, handle permissions and check write success.
 
 Output metadata
-- The final prompt output must be a single `gh` command in a fenced code block (no additional text).
-
+- The final prompt output must be a single `gh` command in a fenced markdown code block delimited by four backticks (no additional text).

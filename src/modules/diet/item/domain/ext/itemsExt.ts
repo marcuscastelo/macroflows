@@ -63,6 +63,20 @@ function equals(
   return true
 }
 
+// Normalize quantities so they sum to 1, preserving relative proportions
+function normalizedQuantitiesShallow(items: readonly Item[]): Item[] {
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+  if (totalQuantity === 0) {
+    return items.map((item) => ({ ...item, quantity: 1 / items.length }))
+  }
+
+  return items.map((item) => ({
+    ...item,
+    quantity: item.quantity / totalQuantity,
+  }))
+}
+
 export const Items = {
   equals,
+  normalizedQuantitiesShallow,
 }

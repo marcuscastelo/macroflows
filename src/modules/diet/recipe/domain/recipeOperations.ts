@@ -101,6 +101,7 @@ export function getRecipePreparedQuantity(recipe: Recipe): number {
  * @param desiredPreparedQuantity - The desired prepared quantity in grams
  * @returns Object containing scaled items and the scaling factor used
  */
+// TODO: investigate duplicate function in recipeOperations.ts with RecipeItemExt.scaleQuantityAndChildren
 export function scaleRecipeByPreparedQuantity(
   recipe: Recipe,
   desiredPreparedQuantity: number,
