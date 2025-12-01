@@ -341,10 +341,18 @@ function createSeededDatabase(): GuestDatabase {
   const foods = createDemoFoods()
   const today = new Date().toISOString().split('T')[0]!
 
+  // Create 10 days of day diets
+  const dayDiets = []
+  for (let i = 0; i < 10; i++) {
+    const date = new Date(today)
+    date.setDate(date.getDate() + i)
+    dayDiets.push(createDemoDayDiet(date.toISOString().split('T')[0]!, foods))
+  }
+
   return {
     user: createDemoUser(),
     foods,
-    dayDiets: [createDemoDayDiet(today, foods)],
+    dayDiets,
     weights: createDemoWeights(),
     macroProfiles: [createDemoMacroProfile(), createDemoMacroProfile()],
   }
@@ -355,6 +363,13 @@ function createSeededDatabase(): GuestDatabase {
  */
 export function loadGuestDatabase(): GuestDatabase {
   if (guestDb !== null) {
+    // If today is empty, recreate the database
+    if (
+      guestDb.dayDiets.find((dd) => dd.target_day === getTodayYYYYMMDD()) ===
+      undefined
+    ) {
+      resetGuestDatabase()
+    }
     return guestDb
   }
 
