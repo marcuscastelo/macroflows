@@ -16,7 +16,7 @@ export function TemplateSearchResults(props: {
   refetch: (info?: unknown) => unknown
 }) {
   const notFoundAlert = () => {
-    if (props.filteredTemplates.length > 0) {
+    if (props.filteredTemplates().length > 0) {
       return null
     }
 
