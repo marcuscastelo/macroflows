@@ -1,4 +1,4 @@
-import { useNavigate } from '@solidjs/router'
+import { useLocation, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
 import {
@@ -12,6 +12,7 @@ import { logging } from '~/shared/utils/logging'
 
 export function GuestDataWarning() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleResetDemoData = () => {
     try {
@@ -38,7 +39,7 @@ export function GuestDataWarning() {
   }
 
   return (
-    <Show when={isGuestMode()}>
+    <Show when={isGuestMode() && location.pathname !== '/login'}>
       <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
         <h2 class="text-xl font-semibold mb-2 text-yellow-800 dark:text-yellow-200">
           Modo Demo
