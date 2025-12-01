@@ -19,6 +19,7 @@ Core rules (short)
 - For bugs, include a `Related Files` section listing relevant paths discovered by searching the codebase.
 - Use `printf` with a heredoc to write the issue body to a temp file and call `gh issue create --body-file` (zsh-compatible; prefer double quotes).
 - Output only the final `gh` command in a fenced markdown code block.
+ - Never include "Additional context" sections or any agent-personal offers in the issue body. Do not append sentences like "If you want, I can open and inspect..." or other invitations to inspect code — the issue body must contain only the structured template content and investigation-derived facts.
 
 Workflow (refined)
 1) Clarify type
@@ -52,6 +53,7 @@ Workflow (refined)
      - verify with `cat /tmp/issue-body.md`
      - run `gh issue create --title "..." --label ... --body-file /tmp/issue-body.md`
    - Always check command output for errors and report them.
+   - Do NOT append any extra free-form suggestions, personal offers to inspect files, or an "Additional context" paragraph to the prepared issue body. The generated issue body must not contain solicitation lines (for example: "If you want, I can open and inspect ...").
 
 7) Output
    - After assembling everything, output only the final `gh` command inside a fenced markdown code block.

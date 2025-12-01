@@ -37,23 +37,23 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
     const currentItem = untrack(props.itemDraft)
     const recipe = recipeResource.value()
 
-    if (
-      recipeResource.value.loading ||
-      recipe === null ||
-      recipe === undefined
-    ) {
-      logging.debug(
-        '[QuantityControls] Recipe resource loading or unavailable, skipping quantity update',
-      )
-      return
-    }
-
     logging.debug(
       '[QuantityControls] Update unified item quantity from field',
       { newQuantity },
     )
 
     if (isRecipeItem(currentItem)) {
+      if (
+        recipeResource.value.loading ||
+        recipe === null ||
+        recipe === undefined
+      ) {
+        logging.debug(
+          '[QuantityControls] Recipe resource loading or unavailable, skipping quantity update',
+        )
+        return
+      }
+
       props.setItemDraft(
         recipeItemUseCases.withEditedQuantity(currentItem, recipe, newQuantity),
       )
