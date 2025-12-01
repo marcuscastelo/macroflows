@@ -1,4 +1,4 @@
-import { For, Show } from 'solid-js'
+import { type Accessor, For, Show } from 'solid-js'
 
 import { type Template } from '~/modules/diet/template/domain/template'
 import {
@@ -11,7 +11,7 @@ import { TemplateSearchResultItem } from '~/sections/search/components/TemplateS
 
 export function TemplateSearchResults(props: {
   search: string
-  filteredTemplates: readonly Template[]
+  filteredTemplates: Accessor<readonly Template[]>
   onTemplateSelected: (template: Template) => void
   refetch: (info?: unknown) => unknown
 }) {
@@ -50,7 +50,7 @@ export function TemplateSearchResults(props: {
         </Show>
 
         <div class="flex-1 min-h-0 max-h-[60vh] overflow-y-auto scrollbar-gutter-outside scrollbar-clean bg-gray-800 mt-1 pr-4">
-          <For each={props.filteredTemplates}>
+          <For each={props.filteredTemplates()}>
             {(template) => (
               <TemplateSearchResultItem
                 template={template}
