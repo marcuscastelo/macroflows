@@ -41,31 +41,32 @@ export const guestUseCases = {
   },
 
   enterGuestMode: (onSuccess: () => void) => {
-    if (!guestUseCases.hasAcceptedGuestTerms()) {
-      openConfirmModal(
-        'Ao entrar em modo convidado, seus dados não serão salvos permanentemente e poderão ser perdidos. Deseja continuar?',
-        {
-          title: 'Entrar em modo convidado',
-          confirmText: 'Sim, entrar em modo convidado',
-          cancelText: 'Cancelar',
-          onConfirm: () => {
-            guestUseCases.acceptGuestTerms()
-            showPromise(signOut(), {
-              loading: 'Entrando em modo convidado...',
-              success: 'Agora você está em modo convidado!',
-              error: 'Erro ao entrar em modo convidado. Tente novamente.',
-            })
-              .then(() => {
-                onSuccess()
-              })
-              .catch((error) => {
-                logging.error('Guest mode error:', error)
-              })
-          },
-        },
-      )
-    } else {
+    if (guestUseCases.hasAcceptedGuestTerms()) {
       onSuccess()
+      return
     }
+
+    openConfirmModal(
+      'Ao entrar em modo convidado, seus dados não serão salvos permanentemente e poderão ser perdidos. Deseja continuar?',
+      {
+        title: 'Entrar em modo convidado',
+        confirmText: 'Sim, entrar em modo convidado',
+        cancelText: 'Cancelar',
+        onConfirm: () => {
+          guestUseCases.acceptGuestTerms()
+          showPromise(signOut(), {
+            loading: 'Entrando em modo convidado...',
+            success: 'Agora você está em modo convidado!',
+            error: 'Erro ao entrar em modo convidado. Tente novamente.',
+          })
+            .then(() => {
+              onSuccess()
+            })
+            .catch((error) => {
+              logging.error('Guest mode error:', error)
+            })
+        },
+      },
+    )
   },
 }
