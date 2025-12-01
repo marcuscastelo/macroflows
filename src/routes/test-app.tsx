@@ -7,12 +7,8 @@ import {
 import {
   getCurrentUser,
   isAuthenticated,
-} from '~/modules/auth/application/usecases/authState'
-import {
-  currentDayDiet,
-  setTargetDay,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
+} from '~/modules/auth/application/store/authState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -174,7 +170,7 @@ export default function TestApp() {
       <Providers>
         <DayMacros
           dayDiet={
-            currentDayDiet() ??
+            dayUseCases.currentDayDiet() ??
             promoteDayDiet(
               createNewDayDiet({
                 meals: [],
@@ -277,12 +273,12 @@ export default function TestApp() {
               readOnly={true}
               displayFormat="DD/MM/YYYY"
               value={{
-                startDate: targetDay(),
-                endDate: targetDay(),
+                startDate: dayUseCases.targetDay(),
+                endDate: dayUseCases.targetDay(),
               }}
               onChange={(value: DateValueType) => {
                 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                setTargetDay(value?.startDate as string)
+                dayUseCases.setTargetDay(value?.startDate as string)
               }}
             />
           </div>
@@ -308,7 +304,7 @@ export default function TestApp() {
             <TestField />
             <DayMacros
               dayDiet={
-                currentDayDiet() ??
+                dayUseCases.currentDayDiet() ??
                 promoteDayDiet(
                   createNewDayDiet({
                     meals: [],

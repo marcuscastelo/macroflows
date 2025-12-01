@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   isItemNameValid,
   MAX_ITEM_NAME_LENGTH,
@@ -101,7 +101,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         when={
           !isGroupItem(props.itemDraft()) &&
           props.viewMode !== 'group' &&
-          currentDayDiet()
+          dayUseCases.currentDayDiet()
         }
       >
         {(currentDayDiet) => (

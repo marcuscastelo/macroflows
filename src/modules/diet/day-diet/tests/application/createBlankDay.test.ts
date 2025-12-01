@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createBlankDay } from '~/modules/diet/day-diet/application/usecases/createBlankDay'
-import { insertDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
 
 // Mock the dayCrud module
@@ -21,7 +21,6 @@ vi.mock('~/modules/toast/application/toastManager', () => ({
 }))
 
 describe('createBlankDay', () => {
-  const mockInsertDayDiet = vi.mocked(insertDayDiet)
   const mockCreateDefaultMeals = vi.mocked(createDefaultMeals)
 
   beforeEach(() => {
@@ -35,12 +34,12 @@ describe('createBlankDay', () => {
       { id: 2, name: 'Almoço', items: [], __type: 'Meal' as const },
     ]
     mockCreateDefaultMeals.mockReturnValue(mockMeals)
-    mockInsertDayDiet.mockResolvedValueOnce(undefined)
+    vi.spyOn(dayUseCases, 'insertDayDiet').mockResolvedValueOnce(null)
 
     await createBlankDay('123', '2023-01-01')
 
     expect(mockCreateDefaultMeals).toHaveBeenCalledOnce()
-    expect(mockInsertDayDiet).toHaveBeenCalledWith({
+    expect(dayUseCases.insertDayDiet).toHaveBeenCalledWith({
       user_id: '123',
       target_day: '2023-01-01',
       meals: mockMeals,
@@ -49,11 +48,11 @@ describe('createBlankDay', () => {
   })
 
   it('should handle different user IDs and dates', async () => {
-    mockInsertDayDiet.mockResolvedValueOnce(undefined)
+    vi.spyOn(dayUseCases, 'insertDayDiet').mockResolvedValueOnce(null)
 
     await createBlankDay('456', '2023-12-25')
 
-    expect(mockInsertDayDiet).toHaveBeenCalledWith(
+    expect(dayUseCases.insertDayDiet).toHaveBeenCalledWith(
       expect.objectContaining({
         user_id: '456',
         target_day: '2023-12-25',
@@ -63,7 +62,7 @@ describe('createBlankDay', () => {
 
   it('should propagate insertDayDiet errors', async () => {
     const error = new Error('Database error')
-    mockInsertDayDiet.mockRejectedValueOnce(error)
+    vi.spyOn(dayUseCases, 'insertDayDiet').mockRejectedValueOnce(error)
 
     await expect(createBlankDay('123', '2023-01-01')).rejects.toThrow(
       'Database error',
@@ -75,11 +74,11 @@ describe('createBlankDay', () => {
       { id: 1, name: 'Café da manhã', items: [], __type: 'Meal' as const },
     ]
     mockCreateDefaultMeals.mockReturnValue(mockMeals)
-    mockInsertDayDiet.mockResolvedValueOnce(undefined)
+    vi.spyOn(dayUseCases, 'insertDayDiet').mockResolvedValueOnce(null)
 
     await createBlankDay('789', '2023-06-15')
 
-    expect(mockInsertDayDiet).toHaveBeenCalledWith({
+    expect(dayUseCases.insertDayDiet).toHaveBeenCalledWith({
       __type: 'NewDayDiet',
       user_id: '789',
       target_day: '2023-06-15',
@@ -89,11 +88,11 @@ describe('createBlankDay', () => {
 
   it('should handle empty meals from createDefaultMeals', async () => {
     mockCreateDefaultMeals.mockReturnValue([])
-    mockInsertDayDiet.mockResolvedValueOnce(undefined)
+    vi.spyOn(dayUseCases, 'insertDayDiet').mockResolvedValueOnce(null)
 
     await createBlankDay('100', '2023-01-01')
 
-    expect(mockInsertDayDiet).toHaveBeenCalledWith(
+    expect(dayUseCases.insertDayDiet).toHaveBeenCalledWith(
       expect.objectContaining({
         meals: [],
       }),

@@ -5,7 +5,7 @@ import {
   previousMacroProfile,
 } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 
 export function MacroProfileSettings() {

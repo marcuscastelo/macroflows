@@ -5,7 +5,7 @@ import { signOut } from '~/modules/auth/application/services/authService'
 import {
   getCurrentUser,
   isAuthenticated,
-} from '~/modules/auth/application/usecases/authState'
+} from '~/modules/auth/application/store/authState'
 import {
   showError,
   showSuccess,

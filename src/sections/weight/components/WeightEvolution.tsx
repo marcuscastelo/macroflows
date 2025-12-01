@@ -2,14 +2,15 @@ import { For, Suspense } from 'solid-js'
 
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
+import { currentUserId } from '~/modules/user/application/user'
 import {
   setWeightChartType,
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
 import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
-import { userWeights } from '~/modules/weight/application/weight/weightState'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -44,7 +45,7 @@ export function WeightEvolution() {
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
-              weights={userWeights}
+              weights={weightUseCases.weights}
               desiredWeight={weightChartUseCases.desiredWeight()}
               type={weightChartType()}
             />
@@ -65,7 +66,13 @@ export function WeightEvolution() {
               }
 
               weightUseCases
-                .insertWeight(weight)
+                .insertWeight(
+                  createNewWeight({
+                    user_id: currentUserId(),
+                    weight,
+                    target_timestamp: new Date(Date.now()),
+                  }),
+                )
                 .then(() => weightField.setRawValue(''))
                 .catch(() => {})
             }}
@@ -77,7 +84,7 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...userWeights()].reverse().slice(0, 10)}
+              each={[...weightUseCases.weights()].reverse().slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

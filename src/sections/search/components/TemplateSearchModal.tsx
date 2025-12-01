@@ -88,10 +88,6 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
   ) => {
     const handleConfirm = async () => {
       const userId = currentUserId()
-      if (userId === undefined) {
-        showError('Usuário não autenticado')
-        return
-      }
 
       props.onNewItem?.(newItem, originalAddedItem)
 

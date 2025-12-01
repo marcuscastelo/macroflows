@@ -73,5 +73,4 @@
       "file": ".github/copilot-commit-message-instructions.md"
     }
   ],
-  "gitlens.experimental.generateCommitMessagePrompt": "Generate a commit message strictly following this extended Conventional Commits format: Use a specific type (e.g., feat, fix, refactor). Use a descriptive scope in parentheses (e.g., feat(auth): ...). Do not use vague terms like 'update' or 'wip'. If the change affects the UI, append '-ui' to the scope. If it's a breaking change, add '!' after the type (e.g., feat(api)!: ...). Message must be in technical English and concise. Example: feat(meal-ui): add macro summary card to meal view",
 }

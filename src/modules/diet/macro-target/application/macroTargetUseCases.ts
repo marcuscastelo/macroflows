@@ -3,8 +3,7 @@ import { userMacroProfiles } from '~/modules/diet/macro-profile/application/usec
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 
 const macroTargetAt = (day: Date): MacroNutrients | null => {
   const targetDayWeight_ = weightUseCases.effectiveAt(day)?.weight ?? null
@@ -13,13 +12,7 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
     day,
   )
 
-  const userId = currentUserId()
-
   if (targetDayWeight_ === null) {
-    if (userId === undefined) {
-      console.error('User ID is undefined')
-      return null
-    }
     showError(
       new Error(`Peso não encontrado para o dia ${day.toISOString()}`),
       {},
@@ -28,10 +21,6 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
   }
 
   if (targetDayMacroProfile_ === null) {
-    if (userId === undefined) {
-      console.error('User ID is undefined')
-      return null
-    }
     showError(
       new Error(
         `Meta de macros não encontrada para o dia ${day.toISOString()}`,

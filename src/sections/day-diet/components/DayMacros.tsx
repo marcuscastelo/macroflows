@@ -1,3 +1,4 @@
+import { A } from '@solidjs/router'
 import { createMemo, Show } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
@@ -25,6 +26,9 @@ export default function DayMacros(props: DayMacrosProps) {
       fallback={
         <div class="text-red-500 text-sm">
           Peso ou meta de macros não encontrada para o dia.
+          <A href="/profile" class="underline ml-1">
+            Verifique suas metas de macros.
+          </A>
         </div>
       }
     >

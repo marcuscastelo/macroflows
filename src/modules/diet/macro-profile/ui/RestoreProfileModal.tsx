@@ -3,13 +3,13 @@
  * Provides UI for restoring a previous macro profile.
  */
 
-import { deleteMacroProfile } from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { weightUseCases } from '~/modules/weight/application/weight/weightUseCases'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   closeModal,
@@ -65,7 +65,8 @@ function RestoreProfileModalFooter(props: {
   const handleRestore = () => {
     const closeModal = props.onClose
     const profileId = props.currentProfile.id
-    deleteMacroProfile(profileId)
+    macroProfileUseCases
+      .deleteMacroProfile(profileId)
       .then(() => {
         showSuccess(
           'Perfil antigo restaurado com sucesso, se necessário, atualize a página',

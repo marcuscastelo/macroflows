@@ -1,9 +1,9 @@
+import { setAuthState } from '~/modules/auth/application/store/authState'
 import {
   type SignInOptions,
   type SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
-import { setAuthState } from '~/modules/auth/infrastructure/signals/authState'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
 import { fetchUsers, insertUserSilently } from '~/modules/user/application/user'

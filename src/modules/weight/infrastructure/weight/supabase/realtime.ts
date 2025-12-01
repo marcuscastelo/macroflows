@@ -1,12 +1,18 @@
-import { weightSchema } from '~/modules/weight/domain/weight/weight'
-import { weightCacheStore } from '~/modules/weight/infrastructure/weight/signals/weightCacheStore'
+import {
+  type Weight,
+  weightSchema,
+} from '~/modules/weight/domain/weight/weight'
 import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/weight/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
-export function initializeWeightRealtime(): void {
+export function initializeWeightRealtime(callbacks: {
+  onInsert: (weight: Weight) => void
+  onUpdate: (weight: Weight) => void
+  onDelete: (weight: Weight) => void
+}): void {
   if (initialized) {
     return
   }
@@ -21,24 +27,21 @@ export function initializeWeightRealtime(): void {
       switch (event.eventType) {
         case 'INSERT': {
           if (event.new !== undefined) {
-            weightCacheStore.upsertToCache(event.new)
+            callbacks.onInsert(event.new)
           }
           break
         }
 
         case 'UPDATE': {
           if (event.new) {
-            weightCacheStore.upsertToCache(event.new)
+            callbacks.onUpdate(event.new)
           }
           break
         }
 
         case 'DELETE': {
           if (event.old) {
-            weightCacheStore.removeFromCache({
-              by: 'id',
-              value: event.old.id,
-            })
+            callbacks.onDelete(event.old)
           }
           break
         }

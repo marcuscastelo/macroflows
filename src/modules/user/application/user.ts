@@ -1,26 +1,39 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { getCurrentUser } from '~/modules/auth/application/usecases/authState'
+import { getCurrentUser } from '~/modules/auth/application/store/authState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import {
   demoteUserToNewUser,
   type NewUser,
   type User,
 } from '~/modules/user/domain/user'
+import { type UserRepository } from '~/modules/user/domain/userRepository'
+import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import {
   createSupabaseUserRepository,
   setupUserRealtimeSubscription,
 } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
+import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
 
-const userRepository = createSupabaseUserRepository()
+const supabaseUserRepository = createSupabaseUserRepository()
+const guestUserRepository = createGuestUserRepository()
+
+/**
+ * Returns the appropriate repository based on guest mode state
+ */
+function getRepository(): UserRepository {
+  return isGuestMode() ? guestUserRepository : supabaseUserRepository
+}
 
 export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
-// Current user ID now is derived from auth
-export const currentUserId = () => getCurrentUser()?.id
+export const currentUserId = () => {
+  return getCurrentUser()?.id ?? GUEST_USER_ID
+}
 
 createEffect(() => {
   void showPromise(
@@ -60,7 +73,7 @@ setupUserRealtimeSubscription(() => {
  */
 export async function fetchUsers(): Promise<readonly User[]> {
   try {
-    const users = await userRepository.fetchUsers()
+    const users = await getRepository().fetchUsers()
     const newCurrentUser = users.find((user) => user.uuid === currentUserId())
     setUsers(users)
     setCurrentUser(newCurrentUser ?? null)
@@ -79,7 +92,7 @@ export async function fetchUsers(): Promise<readonly User[]> {
  */
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const user = await userRepository.fetchUser(currentUserId() ?? '')
+    const user = await getRepository().fetchUser(currentUserId())
     setCurrentUser(user)
 
     return user
@@ -98,7 +111,7 @@ export async function fetchCurrentUser(): Promise<User | null> {
 export async function insertUser(newUser: NewUser): Promise<boolean> {
   try {
     await showPromise(
-      userRepository.insertUser(newUser),
+      getRepository().insertUser(newUser),
       {
         loading: 'Inserindo usuário...',
         success: 'Usuário inserido com sucesso',
@@ -123,7 +136,7 @@ export async function insertUserSilently(
   newUser: NewUser,
 ): Promise<User | null> {
   try {
-    const createdUser = await userRepository.insertUser(newUser)
+    const createdUser = await getRepository().insertUser(newUser)
     await fetchUsers()
     return createdUser
   } catch (error) {
@@ -144,7 +157,7 @@ export async function updateUser(
 ): Promise<User | null> {
   try {
     const user = await showPromise(
-      userRepository.updateUser(userId, newUser),
+      getRepository().updateUser(userId, newUser),
       {
         loading: 'Atualizando informações do usuário...',
         success: 'Informações do usuário atualizadas com sucesso',
@@ -168,7 +181,7 @@ export async function updateUser(
 export async function deleteUser(userId: User['uuid']): Promise<boolean> {
   try {
     await showPromise(
-      userRepository.deleteUser(userId),
+      getRepository().deleteUser(userId),
       {
         loading: 'Removendo usuário...',
         success: 'Usuário removido com sucesso',

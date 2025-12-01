@@ -11,7 +11,7 @@ import { APP_VERSION } from '~/app-version'
 import {
   getCurrentUser,
   isAuthenticated,
-} from '~/modules/auth/application/usecases/authState'
+} from '~/modules/auth/application/store/authState'
 import { currentUserId, users } from '~/modules/user/application/user'
 import { AuthUserDropdown } from '~/sections/common/components/AuthUserDropdown'
 import { Button } from '~/sections/common/components/buttons/Button'
