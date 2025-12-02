@@ -12,8 +12,8 @@ import {
   getCurrentUser,
   isAuthenticated,
 } from '~/modules/auth/application/store/authState'
+import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
 import { currentUserId } from '~/modules/user/application/user'
-import { AuthUserDropdown } from '~/sections/common/components/AuthUserDropdown'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
