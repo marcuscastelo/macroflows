@@ -1,5 +1,6 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardPayload,
@@ -20,7 +21,6 @@ import {
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
 import { ItemView } from '~/sections/item/components/ItemView'
@@ -141,7 +141,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     }
 
     try {
-      const userId = currentUserId()
+      const userId = authUseCases.currentUserIdOrGuestId()
 
       // Create new unified recipe directly from Item children
       const newUnifiedRecipe = createNewRecipe({

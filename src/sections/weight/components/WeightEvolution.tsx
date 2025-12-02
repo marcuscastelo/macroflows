@@ -1,8 +1,8 @@
 import { For, Suspense } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import {
   setWeightChartType,
   WEIGHT_CHART_OPTIONS,
@@ -68,7 +68,7 @@ export function WeightEvolution() {
               weightUseCases
                 .insertWeight(
                   createNewWeight({
-                    user_id: currentUserId(),
+                    user_id: authUseCases.currentUserIdOrGuestId(),
                     weight,
                     target_timestamp: new Date(Date.now()),
                   }),

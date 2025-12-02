@@ -1,5 +1,6 @@
 import { onMount, Suspense } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -31,7 +32,6 @@ import {
 } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -89,7 +89,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     closeEditModal: () => void,
   ) => {
     const handleConfirm = async () => {
-      const userId = currentUserId()
+      const userId = authUseCases.currentUserIdOrGuestId()
 
       props.onNewItem?.(newItem, originalAddedItem)
 
@@ -112,7 +112,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
         if (
           recentFood !== null &&
-          (recentFood.user_id !== currentUserId() ||
+          (recentFood.user_id !== authUseCases.currentUserIdOrGuestId() ||
             recentFood.type !== type ||
             recentFood.reference_id !== referenceId)
         ) {

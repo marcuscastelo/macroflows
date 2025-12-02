@@ -1,5 +1,6 @@
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
@@ -11,6 +12,9 @@ type GuestTermValue = {
 }
 
 export const guestUseCases = {
+  isGuestMode: () =>
+    authUseCases.currentUserIdOrGuestId() === GUEST_USER_ID &&
+    guestUseCases.hasAcceptedGuestTerms(),
   hasAcceptedGuestTerms: () => {
     const item = localStorage.getItem(GUEST_TERMS_KEY)
     const accepted = item !== null ? jsonParseWithStack(item) : false
@@ -39,6 +43,10 @@ export const guestUseCases = {
       GUEST_TERMS_KEY,
       JSON.stringify({ acceptedAt: new Date().toISOString() }),
     )
+  },
+
+  revokeGuestTerms: () => {
+    localStorage.removeItem(GUEST_TERMS_KEY)
   },
 
   enterGuestMode: (onSuccess: () => void) => {
@@ -71,5 +79,20 @@ export const guestUseCases = {
         },
       },
     )
+  },
+
+  exitGuestMode: (onSuccess: () => void) => {
+    showPromise(authUseCases.signOut(), {
+      loading: 'Saindo do modo convidado...',
+      success: 'Modo convidado desativado!',
+      error: 'Erro ao sair do modo convidado. Tente novamente.',
+    })
+      .then(() => {
+        guestUseCases.revokeGuestTerms()
+        onSuccess()
+      })
+      .catch((error) => {
+        logging.error('Exit guest mode error:', error)
+      })
   },
 }

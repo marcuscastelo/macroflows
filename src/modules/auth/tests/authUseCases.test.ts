@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { type AuthStore } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authStore'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createAuthGatewayMock } from '~/modules/auth/tests/utils/mockAuthGateway'
 import { createAuthStoreMock } from '~/modules/auth/tests/utils/mockAuthStore'

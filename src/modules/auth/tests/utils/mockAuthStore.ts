@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 
-import { type AuthStore } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authStore'
 
 export function createAuthStoreMock(): AuthStore {
   return {

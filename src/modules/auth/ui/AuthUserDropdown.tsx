@@ -3,7 +3,6 @@ import { Show } from 'solid-js'
 
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import {
@@ -62,7 +61,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
               <UserIcon
-                userId={currentUserId}
+                userId={authUseCases.currentUserIdOrGuestId}
                 userName={(): string => {
                   const authUser = authUseCases.getCurrentUser()
                   if (authUser !== null && authUser.email !== '') {

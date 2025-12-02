@@ -10,7 +10,6 @@ import {
 import { APP_VERSION } from '~/app-version'
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
-import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
@@ -135,7 +134,7 @@ export function BottomNavigation() {
                   }
                 >
                   <UserIcon
-                    userId={currentUserId}
+                    userId={authUseCases.currentUserIdOrGuestId}
                     userName={(): string => {
                       const authUser = authUseCases.getCurrentUser()
                       if (authUser !== null && authUser.email !== '') {
