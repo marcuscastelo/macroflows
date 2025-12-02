@@ -1,5 +1,6 @@
 import { type AuthStore } from '~/modules/auth/application/store/authState'
 import {
+  type AuthSession,
   type SignInOptions,
   type SignOutOptions,
 } from '~/modules/auth/domain/auth'
@@ -11,8 +12,36 @@ import {
   insertUserSilently,
   setCurrentUser,
 } from '~/modules/user/application/user'
-import { generateDefaultUserFromSession } from '~/modules/user/application/userCreationHelper'
+import { createNewUser, type NewUser } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
+
+/**
+ * Creates a default new user from an auth session.
+ * @param session - The auth session containing user data.
+ * @returns A NewUser object with default values.
+ */
+function generateDefaultUserFromSession(session: AuthSession): NewUser {
+  const authUser = session.user
+  const metadata = authUser.user_metadata ?? {}
+  const fullName = metadata['full_name']
+  const name = metadata['name']
+  const emailPrefix = authUser.email.split('@')[0]
+  const displayName =
+    (typeof fullName === 'string' ? fullName : null) ??
+    (typeof name === 'string' ? name : null) ??
+    (emailPrefix !== '' ? emailPrefix : null) ??
+    'User'
+
+  return createNewUser({
+    uuid: authUser.id,
+    name: displayName,
+    favorite_foods: [],
+    diet: 'normo',
+    birthdate: new Date().toISOString().split('T')[0] ?? '',
+    gender: 'male',
+    desired_weight: 70,
+  })
+}
 
 export function createAuthService(
   authStore: AuthStore,
