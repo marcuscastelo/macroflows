@@ -71,7 +71,12 @@ export const RecipeItemExt = {
     const normalizedRecipeChildren =
       Items.normalizedQuantitiesShallow(recipeChildren)
 
-    return Items.equals(normalizedItemChildren, normalizedRecipeChildren)
+    // Use tolerance-based comparison for normalized proportions to handle
+    // floating-point precision errors from quantity rounding during scaling
+    return Items.equalsByProportion(
+      normalizedItemChildren,
+      normalizedRecipeChildren,
+    )
   },
 
   of(item: RecipeItem) {

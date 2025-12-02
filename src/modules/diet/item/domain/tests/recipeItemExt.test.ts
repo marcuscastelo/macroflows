@@ -39,6 +39,20 @@ const makeRecipeItem = (
   __type: 'UnifiedItem' as const,
 })
 
+const makeRecipe = (
+  id: number,
+  name: string,
+  items: Item[],
+  prepared_multiplier = 1,
+): Recipe => ({
+  id,
+  name,
+  items,
+  prepared_multiplier,
+  user_id: '',
+  __type: 'Recipe',
+})
+
 describe('RecipeItemExt', () => {
   it('syncWithOriginal replaces children with originals and updates parent quantity', () => {
     const original: Item = makeFoodItem(100, 'Original Apple', 200, {
@@ -107,5 +121,234 @@ describe('RecipeItemExt', () => {
     expect(tinyScaled.reference.children[0]!.quantity).toBeGreaterThanOrEqual(
       0.0001,
     )
+  })
+
+  describe('isInSyncWithRecipe', () => {
+    it('returns true for single-item recipe with scaled quantity (issue #1417)', () => {
+      // Single-item recipe (e.g., raw -> cooked conversion)
+      const rawPasta = makeFoodItem(1, 'Raw Pasta', 100, {
+        protein: 8,
+        carbs: 25,
+        fat: 1,
+      })
+      const recipe = makeRecipe(1, 'Cooked Pasta', [rawPasta], 2.22)
+
+      // User's recipe item with scaled quantity (half portion)
+      const scaledPasta = makeFoodItem(1, 'Raw Pasta', 50, {
+        protein: 8,
+        carbs: 25,
+        fat: 1,
+      })
+      const recipeItem = makeRecipeItem(1, 'Cooked Pasta', 111, [scaledPasta])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(true)
+    })
+
+    it('returns true for multi-item recipe with scaled quantity preserving proportions (issue #1417)', () => {
+      // Multi-item recipe (e.g., sandwich with bread, butter, cheese)
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const butter = makeFoodItem(2, 'Butter', 30, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const cheese = makeFoodItem(3, 'Cheese', 70, {
+        protein: 25,
+        carbs: 2,
+        fat: 30,
+      })
+      const recipe = makeRecipe(1, 'Sandwich', [bread, butter, cheese], 1)
+
+      // User's recipe item with scaled quantity (half portion - 100g instead of 200g)
+      // Proportions are preserved: 50% bread, 15% butter, 35% cheese
+      const scaledBread = makeFoodItem(1, 'Bread', 50, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const scaledButter = makeFoodItem(2, 'Butter', 15, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const scaledCheese = makeFoodItem(3, 'Cheese', 35, {
+        protein: 25,
+        carbs: 2,
+        fat: 30,
+      })
+      const recipeItem = makeRecipeItem(1, 'Sandwich', 100, [
+        scaledBread,
+        scaledButter,
+        scaledCheese,
+      ])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(true)
+    })
+
+    it('returns true for multi-item recipe after scaling with rounding (issue #1417 edge case)', () => {
+      // This test case specifically reproduces the bug where rounding causes
+      // normalized proportions to differ slightly
+      const item1 = makeFoodItem(1, 'Item 1', 33.33, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const item2 = makeFoodItem(2, 'Item 2', 33.33, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const item3 = makeFoodItem(3, 'Item 3', 33.34, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const recipe = makeRecipe(1, 'Test Recipe', [item1, item2, item3], 1)
+
+      // After scaling to half (50g), with rounding to 2 decimal places:
+      // 33.33/100 * 50 = 16.665 -> 16.67
+      // 33.33/100 * 50 = 16.665 -> 16.67
+      // 33.34/100 * 50 = 16.67 -> 16.67
+      // Total after rounding: 50.01 (not exactly 50 due to rounding)
+      const scaledItem1 = makeFoodItem(1, 'Item 1', 16.67, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const scaledItem2 = makeFoodItem(2, 'Item 2', 16.67, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const scaledItem3 = makeFoodItem(3, 'Item 3', 16.67, {
+        protein: 10,
+        carbs: 10,
+        fat: 10,
+      })
+      const recipeItem = makeRecipeItem(1, 'Test Recipe', 50.01, [
+        scaledItem1,
+        scaledItem2,
+        scaledItem3,
+      ])
+
+      // Should be in sync despite slight rounding differences in normalized proportions
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(true)
+    })
+
+    it('returns true when multiplying total quantity by 1.0 (noop case)', () => {
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const butter = makeFoodItem(2, 'Butter', 50, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const recipe = makeRecipe(1, 'Toast', [bread, butter], 1)
+
+      // Recipe item with exact same quantities as recipe
+      const recipeItem = makeRecipeItem(1, 'Toast', 150, [bread, butter])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(true)
+    })
+
+    it('returns false when item is added to recipe item children', () => {
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const recipe = makeRecipe(1, 'Bread Recipe', [bread], 1)
+
+      // User added butter to the recipe item
+      const extraButter = makeFoodItem(2, 'Butter', 20, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const recipeItem = makeRecipeItem(1, 'Bread Recipe', 120, [
+        bread,
+        extraButter,
+      ])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(false)
+    })
+
+    it('returns false when item is removed from recipe item children', () => {
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const butter = makeFoodItem(2, 'Butter', 50, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const recipe = makeRecipe(1, 'Toast', [bread, butter], 1)
+
+      // User removed butter from the recipe item
+      const recipeItem = makeRecipeItem(1, 'Toast', 100, [bread])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(false)
+    })
+
+    it('returns false when proportions are changed in recipe item children', () => {
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const butter = makeFoodItem(2, 'Butter', 50, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const recipe = makeRecipe(1, 'Toast', [bread, butter], 1)
+      // Original proportions: bread 66.67%, butter 33.33%
+
+      // User changed proportions to 50% bread, 50% butter
+      const modifiedBread = makeFoodItem(1, 'Bread', 75, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const modifiedButter = makeFoodItem(2, 'Butter', 75, {
+        protein: 0,
+        carbs: 0,
+        fat: 80,
+      })
+      const recipeItem = makeRecipeItem(1, 'Toast', 150, [
+        modifiedBread,
+        modifiedButter,
+      ])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(false)
+    })
+
+    it('returns false when item name is changed in recipe item children', () => {
+      const bread = makeFoodItem(1, 'Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const recipe = makeRecipe(1, 'Bread Recipe', [bread], 1)
+
+      // User renamed the bread
+      const renamedBread = makeFoodItem(1, 'Whole Wheat Bread', 100, {
+        protein: 8,
+        carbs: 50,
+        fat: 2,
+      })
+      const recipeItem = makeRecipeItem(1, 'Bread Recipe', 100, [renamedBread])
+
+      expect(RecipeItemExt.isInSyncWithRecipe(recipeItem, recipe)).toBe(false)
+    })
   })
 })
