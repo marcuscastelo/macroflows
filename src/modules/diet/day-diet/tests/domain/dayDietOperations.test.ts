@@ -18,7 +18,11 @@ function makeItem(id: number, name = 'Arroz') {
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbsInGrams: 10, proteinInGrams: 2, fatInGrams: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
