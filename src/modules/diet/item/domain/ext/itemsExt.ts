@@ -28,9 +28,6 @@ function equals(
       Math.abs(original.quantity - current.quantity) > 0.0001 ||
       original.reference.type !== current.reference.type
     ) {
-      alert(
-        `Basic properties differ: original ${JSON.stringify(original)}, current ${JSON.stringify(current)}`,
-      )
       return false
     }
 
@@ -40,9 +37,6 @@ function equals(
       const currentMacros = current.reference.macros
 
       if (!Macros.approxEqual(originalMacros, currentMacros)) {
-        alert(
-          `Macros differ: original ${JSON.stringify(originalMacros)}, current ${JSON.stringify(currentMacros)}`,
-        )
         return false
       }
       continue
