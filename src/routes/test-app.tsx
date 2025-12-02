@@ -1,13 +1,6 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
-import {
-  signIn,
-  signOut,
-} from '~/modules/auth/application/services/authService'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
@@ -46,7 +39,10 @@ import { logging } from '~/shared/utils/logging'
 function GoogleLoginButton() {
   const handleLogin = async () => {
     try {
-      await signIn({ provider: 'google', redirectTo: window.location.origin })
+      await authUseCases.signIn({
+        provider: 'google',
+        redirectTo: window.location.origin,
+      })
     } catch (error) {
       logging.error('TestApp login error:', error)
     }
@@ -54,7 +50,8 @@ function GoogleLoginButton() {
 
   return (
     <button class="btn btn-primary" onClick={() => void handleLogin()}>
-      Login with Google (Test) [{getCurrentUser()?.id ?? 'not logged in'}]
+      Login with Google (Test) [
+      {authUseCases.getCurrentUser()?.id ?? 'not logged in'}]
     </button>
   )
 }
@@ -62,7 +59,7 @@ function GoogleLoginButton() {
 function LogoutButton() {
   const handleLogout = async () => {
     try {
-      await signOut()
+      await authUseCases.signOut()
     } catch (error) {
       logging.error('TestApp logout error:', error)
     }
@@ -77,9 +74,9 @@ function LogoutButton() {
 
 function UserInfo() {
   return (
-    <Show when={isAuthenticated} fallback="not auth">
+    <Show when={authUseCases.isAuthenticated()} fallback="not auth">
       <div class="p-4 border rounded-md">
-        <p>User: {getCurrentUser()?.email}</p>
+        <p>User: {authUseCases.getCurrentUser()?.email}</p>
         <LogoutButton />
       </div>
     </Show>

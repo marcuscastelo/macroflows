@@ -1,39 +1,23 @@
 import { createSignal } from 'solid-js'
 
-import { type AuthState, type AuthUser } from '~/modules/auth/domain/auth'
+import { type AuthState } from '~/modules/auth/domain/auth'
 
-// Auth state signals
-export const [authState, setAuthState] = createSignal<AuthState>({
-  user: null,
-  session: null,
-  isLoading: true,
-  isAuthenticated: false,
-})
+export function createAuthStore() {
+  // Auth state signals
+  const [authState, setAuthState] = createSignal<AuthState>({
+    user: null,
+    session: null,
+    isLoading: true,
+    isAuthenticated: false,
+  })
 
-/**
- * Get current auth state
- */
-export function getAuthState(): AuthState {
-  return authState()
+  return {
+    authState,
+    setAuthState,
+    getCurrentUser: () => authState().user,
+    isAuthenticated: () => authState().isAuthenticated,
+    isAuthLoading: () => authState().isLoading,
+  }
 }
 
-/**
- * Get current authenticated user
- */
-export function getCurrentUser(): AuthUser | null {
-  return authState().user
-}
-
-/**
- * Check if user is authenticated
- */
-export function isAuthenticated(): boolean {
-  return authState().isAuthenticated
-}
-
-/**
- * Check if auth is loading
- */
-export function isAuthLoading(): boolean {
-  return authState().isLoading
-}
+export type AuthStore = ReturnType<typeof createAuthStore>

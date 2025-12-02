@@ -1,11 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-import { signOut } from '~/modules/auth/application/services/authService'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -28,7 +24,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
       cancelText: 'Cancelar',
       onConfirm: async () => {
         try {
-          await signOut()
+          await authUseCases.signOut()
           closeModal(props.modalId)
           navigate('/login')
         } catch (error) {
@@ -48,7 +44,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
     <div class="flex flex-col gap-2 min-w-64">
       {/* Authentication Status */}
       <Show
-        when={isAuthenticated()}
+        when={authUseCases.isAuthenticated()}
         fallback={
           <div class="p-4 border-b border-gray-200 dark:border-gray-700">
             <div class="text-center">
@@ -68,7 +64,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
               <UserIcon
                 userId={currentUserId}
                 userName={(): string => {
-                  const authUser = getCurrentUser()
+                  const authUser = authUseCases.getCurrentUser()
                   if (authUser !== null && authUser.email !== '') {
                     const emailParts = authUser.email.split('@')
                     return emailParts[0] ?? ''
@@ -80,7 +76,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
             </div>
             <div class="flex-1">
               <p class="font-medium text-gray-900 dark:text-white">
-                {getCurrentUser()?.email}
+                {authUseCases.getCurrentUser()?.email}
               </p>
               <p class="text-sm text-gray-500 dark:text-gray-400">
                 Conectado via Google
@@ -91,7 +87,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
       </Show>
 
       {/* Actions */}
-      <Show when={isAuthenticated()}>
+      <Show when={authUseCases.isAuthenticated()}>
         <div class="p-2">
           <Button
             class="btn-ghost text-red-600 dark:text-red-400 w-full justify-start"

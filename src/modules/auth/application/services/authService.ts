@@ -1,4 +1,4 @@
-import { setAuthState } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authState'
 import {
   type SignInOptions,
   type SignOutOptions,
@@ -15,11 +15,12 @@ import { createDefaultUserFromAuthSession } from '~/modules/user/application/use
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
+  authStore: AuthStore,
   authGateway: AuthGateway = createSupabaseAuthGateway(),
 ) {
   async function signIn(options: SignInOptions): Promise<void> {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: true }))
 
       const result = await authGateway.signIn(options)
 
@@ -35,7 +36,7 @@ export function createAuthService(
       }
     } catch (e) {
       logging.error('Auth signIn error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -45,12 +46,12 @@ export function createAuthService(
    */
   async function signOut(options?: SignOutOptions): Promise<void> {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: true }))
 
       const result = await authGateway.signOut(options)
 
       if (result.error) {
-        setAuthState(() => ({
+        authStore.setAuthState(() => ({
           session: null,
           user: null,
           isAuthenticated: false,
@@ -62,7 +63,7 @@ export function createAuthService(
       // Auth state will be updated via the subscription
     } catch (e) {
       logging.error('Auth signOut error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -73,7 +74,7 @@ export function createAuthService(
   function initializeAuth(): void {
     try {
       authGateway.onAuthStateChange((_event, session) => {
-        setAuthState((prev) => ({
+        authStore.setAuthState((prev) => ({
           ...prev,
           session,
           user: session?.user
@@ -121,7 +122,7 @@ export function createAuthService(
       void loadInitialSession()
     } catch (e) {
       logging.error('Auth initializeAuth error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
     }
   }
 
@@ -132,7 +133,7 @@ export function createAuthService(
     try {
       const session = await authGateway.getSession()
       logging.debug(`loadInitialSession session:`, { session })
-      setAuthState(() => ({
+      authStore.setAuthState(() => ({
         session,
         user: session?.user
           ? {
@@ -151,7 +152,7 @@ export function createAuthService(
       }))
     } catch (e) {
       logging.error('Auth loadInitialSession error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -163,13 +164,3 @@ export function createAuthService(
     loadInitialSession,
   }
 }
-
-// Default instance for convenience
-const defaultAuthService = createAuthService()
-
-// Export individual functions for easier importing
-export const { signIn, signOut, initializeAuth, loadInitialSession } =
-  defaultAuthService
-
-// Also export the default instance
-export default defaultAuthService

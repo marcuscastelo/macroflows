@@ -1,9 +1,8 @@
 import * as Sentry from '@sentry/solidstart'
 
 export async function createClientIntegrations() {
-  const { solidRouterBrowserTracingIntegration } = await import(
-    '@sentry/solidstart/solidrouter'
-  )
+  const { solidRouterBrowserTracingIntegration } =
+    await import('@sentry/solidstart/solidrouter')
 
   return [
     solidRouterBrowserTracingIntegration(),

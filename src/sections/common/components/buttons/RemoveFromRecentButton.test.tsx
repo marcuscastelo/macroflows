@@ -183,6 +183,7 @@ describe('RemoveFromRecentButton Logic', () => {
         expect.objectContaining({
           loading: 'Removendo item da lista de recentes...',
           success: 'Item removido da lista de recentes com sucesso!',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           error: expect.any(Function),
         }),
       )

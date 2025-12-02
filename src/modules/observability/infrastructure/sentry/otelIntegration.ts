@@ -30,9 +30,8 @@ async function wrapContextManagerClass(type: 'server' | 'client') {
     const { ZoneContextManager } = await import('@opentelemetry/context-zone')
     return SentryOTel.wrapContextManagerClass(ZoneContextManager)
   } else {
-    const { AsyncLocalStorageContextManager } = await import(
-      '@opentelemetry/context-async-hooks'
-    )
+    const { AsyncLocalStorageContextManager } =
+      await import('@opentelemetry/context-async-hooks')
     return SentryOTel.wrapContextManagerClass(AsyncLocalStorageContextManager)
   }
 }

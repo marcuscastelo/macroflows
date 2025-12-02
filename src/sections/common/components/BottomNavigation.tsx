@@ -8,10 +8,7 @@ import {
 } from 'solid-js'
 
 import { APP_VERSION } from '~/app-version'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
 import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -114,13 +111,13 @@ export function BottomNavigation() {
             <BottomNavigationTab
               active={false}
               label={
-                isAuthenticated()
-                  ? (getCurrentUser()?.email ?? 'Usuário')
+                authUseCases.isAuthenticated()
+                  ? (authUseCases.getCurrentUser()?.email ?? 'Usuário')
                   : 'Login'
               }
               icon={(props) => (
                 <Show
-                  when={isAuthenticated()}
+                  when={authUseCases.isAuthenticated()}
                   fallback={
                     <svg
                       class={props.class}
@@ -140,7 +137,7 @@ export function BottomNavigation() {
                   <UserIcon
                     userId={currentUserId}
                     userName={(): string => {
-                      const authUser = getCurrentUser()
+                      const authUser = authUseCases.getCurrentUser()
                       if (authUser !== null && authUser.email !== '') {
                         const emailParts = authUser.email.split('@')
                         return emailParts[0] ?? ''

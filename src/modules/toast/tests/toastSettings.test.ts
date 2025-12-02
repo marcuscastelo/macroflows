@@ -96,9 +96,8 @@ describe('toastSettings', () => {
     })
     vi.resetModules()
     setMockLocalStorage()
-    const toastSettingsModule = await import(
-      '~/modules/toast/infrastructure/toastSettings'
-    )
+    const toastSettingsModule =
+      await import('~/modules/toast/infrastructure/toastSettings')
     expect(toastSettingsModule.getToastSettings().showBackgroundSuccess).toBe(
       true,
     )
@@ -109,9 +108,8 @@ describe('toastSettings', () => {
     localStorageMock[STORAGE_KEY] = '{ invalid json'
     vi.resetModules()
     setMockLocalStorage()
-    const toastSettingsModule = await import(
-      '~/modules/toast/infrastructure/toastSettings'
-    )
+    const toastSettingsModule =
+      await import('~/modules/toast/infrastructure/toastSettings')
     expect(toastSettingsModule.getToastSettings()).toEqual(DEFAULTS)
   })
 })
