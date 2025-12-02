@@ -104,7 +104,11 @@ export function BodyMeasureView(props: {
                 component: 'BodyMeasureView',
                 measureId,
               })
-              showError('Erro ao deletar: \n' + JSON.stringify(error, null, 2))
+              showError(
+                error,
+                {},
+                `Erro ao excluir medida: ${formatError(error)}`,
+              )
             })
         },
       },
