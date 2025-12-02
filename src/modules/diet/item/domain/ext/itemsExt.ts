@@ -50,6 +50,7 @@ function equals(
       if (!equals(original.reference.children, current.reference.children)) {
         return false
       }
+      continue
     }
     throw new Error('Mismatched item types during comparison')
   }
