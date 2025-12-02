@@ -24,14 +24,17 @@ export const recipeItemUseCases = {
         recipe,
       )
     } catch (error) {
-      showError(
-        'Não foi possível ajustar a quantidade da receita. Verifique se todos os itens possuem quantidade válida.',
-      )
       logging.error(
         '[recipeItemUseCases] Error scaling recipe item quantity:',
+        error,
         {
-          error,
+          component: 'recipeItemUseCases',
+          itemId: item.id,
+          recipeId: recipe.id,
         },
+      )
+      showError(
+        'Não foi possível ajustar a quantidade da receita. Verifique se todos os itens possuem quantidade válida.',
       )
       return { ...item }
     }

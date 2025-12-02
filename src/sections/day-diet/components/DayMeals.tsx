@@ -60,6 +60,11 @@ const handleEditItem = (
       dayUseCases
         .updateItemInMealOrchestrated(meal, item, updatedItem)
         .catch((e) => {
+          logging.error('DayMeals item update error:', e, {
+            component: 'DayMeals',
+            mealId: meal.id,
+            itemId: item.id,
+          })
           showError(e, {}, 'Erro ao atualizar item')
         })
     },
@@ -118,6 +123,10 @@ const handleNewItem = (
   }
 
   dayUseCases.addItemToMealOrchestrated(meal, newItem).catch((e) => {
+    logging.error('DayMeals item add error:', e, {
+      component: 'DayMeals',
+      mealId: meal.id,
+    })
     showError(e, {}, 'Erro ao adicionar item')
   })
 }
@@ -167,41 +176,49 @@ export default function DayMeals(props: {
   return (
     <>
       <For each={props.dayDiet.meals}>
-        {(meal) => (
-          <MealEditView
-            class="mt-5"
-            dayDiet={() => props.dayDiet}
-            meal={() => meal}
-            header={
-              <MealEditViewHeader
-                onUpdateMeal={(meal) => {
-                  handleUpdateMeal(meal, props).catch((e) => {
-                    showError(e, {}, 'Erro ao atualizar refeição')
-                  })
-                }}
-                mode={props.mode}
-              />
-            }
-            content={
-              <MealEditViewContent
-                onEditItem={(item) => {
-                  handleEditItem(meal, item, props)
-                }}
-                onUpdateMeal={(meal) => void handleUpdateMeal(meal, props)}
-                mode={props.mode}
-              />
-            }
-            actions={
-              props.mode === 'summary' ? undefined : (
-                <MealEditViewActions
-                  onNewItem={() => {
-                    handleNewItemButton(meal, props)
+        {(meal) => {
+          const targetDay = props.dayDiet.target_day
+          return (
+            <MealEditView
+              class="mt-5"
+              dayDiet={() => props.dayDiet}
+              meal={() => meal}
+              header={
+                <MealEditViewHeader
+                  onUpdateMeal={(meal) => {
+                    handleUpdateMeal(meal, props).catch((e) => {
+                      logging.error('DayMeals meal update error:', e, {
+                        component: 'DayMeals',
+                        mealId: meal.id,
+                        day: targetDay,
+                      })
+                      showError(e, {}, 'Erro ao atualizar refeição')
+                    })
                   }}
+                  mode={props.mode}
                 />
-              )
-            }
-          />
-        )}
+              }
+              content={
+                <MealEditViewContent
+                  onEditItem={(item) => {
+                    handleEditItem(meal, item, props)
+                  }}
+                  onUpdateMeal={(meal) => void handleUpdateMeal(meal, props)}
+                  mode={props.mode}
+                />
+              }
+              actions={
+                props.mode === 'summary' ? undefined : (
+                  <MealEditViewActions
+                    onNewItem={() => {
+                      handleNewItemButton(meal, props)
+                    }}
+                  />
+                )
+              }
+            />
+          )
+        }}
       </For>
 
       {props.mode !== 'summary' && (

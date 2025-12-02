@@ -93,12 +93,17 @@ export function BodyMeasureView(props: {
         confirmText: 'Excluir',
         cancelText: 'Cancelar',
         onConfirm: () => {
+          const measureId = props.measure.id
           const afterDelete = () => {
             props.onRefetchBodyMeasures()
           }
-          deleteBodyMeasure(props.measure.id)
+          deleteBodyMeasure(measureId)
             .then(afterDelete)
             .catch((error) => {
+              logging.error('BodyMeasureView measure delete error:', error, {
+                component: 'BodyMeasureView',
+                measureId,
+              })
               showError('Erro ao deletar: \n' + JSON.stringify(error, null, 2))
             })
         },
