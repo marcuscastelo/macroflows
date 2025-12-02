@@ -8,7 +8,7 @@
 import {
   availableTabs,
   type TemplateSearchTab,
-} from '~/sections/search/components/TemplateSearchTabs'
+} from '~/modules/search/ui/TemplateSearchTabs'
 
 const STORAGE_KEY = 'macroflows:template-search-tab'
 

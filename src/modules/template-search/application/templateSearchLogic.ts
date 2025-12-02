@@ -5,8 +5,8 @@ import type { Food } from '~/modules/diet/food/domain/food'
 import type { FoodSearchParams } from '~/modules/diet/food/domain/foodRepository'
 import type { Recipe } from '~/modules/diet/recipe/domain/recipe'
 import type { Template } from '~/modules/diet/template/domain/template'
+import { availableTabs } from '~/modules/search/ui/TemplateSearchTabs'
 import { type User } from '~/modules/user/domain/user'
-import { availableTabs } from '~/sections/search/components/TemplateSearchTabs'
 
 /**
  * Dependencies for fetchTemplatesByTabLogic

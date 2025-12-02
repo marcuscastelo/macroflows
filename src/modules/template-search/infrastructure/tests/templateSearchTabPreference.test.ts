@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { availableTabs } from '~/sections/search/components/TemplateSearchTabs'
+import { availableTabs } from '~/modules/search/ui/TemplateSearchTabs'
 
 let localStorageMock: Record<string, string> = {}
 

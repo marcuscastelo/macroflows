@@ -7,6 +7,7 @@ import {
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
+import { openTemplateSearchModal } from '~/modules/search/ui/openTemplateSearchModal'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
 import { DeleteDayButton } from '~/sections/day-diet/components/DeleteDayButton'
@@ -17,7 +18,6 @@ import {
   MealEditViewContent,
   MealEditViewHeader,
 } from '~/sections/meal/components/MealEditView'
-import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 

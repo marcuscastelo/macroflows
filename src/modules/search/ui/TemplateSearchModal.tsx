@@ -18,6 +18,12 @@ import {
   updateRecentFood,
 } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
+import { TemplateSearchBar } from '~/modules/search/ui/TemplateSearchBar'
+import { TemplateSearchResults } from '~/modules/search/ui/TemplateSearchResults'
+import {
+  type TemplateSearchTab,
+  TemplateSearchTabs,
+} from '~/modules/search/ui/TemplateSearchTabs'
 import {
   debouncedSearch,
   refetchTemplates,
@@ -36,12 +42,6 @@ import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
 import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
-import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
-import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
-import {
-  type TemplateSearchTab,
-  TemplateSearchTabs,
-} from '~/sections/search/components/TemplateSearchTabs'
 import { formatError } from '~/shared/formatError'
 import {
   closeModal,

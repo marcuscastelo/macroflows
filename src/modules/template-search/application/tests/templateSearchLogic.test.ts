@@ -9,11 +9,11 @@ import {
   createNewRecipe,
   promoteRecipe,
 } from '~/modules/diet/recipe/domain/recipe'
+import { availableTabs } from '~/modules/search/ui/TemplateSearchTabs'
 import {
   fetchTemplatesByTabLogic,
   type FetchTemplatesDeps,
 } from '~/modules/template-search/application/templateSearchLogic'
-import { availableTabs } from '~/sections/search/components/TemplateSearchTabs'
 
 describe('fetchTemplatesByTabLogic', () => {
   const mockFood = promoteNewFoodToFood(

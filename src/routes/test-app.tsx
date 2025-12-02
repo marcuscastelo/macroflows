@@ -14,6 +14,7 @@ import {
   type Meal,
   promoteMeal,
 } from '~/modules/diet/meal/domain/meal'
+import { openTemplateSearchModal } from '~/modules/search/ui/openTemplateSearchModal'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { TestChart } from '~/sections/common/components/charts/TestChart'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -27,11 +28,7 @@ import { Datepicker } from '~/sections/datepicker/components/Datepicker'
 import { type DateValueType } from '~/sections/datepicker/types'
 import DayMacros from '~/sections/day-diet/components/DayMacros'
 import { ItemView } from '~/sections/item/components/ItemView'
-import { TemplateSearchModal } from '~/sections/search/components/TemplateSearchModal'
-import {
-  openConfirmModal,
-  openContentModal,
-} from '~/shared/modal/helpers/modalHelpers'
+import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { openEditModal } from '~/shared/modal/helpers/modalHelpers'
 import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
@@ -197,21 +194,14 @@ export default function TestApp() {
             <button
               class="btn cursor-pointer uppercase"
               onClick={() => {
-                openContentModal(
-                  () => (
-                    <TemplateSearchModal
-                      targetName="Teste"
-                      onNewItem={() => {
-                        logging.debug('New unified item added')
-                      }}
-                      onFinish={() => {}}
-                      onClose={() => {}}
-                    />
-                  ),
-                  {
-                    title: 'Buscar alimentos',
+                openTemplateSearchModal({
+                  targetName: 'Test Meal',
+                  onNewItem: (newItem) => {
+                    logging.debug('New item from TemplateSearchModal:', newItem)
+                    showSuccess('Item adicionado: ' + newItem.name)
                   },
-                )
+                  title: 'Adicionar item ao Test Meal',
+                })
               }}
             >
               Open Template Search Modal

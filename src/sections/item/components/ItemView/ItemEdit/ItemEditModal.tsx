@@ -29,12 +29,12 @@ import {
   updateRecipe,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
+import { openTemplateSearchModal } from '~/modules/search/ui/openTemplateSearchModal'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { ItemEditBody } from '~/sections/item/components/ItemView/ItemEdit/ItemEditBody'
 import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { openRecipeEditModal } from '~/sections/recipe/ui/openRecipeEditModal'
-import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { generateId, regenerateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 

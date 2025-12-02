@@ -6,7 +6,7 @@
 import {
   TemplateSearchModal,
   type TemplateSearchModalProps,
-} from '~/sections/search/components/TemplateSearchModal'
+} from '~/modules/search/ui/TemplateSearchModal'
 import {
   closeModal,
   openContentModal,

@@ -9,9 +9,9 @@ import {
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { type TemplateSearchTab } from '~/modules/search/ui/TemplateSearchTabs'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { currentUser, currentUserId } from '~/modules/user/application/user'
-import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
 export const [templateSearch, setTemplateSearch] = createSignal<string>('')

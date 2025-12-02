@@ -11,6 +11,7 @@ import {
   addItemToRecipe,
   updateItemInRecipe,
 } from '~/modules/diet/recipe/domain/recipeOperations'
+import { openTemplateSearchModal } from '~/modules/search/ui/openTemplateSearchModal'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
@@ -19,7 +20,6 @@ import {
   RecipeEditHeader,
 } from '~/sections/recipe/components/RecipeEditView'
 import { RecipeEditContextProvider } from '~/sections/recipe/context/RecipeEditContext'
-import { openTemplateSearchModal } from '~/sections/search/ui/openTemplateSearchModal'
 import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
 import { logging } from '~/shared/utils/logging'
 
