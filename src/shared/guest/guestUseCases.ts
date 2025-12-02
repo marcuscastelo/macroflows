@@ -1,4 +1,4 @@
-import { signOut } from '~/modules/auth/application/services/authService'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
@@ -56,7 +56,7 @@ export const guestUseCases = {
         cancelText: 'Cancelar',
         onConfirm: () => {
           guestUseCases.acceptGuestTerms()
-          showPromise(signOut(), {
+          showPromise(authUseCases.signOut(), {
             loading: 'Entrando em modo convidado...',
             success: 'Agora você está em modo convidado!',
             error: 'Erro ao entrar em modo convidado. Tente novamente.',

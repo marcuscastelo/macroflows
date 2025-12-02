@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { getCurrentUser } from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import {
   demoteUserToNewUser,
@@ -27,7 +27,7 @@ function getRepository(): UserRepository {
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
 export const currentUserId = () => {
-  return getCurrentUser()?.id ?? GUEST_USER_ID
+  return authUseCases.getCurrentUser()?.id ?? GUEST_USER_ID
 }
 
 createEffect(() => {

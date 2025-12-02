@@ -1,10 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createEffect, type JSXElement, Show } from 'solid-js'
 
-import {
-  isAuthenticated,
-  isAuthLoading,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type AuthGuardProps = {
@@ -21,14 +18,14 @@ export function AuthGuard(props: AuthGuardProps) {
   const navigate = useNavigate()
 
   createEffect(() => {
-    if (!isAuthLoading() && !isAuthenticated()) {
+    if (!authUseCases.isAuthLoading() && !authUseCases.isAuthenticated()) {
       navigate(props.redirectTo ?? '/login')
     }
   })
 
   // In guest mode, skip loading and show children directly
-  const showChildren = () => isAuthenticated()
-  const isLoading = () => isAuthLoading()
+  const showChildren = () => authUseCases.isAuthenticated()
+  const isLoading = () => authUseCases.isAuthLoading()
 
   return (
     <Show

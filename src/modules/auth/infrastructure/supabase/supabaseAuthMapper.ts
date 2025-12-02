@@ -5,7 +5,7 @@ import type { AuthSession, AuthUser } from '~/modules/auth/domain/auth'
 /**
  * Maps Supabase User to domain AuthUser
  */
-export function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
+function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
   if (!user) return null
 
   return {
@@ -27,7 +27,7 @@ export function mapSupabaseUserToAuthUser(user: User | null): AuthUser | null {
 /**
  * Maps Supabase Session to domain AuthSession
  */
-export function mapSupabaseSessionToAuthSession(
+function mapSupabaseSessionToAuthSession(
   session: Session | null,
 ): AuthSession | null {
   if (session === null) return null

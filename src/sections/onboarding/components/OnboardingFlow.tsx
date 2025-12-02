@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { getCurrentUser } from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 
@@ -11,7 +11,7 @@ export function OnboardingFlow() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = createSignal<OnboardingStep>('welcome')
 
-  const user = getCurrentUser()
+  const user = authUseCases.getCurrentUser()
 
   const handleNext = () => {
     const step = currentStep()
@@ -53,7 +53,7 @@ export function OnboardingFlow() {
   }
 
   return (
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <div class="max-w-lg w-full">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           {/* Progress Bar */}
@@ -115,7 +115,7 @@ export function OnboardingFlow() {
               </h2>
               <div class="space-y-4">
                 <div class="flex items-start space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                  <div class="shrink-0 w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                     <svg
                       class="w-4 h-4 text-green-600 dark:text-green-400"
                       fill="currentColor"
@@ -138,7 +138,7 @@ export function OnboardingFlow() {
                   </div>
                 </div>
                 <div class="flex items-start space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  <div class="shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                     <svg
                       class="w-4 h-4 text-blue-600 dark:text-blue-400"
                       fill="currentColor"
@@ -161,7 +161,7 @@ export function OnboardingFlow() {
                   </div>
                 </div>
                 <div class="flex items-start space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                  <div class="shrink-0 w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                     <svg
                       class="w-4 h-4 text-purple-600 dark:text-purple-400"
                       fill="currentColor"
