@@ -1,4 +1,4 @@
-import { createEffect, Suspense } from 'solid-js'
+import { onMount, Suspense } from 'solid-js'
 
 import { isFoodItem, isRecipeItem } from '~/modules/diet/item/schema/itemSchema'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
@@ -244,8 +244,8 @@ export function TemplateSearch(props: {
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
-  // Load persisted tab preference on mount
-  createEffect(() => {
+  // Load persisted tab preference on mount (only once)
+  onMount(() => {
     const persistedTab = loadTabPreference()
     setTemplateSearchTab(persistedTab)
   })
@@ -256,9 +256,13 @@ export function TemplateSearch(props: {
       | TemplateSearchTab
       | ((prev: TemplateSearchTab) => TemplateSearchTab),
   ) => {
-    setTemplateSearchTab(tabOrUpdater)
-    // Get the current value after update to persist
-    const newTab = templateSearchTab()
+    // Compute the new value based on whether it's a function or direct value
+    const newTab =
+      typeof tabOrUpdater === 'function'
+        ? tabOrUpdater(templateSearchTab())
+        : tabOrUpdater
+
+    setTemplateSearchTab(newTab)
     saveTabPreference(newTab)
   }
 
