@@ -213,6 +213,7 @@ describe('RecipeItemExt', () => {
       // 33.33/100 * 50 = 16.665 -> 16.67
       // 33.33/100 * 50 = 16.665 -> 16.67
       // 33.34/100 * 50 = 16.67 -> 16.67
+      // Total after rounding: 50.01 (not exactly 50 due to rounding)
       const scaledItem1 = makeFoodItem(1, 'Item 1', 16.67, {
         protein: 10,
         carbs: 10,
