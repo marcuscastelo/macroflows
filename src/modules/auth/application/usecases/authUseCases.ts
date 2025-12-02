@@ -2,6 +2,7 @@ import { createRoot } from 'solid-js'
 
 import { createAuthService } from '~/modules/auth/application/services/authService'
 import { createAuthStore } from '~/modules/auth/application/store/authState'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 
 const { authStore, authService } = createRoot(() => {
   const authStore = createAuthStore()
@@ -10,6 +11,7 @@ const { authStore, authService } = createRoot(() => {
 })
 
 export const authUseCases = {
+  currentUserIdOrGuestId: () => authStore.getCurrentUser()?.id ?? GUEST_USER_ID,
   isAuthLoading: () => authStore.isAuthLoading(),
   isAuthenticated: () => authStore.isAuthenticated(),
   getCurrentUser: () => authStore.getCurrentUser(),

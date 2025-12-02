@@ -131,7 +131,7 @@ export function createAuthService(
                 const createdUser =
                   await userUseCases.insertUserSilently(newUser)
                 if (createdUser !== null) {
-                  userUseCases.forceSwitchToUser(createdUser)
+                  userUseCases.forceSwitchToUser_unsafe(createdUser)
                   logging.info('User profile created successfully')
                 } else {
                   showError(

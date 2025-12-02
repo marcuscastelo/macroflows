@@ -1,42 +1,19 @@
-import { createEffect, createRoot } from 'solid-js'
+import { createRoot } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { createUserService } from '~/modules/user/application/services/userService'
 import { createUserStore } from '~/modules/user/application/store/userStore'
 import { type NewUser, type User } from '~/modules/user/domain/user'
-import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { logging } from '~/shared/utils/logging'
 
 const { userStore, userService } = createRoot(() => {
   const userStore = createUserStore()
   const userService = createUserService()
 
-  createEffect(() => {
-    const update = async () => {
-      userStore.setCurrentUser(
-        await showPromise(
-          userUseCases.fetchUser(userUseCases.currentUserId_unsafe()),
-          {
-            loading: 'Carregando usuário atual...',
-            success: 'Usuário atual carregado com sucesso',
-            error: 'Falha ao carregar usuário atual',
-          },
-          { context: 'background' },
-        ),
-      )
-    }
-
-    update().catch((error) => {
-      logging.error('User application error:', error)
-    })
-  })
   return { userStore, userService }
 })
 
 export const userUseCases = {
-  currentUserId_unsafe: () =>
-    authUseCases.getCurrentUser()?.id ?? GUEST_USER_ID,
   currentUser: () => userStore.currentUser(),
   fetchUser: async (userId: User['uuid']) => {
     try {
@@ -56,7 +33,7 @@ export const userUseCases = {
       return null
     }
   },
-  forceSwitchToUser: (user: User) => {
+  forceSwitchToUser_unsafe: (user: User) => {
     userStore.setCurrentUser(user)
   },
   updateUser: async (userId: User['uuid'], newUser: NewUser) => {

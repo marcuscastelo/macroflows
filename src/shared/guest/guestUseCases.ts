@@ -1,6 +1,5 @@
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
@@ -14,7 +13,7 @@ type GuestTermValue = {
 
 export const guestUseCases = {
   isGuestMode: () =>
-    userUseCases.currentUserId_unsafe() === GUEST_USER_ID &&
+    authUseCases.currentUserIdOrGuestId() === GUEST_USER_ID &&
     guestUseCases.hasAcceptedGuestTerms(),
   hasAcceptedGuestTerms: () => {
     const item = localStorage.getItem(GUEST_TERMS_KEY)

@@ -1,5 +1,6 @@
 import { createResource, createSignal } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import {
   fetchFoods,
   fetchFoodsByName,
@@ -26,7 +27,7 @@ export const [templates, { refetch: refetchTemplates }] = createResource(
   () => ({
     tab: debouncedTab(),
     search: debouncedSearch(),
-    userId: userUseCases.currentUserId_unsafe(),
+    userId: authUseCases.currentUserIdOrGuestId(),
   }),
   (signals) => {
     return fetchTemplatesByTabLogic(

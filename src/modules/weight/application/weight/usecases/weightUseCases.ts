@@ -1,6 +1,6 @@
 import { createEffect, createRoot, onMount } from 'solid-js'
 
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
@@ -39,12 +39,12 @@ const cache = createRoot(() => {
 })
 
 onMount(() => {
-  const userId = userUseCases.currentUserId_unsafe()
+  const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 })
 
 createEffect(() => {
-  const userId = userUseCases.currentUserId_unsafe()
+  const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 
   const cachedWeights = parseWithStack(
@@ -57,7 +57,7 @@ createEffect(() => {
 })
 
 export function refetchUserWeights() {
-  const userId = userUseCases.currentUserId_unsafe()
+  const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 }
 

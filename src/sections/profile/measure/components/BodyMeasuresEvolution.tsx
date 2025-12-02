@@ -1,5 +1,6 @@
 import { For, Show, Suspense } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
 import {
   bodyMeasures,
@@ -8,7 +9,6 @@ import {
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { MeasureField } from '~/sections/common/components/MeasureField'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { BodyMeasureChart } from '~/sections/profile/measure/components/BodyMeasureChart'
@@ -52,7 +52,7 @@ export function BodyMeasuresEvolution() {
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
             onClick={() => {
-              const userId = userUseCases.currentUserId_unsafe()
+              const userId = authUseCases.currentUserIdOrGuestId()
 
               handleAddMeasures({
                 user_id: userId,
