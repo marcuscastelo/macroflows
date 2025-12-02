@@ -24,7 +24,7 @@ Upon user confirmation, the agent will move all deferred issues to the next mile
 2. **Fetch Issues**: Use the `gh` CLI to list all issues assigned to the given milestone.
 3. **Fetch Milestones**: Use the `gh` CLI to list all available milestones for user confirmation.
 4. **Prioritization**:
-   - Analyze and suggest which issues are most critical for the current milestone (target: 30-60 issues per milestone).
+   - Analyze and suggest which issues are most critical for the current milestone (target: 30-60 issues (open + closed) per milestone).
    - Suggest which issues can be deferred.
    - Clearly present both lists to the user.
 5. **Next Milestone Confirmation**:
@@ -35,7 +35,7 @@ Upon user confirmation, the agent will move all deferred issues to the next mile
    - Report the changes made.
 7. **User Interaction**:
    - At each decision point, wait for explicit user confirmation before proceeding.
-   - If the number of issues in the milestone is outside the 30-60 range, suggest adjustments.
+   - If the number of issues in the milestone is outside the 30-60 (open + closed) range, suggest adjustments.
 8. **Traceability**:
    - Include a `reportedBy` metadata field at the top of all outputs for auditing.
 
