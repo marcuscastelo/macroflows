@@ -18,7 +18,7 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
   }
 
   if (targetDayMacroProfile_ === null) {
-    logging.debug(`Macro profile not found for day ${day.toISOString()}`)
+    logging.warn(`Macro profile not found for day ${day.toISOString()}`)
     return null
   }
 
