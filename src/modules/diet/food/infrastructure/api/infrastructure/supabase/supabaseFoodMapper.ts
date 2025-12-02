@@ -3,6 +3,7 @@ import {
   foodSchema,
   type NewFood,
 } from '~/modules/diet/food/domain/food'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
@@ -37,26 +38,28 @@ function toDomain(dto: FoodDTO): Food {
 }
 
 function toInsertDTO(newFood: NewFood): InsertFoodDTO {
+  const macrosExt = MacroNutrientsExt.of(newFood.macros)
   return {
     name: newFood.name,
     ean: newFood.ean ?? null,
     macros: {
-      carbs: newFood.macros.carbsInGrams(),
-      protein: newFood.macros.proteinInGrams(),
-      fat: newFood.macros.fatInGrams(),
+      carbs: macrosExt.carbsInGrams(),
+      protein: macrosExt.proteinInGrams(),
+      fat: macrosExt.fatInGrams(),
     },
     source: newFood.source ?? null,
   }
 }
 
 function toUpdateDTO(food: Food): UpdateFoodDTO {
+  const macrosExt = MacroNutrientsExt.of(food.macros)
   return {
     name: food.name,
     ean: food.ean ?? null,
     macros: {
-      carbs: food.macros.carbsInGrams(),
-      protein: food.macros.proteinInGrams(),
-      fat: food.macros.fatInGrams(),
+      carbs: macrosExt.carbsInGrams(),
+      protein: macrosExt.proteinInGrams(),
+      fat: macrosExt.fatInGrams(),
     },
     source: food.source ?? null,
   }

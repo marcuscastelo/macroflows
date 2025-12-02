@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { GroupItemExt } from '~/modules/diet/item/domain/ext/groupItemExt'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import type { GroupItem, Item } from '~/modules/diet/item/schema/itemSchema'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import {
   createMacroNutrients,
   type MacroNutrientsRecord,
@@ -60,8 +61,11 @@ describe('GroupItemExt', () => {
     const macros = ItemExt.macros(group)
     const childMacros = ItemExt.macros(child)
 
-    expect(macros.proteinInGrams()).toBeCloseTo(
-      (group.quantity / child.quantity) * childMacros.proteinInGrams(),
+    const macrosExt = MacroNutrientsExt.of(macros)
+    const childExt = MacroNutrientsExt.of(childMacros)
+
+    expect(macrosExt.proteinInGrams()).toBeCloseTo(
+      (group.quantity / child.quantity) * childExt.proteinInGrams(),
     )
   })
 })

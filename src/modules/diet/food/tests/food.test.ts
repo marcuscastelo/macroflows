@@ -8,6 +8,7 @@ import {
   type NewFood,
   promoteNewFoodToFood,
 } from '~/modules/diet/food/domain/food'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 describe('Food Domain', () => {
@@ -51,6 +52,7 @@ describe('Food Domain', () => {
       } satisfies Omit<NewFood, '__type'>
 
       const newFood = createNewFood(foodProps)
+      const macrosExt = MacroNutrientsExt.of(newFood.macros)
 
       expect(newFood.name).toBe('Banana')
       expect(newFood.ean).toBe('1234567890123')
@@ -58,9 +60,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(newFood.macros.proteinInGrams()).toBe(1.1)
-      expect(newFood.macros.carbsInGrams()).toBe(22.8)
-      expect(newFood.macros.fatInGrams()).toBe(0.3)
+      expect(macrosExt.proteinInGrams()).toBe(1.1)
+      expect(macrosExt.carbsInGrams()).toBe(22.8)
+      expect(macrosExt.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
     })
 
@@ -76,11 +78,12 @@ describe('Food Domain', () => {
       }
 
       const newFood = createNewFood(foodProps)
+      const macrosExt = MacroNutrientsExt.of(newFood.macros)
 
       expect(newFood.name).toBe('Apple')
       expect(newFood.ean).toBeNull()
       expect(newFood.source).toBeUndefined()
-      expect(newFood.macros.fatInGrams()).toBe(0.3)
+      expect(macrosExt.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
     })
   })
@@ -103,6 +106,7 @@ describe('Food Domain', () => {
       }
 
       const food = promoteNewFoodToFood(newFood, { id: 123 })
+      const macrosExt = MacroNutrientsExt.of(food.macros)
 
       expect(food.id).toBe(123)
       expect(food.name).toBe('Banana')
@@ -111,9 +115,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(food.macros.proteinInGrams()).toBe(1.1)
-      expect(food.macros.carbsInGrams()).toBe(22.8)
-      expect(food.macros.fatInGrams()).toBe(0.3)
+      expect(macrosExt.proteinInGrams()).toBe(1.1)
+      expect(macrosExt.carbsInGrams()).toBe(22.8)
+      expect(macrosExt.fatInGrams()).toBe(0.3)
       expect(food.__type).toBe('Food')
     })
 
@@ -154,16 +158,18 @@ describe('Food Domain', () => {
         }),
         __type: 'NewFood',
       }
+      const macrosExtNewFood = MacroNutrientsExt.of(newFood.macros)
 
       const food = promoteNewFoodToFood(newFood, { id: 999 })
+      const macrosExt = MacroNutrientsExt.of(food.macros)
 
       expect(food.id).toBe(999)
       expect(food.name).toBe(newFood.name)
       expect(food.ean).toBe(newFood.ean)
       expect(food.source).toEqual(newFood.source)
-      expect(food.macros.proteinInGrams()).toBe(newFood.macros.proteinInGrams())
-      expect(food.macros.carbsInGrams()).toBe(newFood.macros.carbsInGrams())
-      expect(food.macros.fatInGrams()).toBe(newFood.macros.fatInGrams())
+      expect(macrosExt.proteinInGrams()).toBe(macrosExtNewFood.proteinInGrams())
+      expect(macrosExt.carbsInGrams()).toBe(macrosExtNewFood.carbsInGrams())
+      expect(macrosExt.fatInGrams()).toBe(macrosExtNewFood.fatInGrams())
       expect(food.__type).toBe('Food')
     })
   })
@@ -187,6 +193,7 @@ describe('Food Domain', () => {
       }
 
       const newFood = demoteFoodToNewFood(food)
+      const macrosExt = MacroNutrientsExt.of(newFood.macros)
 
       expect(newFood.name).toBe('Banana')
       expect(newFood.ean).toBe('1234567890123')
@@ -194,9 +201,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(newFood.macros.proteinInGrams()).toBe(1.1)
-      expect(newFood.macros.carbsInGrams()).toBe(22.8)
-      expect(newFood.macros.fatInGrams()).toBe(0.3)
+      expect(macrosExt.proteinInGrams()).toBe(1.1)
+      expect(macrosExt.carbsInGrams()).toBe(22.8)
+      expect(macrosExt.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })
@@ -215,11 +222,12 @@ describe('Food Domain', () => {
       }
 
       const newFood = demoteFoodToNewFood(food)
+      const macrosExt = MacroNutrientsExt.of(newFood.macros)
 
       expect(newFood.name).toBe('Apple')
       expect(newFood.ean).toBeNull()
       expect(newFood.source).toBeUndefined()
-      expect(newFood.macros.fatInGrams()).toBe(0.3)
+      expect(macrosExt.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })
@@ -240,15 +248,17 @@ describe('Food Domain', () => {
         }),
         __type: 'Food',
       }
+      const macrosExtFood = MacroNutrientsExt.of(food.macros)
 
       const newFood = demoteFoodToNewFood(food)
+      const macrosExt = MacroNutrientsExt.of(newFood.macros)
 
       expect(newFood.name).toBe(food.name)
       expect(newFood.ean).toBe(food.ean)
       expect(newFood.source).toEqual(food.source)
-      expect(newFood.macros.proteinInGrams()).toBe(food.macros.proteinInGrams())
-      expect(newFood.macros.carbsInGrams()).toBe(food.macros.carbsInGrams())
-      expect(newFood.macros.fatInGrams()).toBe(food.macros.fatInGrams())
+      expect(macrosExt.proteinInGrams()).toBe(macrosExtFood.proteinInGrams())
+      expect(macrosExt.carbsInGrams()).toBe(macrosExtFood.carbsInGrams())
+      expect(macrosExt.fatInGrams()).toBe(macrosExtFood.fatInGrams())
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })

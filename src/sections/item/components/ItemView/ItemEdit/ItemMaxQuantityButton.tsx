@@ -15,6 +15,7 @@ import {
   type MaxQuantityOptions,
   type MaxQuantityResult,
 } from '~/modules/diet/item/domain/maxQuantityCalculations'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { cn } from '~/shared/cn'
 import { logging } from '~/shared/utils/logging'
@@ -383,21 +384,17 @@ function PreviewPanel(props: PreviewPanelProps): JSX.Element {
   const isOverLimit = (percentage: number): boolean =>
     props.result.ignoredOtherMacros && percentage > 100
 
+  const macroExt = () => MacroNutrientsExt.of(props.macroTargets)
+
   const carbPercentage = () =>
-    calcPercentage(
-      props.result.preview.carbsInGrams,
-      props.macroTargets.carbsInGrams(),
-    )
+    calcPercentage(props.result.preview.carbsInGrams, macroExt().carbsInGrams())
   const proteinPercentage = () =>
     calcPercentage(
       props.result.preview.proteinInGrams,
-      props.macroTargets.proteinInGrams(),
+      macroExt().proteinInGrams(),
     )
   const fatPercentage = () =>
-    calcPercentage(
-      props.result.preview.fatInGrams,
-      props.macroTargets.fatInGrams(),
-    )
+    calcPercentage(props.result.preview.fatInGrams, macroExt().fatInGrams())
 
   return (
     <div class="space-y-1">

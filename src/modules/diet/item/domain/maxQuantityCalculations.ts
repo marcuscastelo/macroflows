@@ -1,3 +1,4 @@
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 /**
@@ -47,10 +48,11 @@ export function getMacrosPerGram(itemMacrosPer100g: MacroNutrients): {
   readonly proteinPerGram: number
   readonly fatPerGram: number
 } {
+  const macrosExt = MacroNutrientsExt.of(itemMacrosPer100g)
   return {
-    carbPerGram: itemMacrosPer100g.carbsInGrams() / 100,
-    proteinPerGram: itemMacrosPer100g.proteinInGrams() / 100,
-    fatPerGram: itemMacrosPer100g.fatInGrams() / 100,
+    carbPerGram: macrosExt.carbsInGrams() / 100,
+    proteinPerGram: macrosExt.proteinInGrams() / 100,
+    fatPerGram: macrosExt.fatInGrams() / 100,
   }
 }
 
@@ -99,13 +101,15 @@ export function getMaxForMacro(
         ? carbPerGram
         : fatPerGram
 
+  const remainingTargetsExt = MacroNutrientsExt.of(remainingTargets)
+
   // Get the remaining target for the target macro
   const targetRemaining =
     targetMacro === 'protein'
-      ? remainingTargets.proteinInGrams()
+      ? remainingTargetsExt.proteinInGrams()
       : targetMacro === 'carb'
-        ? remainingTargets.carbsInGrams()
-        : remainingTargets.fatInGrams()
+        ? remainingTargetsExt.carbsInGrams()
+        : remainingTargetsExt.fatInGrams()
 
   // If the item has no content of the target macro, return 0
   if (targetPerGram <= 0) {
@@ -138,7 +142,7 @@ export function getMaxForMacro(
   if (proteinPerGram > 0 && targetMacro !== 'protein') {
     const maxFromProtein = Math.max(
       0,
-      remainingTargets.proteinInGrams() / proteinPerGram,
+      remainingTargetsExt.proteinInGrams() / proteinPerGram,
     )
     constraints.push({ grams: maxFromProtein, macro: 'protein' })
   }
@@ -147,14 +151,17 @@ export function getMaxForMacro(
   if (carbPerGram > 0 && targetMacro !== 'carb') {
     const maxFromCarb = Math.max(
       0,
-      remainingTargets.carbsInGrams() / carbPerGram,
+      remainingTargetsExt.carbsInGrams() / carbPerGram,
     )
     constraints.push({ grams: maxFromCarb, macro: 'carb' })
   }
 
   // Fat constraint
   if (fatPerGram > 0 && targetMacro !== 'fat') {
-    const maxFromFat = Math.max(0, remainingTargets.fatInGrams() / fatPerGram)
+    const maxFromFat = Math.max(
+      0,
+      remainingTargetsExt.fatInGrams() / fatPerGram,
+    )
     constraints.push({ grams: maxFromFat, macro: 'fat' })
   }
 
@@ -195,11 +202,13 @@ export function getMaxBalanced(
 
   const constraints: Array<{ grams: number; macro: MacroType }> = []
 
+  const remainingTargetsExt = MacroNutrientsExt.of(remainingTargets)
+
   // Carb constraint
   if (carbPerGram > 0) {
     const maxFromCarb = Math.max(
       0,
-      remainingTargets.carbsInGrams() / carbPerGram,
+      remainingTargetsExt.carbsInGrams() / carbPerGram,
     )
     constraints.push({ grams: maxFromCarb, macro: 'carb' })
   }
@@ -208,14 +217,17 @@ export function getMaxBalanced(
   if (proteinPerGram > 0) {
     const maxFromProtein = Math.max(
       0,
-      remainingTargets.proteinInGrams() / proteinPerGram,
+      remainingTargetsExt.proteinInGrams() / proteinPerGram,
     )
     constraints.push({ grams: maxFromProtein, macro: 'protein' })
   }
 
   // Fat constraint
   if (fatPerGram > 0) {
-    const maxFromFat = Math.max(0, remainingTargets.fatInGrams() / fatPerGram)
+    const maxFromFat = Math.max(
+      0,
+      remainingTargetsExt.fatInGrams() / fatPerGram,
+    )
     constraints.push({ grams: maxFromFat, macro: 'fat' })
   }
 
@@ -264,9 +276,10 @@ const DOMINANT_THRESHOLD = 0.7
 export function getDominantMacro(
   itemMacrosPer100g: MacroNutrients,
 ): MacroType | null {
-  const carbGrams = itemMacrosPer100g.carbsInGrams()
-  const proteinGrams = itemMacrosPer100g.proteinInGrams()
-  const fatGrams = itemMacrosPer100g.fatInGrams()
+  const itemMacrosExt = MacroNutrientsExt.of(itemMacrosPer100g)
+  const carbGrams = itemMacrosExt.carbsInGrams()
+  const proteinGrams = itemMacrosExt.proteinInGrams()
+  const fatGrams = itemMacrosExt.fatInGrams()
 
   const totalGrams = carbGrams + proteinGrams + fatGrams
 

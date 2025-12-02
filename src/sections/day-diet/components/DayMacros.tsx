@@ -95,6 +95,9 @@ function Macros(props: {
   targetMacros: MacroNutrients
   class?: string
 }) {
+  const macrosExt = () => MacroNutrientsExt.of(props.macros)
+  const targetMacrosExt = () => MacroNutrientsExt.of(props.targetMacros)
+
   return (
     <div class={`mx-2 ${props.class}`}>
       <Progress
@@ -102,11 +105,10 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="green"
-        textLabel={`Carboidrato (${props.macros.carbsInGrams().toFixed(2)}/${props.targetMacros.carbsInGrams().toFixed(2)}g)`}
+        textLabel={`Carboidrato (${macrosExt().carbsInGrams().toFixed(2)}/${targetMacrosExt().carbsInGrams().toFixed(2)}g)`}
         showLabel={true}
         progress={
-          (100 * props.macros.carbsInGrams()) /
-          props.targetMacros.carbsInGrams()
+          (100 * macrosExt().carbsInGrams()) / targetMacrosExt().carbsInGrams()
         }
       />
       <Progress
@@ -114,11 +116,11 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="red"
-        textLabel={`Proteína (${props.macros.proteinInGrams().toFixed(2)}/${props.targetMacros.proteinInGrams().toFixed(2)}g)`}
+        textLabel={`Proteína (${macrosExt().proteinInGrams().toFixed(2)}/${targetMacrosExt().proteinInGrams().toFixed(2)}g)`}
         showLabel={true}
         progress={
-          (100 * props.macros.proteinInGrams()) /
-          props.targetMacros.proteinInGrams()
+          (100 * macrosExt().proteinInGrams()) /
+          targetMacrosExt().proteinInGrams()
         }
       />
       <Progress
@@ -126,10 +128,10 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="yellow"
-        textLabel={`Gordura (${props.macros.fatInGrams().toFixed(2)}/${props.targetMacros.fatInGrams().toFixed(2)}g)`}
+        textLabel={`Gordura (${macrosExt().fatInGrams().toFixed(2)}/${targetMacrosExt().fatInGrams().toFixed(2)}g)`}
         showLabel={true}
         progress={
-          (100 * props.macros.fatInGrams()) / props.targetMacros.fatInGrams()
+          (100 * macrosExt().fatInGrams()) / targetMacrosExt().fatInGrams()
         }
       />
     </div>

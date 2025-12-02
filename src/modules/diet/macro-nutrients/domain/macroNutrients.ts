@@ -24,14 +24,7 @@ const macronutrientsEntity = ze.create(
   {},
 )
 
-const { schema: macroNutrientsSchema_ } = macronutrientsEntity
-export const macroNutrientsSchema = macroNutrientsSchema_.transform((val) => ({
-  ...val,
-  carbsInGrams: () => val.carbsInMg / 1000,
-  proteinInGrams: () => val.proteinInMg / 1000,
-  fatInGrams: () => val.fatInMg / 1000,
-  __type: 'MacroNutrients' as const,
-}))
+export const { schema: macroNutrientsSchema } = macronutrientsEntity
 
 export type MacroNutrients = Readonly<z.infer<typeof macroNutrientsSchema>>
 export type MacroNutrientsRecord = Omit<

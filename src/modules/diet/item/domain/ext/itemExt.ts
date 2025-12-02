@@ -18,12 +18,13 @@ import {
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 function calcFoodItemMacros(item: FoodItem) {
+  const macrosExt = MacroNutrientsExt.of(item.reference.macros)
+
   // For food items, calculate proportionally from stored macros in reference
   return createMacroNutrients({
-    carbsInGrams: (item.reference.macros.carbsInGrams() * item.quantity) / 100,
-    fatInGrams: (item.reference.macros.fatInGrams() * item.quantity) / 100,
-    proteinInGrams:
-      (item.reference.macros.proteinInGrams() * item.quantity) / 100,
+    carbsInGrams: (macrosExt.carbsInGrams() * item.quantity) / 100,
+    fatInGrams: (macrosExt.fatInGrams() * item.quantity) / 100,
+    proteinInGrams: (macrosExt.proteinInGrams() * item.quantity) / 100,
   })
 }
 
@@ -39,10 +40,12 @@ function calcRecipeItemMacros(item: RecipeItem): MacroNutrients {
   return item.reference.children.reduce(
     (acc, child) => {
       const childMacros = ItemExt.macros(child)
+      const accExt = MacroNutrientsExt.of(acc)
+      const childExt = MacroNutrientsExt.of(childMacros)
       return createMacroNutrients({
-        carbsInGrams: acc.carbsInGrams() + childMacros.carbsInGrams(),
-        fatInGrams: acc.fatInGrams() + childMacros.fatInGrams(),
-        proteinInGrams: acc.proteinInGrams() + childMacros.proteinInGrams(),
+        carbsInGrams: accExt.carbsInGrams() + childExt.carbsInGrams(),
+        fatInGrams: accExt.fatInGrams() + childExt.fatInGrams(),
+        proteinInGrams: accExt.proteinInGrams() + childExt.proteinInGrams(),
       })
     },
     createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
@@ -72,21 +75,26 @@ function calcGroupItemMacros(item: GroupItem): MacroNutrients {
   const defaultMacros = item.reference.children.reduce(
     (acc, child) => {
       const childMacros = ItemExt.macros(child)
+      const accExt = MacroNutrientsExt.of(acc)
+      const childExt = MacroNutrientsExt.of(childMacros)
       return createMacroNutrients({
-        carbsInGrams: acc.carbsInGrams() + childMacros.carbsInGrams(),
-        fatInGrams: acc.fatInGrams() + childMacros.fatInGrams(),
-        proteinInGrams: acc.proteinInGrams() + childMacros.proteinInGrams(),
+        carbsInGrams: accExt.carbsInGrams() + childExt.carbsInGrams(),
+        fatInGrams: accExt.fatInGrams() + childExt.fatInGrams(),
+        proteinInGrams: accExt.proteinInGrams() + childExt.proteinInGrams(),
       })
     },
     createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
   )
 
+  const defaultMacrosExt = MacroNutrientsExt.of(defaultMacros)
+
   return createMacroNutrients({
     carbsInGrams:
-      (item.quantity / defaultQuantity) * defaultMacros.carbsInGrams(),
-    fatInGrams: (item.quantity / defaultQuantity) * defaultMacros.fatInGrams(),
+      (item.quantity / defaultQuantity) * defaultMacrosExt.carbsInGrams(),
+    fatInGrams:
+      (item.quantity / defaultQuantity) * defaultMacrosExt.fatInGrams(),
     proteinInGrams:
-      (item.quantity / defaultQuantity) * defaultMacros.proteinInGrams(),
+      (item.quantity / defaultQuantity) * defaultMacrosExt.proteinInGrams(),
   })
 }
 
