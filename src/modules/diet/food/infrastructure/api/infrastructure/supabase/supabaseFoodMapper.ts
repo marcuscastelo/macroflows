@@ -22,7 +22,11 @@ function toInsertDTO(newFood: NewFood): InsertFoodDTO {
   return {
     name: newFood.name,
     ean: newFood.ean ?? null,
-    macros: newFood.macros,
+    macros: {
+      carbs: newFood.macros.carbsInGrams(),
+      protein: newFood.macros.proteinInGrams(),
+      fat: newFood.macros.fatInGrams(),
+    },
     source: newFood.source ?? null,
   }
 }
@@ -31,7 +35,11 @@ function toUpdateDTO(food: Food): UpdateFoodDTO {
   return {
     name: food.name,
     ean: food.ean ?? null,
-    macros: food.macros,
+    macros: {
+      carbs: food.macros.carbsInGrams(),
+      protein: food.macros.proteinInGrams(),
+      fat: food.macros.fatInGrams(),
+    },
     source: food.source ?? null,
   }
 }

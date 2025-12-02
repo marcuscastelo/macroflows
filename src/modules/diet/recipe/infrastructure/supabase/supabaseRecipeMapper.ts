@@ -16,7 +16,7 @@ function toInsertDTO(recipe: NewRecipe): InsertRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,
-    items: [...recipe.items],
+    // items: [...recipe.items],
     prepared_multiplier: recipe.prepared_multiplier,
   }
 }
@@ -25,7 +25,7 @@ function toUpdateDTO(recipe: Recipe): UpdateRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,
-    items: [...recipe.items],
+    // items: [...recipe.items],
     prepared_multiplier: recipe.prepared_multiplier,
   }
 }

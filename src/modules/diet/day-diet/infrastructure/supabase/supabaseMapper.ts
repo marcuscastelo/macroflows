@@ -13,7 +13,7 @@ function toInsertDTO(newDayDiet: NewDayDiet): InsertDayDietDTO {
   return {
     target_day: newDayDiet.target_day,
     user_id: newDayDiet.user_id,
-    meals: newDayDiet.meals,
+    // meals: newDayDiet.meals,
   }
 }
 
