@@ -3,6 +3,7 @@ import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { guestUseCases } from '~/shared/guest/guestUseCases'
+
 const supabaseUserRepository = createSupabaseUserRepository()
 const guestUserRepository = createGuestUserRepository()
 
