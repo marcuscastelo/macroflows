@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest'
 
 import { Items } from '~/modules/diet/item/domain/ext/itemsExt'
 import type { Item } from '~/modules/diet/item/schema/itemSchema'
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import {
+  createMacroNutrients,
+  type MacroNutrientsRecord,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
-  macros: { protein: number; carbs: number; fat: number },
+  macros: MacroNutrientsRecord,
 ): Item => ({
   id,
   name,
@@ -25,10 +28,18 @@ describe('Items', () => {
   describe('equals', () => {
     it('returns true for identical items', () => {
       const items1 = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
       const items2 = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
 
       expect(Items.equals(items1, items2)).toBe(true)
@@ -36,10 +47,18 @@ describe('Items', () => {
 
     it('returns false for different quantities (exact comparison)', () => {
       const items1 = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
       const items2 = [
-        makeFoodItem(1, 'Apple', 100.001, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100.001, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
 
       expect(Items.equals(items1, items2)).toBe(false)
@@ -47,11 +66,23 @@ describe('Items', () => {
 
     it('returns false for different lengths', () => {
       const items1 = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
       const items2 = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
-        makeFoodItem(2, 'Banana', 50, { protein: 1, carbs: 25, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
+        makeFoodItem(2, 'Banana', 50, {
+          proteinInMg: 1000,
+          carbsInMg: 25000,
+          fatInMg: 0,
+        }),
       ]
 
       expect(Items.equals(items1, items2)).toBe(false)
@@ -61,8 +92,16 @@ describe('Items', () => {
   describe('normalizedQuantitiesShallow', () => {
     it('normalizes quantities to sum to 1', () => {
       const items = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
-        makeFoodItem(2, 'Banana', 100, { protein: 1, carbs: 25, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
+        makeFoodItem(2, 'Banana', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 25000,
+          fatInMg: 0,
+        }),
       ]
 
       const normalized = Items.normalizedQuantitiesShallow(items)
@@ -73,8 +112,16 @@ describe('Items', () => {
 
     it('handles unequal quantities', () => {
       const items = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
-        makeFoodItem(2, 'Banana', 50, { protein: 1, carbs: 25, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
+        makeFoodItem(2, 'Banana', 50, {
+          proteinInMg: 1000,
+          carbsInMg: 25000,
+          fatInMg: 0,
+        }),
       ]
 
       const normalized = Items.normalizedQuantitiesShallow(items)
@@ -85,8 +132,16 @@ describe('Items', () => {
 
     it('handles zero total quantity', () => {
       const items = [
-        makeFoodItem(1, 'Apple', 0, { protein: 1, carbs: 20, fat: 0 }),
-        makeFoodItem(2, 'Banana', 0, { protein: 1, carbs: 25, fat: 0 }),
+        makeFoodItem(1, 'Apple', 0, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
+        makeFoodItem(2, 'Banana', 0, {
+          proteinInMg: 1000,
+          carbsInMg: 25000,
+          fatInMg: 0,
+        }),
       ]
 
       const normalized = Items.normalizedQuantitiesShallow(items)
@@ -98,7 +153,11 @@ describe('Items', () => {
 
     it('preserves other item properties', () => {
       const items = [
-        makeFoodItem(1, 'Apple', 100, { protein: 1, carbs: 20, fat: 0 }),
+        makeFoodItem(1, 'Apple', 100, {
+          proteinInMg: 1000,
+          carbsInMg: 20000,
+          fatInMg: 0,
+        }),
       ]
 
       const normalized = Items.normalizedQuantitiesShallow(items)

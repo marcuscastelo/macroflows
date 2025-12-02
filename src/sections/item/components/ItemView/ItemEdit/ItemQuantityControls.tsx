@@ -13,7 +13,10 @@ import {
   isRecipeItem,
   type Item,
 } from '~/modules/diet/item/schema/itemSchema'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import {
+  createMacroNutrients,
+  type MacroNutrients,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemMaxQuantityButton } from '~/sections/item/components/ItemView/ItemEdit/ItemMaxQuantityButton'
@@ -23,7 +26,7 @@ export type ItemQuantityControlsProps = {
   itemDraft: Accessor<Item>
   setItemDraft: Setter<Item>
   canApply: boolean
-  getAvailableMacros: () => MacroNutrientsRecord
+  getAvailableMacros: () => MacroNutrients
   quantityField: UseFieldReturn<number>
 }
 
@@ -158,13 +161,18 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
                 const recipeMacros = ItemExt.macros(props.itemDraft())
                 const recipeQuantity = props.itemDraft().quantity || 1
                 // Convert to per-100g basis for the button
-                return {
-                  carbs: (recipeMacros.carbs * 100) / recipeQuantity,
-                  protein: (recipeMacros.protein * 100) / recipeQuantity,
-                  fat: (recipeMacros.fat * 100) / recipeQuantity,
-                }
+                return createMacroNutrients({
+                  carbsInMg: (recipeMacros.carbsInMg * 100000) / recipeQuantity,
+                  proteinInMg:
+                    (recipeMacros.proteinInMg * 100000) / recipeQuantity,
+                  fatInMg: (recipeMacros.fatInMg * 100000) / recipeQuantity,
+                })
               }
-              return { carbs: 0, protein: 0, fat: 0 }
+              return createMacroNutrients({
+                carbsInMg: 0,
+                proteinInMg: 0,
+                fatInMg: 0,
+              })
             })()}
             onMaxSelected={(maxValue: number) => {
               logging.debug(

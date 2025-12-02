@@ -44,13 +44,12 @@ describe('Food Domain', () => {
           type: 'api' as const,
           id: 'api-123',
         },
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
-      }
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
+      } satisfies Omit<NewFood, '__type'>
 
       const newFood = createNewFood(foodProps)
 
@@ -60,9 +59,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(newFood.macros.protein).toBe(1.1)
-      expect(newFood.macros.carbs).toBe(22.8)
-      expect(newFood.macros.fat).toBe(0.3)
+      expect(newFood.macros.proteinInGrams()).toBe(1.1)
+      expect(newFood.macros.carbsInGrams()).toBe(22.8)
+      expect(newFood.macros.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
     })
 
@@ -71,9 +70,9 @@ describe('Food Domain', () => {
         name: 'Apple',
         ean: null,
         macros: createMacroNutrients({
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
+          proteinInGrams: 1.1,
+          carbsInGrams: 22.8,
+          fatInGrams: 0.3,
         }),
       }
 
@@ -82,7 +81,7 @@ describe('Food Domain', () => {
       expect(newFood.name).toBe('Apple')
       expect(newFood.ean).toBeNull()
       expect(newFood.source).toBeUndefined()
-      expect(newFood.macros.fat).toBe(0.3)
+      expect(newFood.macros.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
     })
   })
@@ -96,12 +95,11 @@ describe('Food Domain', () => {
           type: 'api',
           id: 'api-123',
         },
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'NewFood',
       }
 
@@ -114,9 +112,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(food.macros.protein).toBe(1.1)
-      expect(food.macros.carbs).toBe(22.8)
-      expect(food.macros.fat).toBe(0.3)
+      expect(food.macros.proteinInGrams()).toBe(1.1)
+      expect(food.macros.carbsInGrams()).toBe(22.8)
+      expect(food.macros.fatInGrams()).toBe(0.3)
       expect(food.__type).toBe('Food')
     })
 
@@ -124,12 +122,11 @@ describe('Food Domain', () => {
       const newFood: NewFood = {
         name: 'Apple',
         ean: null,
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'NewFood',
       }
 
@@ -151,12 +148,11 @@ describe('Food Domain', () => {
           type: 'api',
           id: 'complex-api-id-123',
         },
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'NewFood',
       }
 
@@ -181,12 +177,11 @@ describe('Food Domain', () => {
           type: 'api',
           id: 'api-123',
         },
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'Food',
       }
 
@@ -198,9 +193,9 @@ describe('Food Domain', () => {
         type: 'api',
         id: 'api-123',
       })
-      expect(newFood.macros.protein).toBe(1.1)
-      expect(newFood.macros.carbs).toBe(22.8)
-      expect(newFood.macros.fat).toBe(0.3)
+      expect(newFood.macros.proteinInGrams()).toBe(1.1)
+      expect(newFood.macros.carbsInGrams()).toBe(22.8)
+      expect(newFood.macros.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })
@@ -210,12 +205,11 @@ describe('Food Domain', () => {
         id: 456,
         name: 'Apple',
         ean: null,
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'Food',
       }
 
@@ -224,7 +218,7 @@ describe('Food Domain', () => {
       expect(newFood.name).toBe('Apple')
       expect(newFood.ean).toBeNull()
       expect(newFood.source).toBeUndefined()
-      expect(newFood.macros.fat).toBe(0.3)
+      expect(newFood.macros.fatInGrams()).toBe(0.3)
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })
@@ -238,12 +232,11 @@ describe('Food Domain', () => {
           type: 'api',
           id: 'complex-api-id-123',
         },
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInMg: 1100,
+          carbsInMg: 22800,
+          fatInMg: 300,
+        }),
         __type: 'Food',
       }
 

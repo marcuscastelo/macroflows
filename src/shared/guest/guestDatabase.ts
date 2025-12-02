@@ -93,7 +93,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Arroz branco cozido',
         ean: null,
-        macros: createMacroNutrients({ carbs: 28, protein: 2.5, fat: 0.3 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 28,
+          proteinInGrams: 2.5,
+          fatInGrams: 0.3,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -101,7 +105,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Feijão preto cozido',
         ean: null,
-        macros: createMacroNutrients({ carbs: 14, protein: 4.5, fat: 0.5 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 14,
+          proteinInGrams: 4.5,
+          fatInGrams: 0.5,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -109,7 +117,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Frango grelhado (peito)',
         ean: null,
-        macros: createMacroNutrients({ carbs: 0, protein: 31, fat: 3.6 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 0,
+          proteinInGrams: 31,
+          fatInGrams: 3.6,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -117,7 +129,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Ovo cozido',
         ean: null,
-        macros: createMacroNutrients({ carbs: 0.6, protein: 6, fat: 5 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 0.6,
+          proteinInGrams: 6,
+          fatInGrams: 5,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -125,7 +141,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Banana prata',
         ean: null,
-        macros: createMacroNutrients({ carbs: 22, protein: 1.3, fat: 0.1 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 22,
+          proteinInGrams: 1.3,
+          fatInGrams: 0.1,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -133,7 +153,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Aveia em flocos',
         ean: null,
-        macros: createMacroNutrients({ carbs: 66, protein: 14, fat: 8 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 66,
+          proteinInGrams: 14,
+          fatInGrams: 8,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -141,7 +165,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Leite integral',
         ean: null,
-        macros: createMacroNutrients({ carbs: 4.8, protein: 3.2, fat: 3 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 4.8,
+          proteinInGrams: 3.2,
+          fatInGrams: 3,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -149,7 +177,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Pão integral',
         ean: null,
-        macros: createMacroNutrients({ carbs: 41, protein: 13, fat: 4 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 41,
+          proteinInGrams: 13,
+          fatInGrams: 4,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -157,7 +189,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Batata doce cozida',
         ean: null,
-        macros: createMacroNutrients({ carbs: 20, protein: 1.6, fat: 0.1 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 20,
+          proteinInGrams: 1.6,
+          fatInGrams: 0.1,
+        }),
       }),
       { id: generateFoodId() },
     ),
@@ -165,7 +201,11 @@ function createDemoFoods(): Food[] {
       createNewFood({
         name: 'Whey Protein (dose)',
         ean: null,
-        macros: createMacroNutrients({ carbs: 3, protein: 24, fat: 1.5 }),
+        macros: createMacroNutrients({
+          carbsInGrams: 3,
+          proteinInGrams: 24,
+          fatInGrams: 1.5,
+        }),
       }),
       { id: generateFoodId() },
     ),

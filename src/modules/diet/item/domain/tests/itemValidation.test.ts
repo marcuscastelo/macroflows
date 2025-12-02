@@ -16,7 +16,7 @@ const makeFoodItem = (name: string, quantity: number): Item => ({
   reference: {
     type: 'food',
     id: 1,
-    macros: createMacroNutrients({ protein: 5, carbs: 10, fat: 2 }),
+    macros: createMacroNutrients({ proteinInGrams: 5, carbsInGrams: 10, fatInGrams: 2 }),
   },
   __type: 'UnifiedItem' as const,
 })

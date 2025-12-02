@@ -34,7 +34,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        C: {Math.round(props.macros.carbs * 100) / 100}{' '}
+        C: {Math.round(props.macros.carbsInGrams() * 100) / 100}{' '}
       </span>
       <span
         class={cn('mr-1 text-red-700', {
@@ -43,7 +43,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        P: {Math.round(props.macros.protein * 100) / 100}{' '}
+        P: {Math.round(props.macros.proteinInGrams() * 100) / 100}{' '}
       </span>
       <span
         class={cn('text-orange-400', {
@@ -52,7 +52,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        G: {Math.round(props.macros.fat * 100) / 100}{' '}
+        G: {Math.round(props.macros.fatInGrams() * 100) / 100}{' '}
       </span>
     </>
   )

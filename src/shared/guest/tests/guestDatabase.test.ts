@@ -119,9 +119,9 @@ describe('GuestDatabase', () => {
       for (const food of db.foods) {
         expect(food.name).toBeDefined()
         expect(food.macros).toBeDefined()
-        expect(typeof food.macros.carbs).toBe('number')
-        expect(typeof food.macros.protein).toBe('number')
-        expect(typeof food.macros.fat).toBe('number')
+        expect(typeof food.macros.carbsInGrams()).toBe('number')
+        expect(typeof food.macros.proteinInGrams()).toBe('number')
+        expect(typeof food.macros.fatInGrams()).toBe('number')
       }
     })
 

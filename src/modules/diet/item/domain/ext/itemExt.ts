@@ -14,14 +14,16 @@ import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroEx
 import {
   createMacroNutrients,
   type MacroNutrients,
+  type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 function calcFoodItemMacros(item: FoodItem) {
   // For food items, calculate proportionally from stored macros in reference
   return createMacroNutrients({
-    carbs: (item.reference.macros.carbs * item.quantity) / 100,
-    fat: (item.reference.macros.fat * item.quantity) / 100,
-    protein: (item.reference.macros.protein * item.quantity) / 100,
+    carbsInGrams: (item.reference.macros.carbsInGrams() * item.quantity) / 100,
+    fatInGrams: (item.reference.macros.fatInGrams() * item.quantity) / 100,
+    proteinInGrams:
+      (item.reference.macros.proteinInGrams() * item.quantity) / 100,
   })
 }
 
@@ -38,12 +40,12 @@ function calcRecipeItemMacros(item: RecipeItem): MacroNutrients {
     (acc, child) => {
       const childMacros = ItemExt.macros(child)
       return createMacroNutrients({
-        carbs: acc.carbs + childMacros.carbs,
-        fat: acc.fat + childMacros.fat,
-        protein: acc.protein + childMacros.protein,
+        carbsInGrams: acc.carbsInGrams() + childMacros.carbsInGrams(),
+        fatInGrams: acc.fatInGrams() + childMacros.fatInGrams(),
+        proteinInGrams: acc.proteinInGrams() + childMacros.proteinInGrams(),
       })
     },
-    createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
+    createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
   )
 }
 
@@ -60,25 +62,31 @@ function calcGroupItemMacros(item: GroupItem): MacroNutrients {
   )
 
   if (defaultQuantity === 0) {
-    return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+    return createMacroNutrients({
+      carbsInGrams: 0,
+      fatInGrams: 0,
+      proteinInGrams: 0,
+    })
   }
 
   const defaultMacros = item.reference.children.reduce(
     (acc, child) => {
       const childMacros = ItemExt.macros(child)
       return createMacroNutrients({
-        carbs: acc.carbs + childMacros.carbs,
-        fat: acc.fat + childMacros.fat,
-        protein: acc.protein + childMacros.protein,
+        carbsInGrams: acc.carbsInGrams() + childMacros.carbsInGrams(),
+        fatInGrams: acc.fatInGrams() + childMacros.fatInGrams(),
+        proteinInGrams: acc.proteinInGrams() + childMacros.proteinInGrams(),
       })
     },
-    createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
+    createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
   )
 
   return createMacroNutrients({
-    carbs: (item.quantity / defaultQuantity) * defaultMacros.carbs,
-    fat: (item.quantity / defaultQuantity) * defaultMacros.fat,
-    protein: (item.quantity / defaultQuantity) * defaultMacros.protein,
+    carbsInGrams:
+      (item.quantity / defaultQuantity) * defaultMacros.carbsInGrams(),
+    fatInGrams: (item.quantity / defaultQuantity) * defaultMacros.fatInGrams(),
+    proteinInGrams:
+      (item.quantity / defaultQuantity) * defaultMacros.proteinInGrams(),
   })
 }
 
@@ -89,19 +97,27 @@ export const ItemExt = {
     const result = container.items.reduce(
       (acc, item) => {
         const itemMacros = ItemExt.macros(item)
-        acc.carbs += itemMacros.carbs
-        acc.fat += itemMacros.fat
-        acc.protein += itemMacros.protein
+        acc.carbsInMg += itemMacros.carbsInMg
+        acc.fatInMg += itemMacros.fatInMg
+        acc.proteinInMg += itemMacros.proteinInMg
         return acc
       },
-      { carbs: 0, fat: 0, protein: 0 },
+      {
+        carbsInMg: 0,
+        fatInMg: 0,
+        proteinInMg: 0,
+      } satisfies MacroNutrientsRecord,
     )
     return createMacroNutrients(result)
   },
 
   macros(item: Item | undefined): MacroNutrients {
     if (item === undefined) {
-      return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+      return createMacroNutrients({
+        carbsInGrams: 0,
+        fatInGrams: 0,
+        proteinInGrams: 0,
+      })
     }
 
     if (isFoodItem(item)) {
@@ -114,7 +130,11 @@ export const ItemExt = {
 
     // Fallback for unknown types
     item satisfies never
-    return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+    return createMacroNutrients({
+      carbsInGrams: 0,
+      fatInGrams: 0,
+      proteinInGrams: 0,
+    })
   },
 
   of(item: Item) {

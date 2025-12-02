@@ -56,16 +56,16 @@ function _createChartData(
         macroTarget !== null
           ? MacroNutrientsExt.totalCalories(macroTarget)
           : undefined,
-      protein: dayMacros.protein().toFixed(0),
-      targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat().toFixed(0),
-      targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs().toFixed(0),
-      targetCarbs: macroTarget?.carbs.toFixed(0),
+      protein: dayMacros.proteinInGrams().toFixed(0),
+      targetProtein: macroTarget?.proteinInGrams().toFixed(0),
+      fat: dayMacros.fatInGrams().toFixed(0),
+      targetFat: macroTarget?.fatInGrams().toFixed(0),
+      carbs: dayMacros.carbsInGrams().toFixed(0),
+      targetCarbs: macroTarget?.carbsInGrams().toFixed(0),
       targetGrams:
-        (macroTarget?.protein ?? NaN) +
-        (macroTarget?.carbs ?? NaN) +
-        (macroTarget?.fat ?? NaN),
+        (macroTarget?.proteinInGrams() ?? NaN) +
+        (macroTarget?.carbsInGrams() ?? NaN) +
+        (macroTarget?.fatInGrams() ?? NaN),
     }
   })
 

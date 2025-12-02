@@ -3,13 +3,16 @@ import { describe, expect, it } from 'vitest'
 import { GroupItemExt } from '~/modules/diet/item/domain/ext/groupItemExt'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import type { GroupItem, Item } from '~/modules/diet/item/schema/itemSchema'
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import {
+  createMacroNutrients,
+  type MacroNutrientsRecord,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
-  macros: { protein: number; carbs: number; fat: number },
+  macros: MacroNutrientsRecord,
 ): Item => ({
   id,
   name,
@@ -41,9 +44,9 @@ const makeGroupItem = (
 describe('GroupItemExt', () => {
   it('of() returns the item extension and ItemExt macros works for group', () => {
     const child = makeFoodItem(1, 'Flour', 100, {
-      protein: 5,
-      carbs: 70,
-      fat: 1,
+      proteinInMg: 10000,
+      carbsInMg: 70000,
+      fatInMg: 1000,
     })
     const group = makeGroupItem(10, 'Mix', 200, [child])
 
@@ -57,8 +60,8 @@ describe('GroupItemExt', () => {
     const macros = ItemExt.macros(group)
     const childMacros = ItemExt.macros(child)
 
-    expect(macros.protein).toBeCloseTo(
-      (group.quantity / child.quantity) * childMacros.protein,
+    expect(macros.proteinInGrams()).toBeCloseTo(
+      (group.quantity / child.quantity) * childMacros.proteinInGrams(),
     )
   })
 })

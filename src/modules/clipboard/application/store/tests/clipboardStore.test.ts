@@ -42,7 +42,7 @@ describe('ClipboardStore', () => {
         reference: {
           type: 'food',
           id: 1,
-          macros: createMacroNutrients({ protein: 10, carbs: 20, fat: 5 }),
+          macros: createMacroNutrients({ proteinInGrams: 10, carbsInGrams: 20, fatInGrams: 5 }),
         },
       })
 

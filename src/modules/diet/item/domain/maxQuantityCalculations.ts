@@ -1,4 +1,4 @@
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 /**
  * Macro type for MAX quantity calculations
@@ -14,9 +14,9 @@ export type MaxQuantityMode = MacroType | 'balanced'
  * Preview of the macro deltas after applying a quantity
  */
 export type MacroPreview = {
-  readonly carbs: number
-  readonly protein: number
-  readonly fat: number
+  readonly carbsInGrams: number
+  readonly proteinInGrams: number
+  readonly fatInGrams: number
 }
 
 /**
@@ -42,15 +42,15 @@ export type MaxQuantityOptions = {
  * Gets the per-gram values for each macro from 100g item macros
  * @param itemMacrosPer100g - The macros per 100g of the item
  */
-export function getMacrosPerGram(itemMacrosPer100g: MacroNutrientsRecord): {
+export function getMacrosPerGram(itemMacrosPer100g: MacroNutrients): {
   readonly carbPerGram: number
   readonly proteinPerGram: number
   readonly fatPerGram: number
 } {
   return {
-    carbPerGram: itemMacrosPer100g.carbs / 100,
-    proteinPerGram: itemMacrosPer100g.protein / 100,
-    fatPerGram: itemMacrosPer100g.fat / 100,
+    carbPerGram: itemMacrosPer100g.carbsInGrams() / 100,
+    proteinPerGram: itemMacrosPer100g.proteinInGrams() / 100,
+    fatPerGram: itemMacrosPer100g.fatInGrams() / 100,
   }
 }
 
@@ -61,15 +61,15 @@ export function getMacrosPerGram(itemMacrosPer100g: MacroNutrientsRecord): {
  */
 export function calculateMacroPreview(
   grams: number,
-  itemMacrosPer100g: MacroNutrientsRecord,
+  itemMacrosPer100g: MacroNutrients,
 ): MacroPreview {
   const { carbPerGram, proteinPerGram, fatPerGram } =
     getMacrosPerGram(itemMacrosPer100g)
 
   return {
-    carbs: grams * carbPerGram,
-    protein: grams * proteinPerGram,
-    fat: grams * fatPerGram,
+    carbsInGrams: grams * carbPerGram,
+    proteinInGrams: grams * proteinPerGram,
+    fatInGrams: grams * fatPerGram,
   }
 }
 
@@ -83,8 +83,8 @@ export function calculateMacroPreview(
  */
 export function getMaxForMacro(
   targetMacro: MacroType,
-  itemMacrosPer100g: MacroNutrientsRecord,
-  remainingTargets: MacroNutrientsRecord,
+  itemMacrosPer100g: MacroNutrients,
+  remainingTargets: MacroNutrients,
   options: MaxQuantityOptions = {},
 ): MaxQuantityResult {
   const { ignoreOtherMacros = false } = options
@@ -102,16 +102,16 @@ export function getMaxForMacro(
   // Get the remaining target for the target macro
   const targetRemaining =
     targetMacro === 'protein'
-      ? remainingTargets.protein
+      ? remainingTargets.proteinInGrams()
       : targetMacro === 'carb'
-        ? remainingTargets.carbs
-        : remainingTargets.fat
+        ? remainingTargets.carbsInGrams()
+        : remainingTargets.fatInGrams()
 
   // If the item has no content of the target macro, return 0
   if (targetPerGram <= 0) {
     return {
       grams: 0,
-      preview: { carbs: 0, protein: 0, fat: 0 },
+      preview: { carbsInGrams: 0, proteinInGrams: 0, fatInGrams: 0 },
       limitedBy: null,
       ignoredOtherMacros: ignoreOtherMacros,
     }
@@ -138,20 +138,23 @@ export function getMaxForMacro(
   if (proteinPerGram > 0 && targetMacro !== 'protein') {
     const maxFromProtein = Math.max(
       0,
-      remainingTargets.protein / proteinPerGram,
+      remainingTargets.proteinInGrams() / proteinPerGram,
     )
     constraints.push({ grams: maxFromProtein, macro: 'protein' })
   }
 
   // Carb constraint
   if (carbPerGram > 0 && targetMacro !== 'carb') {
-    const maxFromCarb = Math.max(0, remainingTargets.carbs / carbPerGram)
+    const maxFromCarb = Math.max(
+      0,
+      remainingTargets.carbsInGrams() / carbPerGram,
+    )
     constraints.push({ grams: maxFromCarb, macro: 'carb' })
   }
 
   // Fat constraint
   if (fatPerGram > 0 && targetMacro !== 'fat') {
-    const maxFromFat = Math.max(0, remainingTargets.fat / fatPerGram)
+    const maxFromFat = Math.max(0, remainingTargets.fatInGrams() / fatPerGram)
     constraints.push({ grams: maxFromFat, macro: 'fat' })
   }
 
@@ -184,8 +187,8 @@ export function getMaxForMacro(
  * @returns The max grams that don't exceed any macro
  */
 export function getMaxBalanced(
-  itemMacrosPer100g: MacroNutrientsRecord,
-  remainingTargets: MacroNutrientsRecord,
+  itemMacrosPer100g: MacroNutrients,
+  remainingTargets: MacroNutrients,
 ): MaxQuantityResult {
   const { carbPerGram, proteinPerGram, fatPerGram } =
     getMacrosPerGram(itemMacrosPer100g)
@@ -194,7 +197,10 @@ export function getMaxBalanced(
 
   // Carb constraint
   if (carbPerGram > 0) {
-    const maxFromCarb = Math.max(0, remainingTargets.carbs / carbPerGram)
+    const maxFromCarb = Math.max(
+      0,
+      remainingTargets.carbsInGrams() / carbPerGram,
+    )
     constraints.push({ grams: maxFromCarb, macro: 'carb' })
   }
 
@@ -202,14 +208,14 @@ export function getMaxBalanced(
   if (proteinPerGram > 0) {
     const maxFromProtein = Math.max(
       0,
-      remainingTargets.protein / proteinPerGram,
+      remainingTargets.proteinInGrams() / proteinPerGram,
     )
     constraints.push({ grams: maxFromProtein, macro: 'protein' })
   }
 
   // Fat constraint
   if (fatPerGram > 0) {
-    const maxFromFat = Math.max(0, remainingTargets.fat / fatPerGram)
+    const maxFromFat = Math.max(0, remainingTargets.fatInGrams() / fatPerGram)
     constraints.push({ grams: maxFromFat, macro: 'fat' })
   }
 
@@ -217,7 +223,7 @@ export function getMaxBalanced(
   if (constraints.length === 0) {
     return {
       grams: 0,
-      preview: { carbs: 0, protein: 0, fat: 0 },
+      preview: { carbsInGrams: 0, proteinInGrams: 0, fatInGrams: 0 },
       limitedBy: null,
       ignoredOtherMacros: false,
     }
@@ -256,11 +262,11 @@ const DOMINANT_THRESHOLD = 0.7
  * @returns The dominant macro type, or null if mixed
  */
 export function getDominantMacro(
-  itemMacrosPer100g: MacroNutrientsRecord,
+  itemMacrosPer100g: MacroNutrients,
 ): MacroType | null {
-  const carbGrams = itemMacrosPer100g.carbs
-  const proteinGrams = itemMacrosPer100g.protein
-  const fatGrams = itemMacrosPer100g.fat
+  const carbGrams = itemMacrosPer100g.carbsInGrams()
+  const proteinGrams = itemMacrosPer100g.proteinInGrams()
+  const fatGrams = itemMacrosPer100g.fatInGrams()
 
   const totalGrams = carbGrams + proteinGrams + fatGrams
 
@@ -296,8 +302,8 @@ export function getDominantMacro(
  */
 export function calculateMaxQuantity(
   mode: MaxQuantityMode,
-  itemMacrosPer100g: MacroNutrientsRecord,
-  remainingTargets: MacroNutrientsRecord,
+  itemMacrosPer100g: MacroNutrients,
+  remainingTargets: MacroNutrients,
   options: MaxQuantityOptions = {},
 ): MaxQuantityResult {
   if (mode === 'balanced') {

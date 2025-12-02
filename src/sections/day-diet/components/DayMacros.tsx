@@ -102,27 +102,35 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="green"
-        textLabel={`Carboidrato (${props.macros.carbs.toFixed(2)}/${props.targetMacros.carbs.toFixed(2)}g)`}
+        textLabel={`Carboidrato (${props.macros.carbsInGrams().toFixed(2)}/${props.targetMacros.carbsInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.carbs) / props.targetMacros.carbs}
+        progress={
+          (100 * props.macros.carbsInGrams()) /
+          props.targetMacros.carbsInGrams()
+        }
       />
       <Progress
         class=""
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="red"
-        textLabel={`Proteína (${props.macros.protein.toFixed(2)}/${props.targetMacros.protein.toFixed(2)}g)`}
+        textLabel={`Proteína (${props.macros.proteinInGrams().toFixed(2)}/${props.targetMacros.proteinInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.protein) / props.targetMacros.protein}
+        progress={
+          (100 * props.macros.proteinInGrams()) /
+          props.targetMacros.proteinInGrams()
+        }
       />
       <Progress
         class=""
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="yellow"
-        textLabel={`Gordura (${props.macros.fat.toFixed(2)}/${props.targetMacros.fat.toFixed(2)}g)`}
+        textLabel={`Gordura (${props.macros.fatInGrams().toFixed(2)}/${props.targetMacros.fatInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.fat) / props.targetMacros.fat}
+        progress={
+          (100 * props.macros.fatInGrams()) / props.targetMacros.fatInGrams()
+        }
       />
     </div>
   )

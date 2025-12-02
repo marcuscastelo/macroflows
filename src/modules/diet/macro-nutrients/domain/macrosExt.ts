@@ -8,9 +8,9 @@ export const Macros = {
     b: MacroNutrients,
     tolerance: number = DEFAULT_TOLERANCE,
   ): boolean {
-    const carbsDiff = Math.abs(a.carbs - b.carbs)
-    const proteinDiff = Math.abs(a.protein - b.protein)
-    const fatDiff = Math.abs(a.fat - b.fat)
+    const carbsDiff = Math.abs(a.carbsInMg - b.carbsInMg)
+    const proteinDiff = Math.abs(a.proteinInMg - b.proteinInMg)
+    const fatDiff = Math.abs(a.fatInMg - b.fatInMg)
 
     return (
       carbsDiff <= tolerance && proteinDiff <= tolerance && fatDiff <= tolerance

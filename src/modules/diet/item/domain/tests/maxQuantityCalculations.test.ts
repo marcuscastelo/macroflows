@@ -8,10 +8,18 @@ import {
   getMaxBalanced,
   getMaxForMacro,
 } from '~/modules/diet/item/domain/maxQuantityCalculations'
+import {
+  createMacroNutrients,
+  type MacroNutrients,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 describe('getMacrosPerGram', () => {
   it('should calculate per-gram values from 100g macros', () => {
-    const macrosPer100g = { carbs: 50, protein: 20, fat: 10 }
+    const macrosPer100g: MacroNutrients = createMacroNutrients({
+      carbsInGrams: 50,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
     const result = getMacrosPerGram(macrosPer100g)
 
     expect(result.carbPerGram).toBe(0.5)
@@ -20,7 +28,11 @@ describe('getMacrosPerGram', () => {
   })
 
   it('should handle zero macros', () => {
-    const macrosPer100g = { carbs: 0, protein: 0, fat: 0 }
+    const macrosPer100g: MacroNutrients = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 0,
+    })
     const result = getMacrosPerGram(macrosPer100g)
 
     expect(result.carbPerGram).toBe(0)
@@ -31,63 +43,99 @@ describe('getMacrosPerGram', () => {
 
 describe('calculateMacroPreview', () => {
   it('should calculate macro preview for given grams', () => {
-    const macrosPer100g = { carbs: 50, protein: 20, fat: 10 }
+    const macrosPer100g: MacroNutrients = createMacroNutrients({
+      carbsInGrams: 50,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
     const preview = calculateMacroPreview(150, macrosPer100g)
 
-    expect(preview.carbs).toBe(75) // 150 * 0.5
-    expect(preview.protein).toBe(30) // 150 * 0.2
-    expect(preview.fat).toBe(15) // 150 * 0.1
+    expect(preview.carbsInGrams).toBe(75) // 150 * 0.5
+    expect(preview.proteinInGrams).toBe(30) // 150 * 0.2
+    expect(preview.fatInGrams).toBe(15) // 150 * 0.1
   })
 
   it('should handle zero grams', () => {
-    const macrosPer100g = { carbs: 50, protein: 20, fat: 10 }
+    const macrosPer100g: MacroNutrients = createMacroNutrients({
+      carbsInGrams: 50,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
     const preview = calculateMacroPreview(0, macrosPer100g)
 
-    expect(preview.carbs).toBe(0)
-    expect(preview.protein).toBe(0)
-    expect(preview.fat).toBe(0)
+    expect(preview.carbsInGrams).toBe(0)
+    expect(preview.proteinInGrams).toBe(0)
+    expect(preview.fatInGrams).toBe(0)
   })
 })
 
 describe('getDominantMacro', () => {
   it('should detect protein-dominant item (pure protein)', () => {
     // Chicken breast: high protein, almost no carbs/fat
-    const pureProtein = { carbs: 0, protein: 30, fat: 2 }
+    const pureProtein = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 30,
+      fatInGrams: 2,
+    })
     expect(getDominantMacro(pureProtein)).toBe('protein')
   })
 
   it('should detect carb-dominant item (pure carbs)', () => {
     // White rice: mostly carbs
-    const pureCarb = { carbs: 80, protein: 3, fat: 0 }
+    const pureCarb = createMacroNutrients({
+      carbsInGrams: 80,
+      proteinInGrams: 3,
+      fatInGrams: 0,
+    })
     expect(getDominantMacro(pureCarb)).toBe('carb')
   })
 
   it('should detect fat-dominant item (pure fat)', () => {
     // Olive oil: 100% fat
-    const pureFat = { carbs: 0, protein: 0, fat: 100 }
+    const pureFat = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 100,
+    })
     expect(getDominantMacro(pureFat)).toBe('fat')
   })
 
   it('should detect fat-dominant item (butter)', () => {
     // Butter: mostly fat
-    const butter = { carbs: 0.1, protein: 0.9, fat: 82 }
+    const butter = createMacroNutrients({
+      carbsInGrams: 0.1,
+      proteinInGrams: 0.9,
+      fatInGrams: 82,
+    })
     expect(getDominantMacro(butter)).toBe('fat')
   })
 
   it('should return null for mixed item (50/50 protein/carb)', () => {
     // Equal calories from protein and carbs (4 cal each)
-    const mixed = { carbs: 25, protein: 25, fat: 0 }
+    const mixed = createMacroNutrients({
+      carbsInGrams: 25,
+      proteinInGrams: 25,
+      fatInGrams: 0,
+    })
     expect(getDominantMacro(mixed)).toBe(null)
   })
 
   it('should return null for balanced item', () => {
     // Roughly equal distribution
-    const balanced = { carbs: 30, protein: 25, fat: 15 }
+    const balanced = createMacroNutrients({
+      carbsInGrams: 30,
+      proteinInGrams: 25,
+      fatInGrams: 15,
+    })
     expect(getDominantMacro(balanced)).toBe(null)
   })
 
   it('should return null for item with no calories', () => {
-    const noCalories = { carbs: 0, protein: 0, fat: 0 }
+    const noCalories = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 0,
+    })
     expect(getDominantMacro(noCalories)).toBe(null)
   })
 
@@ -95,26 +143,42 @@ describe('getDominantMacro', () => {
     // Just below threshold: ~59% carbs
     // 59g carbs = 236 cal, 25g protein = 100 cal, 7.33g fat = 66 cal
     // Total = 402 cal, carbs = 58.7%
-    const belowThreshold = { carbs: 59, protein: 25, fat: 7.33 }
+    const belowThreshold = createMacroNutrients({
+      carbsInGrams: 59,
+      proteinInGrams: 25,
+      fatInGrams: 7.33,
+    })
     expect(getDominantMacro(belowThreshold)).toBe(null)
   })
 })
 
 describe('getMaxForMacro', () => {
   describe('pure protein item', () => {
-    const pureProtein = { carbs: 0, protein: 25, fat: 0 }
+    const pureProtein = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 25,
+      fatInGrams: 0,
+    })
 
     it('should maximize protein without limits', () => {
-      const remaining = { carbs: 100, protein: 50, fat: 50 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('protein', pureProtein, remaining)
 
       expect(result.grams).toBe(200) // 50 / 0.25 = 200g
       expect(result.limitedBy).toBe(null)
-      expect(result.preview.protein).toBe(50)
+      expect(result.preview.proteinInGrams).toBe(50)
     })
 
     it('should return 0 for carb target on pure protein item', () => {
-      const remaining = { carbs: 100, protein: 50, fat: 50 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('carb', pureProtein, remaining)
 
       expect(result.grams).toBe(0)
@@ -124,21 +188,33 @@ describe('getMaxForMacro', () => {
 
   describe('mixed item (protein + fat)', () => {
     // Example: Beef (per 100g: 26g protein, 15g fat)
-    const beefLike = { carbs: 0, protein: 26, fat: 15 }
+    const beefLike = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 26,
+      fatInGrams: 15,
+    })
 
     it('should be limited by fat when maximizing protein', () => {
-      const remaining = { carbs: 100, protein: 100, fat: 10 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 100,
+        fatInGrams: 10,
+      })
       const result = getMaxForMacro('protein', beefLike, remaining)
 
       // Max from protein: 100 / 0.26 = 384.6g
       // Max from fat: 10 / 0.15 = 66.67g (limiting)
       expect(result.grams).toBe(66.67)
       expect(result.limitedBy).toBe('fat')
-      expect(result.preview.fat).toBeCloseTo(10, 1)
+      expect(result.preview.fatInGrams).toBeCloseTo(10, 1)
     })
 
     it('should be limited by protein when maximizing fat', () => {
-      const remaining = { carbs: 100, protein: 10, fat: 100 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 10,
+        fatInGrams: 100,
+      })
       const result = getMaxForMacro('fat', beefLike, remaining)
 
       // Max from fat: 100 / 0.15 = 666.67g
@@ -150,24 +226,48 @@ describe('getMaxForMacro', () => {
 
   describe('edge cases', () => {
     it('should handle remaining target of 0', () => {
-      const item = { carbs: 20, protein: 10, fat: 5 }
-      const remaining = { carbs: 0, protein: 50, fat: 50 }
+      const item = createMacroNutrients({
+        carbsInGrams: 20,
+        proteinInGrams: 10,
+        fatInGrams: 5,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 0,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('carb', item, remaining)
 
       expect(result.grams).toBe(0)
     })
 
     it('should handle remaining target less than 0', () => {
-      const item = { carbs: 20, protein: 10, fat: 5 }
-      const remaining = { carbs: -10, protein: 50, fat: 50 }
+      const item = createMacroNutrients({
+        carbsInGrams: 20,
+        proteinInGrams: 10,
+        fatInGrams: 5,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: -10,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('carb', item, remaining)
 
       expect(result.grams).toBe(0)
     })
 
     it('should handle limiting macro with remaining 0', () => {
-      const item = { carbs: 20, protein: 10, fat: 5 }
-      const remaining = { carbs: 100, protein: 0, fat: 50 }
+      const item = createMacroNutrients({
+        carbsInGrams: 20,
+        proteinInGrams: 10,
+        fatInGrams: 5,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 0,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('carb', item, remaining)
 
       // Carb max: 100 / 0.2 = 500g
@@ -177,8 +277,16 @@ describe('getMaxForMacro', () => {
     })
 
     it('should handle per-gram value of 0 for target macro', () => {
-      const pureFat = { carbs: 0, protein: 0, fat: 100 }
-      const remaining = { carbs: 100, protein: 50, fat: 50 }
+      const pureFat = createMacroNutrients({
+        carbsInGrams: 0,
+        proteinInGrams: 0,
+        fatInGrams: 100,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('protein', pureFat, remaining)
 
       expect(result.grams).toBe(0)
@@ -189,8 +297,16 @@ describe('getMaxForMacro', () => {
 
 describe('getMaxBalanced', () => {
   it('should find minimum constraint for balanced mode', () => {
-    const item = { carbs: 30, protein: 20, fat: 10 }
-    const remaining = { carbs: 60, protein: 50, fat: 10 }
+    const item = createMacroNutrients({
+      carbsInGrams: 30,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 60,
+      proteinInGrams: 50,
+      fatInGrams: 10,
+    })
 
     // Max from carbs: 60 / 0.3 = 200g
     // Max from protein: 50 / 0.2 = 250g
@@ -202,8 +318,16 @@ describe('getMaxBalanced', () => {
   })
 
   it('should work with pure protein item', () => {
-    const pureProtein = { carbs: 0, protein: 25, fat: 0 }
-    const remaining = { carbs: 100, protein: 50, fat: 50 }
+    const pureProtein = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 25,
+      fatInGrams: 0,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 100,
+      proteinInGrams: 50,
+      fatInGrams: 50,
+    })
 
     const result = getMaxBalanced(pureProtein, remaining)
 
@@ -212,8 +336,16 @@ describe('getMaxBalanced', () => {
   })
 
   it('should work with pure carb item', () => {
-    const pureCarb = { carbs: 80, protein: 0, fat: 0 }
-    const remaining = { carbs: 40, protein: 50, fat: 50 }
+    const pureCarb = createMacroNutrients({
+      carbsInGrams: 80,
+      proteinInGrams: 0,
+      fatInGrams: 0,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 40,
+      proteinInGrams: 50,
+      fatInGrams: 50,
+    })
 
     const result = getMaxBalanced(pureCarb, remaining)
 
@@ -222,8 +354,16 @@ describe('getMaxBalanced', () => {
   })
 
   it('should return 0 for item with no macros', () => {
-    const noMacros = { carbs: 0, protein: 0, fat: 0 }
-    const remaining = { carbs: 100, protein: 50, fat: 50 }
+    const noMacros = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 0,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 100,
+      proteinInGrams: 50,
+      fatInGrams: 50,
+    })
 
     const result = getMaxBalanced(noMacros, remaining)
 
@@ -232,8 +372,16 @@ describe('getMaxBalanced', () => {
   })
 
   it('should handle all remaining at 0', () => {
-    const item = { carbs: 30, protein: 20, fat: 10 }
-    const remaining = { carbs: 0, protein: 0, fat: 0 }
+    const item = createMacroNutrients({
+      carbsInGrams: 30,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 0,
+    })
 
     const result = getMaxBalanced(item, remaining)
 
@@ -241,8 +389,16 @@ describe('getMaxBalanced', () => {
   })
 
   it('should handle negative remaining values', () => {
-    const item = { carbs: 30, protein: 20, fat: 10 }
-    const remaining = { carbs: -10, protein: 50, fat: 20 }
+    const item = createMacroNutrients({
+      carbsInGrams: 30,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: -10,
+      proteinInGrams: 50,
+      fatInGrams: 20,
+    })
 
     const result = getMaxBalanced(item, remaining)
 
@@ -253,8 +409,16 @@ describe('getMaxBalanced', () => {
 })
 
 describe('calculateMaxQuantity', () => {
-  const item = { carbs: 30, protein: 20, fat: 10 }
-  const remaining = { carbs: 60, protein: 50, fat: 10 }
+  const item = createMacroNutrients({
+    carbsInGrams: 30,
+    proteinInGrams: 20,
+    fatInGrams: 10,
+  })
+  const remaining = createMacroNutrients({
+    carbsInGrams: 60,
+    proteinInGrams: 50,
+    fatInGrams: 10,
+  })
 
   it('should delegate to getMaxBalanced for balanced mode', () => {
     const result = calculateMaxQuantity('balanced', item, remaining)
@@ -292,14 +456,22 @@ describe('calculateMaxQuantity', () => {
 describe('real-world scenarios', () => {
   describe('chicken breast (high protein)', () => {
     // Per 100g: 31g protein, 0g carbs, 3.6g fat
-    const chicken = { carbs: 0, protein: 31, fat: 3.6 }
+    const chicken = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 31,
+      fatInGrams: 3.6,
+    })
 
     it('should be detected as protein-dominant', () => {
       expect(getDominantMacro(chicken)).toBe('protein')
     })
 
     it('should calculate max for balanced mode', () => {
-      const remaining = { carbs: 100, protein: 62, fat: 20 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 62,
+        fatInGrams: 20,
+      })
       const result = getMaxBalanced(chicken, remaining)
 
       // Protein: 62 / 0.31 = 200g
@@ -311,14 +483,22 @@ describe('real-world scenarios', () => {
 
   describe('olive oil (pure fat)', () => {
     // Per 100g: 0g protein, 0g carbs, 100g fat
-    const oliveOil = { carbs: 0, protein: 0, fat: 100 }
+    const oliveOil = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 0,
+      fatInGrams: 100,
+    })
 
     it('should be detected as fat-dominant', () => {
       expect(getDominantMacro(oliveOil)).toBe('fat')
     })
 
     it('should calculate max for balanced mode', () => {
-      const remaining = { carbs: 100, protein: 50, fat: 15 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 15,
+      })
       const result = getMaxBalanced(oliveOil, remaining)
 
       expect(result.grams).toBe(15) // 15 / 1 = 15g
@@ -328,14 +508,22 @@ describe('real-world scenarios', () => {
 
   describe('white rice (high carb)', () => {
     // Per 100g: 28g carbs, 2.7g protein, 0.3g fat
-    const rice = { carbs: 28, protein: 2.7, fat: 0.3 }
+    const rice = createMacroNutrients({
+      carbsInGrams: 28,
+      proteinInGrams: 2.7,
+      fatInGrams: 0.3,
+    })
 
     it('should be detected as carb-dominant', () => {
       expect(getDominantMacro(rice)).toBe('carb')
     })
 
     it('should calculate max for balanced mode with fat limiting', () => {
-      const remaining = { carbs: 100, protein: 50, fat: 1 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 1,
+      })
       const result = getMaxBalanced(rice, remaining)
 
       // Carb: 100 / 0.28 = 357.14g
@@ -348,7 +536,11 @@ describe('real-world scenarios', () => {
 
   describe('milk (truly balanced)', () => {
     // Per 100g: 5g carbs, 3.4g protein, 3.3g fat
-    const milk = { carbs: 5, protein: 3.4, fat: 3.3 }
+    const milk = createMacroNutrients({
+      carbsInGrams: 5,
+      proteinInGrams: 3.4,
+      fatInGrams: 3.3,
+    })
 
     it('should be detected as mixed (no dominant macro)', () => {
       // Carbs: 5 * 4 = 20 cal
@@ -364,10 +556,18 @@ describe('real-world scenarios', () => {
 describe('ignoreOtherMacros option', () => {
   describe('getMaxForMacro with ignoreOtherMacros: true', () => {
     // Example: Beef (per 100g: 26g protein, 15g fat)
-    const beefLike = { carbs: 0, protein: 26, fat: 15 }
+    const beefLike = createMacroNutrients({
+      carbsInGrams: 0,
+      proteinInGrams: 26,
+      fatInGrams: 15,
+    })
 
     it('should ignore fat constraint when maximizing protein', () => {
-      const remaining = { carbs: 100, protein: 100, fat: 10 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 100,
+        fatInGrams: 10,
+      })
 
       // Without ignoreOtherMacros: limited to 66.67g by fat
       const constrained = getMaxForMacro('protein', beefLike, remaining)
@@ -386,7 +586,11 @@ describe('ignoreOtherMacros option', () => {
     })
 
     it('should ignore protein constraint when maximizing fat', () => {
-      const remaining = { carbs: 100, protein: 10, fat: 100 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 10,
+        fatInGrams: 100,
+      })
 
       // Without ignoreOtherMacros: limited to 38.46g by protein
       const constrained = getMaxForMacro('fat', beefLike, remaining)
@@ -405,9 +609,17 @@ describe('ignoreOtherMacros option', () => {
     })
 
     it('should still respect target macro remaining even when ignoring others', () => {
-      const item = { carbs: 20, protein: 10, fat: 5 }
+      const item = createMacroNutrients({
+        carbsInGrams: 20,
+        proteinInGrams: 10,
+        fatInGrams: 5,
+      })
       // Only 30g of carbs remaining
-      const remaining = { carbs: 30, protein: 100, fat: 100 }
+      const remaining = createMacroNutrients({
+        carbsInGrams: 30,
+        proteinInGrams: 100,
+        fatInGrams: 100,
+      })
 
       const result = getMaxForMacro('carb', item, remaining, {
         ignoreOtherMacros: true,
@@ -419,12 +631,19 @@ describe('ignoreOtherMacros option', () => {
     })
 
     it('should return 0 when target macro has 0 per gram', () => {
-      const pureFat = { carbs: 0, protein: 0, fat: 100 }
-      const remaining = { carbs: 100, protein: 50, fat: 50 }
+      const pureFat = createMacroNutrients({
+        carbsInGrams: 0,
+        proteinInGrams: 0,
+        fatInGrams: 100,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 50,
+      })
       const result = getMaxForMacro('protein', pureFat, remaining, {
         ignoreOtherMacros: true,
       })
-
       expect(result.grams).toBe(0)
       expect(result.limitedBy).toBe(null)
       expect(result.ignoredOtherMacros).toBe(true)
@@ -432,8 +651,16 @@ describe('ignoreOtherMacros option', () => {
   })
 
   describe('calculateMaxQuantity with ignoreOtherMacros option', () => {
-    const item = { carbs: 30, protein: 20, fat: 10 }
-    const remaining = { carbs: 60, protein: 50, fat: 10 }
+    const item = createMacroNutrients({
+      carbsInGrams: 30,
+      proteinInGrams: 20,
+      fatInGrams: 10,
+    })
+    const remaining = createMacroNutrients({
+      carbsInGrams: 60,
+      proteinInGrams: 50,
+      fatInGrams: 10,
+    })
 
     it('should pass ignoreOtherMacros to getMaxForMacro for protein mode', () => {
       // Without option: limited by fat (10 / 0.1 = 100g)
@@ -464,22 +691,46 @@ describe('ignoreOtherMacros option', () => {
 
   describe('ignoredOtherMacros flag in result', () => {
     it('should be false for balanced mode', () => {
-      const item = { carbs: 30, protein: 20, fat: 10 }
-      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const item = createMacroNutrients({
+        carbsInGrams: 30,
+        proteinInGrams: 20,
+        fatInGrams: 10,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 60,
+        proteinInGrams: 50,
+        fatInGrams: 10,
+      })
       const result = getMaxBalanced(item, remaining)
       expect(result.ignoredOtherMacros).toBe(false)
     })
 
     it('should be false for getMaxForMacro without option', () => {
-      const item = { carbs: 30, protein: 20, fat: 10 }
-      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const item = createMacroNutrients({
+        carbsInGrams: 30,
+        proteinInGrams: 20,
+        fatInGrams: 10,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 60,
+        proteinInGrams: 50,
+        fatInGrams: 10,
+      })
       const result = getMaxForMacro('protein', item, remaining)
       expect(result.ignoredOtherMacros).toBe(false)
     })
 
     it('should be true for getMaxForMacro with ignoreOtherMacros: true', () => {
-      const item = { carbs: 30, protein: 20, fat: 10 }
-      const remaining = { carbs: 60, protein: 50, fat: 10 }
+      const item = createMacroNutrients({
+        carbsInGrams: 30,
+        proteinInGrams: 20,
+        fatInGrams: 10,
+      })
+      const remaining = createMacroNutrients({
+        carbsInGrams: 60,
+        proteinInGrams: 50,
+        fatInGrams: 10,
+      })
       const result = getMaxForMacro('protein', item, remaining, {
         ignoreOtherMacros: true,
       })

@@ -16,12 +16,11 @@ describe('Template Domain', () => {
         id: 1,
         name: 'Test Food',
         ean: '1234567890123',
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
@@ -50,12 +49,11 @@ describe('Template Domain', () => {
           type: 'api',
           id: 'api-123',
         },
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
@@ -67,12 +65,11 @@ describe('Template Domain', () => {
         id: 1,
         name: 'Minimal Food',
         ean: null,
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
@@ -99,12 +96,11 @@ describe('Template Domain', () => {
         id: 1,
         name: 'Test Food',
         ean: '1234567890123',
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
@@ -123,12 +119,11 @@ describe('Template Domain', () => {
             reference: {
               type: 'food',
               id: 10,
-              macros: {
-                protein: 10,
-                carbs: 20,
-                fat: 5,
-                __type: 'MacroNutrients',
-              },
+              macros: createMacroNutrients({
+                proteinInGrams: 10,
+                carbsInGrams: 20,
+                fatInGrams: 5,
+              }),
             },
             quantity: 100,
             __type: 'UnifiedItem',
@@ -139,12 +134,11 @@ describe('Template Domain', () => {
             reference: {
               type: 'food',
               id: 20,
-              macros: {
-                protein: 10,
-                carbs: 15,
-                fat: 3,
-                __type: 'MacroNutrients',
-              },
+              macros: createMacroNutrients({
+                proteinInGrams: 10,
+                carbsInGrams: 15,
+                fatInGrams: 3,
+              }),
             },
             quantity: 50,
             __type: 'UnifiedItem',
@@ -182,12 +176,11 @@ describe('Template Domain', () => {
           id: 1,
           name: 'Template Food',
           ean: '1234567890123',
-          macros: {
-            protein: 10,
-            carbs: 20,
-            fat: 5,
-            __type: 'MacroNutrients',
-          },
+          macros: createMacroNutrients({
+            proteinInGrams: 10,
+            carbsInGrams: 20,
+            fatInGrams: 5,
+          }),
           __type: 'Food',
         },
         {
@@ -221,7 +214,11 @@ describe('Template Domain', () => {
           id: 1,
           name: 'Food 1',
           ean: '1111111111111',
-          macros: createMacroNutrients({ protein: 2, carbs: 10, fat: 1 }),
+          macros: createMacroNutrients({
+            proteinInGrams: 2,
+            carbsInGrams: 10,
+            fatInGrams: 1,
+          }),
           __type: 'Food',
         },
         {
@@ -236,7 +233,11 @@ describe('Template Domain', () => {
           id: 3,
           name: 'Food 2',
           ean: '2222222222222',
-          macros: createMacroNutrients({ protein: 5, carbs: 20, fat: 2 }),
+          macros: createMacroNutrients({
+            proteinInGrams: 5,
+            carbsInGrams: 20,
+            fatInGrams: 2,
+          }),
           __type: 'Food',
         },
         {
@@ -276,12 +277,11 @@ describe('Template Domain', () => {
         id: 1,
         name: 'Food With Null EAN',
         ean: null,
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
@@ -295,12 +295,11 @@ describe('Template Domain', () => {
         name: 'Food With Undefined Source',
         ean: '1234567890123',
         source: undefined,
-        macros: {
-          protein: 10,
-          carbs: 20,
-          fat: 5,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 10,
+          carbsInGrams: 20,
+          fatInGrams: 5,
+        }),
         __type: 'Food',
       }
 
