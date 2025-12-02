@@ -18,12 +18,11 @@ describe('Food Domain', () => {
         name: 'Orange',
         ean: null,
         source: null,
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 1.1,
+          carbsInGrams: 22.8,
+          fatInGrams: 0.3,
+        }),
         __type: 'Food',
       }
 
@@ -162,7 +161,9 @@ describe('Food Domain', () => {
       expect(food.name).toBe(newFood.name)
       expect(food.ean).toBe(newFood.ean)
       expect(food.source).toEqual(newFood.source)
-      expect(food.macros).toMatchObject(newFood.macros)
+      expect(food.macros.proteinInGrams()).toBe(newFood.macros.proteinInGrams())
+      expect(food.macros.carbsInGrams()).toBe(newFood.macros.carbsInGrams())
+      expect(food.macros.fatInGrams()).toBe(newFood.macros.fatInGrams())
       expect(food.__type).toBe('Food')
     })
   })
@@ -245,7 +246,9 @@ describe('Food Domain', () => {
       expect(newFood.name).toBe(food.name)
       expect(newFood.ean).toBe(food.ean)
       expect(newFood.source).toEqual(food.source)
-      expect(newFood.macros).toMatchObject(food.macros)
+      expect(newFood.macros.proteinInGrams()).toBe(food.macros.proteinInGrams())
+      expect(newFood.macros.carbsInGrams()).toBe(food.macros.carbsInGrams())
+      expect(newFood.macros.fatInGrams()).toBe(food.macros.fatInGrams())
       expect(newFood.__type).toBe('NewFood')
       expect('id' in newFood).toBe(false)
     })
@@ -262,12 +265,11 @@ describe('Schema compatibility', () => {
         type: 'api',
         id: 'json-api-123',
       },
-      macros: {
-        protein: 1.1,
-        carbs: 22.8,
-        fat: 0.3,
-        __type: 'MacroNutrients',
-      },
+      macros: createMacroNutrients({
+        proteinInGrams: 1.1,
+        carbsInGrams: 22.8,
+        fatInGrams: 0.3,
+      }),
     }
 
     const result = foodSchema.safeParse(jsonData)
@@ -287,12 +289,11 @@ describe('Schema compatibility', () => {
         type: 'api',
         id: 'db-api-123',
       },
-      macros: {
-        protein: 1.1,
-        carbs: 22.8,
-        fat: 0.3,
-        __type: 'MacroNutrients',
-      },
+      macros: createMacroNutrients({
+        proteinInGrams: 1.1,
+        carbsInGrams: 22.8,
+        fatInGrams: 0.3,
+      }),
       created_at: new Date(), // Extra field that should be stripped
       updated_at: new Date(), // Extra field that should be stripped
     }
@@ -319,12 +320,11 @@ describe('Schema compatibility', () => {
         name: `API Test ${index + 1}`,
         ean: null,
         source,
-        macros: {
-          protein: 1.1,
-          carbs: 22.8,
-          fat: 0.3,
-          __type: 'MacroNutrients',
-        },
+        macros: createMacroNutrients({
+          proteinInGrams: 1.1,
+          carbsInGrams: 22.8,
+          fatInGrams: 0.3,
+        }),
       }
 
       const result = foodSchema.safeParse(food)

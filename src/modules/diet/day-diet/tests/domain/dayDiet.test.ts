@@ -10,6 +10,7 @@ import {
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
+import { assertMealApproxEqual } from '~/shared/testing/assertions/approxEqual'
 
 function makeTestMeal() {
   const item = createItem({
@@ -44,7 +45,11 @@ describe('DayDiet Factory Functions', () => {
 
       expect(newDayDiet.target_day).toBe('2023-01-01')
       expect(newDayDiet.user_id).toBe('1')
-      expect(newDayDiet.meals).toEqual(meals)
+      // Compare meal objects with approximate-equality helper for clearer failures
+      expect(newDayDiet.meals.length).toBe(meals.length)
+      for (let i = 0; i < meals.length; i++) {
+        assertMealApproxEqual(newDayDiet.meals[i], meals[i])
+      }
       expect(newDayDiet.__type).toBe('NewDayDiet')
     })
 
@@ -102,7 +107,10 @@ describe('DayDiet Factory Functions', () => {
       expect(dayDiet.id).toBe(999)
       expect(dayDiet.target_day).toBe('2023-12-25')
       expect(dayDiet.user_id).toBe('42')
-      expect(dayDiet.meals).toEqual(meals)
+      expect(dayDiet.meals.length).toBe(meals.length)
+      for (let i = 0; i < meals.length; i++) {
+        assertMealApproxEqual(dayDiet.meals[i], meals[i])
+      }
     })
   })
 
@@ -135,7 +143,10 @@ describe('DayDiet Factory Functions', () => {
 
       const demotedDayDiet = demoteNewDayDiet(dayDiet)
 
-      expect(demotedDayDiet.meals).toEqual(meals)
+      expect(demotedDayDiet.meals.length).toBe(meals.length)
+      for (let i = 0; i < meals.length; i++) {
+        assertMealApproxEqual(demotedDayDiet.meals[i], meals[i])
+      }
       expect(demotedDayDiet.meals[0]?.name).toBe('Almoço')
     })
   })
