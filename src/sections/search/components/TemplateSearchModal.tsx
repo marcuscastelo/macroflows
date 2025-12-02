@@ -1,4 +1,4 @@
-import { createEffect, Suspense } from 'solid-js'
+import { onMount, Suspense } from 'solid-js'
 
 import { isFoodItem, isRecipeItem } from '~/modules/diet/item/schema/itemSchema'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
@@ -25,6 +25,10 @@ import {
   templates,
   templateSearchTab,
 } from '~/modules/template-search/application/usecases/templateSearchState'
+import {
+  loadTabPreference,
+  saveTabPreference,
+} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'
@@ -35,7 +39,7 @@ import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
 import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
 import {
-  availableTabs,
+  type TemplateSearchTab,
   TemplateSearchTabs,
 } from '~/sections/search/components/TemplateSearchTabs'
 import { formatError } from '~/shared/formatError'
@@ -45,8 +49,6 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
-
-const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -242,9 +244,27 @@ export function TemplateSearch(props: {
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
-  createEffect(() => {
-    setTemplateSearchTab(TEMPLATE_SEARCH_DEFAULT_TAB)
+  // Load persisted tab preference on mount (only once)
+  onMount(() => {
+    const persistedTab = loadTabPreference()
+    setTemplateSearchTab(persistedTab)
   })
+
+  // Wrapper that persists tab changes to localStorage
+  const handleSetTab = (
+    tabOrUpdater:
+      | TemplateSearchTab
+      | ((prev: TemplateSearchTab) => TemplateSearchTab),
+  ) => {
+    // Compute the new value based on whether it's a function or direct value
+    const newTab =
+      typeof tabOrUpdater === 'function'
+        ? tabOrUpdater(templateSearchTab())
+        : tabOrUpdater
+
+    setTemplateSearchTab(newTab)
+    saveTabPreference(newTab)
+  }
 
   return (
     <>
@@ -259,10 +279,7 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs
-        tab={templateSearchTab}
-        setTab={setTemplateSearchTab}
-      />
+      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense
