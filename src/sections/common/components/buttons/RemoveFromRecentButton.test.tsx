@@ -87,6 +87,7 @@ describe('RemoveFromRecentButton Logic', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(userUseCases, 'currentUserId_unsafe').mockReturnValue(mockUserId)
+    mockDebouncedTab.mockReturnValue('recent')
     mockShowPromise.mockImplementation((promise) => promise)
     mockDeleteRecentFoodByReference.mockResolvedValue(true)
   })
