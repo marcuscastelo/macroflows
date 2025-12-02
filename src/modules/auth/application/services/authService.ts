@@ -6,7 +6,11 @@ import {
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import { fetchUser, insertUserSilently } from '~/modules/user/application/user'
+import {
+  fetchUser,
+  insertUserSilently,
+  setCurrentUser,
+} from '~/modules/user/application/user'
 import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
 import { logging } from '~/shared/utils/logging'
 
@@ -98,6 +102,7 @@ export function createAuthService(
                 )
                 const newUser = createDefaultUserFromAuthSession(session)
                 const createdUser = await insertUserSilently(newUser)
+                setCurrentUser(createdUser)
                 if (createdUser !== null) {
                   logging.info('User profile created successfully')
                 } else {
