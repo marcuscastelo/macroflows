@@ -1,12 +1,12 @@
 import { type Accessor, For, Show } from 'solid-js'
 
 import { type Template } from '~/modules/diet/template/domain/template'
-import { SearchLoadingIndicator } from '~/modules/search/ui/SearchLoadingIndicator'
-import { TemplateSearchResultItem } from '~/modules/search/ui/TemplateSearchResultItem'
 import {
   debouncedTab,
   templates,
-} from '~/modules/template-search/application/usecases/templateSearchState'
+} from '~/modules/search/application/store/templateSearchState'
+import { SearchLoadingIndicator } from '~/modules/search/ui/SearchLoadingIndicator'
+import { TemplateSearchResultItem } from '~/modules/search/ui/TemplateSearchResultItem'
 import { Alert } from '~/sections/common/components/Alert'
 
 export function TemplateSearchResults(props: {

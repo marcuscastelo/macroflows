@@ -18,23 +18,23 @@ import {
   updateRecentFood,
 } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
-import { TemplateSearchBar } from '~/modules/search/ui/TemplateSearchBar'
-import { TemplateSearchResults } from '~/modules/search/ui/TemplateSearchResults'
-import {
-  type TemplateSearchTab,
-  TemplateSearchTabs,
-} from '~/modules/search/ui/TemplateSearchTabs'
 import {
   debouncedSearch,
   refetchTemplates,
   setTemplateSearchTab,
   templates,
   templateSearchTab,
-} from '~/modules/template-search/application/usecases/templateSearchState'
+} from '~/modules/search/application/store/templateSearchState'
 import {
   loadTabPreference,
   saveTabPreference,
-} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
+} from '~/modules/search/infrastructure/templateSearchTabPreference'
+import { TemplateSearchBar } from '~/modules/search/ui/TemplateSearchBar'
+import { TemplateSearchResults } from '~/modules/search/ui/TemplateSearchResults'
+import {
+  type TemplateSearchTab,
+  TemplateSearchTabs,
+} from '~/modules/search/ui/TemplateSearchTabs'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
 import { currentUserId } from '~/modules/user/application/user'

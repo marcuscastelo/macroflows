@@ -1,8 +1,8 @@
+import { cachedSearchCacheStore } from '~/modules/search/application/store/cachedSearchCacheStore'
 import {
   type CachedSearch,
   cachedSearchSchema,
 } from '~/modules/search/domain/cachedSearch'
-import { cachedSearchCacheStore } from '~/modules/search/infrastructure/signals/cachedSearchCacheStore'
 import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'

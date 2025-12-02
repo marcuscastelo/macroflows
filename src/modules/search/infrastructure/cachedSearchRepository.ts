@@ -1,6 +1,6 @@
+import { cachedSearchCacheStore } from '~/modules/search/application/store/cachedSearchCacheStore'
 import { cachedSearchSchema } from '~/modules/search/domain/cachedSearch'
 import { type CachedSearchRepository } from '~/modules/search/domain/searchRepository'
-import { cachedSearchCacheStore } from '~/modules/search/infrastructure/signals/cachedSearchCacheStore'
 import { createSupabaseCachedSearchGateway } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchGateway'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

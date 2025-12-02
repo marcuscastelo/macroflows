@@ -32,7 +32,7 @@ describe('templateSearchTabPreference', () => {
   describe('loadTabPreference', () => {
     it('returns default tab when localStorage is empty', async () => {
       const { loadTabPreference, DEFAULT_TAB } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(loadTabPreference()).toBe(DEFAULT_TAB)
     })
 
@@ -42,7 +42,7 @@ describe('templateSearchTabPreference', () => {
       vi.resetModules()
 
       const { loadTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(loadTabPreference()).toBe(availableTabs.Favoritos.id)
     })
 
@@ -52,7 +52,7 @@ describe('templateSearchTabPreference', () => {
       vi.resetModules()
 
       const { loadTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(loadTabPreference()).toBe(availableTabs.Recentes.id)
     })
 
@@ -62,7 +62,7 @@ describe('templateSearchTabPreference', () => {
       vi.resetModules()
 
       const { loadTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(loadTabPreference()).toBe(availableTabs.Receitas.id)
     })
 
@@ -72,7 +72,7 @@ describe('templateSearchTabPreference', () => {
       vi.resetModules()
 
       const { loadTabPreference, DEFAULT_TAB } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(loadTabPreference()).toBe(DEFAULT_TAB)
     })
   })
@@ -80,7 +80,7 @@ describe('templateSearchTabPreference', () => {
   describe('saveTabPreference', () => {
     it('saves tab preference to localStorage', async () => {
       const { saveTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
 
       saveTabPreference(availableTabs.Favoritos.id)
 
@@ -89,7 +89,7 @@ describe('templateSearchTabPreference', () => {
 
     it('does not persist hidden tab state', async () => {
       const { saveTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
 
       saveTabPreference('hidden')
 
@@ -102,7 +102,7 @@ describe('templateSearchTabPreference', () => {
       vi.resetModules()
 
       const { saveTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
 
       saveTabPreference(availableTabs.Recentes.id)
 
@@ -113,7 +113,7 @@ describe('templateSearchTabPreference', () => {
   describe('round-trip persistence', () => {
     it('can save and load tab preference', async () => {
       const { saveTabPreference } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
 
       // Save a preference
       saveTabPreference(availableTabs.Receitas.id)
@@ -121,7 +121,7 @@ describe('templateSearchTabPreference', () => {
       // Re-import to get fresh module state
       vi.resetModules()
       const freshModule =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
 
       // Load should return the saved preference
       expect(freshModule.loadTabPreference()).toBe(availableTabs.Receitas.id)
@@ -131,7 +131,7 @@ describe('templateSearchTabPreference', () => {
   describe('DEFAULT_TAB', () => {
     it('is the Todos tab', async () => {
       const { DEFAULT_TAB } =
-        await import('~/modules/template-search/infrastructure/templateSearchTabPreference')
+        await import('~/modules/search/infrastructure/templateSearchTabPreference')
       expect(DEFAULT_TAB).toBe(availableTabs.Todos.id)
     })
   })

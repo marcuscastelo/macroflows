@@ -9,8 +9,8 @@ import {
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { fetchTemplatesByTabLogic } from '~/modules/search/application/usecases/templateSearchLogic'
 import { type TemplateSearchTab } from '~/modules/search/ui/TemplateSearchTabs'
-import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { currentUser, currentUserId } from '~/modules/user/application/user'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
