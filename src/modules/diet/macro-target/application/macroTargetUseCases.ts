@@ -13,12 +13,18 @@ const macroTargetAt = (day: Date): MacroNutrients | null => {
   )
 
   if (targetDayWeight_ === null) {
-    logging.debug(`Weight not found for day ${day.toISOString()}`)
+    logging.warn('macroTargetUseCases: Weight not found for day', {
+      component: 'macroTargetUseCases',
+      day: day.toISOString(),
+    })
     return null
   }
 
   if (targetDayMacroProfile_ === null) {
-    logging.warn(`Macro profile not found for day ${day.toISOString()}`)
+    logging.warn('macroTargetUseCases: Macro profile not found for day', {
+      component: 'macroTargetUseCases',
+      day: day.toISOString(),
+    })
     return null
   }
 

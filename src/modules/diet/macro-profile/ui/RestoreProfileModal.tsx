@@ -16,6 +16,7 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Configuration for restore profile modals.
@@ -74,6 +75,10 @@ function RestoreProfileModalFooter(props: {
         closeModal()
       })
       .catch((e) => {
+        logging.error('RestoreProfileModal restore error:', e, {
+          component: 'RestoreProfileModal',
+          profileId,
+        })
         showError(e, undefined, 'Erro ao restaurar perfil antigo')
       })
   }

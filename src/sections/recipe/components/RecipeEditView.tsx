@@ -26,6 +26,7 @@ import { ItemListView } from '~/sections/item/components/ItemListView'
 import { SingleItemConversionIndicator } from '~/sections/recipe/components/SingleItemConversionIndicator'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
 import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
+import { logging } from '~/shared/utils/logging'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -153,6 +154,11 @@ export function RecipeEditContent(props: {
 
                 setRecipe(newRecipe)
               } catch (error) {
+                logging.error(
+                  'RecipeEditView prepared quantity update error:',
+                  error,
+                  { component: 'RecipeEditView', recipeId: recipe().id },
+                )
                 showError(
                   error instanceof Error
                     ? error
@@ -238,6 +244,11 @@ function PreparedMultiplier() {
 
             setRecipe(newRecipe)
           } catch (error) {
+            logging.error(
+              'RecipeEditView prepared multiplier commit error:',
+              error,
+              { component: 'RecipeEditView', recipeId: recipe().id },
+            )
             showError(
               error instanceof Error
                 ? error

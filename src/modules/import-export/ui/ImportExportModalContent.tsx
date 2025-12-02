@@ -16,6 +16,7 @@ import {
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
+import { logging } from '~/shared/utils/logging'
 
 type Tab = 'export' | 'import'
 
@@ -106,7 +107,10 @@ export function ImportExportModalContent(props: ImportExportModalContentProps) {
       props.onImportComplete?.(finalPayload)
       showSuccess('Dados importados com sucesso!')
       closeModal(props.modalId)
-    } catch (_error) {
+    } catch (error) {
+      logging.error('ImportExportModalContent import error:', error, {
+        component: 'ImportExportModalContent',
+      })
       showError('Erro ao importar dados')
     }
   }
@@ -121,7 +125,10 @@ export function ImportExportModalContent(props: ImportExportModalContentProps) {
     try {
       downloadExport(data)
       showSuccess('Dados exportados com sucesso!')
-    } catch (_error) {
+    } catch (error) {
+      logging.error('ImportExportModalContent export error:', error, {
+        component: 'ImportExportModalContent',
+      })
       showError('Erro ao exportar dados')
     }
   }
@@ -136,7 +143,11 @@ export function ImportExportModalContent(props: ImportExportModalContentProps) {
       const text = await file.text()
       setJsonInput(text)
       handleValidate()
-    } catch (_error) {
+    } catch (error) {
+      logging.error('ImportExportModalContent file read error:', error, {
+        component: 'ImportExportModalContent',
+        fileName: file.name,
+      })
       showError('Erro ao ler arquivo')
     }
   }
