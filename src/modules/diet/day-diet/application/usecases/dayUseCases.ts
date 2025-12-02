@@ -7,6 +7,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { createDayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
@@ -18,7 +19,6 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
@@ -64,7 +64,7 @@ export const dayUseCases = createRoot(() => {
   })
 
   createEffect(() => {
-    const userId = currentUserId()
+    const userId = authUseCases.currentUserIdOrGuestId()
     const currentTargetDay = dayStateStore.targetDay()
 
     dayCacheStore.runCacheManagement({
@@ -76,7 +76,7 @@ export const dayUseCases = createRoot(() => {
   })
 
   createEffect(() => {
-    const userId = currentUserId()
+    const userId = authUseCases.currentUserIdOrGuestId()
     logging.debug(`User changed to ${userId}, resetting target day`)
     runTargetDayReset()
   })

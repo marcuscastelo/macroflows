@@ -1,11 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { signOut } from '~/modules/auth/application/services/authService'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import {
   showError,
   showSuccess,
@@ -36,7 +32,7 @@ export function AuthSettings() {
       cancelText: 'Cancelar',
       onConfirm: async () => {
         try {
-          await signOut()
+          await authUseCases.signOut()
           showSuccess('Logout realizado com sucesso')
           navigate('/login')
         } catch (error) {
@@ -71,7 +67,7 @@ export function AuthSettings() {
     try {
       // TODO: Replace with actual data fetches if needed
       // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1059
-      const user = getCurrentUser()
+      const user = authUseCases.getCurrentUser()
       // Example: fetch diet, measurements, etc. from signals or API
       const exportData = {
         user,
@@ -94,7 +90,7 @@ export function AuthSettings() {
       </h2>
 
       <Show
-        when={isAuthenticated()}
+        when={authUseCases.isAuthenticated()}
         fallback={
           <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
             <div class="text-center">
@@ -129,7 +125,7 @@ export function AuthSettings() {
       >
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div class="flex items-start space-x-4">
-            <div class="flex-shrink-0">
+            <div class="shrink-0">
               <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                 <svg
                   class="h-6 w-6 text-blue-600 dark:text-blue-400"
@@ -147,13 +143,13 @@ export function AuthSettings() {
             <div class="flex-1 min-w-0">
               <div class="focus:outline-none">
                 <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  {getCurrentUser()?.email}
+                  {authUseCases.getCurrentUser()?.email}
                 </p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                   Conectado via Google OAuth
                 </p>
                 <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  ID: {getCurrentUser()?.id.slice(0, 8)}...
+                  ID: {authUseCases.getCurrentUser()?.id.slice(0, 8)}...
                 </p>
               </div>
             </div>
@@ -184,7 +180,7 @@ export function AuthSettings() {
       </Show>
 
       {/* Privacy & Data Section */}
-      <Show when={isAuthenticated()}>
+      <Show when={authUseCases.isAuthenticated()}>
         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
             Privacidade e Dados

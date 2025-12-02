@@ -8,12 +8,8 @@ import {
 } from 'solid-js'
 
 import { APP_VERSION } from '~/app-version'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/store/authState'
-import { currentUserId } from '~/modules/user/application/user'
-import { AuthUserDropdown } from '~/sections/common/components/AuthUserDropdown'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
@@ -114,13 +110,13 @@ export function BottomNavigation() {
             <BottomNavigationTab
               active={false}
               label={
-                isAuthenticated()
-                  ? (getCurrentUser()?.email ?? 'Usuário')
+                authUseCases.isAuthenticated()
+                  ? (authUseCases.getCurrentUser()?.email ?? 'Usuário')
                   : 'Login'
               }
               icon={(props) => (
                 <Show
-                  when={isAuthenticated()}
+                  when={authUseCases.isAuthenticated()}
                   fallback={
                     <svg
                       class={props.class}
@@ -138,9 +134,9 @@ export function BottomNavigation() {
                   }
                 >
                   <UserIcon
-                    userId={currentUserId}
+                    userId={authUseCases.currentUserIdOrGuestId}
                     userName={(): string => {
-                      const authUser = getCurrentUser()
+                      const authUser = authUseCases.getCurrentUser()
                       if (authUser !== null && authUser.email !== '') {
                         const emailParts = authUser.email.split('@')
                         return emailParts[0] ?? ''

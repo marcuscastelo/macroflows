@@ -1,25 +1,51 @@
-import { setAuthState } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authStore'
 import {
+  type AuthSession,
   type SignInOptions,
   type SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  fetchUser,
-  insertUserSilently,
-  setCurrentUser,
-} from '~/modules/user/application/user'
-import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { createNewUser, type NewUser } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
+/**
+ * Creates a default new user from an auth session.
+ * @param session - The auth session containing user data.
+ * @returns A NewUser object with default values.
+ */
+function generateDefaultUserFromSession(session: AuthSession): NewUser {
+  const authUser = session.user
+  const metadata = authUser.user_metadata ?? {}
+  const fullName = metadata['full_name']
+  const name = metadata['name']
+  const emailPrefix = authUser.email.split('@')[0]
+  const displayName =
+    (typeof fullName === 'string' ? fullName : null) ??
+    (typeof name === 'string' ? name : null) ??
+    (emailPrefix !== '' ? emailPrefix : null) ??
+    'User'
+
+  return createNewUser({
+    uuid: authUser.id,
+    name: displayName,
+    favorite_foods: [],
+    diet: 'normo',
+    birthdate: new Date().toISOString().split('T')[0] ?? '',
+    gender: 'male',
+    desired_weight: 70,
+  })
+}
+
 export function createAuthService(
+  authStore: AuthStore,
   authGateway: AuthGateway = createSupabaseAuthGateway(),
 ) {
   async function signIn(options: SignInOptions): Promise<void> {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: true }))
 
       const result = await authGateway.signIn(options)
 
@@ -35,7 +61,7 @@ export function createAuthService(
       }
     } catch (e) {
       logging.error('Auth signIn error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -45,12 +71,12 @@ export function createAuthService(
    */
   async function signOut(options?: SignOutOptions): Promise<void> {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: true }))
 
       const result = await authGateway.signOut(options)
 
       if (result.error) {
-        setAuthState(() => ({
+        authStore.setAuthState(() => ({
           session: null,
           user: null,
           isAuthenticated: false,
@@ -62,7 +88,7 @@ export function createAuthService(
       // Auth state will be updated via the subscription
     } catch (e) {
       logging.error('Auth signOut error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -73,7 +99,7 @@ export function createAuthService(
   function initializeAuth(): void {
     try {
       authGateway.onAuthStateChange((_event, session) => {
-        setAuthState((prev) => ({
+        authStore.setAuthState((prev) => ({
           ...prev,
           session,
           user: session?.user
@@ -93,17 +119,19 @@ export function createAuthService(
         }))
 
         if (session?.user.id !== undefined) {
-          fetchUser(session.user.id)
+          userUseCases
+            .fetchUser(session.user.id)
             .then(async (user) => {
               logging.debug('User: ', { user })
               if (user === null) {
                 logging.info(
                   'User profile not found, creating default profile for OAuth user',
                 )
-                const newUser = createDefaultUserFromAuthSession(session)
-                const createdUser = await insertUserSilently(newUser)
-                setCurrentUser(createdUser)
+                const newUser = generateDefaultUserFromSession(session)
+                const createdUser =
+                  await userUseCases.insertUserSilently(newUser)
                 if (createdUser !== null) {
+                  userUseCases.forceSwitchToUser_unsafe(createdUser)
                   logging.info('User profile created successfully')
                 } else {
                   showError(
@@ -121,7 +149,7 @@ export function createAuthService(
       void loadInitialSession()
     } catch (e) {
       logging.error('Auth initializeAuth error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
     }
   }
 
@@ -132,7 +160,7 @@ export function createAuthService(
     try {
       const session = await authGateway.getSession()
       logging.debug(`loadInitialSession session:`, { session })
-      setAuthState(() => ({
+      authStore.setAuthState(() => ({
         session,
         user: session?.user
           ? {
@@ -151,7 +179,7 @@ export function createAuthService(
       }))
     } catch (e) {
       logging.error('Auth loadInitialSession error:', e)
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
+      authStore.setAuthState((prev) => ({ ...prev, isLoading: false }))
       throw e
     }
   }
@@ -163,13 +191,3 @@ export function createAuthService(
     loadInitialSession,
   }
 }
-
-// Default instance for convenience
-const defaultAuthService = createAuthService()
-
-// Export individual functions for easier importing
-export const { signIn, signOut, initializeAuth, loadInitialSession } =
-  defaultAuthService
-
-// Also export the default instance
-export default defaultAuthService

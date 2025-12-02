@@ -1,10 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createEffect, type JSXElement, Show } from 'solid-js'
 
-import {
-  isAuthenticated,
-  isAuthLoading,
-} from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type GuestGuardProps = {
@@ -19,14 +16,14 @@ export function GuestGuard(props: GuestGuardProps) {
   const navigate = useNavigate()
 
   createEffect(() => {
-    if (!isAuthLoading() && isAuthenticated()) {
+    if (!authUseCases.isAuthLoading() && authUseCases.isAuthenticated()) {
       navigate(props.redirectTo ?? '/diet')
     }
   })
 
   return (
     <Show
-      when={!isAuthLoading()}
+      when={!authUseCases.isAuthLoading()}
       fallback={
         <div class="min-h-screen flex items-center justify-center">
           <div class="text-center">
@@ -38,7 +35,7 @@ export function GuestGuard(props: GuestGuardProps) {
         </div>
       }
     >
-      <Show when={!isAuthenticated()} fallback={null}>
+      <Show when={!authUseCases.isAuthenticated()} fallback={null}>
         {props.children}
       </Show>
     </Show>

@@ -1,6 +1,6 @@
-import { createEffect, Suspense } from 'solid-js'
+import { onMount, Suspense } from 'solid-js'
 
-import { isFoodItem, isRecipeItem } from '~/modules/diet/item/schema/itemSchema'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -12,6 +12,7 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
+import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
 import {
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
@@ -25,9 +26,12 @@ import {
   templates,
   templateSearchTab,
 } from '~/modules/template-search/application/usecases/templateSearchState'
+import {
+  loadTabPreference,
+  saveTabPreference,
+} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -35,7 +39,7 @@ import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
 import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
 import {
-  availableTabs,
+  type TemplateSearchTab,
   TemplateSearchTabs,
 } from '~/sections/search/components/TemplateSearchTabs'
 import { formatError } from '~/shared/formatError'
@@ -45,8 +49,6 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
-
-const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -87,48 +89,51 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     closeEditModal: () => void,
   ) => {
     const handleConfirm = async () => {
-      const userId = currentUserId()
+      const userId = authUseCases.currentUserIdOrGuestId()
 
       props.onNewItem?.(newItem, originalAddedItem)
 
-      let type: 'food' | 'recipe'
-      if (isFoodItem(originalAddedItem)) {
-        type = 'food'
-      } else if (isRecipeItem(originalAddedItem)) {
-        type = 'recipe'
-      } else {
-        throw new Error('Invalid template item type')
-      }
-
-      const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-        userId,
-        type,
-        originalAddedItem.reference.id,
-      )
-
-      if (
-        recentFood !== null &&
-        (recentFood.user_id !== currentUserId() ||
-          recentFood.type !== type ||
-          recentFood.reference_id !== originalAddedItem.reference.id)
-      ) {
-        throw new Error(
-          'BUG: recentFood fetched does not match user/type/reference',
+      // Extract recent food reference from the item
+      const recentFoodRef = extractRecentFoodReference(originalAddedItem)
+      if (recentFoodRef === null) {
+        logging.warn(
+          'Cannot track recent food for item without trackable reference',
+          { originalAddedItem },
         )
-      }
-
-      const recentFoodInput = createNewRecentFood({
-        user_id: userId,
-        type,
-        reference_id: originalAddedItem.reference.id,
-        last_used: new Date(),
-        times_used: (recentFood?.times_used ?? 0) + 1,
-      })
-
-      if (recentFood !== null) {
-        await updateRecentFood(recentFood.id, recentFoodInput)
+        // Continue with the rest of the flow, just skip recent food tracking
       } else {
-        await insertRecentFood(recentFoodInput)
+        const { type, referenceId } = recentFoodRef
+
+        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
+          userId,
+          type,
+          referenceId,
+        )
+
+        if (
+          recentFood !== null &&
+          (recentFood.user_id !== authUseCases.currentUserIdOrGuestId() ||
+            recentFood.type !== type ||
+            recentFood.reference_id !== referenceId)
+        ) {
+          throw new Error(
+            'BUG: recentFood fetched does not match user/type/reference',
+          )
+        }
+
+        const recentFoodInput = createNewRecentFood({
+          user_id: userId,
+          type,
+          reference_id: referenceId,
+          last_used: new Date(),
+          times_used: (recentFood?.times_used ?? 0) + 1,
+        })
+
+        if (recentFood !== null) {
+          await updateRecentFood(recentFood.id, recentFoodInput)
+        } else {
+          await insertRecentFood(recentFoodInput)
+        }
       }
 
       const confirmModalId = openConfirmModal(
@@ -242,9 +247,27 @@ export function TemplateSearch(props: {
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
-  createEffect(() => {
-    setTemplateSearchTab(TEMPLATE_SEARCH_DEFAULT_TAB)
+  // Load persisted tab preference on mount (only once)
+  onMount(() => {
+    const persistedTab = loadTabPreference()
+    setTemplateSearchTab(persistedTab)
   })
+
+  // Wrapper that persists tab changes to localStorage
+  const handleSetTab = (
+    tabOrUpdater:
+      | TemplateSearchTab
+      | ((prev: TemplateSearchTab) => TemplateSearchTab),
+  ) => {
+    // Compute the new value based on whether it's a function or direct value
+    const newTab =
+      typeof tabOrUpdater === 'function'
+        ? tabOrUpdater(templateSearchTab())
+        : tabOrUpdater
+
+    setTemplateSearchTab(newTab)
+    saveTabPreference(newTab)
+  }
 
   return (
     <>
@@ -259,10 +282,7 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs
-        tab={templateSearchTab}
-        setTab={setTemplateSearchTab}
-      />
+      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense

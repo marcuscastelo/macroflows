@@ -7,7 +7,7 @@ import {
   processMeasuresByDay,
 } from '~/modules/measure/application/measureUtils'
 import type { BodyMeasure } from '~/modules/measure/domain/measure'
-import { currentUser } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { Chart } from '~/sections/common/components/charts/Chart'
 
@@ -42,7 +42,7 @@ export function BodyMeasureChart(props: BodyMeasureChartProps) {
     processMeasuresByDay(
       measuresByDay(),
       weightUseCases.weights(),
-      currentUser()?.gender ?? 'female',
+      userUseCases.currentUser()?.gender ?? 'female',
     ),
   )
 

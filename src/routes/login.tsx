@@ -1,8 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { signIn } from '~/modules/auth/application/services/authService'
-import { isAuthLoading } from '~/modules/auth/application/store/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { GuestGuard } from '~/modules/auth/ui/guards/GuestGuard'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -17,7 +16,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsSigningIn(true)
     try {
-      await signIn({
+      await authUseCases.signIn({
         provider: 'google',
         redirectTo: window.location.origin,
       })
@@ -32,7 +31,7 @@ export default function LoginPage() {
 
   return (
     <GuestGuard>
-      <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
         <div class="max-w-md w-full">
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
             {/* Header */}
@@ -46,7 +45,7 @@ export default function LoginPage() {
             </div>
 
             {/* Loading State */}
-            <Show when={isAuthLoading()}>
+            <Show when={authUseCases.isAuthLoading()}>
               <div class="flex flex-col items-center justify-center py-8">
                 <LoadingRing />
                 <p class="text-gray-600 dark:text-gray-400 mt-4">
@@ -56,7 +55,7 @@ export default function LoginPage() {
             </Show>
 
             {/* Login Form */}
-            <Show when={!isAuthLoading()}>
+            <Show when={!authUseCases.isAuthLoading()}>
               <div class="space-y-6">
                 {/* Google Login Button */}
                 <Button
