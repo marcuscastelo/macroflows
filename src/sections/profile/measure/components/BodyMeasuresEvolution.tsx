@@ -8,7 +8,7 @@ import {
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { MeasureField } from '~/sections/common/components/MeasureField'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { BodyMeasureChart } from '~/sections/profile/measure/components/BodyMeasureChart'
@@ -52,7 +52,7 @@ export function BodyMeasuresEvolution() {
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
             onClick={() => {
-              const userId = currentUserId()
+              const userId = userUseCases.currentUserId_unsafe()
 
               handleAddMeasures({
                 user_id: userId,

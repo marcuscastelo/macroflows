@@ -7,7 +7,7 @@ import {
 } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
   closeModal,
@@ -62,7 +62,7 @@ export function CopyLastDayButton(props: {
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
-          const userId = currentUserId()
+          const userId = userUseCases.currentUserId_unsafe()
 
           void fetchPreviousDays(userId, props.selectedDay)
 

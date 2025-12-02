@@ -31,7 +31,7 @@ import {
 } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -89,7 +89,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     closeEditModal: () => void,
   ) => {
     const handleConfirm = async () => {
-      const userId = currentUserId()
+      const userId = userUseCases.currentUserId_unsafe()
 
       props.onNewItem?.(newItem, originalAddedItem)
 
@@ -110,7 +110,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
       if (
         recentFood !== null &&
-        (recentFood.user_id !== currentUserId() ||
+        (recentFood.user_id !== userUseCases.currentUserId_unsafe() ||
           recentFood.type !== type ||
           recentFood.reference_id !== originalAddedItem.reference.id)
       ) {

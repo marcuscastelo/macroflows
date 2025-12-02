@@ -10,7 +10,7 @@ import {
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
-import { currentUser, currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
@@ -20,13 +20,13 @@ export const [templateSearchTab, setTemplateSearchTab] =
   createSignal<TemplateSearchTab>('hidden')
 export const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
 
-const getFavoriteFoods = () => currentUser()?.favorite_foods ?? []
+const getFavoriteFoods = () => userUseCases.currentUser()?.favorite_foods ?? []
 
 export const [templates, { refetch: refetchTemplates }] = createResource(
   () => ({
     tab: debouncedTab(),
     search: debouncedSearch(),
-    userId: currentUserId(),
+    userId: userUseCases.currentUserId_unsafe(),
   }),
   (signals) => {
     return fetchTemplatesByTabLogic(

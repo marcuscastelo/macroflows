@@ -18,7 +18,7 @@ import {
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
@@ -64,7 +64,7 @@ export const dayUseCases = createRoot(() => {
   })
 
   createEffect(() => {
-    const userId = currentUserId()
+    const userId = userUseCases.currentUserId_unsafe()
     const currentTargetDay = dayStateStore.targetDay()
 
     dayCacheStore.runCacheManagement({
@@ -76,7 +76,7 @@ export const dayUseCases = createRoot(() => {
   })
 
   createEffect(() => {
-    const userId = currentUserId()
+    const userId = userUseCases.currentUserId_unsafe()
     logging.debug(`User changed to ${userId}, resetting target day`)
     runTargetDayReset()
   })

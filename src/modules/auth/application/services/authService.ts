@@ -7,11 +7,7 @@ import {
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  fetchUser,
-  insertUserSilently,
-  setCurrentUser,
-} from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { createNewUser, type NewUser } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
@@ -123,7 +119,8 @@ export function createAuthService(
         }))
 
         if (session?.user.id !== undefined) {
-          fetchUser(session.user.id)
+          userUseCases
+            .fetchUser(session.user.id)
             .then(async (user) => {
               logging.debug('User: ', { user })
               if (user === null) {
@@ -131,9 +128,10 @@ export function createAuthService(
                   'User profile not found, creating default profile for OAuth user',
                 )
                 const newUser = generateDefaultUserFromSession(session)
-                const createdUser = await insertUserSilently(newUser)
-                setCurrentUser(createdUser)
+                const createdUser =
+                  await userUseCases.insertUserSilently(newUser)
                 if (createdUser !== null) {
+                  userUseCases.forceSwitchToUser(createdUser)
                   logging.info('User profile created successfully')
                 } else {
                   showError(

@@ -1,6 +1,6 @@
 import { createEffect, createRoot, onMount } from 'solid-js'
 
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
@@ -14,7 +14,7 @@ import { createGuestWeightRepository } from '~/modules/weight/infrastructure/wei
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-import { isGuestMode } from '~/shared/guest/guestState'
+import { guestUseCases } from '~/shared/guest/guestUseCases'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -39,12 +39,12 @@ const cache = createRoot(() => {
 })
 
 onMount(() => {
-  const userId = currentUserId()
+  const userId = userUseCases.currentUserId_unsafe()
   void fetchUserWeights(userId)
 })
 
 createEffect(() => {
-  const userId = currentUserId()
+  const userId = userUseCases.currentUserId_unsafe()
   void fetchUserWeights(userId)
 
   const cachedWeights = parseWithStack(
@@ -57,14 +57,16 @@ createEffect(() => {
 })
 
 export function refetchUserWeights() {
-  const userId = currentUserId()
+  const userId = userUseCases.currentUserId_unsafe()
   void fetchUserWeights(userId)
 }
 
 function getWeightRepository():
   | typeof supabaseWeightRepository
   | typeof guestWeightRepository {
-  return isGuestMode() ? guestWeightRepository : supabaseWeightRepository
+  return guestUseCases.isGuestMode()
+    ? guestWeightRepository
+    : supabaseWeightRepository
 }
 
 // CRUD operations service - temporary until fully migrated

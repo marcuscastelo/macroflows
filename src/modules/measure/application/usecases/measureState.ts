@@ -2,10 +2,10 @@ import { createResource } from 'solid-js'
 
 import { fetchUserBodyMeasures } from '~/modules/measure/application/usecases/measureCrud'
 import { initializeMeasureRealtime } from '~/modules/measure/infrastructure/supabase/realtime'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 
 export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
-  currentUserId,
+  userUseCases.currentUserId_unsafe(),
   fetchUserBodyMeasures,
   { initialValue: [], ssrLoadFrom: 'initial' },
 )

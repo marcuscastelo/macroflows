@@ -20,7 +20,7 @@ import {
 import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
 import { ItemView } from '~/sections/item/components/ItemView'
@@ -141,7 +141,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     }
 
     try {
-      const userId = currentUserId()
+      const userId = userUseCases.currentUserId_unsafe()
 
       // Create new unified recipe directly from Item children
       const newUnifiedRecipe = createNewRecipe({

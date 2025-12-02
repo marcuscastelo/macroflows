@@ -3,7 +3,7 @@ import { createEffect, createRoot } from 'solid-js'
 import { createRecipeCacheManagementService } from '~/modules/diet/recipe/application/services/cacheManagement'
 import { fetchUserRecipes } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { recipeCacheStore } from '~/modules/diet/recipe/infrastructure/signals/recipeCacheStore'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { logging } from '~/shared/utils/logging'
 
 const runCacheManagement = createRecipeCacheManagementService({
@@ -20,7 +20,7 @@ export function initializeRecipeEffects() {
   initialized = true
   return createRoot(() => {
     createEffect(() => {
-      const userId = currentUserId()
+      const userId = userUseCases.currentUserId_unsafe()
       logging.debug(`Recipe cache effect - user changed to ${userId}`)
 
       runCacheManagement({ userId })

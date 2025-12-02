@@ -8,7 +8,7 @@ import {
   getLatestMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
-import { currentUserId } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { logging } from '~/shared/utils/logging'
 
 export const selectedUserId = macroProfileStateStore.selectedUserId
@@ -30,7 +30,7 @@ export const cache = createRoot(() => {
 
   // When user changes, update selected user and clear cache if needed
   createEffect(() => {
-    const userId = currentUserId()
+    const userId = userUseCases.currentUserId_unsafe()
     logging.debug(`User changed to ${userId}`)
 
     const previousUserId = untrack(macroProfileStateStore.selectedUserId)
@@ -55,7 +55,7 @@ export const cache = createRoot(() => {
 })
 
 export const userMacroProfiles = () => {
-  const userId = currentUserId()
+  const userId = userUseCases.currentUserId_unsafe()
   return cache.getProfilesByUserId(userId)
 }
 
@@ -65,7 +65,7 @@ export const latestMacroProfile = () => {
   console.debug('Latest macro profile:', { latest })
   console.debug('All profiles:', { profiles })
   if (latest === null) {
-    const userId = currentUserId()
+    const userId = userUseCases.currentUserId_unsafe()
     return createDefaultMacroProfile(userId)
   }
   return latest
