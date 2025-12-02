@@ -185,7 +185,12 @@ function normalizedQuantitiesShallow(items: readonly Item[]): Item[] {
 }
 
 export const Items = {
-  equals,
-  equalsByProportion,
-  normalizedQuantitiesShallow,
+  equals: (originalItems: readonly Item[], currentItems: readonly Item[]) =>
+    equals(originalItems, currentItems),
+  equalsByProportion: (
+    originalItems: readonly Item[],
+    currentItems: readonly Item[],
+  ) => equalsByProportion(originalItems, currentItems),
+  normalizedQuantitiesShallow: (items: readonly Item[]) =>
+    normalizedQuantitiesShallow(items),
 }
