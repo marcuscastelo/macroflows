@@ -33,7 +33,7 @@ export const userUseCases = {
       return null
     }
   },
-  forceSwitchToUser_unsafe: (user: User) => {
+  forceSwitchToUser_unsafe: (user: User | null) => {
     userStore.setCurrentUser(user)
   },
   updateUser: async (userId: User['uuid'], newUser: NewUser) => {
