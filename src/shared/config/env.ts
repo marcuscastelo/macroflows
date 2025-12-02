@@ -15,6 +15,7 @@ const envSchema = z.object({
   VITE_EXTERNAL_API_FOOD_ENDPOINT: z.string().min(1),
   VITE_EXTERNAL_API_EAN_ENDPOINT: z.string().min(1),
   VITE_EXTERNAL_API_BASE_URL: z.string().min(1),
+  VITE_DEBUG_CWD: z.string().optional(),
   ENABLE_UNIFIED_ITEM_STRUCTURE: z
     .preprocess((v) => {
       if (typeof v === 'boolean') return v
