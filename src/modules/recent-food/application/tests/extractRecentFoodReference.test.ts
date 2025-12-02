@@ -313,19 +313,6 @@ describe('extractRecentFoodReference', () => {
 
     it('should handle food item converted to group in edit modal', () => {
       // This simulates when user clicks "Tratar como Grupo" in the edit modal
-      // The original food item becomes wrapped in a group
-
-      const originalFoodItem = createFoodItem({
-        id: 1000,
-        name: 'Original Food',
-        quantity: 100,
-        reference: {
-          type: 'food',
-          id: 5555,
-          macros: mockMacros,
-        },
-      })
-
       // User clicks "Tratar como Grupo" - the food becomes wrapped in a group
       const groupifiedItem: GroupItem = createGroupItem({
         id: 1000, // Same ID as original
