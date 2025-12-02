@@ -274,7 +274,7 @@ export function TemplateSearch(props: {
       >
         <TemplateSearchResults
           search={debouncedSearch()}
-          filteredTemplates={templates() ?? []}
+          filteredTemplates={() => templates() ?? []}
           onTemplateSelected={props.onTemplateSelected}
           refetch={refetchTemplates}
         />

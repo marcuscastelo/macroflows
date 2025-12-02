@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { createEffect, Show } from 'solid-js'
+import { Show } from 'solid-js'
 
 import { signOut } from '~/modules/auth/application/services/authService'
 import {
@@ -7,11 +7,7 @@ import {
   isAuthenticated,
 } from '~/modules/auth/application/store/authState'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  currentUserId,
-  fetchUsers,
-  users,
-} from '~/modules/user/application/user'
+import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import {
@@ -23,15 +19,6 @@ import { vibrate } from '~/shared/utils/vibrate'
 
 export const AuthUserDropdown = (props: { modalId: string }) => {
   const navigate = useNavigate()
-
-  createEffect(() => {
-    const modalId = props.modalId
-    fetchUsers().catch((error) => {
-      logging.error('AuthUserDropdown error:', error)
-      showError('Erro ao buscar usuários', { context: 'background' })
-      closeModal(modalId)
-    })
-  })
 
   const handleSignOut = () => {
     vibrate(50)
@@ -81,11 +68,6 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
               <UserIcon
                 userId={currentUserId}
                 userName={(): string => {
-                  const localUser = users().find(
-                    (u) => u.uuid === currentUserId(),
-                  )?.name
-                  if (localUser !== undefined && localUser !== '')
-                    return localUser
                   const authUser = getCurrentUser()
                   if (authUser !== null && authUser.email !== '') {
                     const emailParts = authUser.email.split('@')

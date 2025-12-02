@@ -9,10 +9,7 @@ import {
 } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
-import {
-  createSupabaseUserRepository,
-  setupUserRealtimeSubscription,
-} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { isGuestMode } from '~/shared/guest/guestState'
 import { logging } from '~/shared/utils/logging'
@@ -26,8 +23,6 @@ const guestUserRepository = createGuestUserRepository()
 function getRepository(): UserRepository {
   return isGuestMode() ? guestUserRepository : supabaseUserRepository
 }
-
-export const [users, setUsers] = createSignal<readonly User[]>([])
 
 export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
 
@@ -47,42 +42,13 @@ createEffect(() => {
   )
 })
 
-function bootstrap() {
-  fetchUsers().catch((error) => {
-    logging.error('User application error:', error)
-  })
-}
-
-/**
- * At app start, fetch all users
- */
-createEffect(() => {
-  bootstrap()
-})
-
-/**
- * When realtime event occurs, fetch all users again
- */
-setupUserRealtimeSubscription(() => {
-  bootstrap()
-})
-
-/**
- * Fetches all users and sets current user.
- * @returns Array of users or empty array on error.
- */
-export async function fetchUsers(): Promise<readonly User[]> {
+export async function fetchUser(userId: User['uuid']): Promise<User | null> {
   try {
-    const users = await getRepository().fetchUsers()
-    const newCurrentUser = users.find((user) => user.uuid === currentUserId())
-    setUsers(users)
-    setCurrentUser(newCurrentUser ?? null)
-    return users
+    const user = await getRepository().fetchUser(userId)
+    return user
   } catch (error) {
     logging.error('User application error:', error)
-    setUsers([])
-    setCurrentUser(null)
-    return []
+    return null
   }
 }
 
@@ -119,7 +85,6 @@ export async function insertUser(newUser: NewUser): Promise<boolean> {
       },
       { context: 'user-action' },
     )
-    await fetchUsers()
     return true
   } catch (error) {
     logging.error('User application error:', error)
@@ -137,7 +102,6 @@ export async function insertUserSilently(
 ): Promise<User | null> {
   try {
     const createdUser = await getRepository().insertUser(newUser)
-    await fetchUsers()
     return createdUser
   } catch (error) {
     logging.error('User application error:', error)
@@ -165,7 +129,6 @@ export async function updateUser(
       },
       { context: 'user-action' },
     )
-    await fetchUsers()
     return user
   } catch (error) {
     logging.error('User application error:', error)
@@ -189,7 +152,6 @@ export async function deleteUser(userId: User['uuid']): Promise<boolean> {
       },
       { context: 'user-action' },
     )
-    await fetchUsers()
     return true
   } catch (error) {
     logging.error('User application error:', error)
