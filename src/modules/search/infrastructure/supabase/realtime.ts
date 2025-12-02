@@ -15,16 +15,6 @@ export type CachedSearchRealtimeEvent = {
   old?: CachedSearch
 }
 
-export function setupCachedSearchRealtimeSubscription(
-  onEvent: (event: CachedSearchRealtimeEvent) => void,
-): void {
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_CACHED_SEARCHES,
-    cachedSearchSchema,
-    onEvent,
-  )
-}
-
 export function initializeCachedSearchRealtime(): void {
   if (initialized) {
     return
