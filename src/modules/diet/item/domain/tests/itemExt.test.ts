@@ -54,7 +54,7 @@ describe('ItemExt macros and of()', () => {
     expect(macros.fat).toBeCloseTo((5 * 150) / 100)
   })
 
-  it('calculates macros for a recipe (container) by summing children and scaling to container quantity', () => {
+  it('calculates macros for a recipe (container) by summing children directly (no scaling)', () => {
     const child1 = makeFoodItem(10, 'Flour', 100, {
       protein: 5,
       carbs: 70,
@@ -66,30 +66,70 @@ describe('ItemExt macros and of()', () => {
       fat: 0,
     })
 
-    // defaultQuantity = 150, default macros = sum of child macros
+    // RecipeItem quantity is 300 (the mainQuantity/prepared amount),
+    // but macros should be calculated directly from children, not scaled.
+    // This is because for recipes, the mainQuantity includes the multiplier effect
+    // (e.g., water absorption), but the nutritional value is determined by the raw ingredients.
     const recipe = makeRecipeItem(2, 'Cookie mix', 300, [child1, child2])
 
     const macros = ItemExt.macros(recipe)
 
-    // scaling factor = 300 / 150 = 2
-    // calculate expected default macros:
+    // Expected: sum of children macros WITHOUT scaling by quantity ratio
     const child1Macros = ItemExt.macros(child1)
     const child2Macros = ItemExt.macros(child2)
     const expected = {
-      protein:
-        (child1Macros.protein + child2Macros.protein) *
-        (300 / (child1.quantity + child2.quantity)),
-      carbs:
-        (child1Macros.carbs + child2Macros.carbs) *
-        (300 / (child1.quantity + child2.quantity)),
-      fat:
-        (child1Macros.fat + child2Macros.fat) *
-        (300 / (child1.quantity + child2.quantity)),
+      protein: child1Macros.protein + child2Macros.protein,
+      carbs: child1Macros.carbs + child2Macros.carbs,
+      fat: child1Macros.fat + child2Macros.fat,
     }
 
     expect(macros.protein).toBeCloseTo(expected.protein)
     expect(macros.carbs).toBeCloseTo(expected.carbs)
     expect(macros.fat).toBeCloseTo(expected.fat)
+  })
+
+  it('recipe item multiplier only affects mainQuantity, NOT macro calculations', () => {
+    // This test verifies the fix for issue #1417:
+    // Recipe multiplier should only affect the displayed quantity (mainQuantity),
+    // not the nutritional values (macros/calories).
+
+    // 100g raw pasta with macros per 100g: 25g carbs, 8g protein, 1g fat
+    const rawPasta = makeFoodItem(1, 'Raw Pasta', 100, {
+      protein: 8,
+      carbs: 25,
+      fat: 1,
+    })
+
+    // Case 1: Recipe item with multiplier effect (quantity = 150, representing prepared weight)
+    // The 100g raw pasta becomes 150g cooked pasta (multiplier = 1.5)
+    // But the macros should still be based on the 100g raw pasta
+    const cookedPastaWithMultiplier = makeRecipeItem(
+      2,
+      'Cooked Pasta',
+      150, // mainQuantity with multiplier effect
+      [rawPasta],
+    )
+
+    // Case 2: Recipe item without multiplier effect (quantity = 100, same as raw weight)
+    const pastaNoMultiplier = makeRecipeItem(3, 'Pasta No Multiplier', 100, [
+      rawPasta,
+    ])
+
+    const macrosWithMultiplier = ItemExt.macros(cookedPastaWithMultiplier)
+    const macrosNoMultiplier = ItemExt.macros(pastaNoMultiplier)
+
+    // CRITICAL: Both should have the SAME macros because the multiplier
+    // only affects the displayed quantity, not the nutritional content.
+    // The macros come from the children (raw pasta = 100g)
+    expect(macrosWithMultiplier.protein).toBeCloseTo(macrosNoMultiplier.protein)
+    expect(macrosWithMultiplier.carbs).toBeCloseTo(macrosNoMultiplier.carbs)
+    expect(macrosWithMultiplier.fat).toBeCloseTo(macrosNoMultiplier.fat)
+
+    // The raw pasta macros (100g * macros/100g)
+    const expectedMacros = ItemExt.macros(rawPasta)
+    expect(macrosWithMultiplier.protein).toBeCloseTo(expectedMacros.protein)
+    expect(macrosWithMultiplier.carbs).toBeCloseTo(expectedMacros.carbs)
+    expect(macrosWithMultiplier.fat).toBeCloseTo(expectedMacros.fat)
   })
 
   it('ItemExt.of returns helpful helpers and type guards', () => {

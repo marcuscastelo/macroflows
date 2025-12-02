@@ -25,9 +25,35 @@ function calcFoodItemMacros(item: FoodItem) {
   })
 }
 
-function calcItemContainerMacros(item: RecipeItem | GroupItem): MacroNutrients {
-  // For recipe and group items, sum the macros from children
-  // The quantity field represents the total prepared amount, not a scaling factor
+/**
+ * Calculates macros for a RecipeItem by summing its children's macros directly.
+ * The multiplier only affects the displayed mainQuantity, NOT the nutritional values.
+ * Nutrient values are determined by the raw ingredients (children).
+ */
+function calcRecipeItemMacros(item: RecipeItem): MacroNutrients {
+  // For recipe items, sum the macros from children directly.
+  // The multiplier only affects the displayed quantity (mainQuantity),
+  // not the nutritional content which is determined by the raw ingredients.
+  return item.reference.children.reduce(
+    (acc, child) => {
+      const childMacros = ItemExt.macros(child)
+      return createMacroNutrients({
+        carbs: acc.carbs + childMacros.carbs,
+        fat: acc.fat + childMacros.fat,
+        protein: acc.protein + childMacros.protein,
+      })
+    },
+    createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
+  )
+}
+
+/**
+ * Calculates macros for a GroupItem by summing children's macros and scaling
+ * based on the group's quantity relative to children's total quantity.
+ * This allows users to scale a group up or down to adjust portion sizes.
+ */
+function calcGroupItemMacros(item: GroupItem): MacroNutrients {
+  // For group items, sum the macros from children and scale by quantity ratio
   const defaultQuantity = item.reference.children.reduce(
     (acc, child) => acc + child.quantity,
     0,
@@ -80,8 +106,10 @@ export const ItemExt = {
 
     if (isFoodItem(item)) {
       return calcFoodItemMacros(item)
-    } else if (isRecipeItem(item) || isGroupItem(item)) {
-      return calcItemContainerMacros(item)
+    } else if (isRecipeItem(item)) {
+      return calcRecipeItemMacros(item)
+    } else if (isGroupItem(item)) {
+      return calcGroupItemMacros(item)
     }
 
     // Fallback for unknown types
