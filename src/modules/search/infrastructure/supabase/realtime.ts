@@ -1,4 +1,3 @@
-import { cachedSearchCacheStore } from '~/modules/search/application/store/cachedSearchCacheStore'
 import {
   type CachedSearch,
   cachedSearchSchema,
@@ -9,13 +8,11 @@ import { logging } from '~/shared/utils/logging'
 
 let initialized = false
 
-export type CachedSearchRealtimeEvent = {
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-  new?: CachedSearch
-  old?: CachedSearch
-}
-
-export function initializeCachedSearchRealtime(): void {
+export function initializeCachedSearchRealtime(callbacks: {
+  onInsert: (newRecord: CachedSearch) => void
+  onUpdate: (newRecord: CachedSearch) => void
+  onDelete: (oldRecord: CachedSearch) => void
+}): void {
   if (initialized) {
     return
   }
@@ -30,24 +27,21 @@ export function initializeCachedSearchRealtime(): void {
       switch (event.eventType) {
         case 'INSERT': {
           if (event.new !== undefined) {
-            cachedSearchCacheStore.upsertToCache(event.new)
+            callbacks.onInsert(event.new)
           }
           break
         }
 
         case 'UPDATE': {
           if (event.new) {
-            cachedSearchCacheStore.upsertToCache(event.new)
+            callbacks.onUpdate(event.new)
           }
           break
         }
 
         case 'DELETE': {
           if (event.old) {
-            cachedSearchCacheStore.removeFromCache({
-              by: 'search',
-              value: event.old.search,
-            })
+            callbacks.onDelete(event.old)
           }
           break
         }

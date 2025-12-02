@@ -5,7 +5,7 @@ import {
   importFoodsFromApiByName,
 } from '~/modules/diet/food/infrastructure/api/application/apiFood'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { searchUseCases } from '~/modules/search/application/usecases/searchUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { formatError } from '~/shared/formatError'
@@ -42,7 +42,7 @@ export async function fetchFoodsByName(
   params: FoodSearchParams = {},
 ): Promise<readonly Food[]> {
   try {
-    const isCached = await isSearchCached(name)
+    const isCached = await searchUseCases.isSearchCached(name)
 
     if (!isCached) {
       await showPromise(

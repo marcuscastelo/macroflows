@@ -3,7 +3,7 @@ import axios from 'axios'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { markSearchAsCached } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { searchUseCases } from '~/modules/search/application/usecases/searchUseCases'
 import { showError } from '~/modules/toast/application/toastManager'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
 import { ORIGINAL_ERROR_SYMBOL } from '~/shared/utils/errorUtils'
@@ -99,11 +99,11 @@ export async function importFoodsFromApiByName(name: string): Promise<Food[]> {
       )
     } else {
       logging.debug('No RELEVANT failed upsertions, marking search as cached')
-      await markSearchAsCached(name)
+      await searchUseCases.markSearchAsCached(name)
     }
   } else {
     logging.debug('No failed upsertions, marking search as cached')
-    await markSearchAsCached(name)
+    await searchUseCases.markSearchAsCached(name)
   }
 
   const upsertedFoods: ReadonlyArray<Food | null> = upsertionResults
