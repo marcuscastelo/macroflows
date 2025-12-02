@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { type AuthSession } from '~/modules/auth/domain/auth'
-import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
+import { generateDefaultUserFromSession } from '~/modules/user/application/userCreationHelper'
 
 describe('userCreationHelper', () => {
   describe('createDefaultUserFromAuthSession', () => {
@@ -22,7 +22,7 @@ describe('userCreationHelper', () => {
         },
       }
 
-      const newUser = createDefaultUserFromAuthSession(session)
+      const newUser = generateDefaultUserFromSession(session)
 
       expect(newUser.uuid).toBe('test-uuid')
       expect(newUser.name).toBe('John Doe')
@@ -49,7 +49,7 @@ describe('userCreationHelper', () => {
         },
       }
 
-      const newUser = createDefaultUserFromAuthSession(session)
+      const newUser = generateDefaultUserFromSession(session)
 
       expect(newUser.name).toBe('Jane Smith')
     })
@@ -69,7 +69,7 @@ describe('userCreationHelper', () => {
         },
       }
 
-      const newUser = createDefaultUserFromAuthSession(session)
+      const newUser = generateDefaultUserFromSession(session)
 
       expect(newUser.name).toBe('myemail')
     })
@@ -88,7 +88,7 @@ describe('userCreationHelper', () => {
         },
       }
 
-      const newUser = createDefaultUserFromAuthSession(session)
+      const newUser = generateDefaultUserFromSession(session)
 
       expect(newUser.name).toBe('User')
     })
@@ -107,7 +107,7 @@ describe('userCreationHelper', () => {
         },
       }
 
-      const newUser = createDefaultUserFromAuthSession(session)
+      const newUser = generateDefaultUserFromSession(session)
 
       expect(newUser.birthdate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     })

@@ -11,7 +11,7 @@ import {
   insertUserSilently,
   setCurrentUser,
 } from '~/modules/user/application/user'
-import { createDefaultUserFromAuthSession } from '~/modules/user/application/userCreationHelper'
+import { generateDefaultUserFromSession } from '~/modules/user/application/userCreationHelper'
 import { logging } from '~/shared/utils/logging'
 
 export function createAuthService(
@@ -101,7 +101,7 @@ export function createAuthService(
                 logging.info(
                   'User profile not found, creating default profile for OAuth user',
                 )
-                const newUser = createDefaultUserFromAuthSession(session)
+                const newUser = generateDefaultUserFromSession(session)
                 const createdUser = await insertUserSilently(newUser)
                 setCurrentUser(createdUser)
                 if (createdUser !== null) {

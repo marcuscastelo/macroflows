@@ -6,9 +6,7 @@ import { createNewUser, type NewUser } from '~/modules/user/domain/user'
  * @param session - The auth session containing user data.
  * @returns A NewUser object with default values.
  */
-export function createDefaultUserFromAuthSession(
-  session: AuthSession,
-): NewUser {
+export function generateDefaultUserFromSession(session: AuthSession): NewUser {
   const authUser = session.user
   const metadata = authUser.user_metadata ?? {}
   const fullName = metadata['full_name']
