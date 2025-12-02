@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createAuthService } from '~/modules/auth/application/services/authService'
-import { type AuthStore } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authStore'
 import { type AuthSession } from '~/modules/auth/domain/auth'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createAuthGatewayMock } from '~/modules/auth/tests/utils/mockAuthGateway'

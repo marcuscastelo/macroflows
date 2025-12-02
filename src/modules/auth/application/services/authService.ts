@@ -1,4 +1,4 @@
-import { type AuthStore } from '~/modules/auth/application/store/authState'
+import { type AuthStore } from '~/modules/auth/application/store/authStore'
 import {
   type AuthSession,
   type SignInOptions,
