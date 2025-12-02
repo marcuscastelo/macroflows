@@ -83,13 +83,13 @@ export const guestUseCases = {
   },
 
   exitGuestMode: (onSuccess: () => void) => {
-    guestUseCases.revokeGuestTerms()
     showPromise(authUseCases.signOut(), {
       loading: 'Saindo do modo convidado...',
       success: 'Modo convidado desativado!',
       error: 'Erro ao sair do modo convidado. Tente novamente.',
     })
       .then(() => {
+        guestUseCases.revokeGuestTerms()
         onSuccess()
       })
       .catch((error) => {
