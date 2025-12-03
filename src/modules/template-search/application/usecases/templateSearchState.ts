@@ -38,7 +38,8 @@ export const [templates, { refetch: refetchTemplates }] = createResource(
         // TODO: Convert fetchTemplatesByTabLogic deps to reactive signals?
         fetchUserRecipes,
         fetchUserRecipeByName,
-        fetchUserRecentFoods: recentFoodUseCases.fetchUserRecentFoods,
+        fetchUserRecentFoodsAsTemplates:
+          recentFoodUseCases.fetchUserRecentFoodsAsTemplates,
         fetchFoods,
         fetchFoodsByName,
         getFavoriteFoods,

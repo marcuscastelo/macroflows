@@ -221,7 +221,6 @@ export type Database = {
           times_used: number
           type: string
           user_id: string | null
-          user_id_old: number | null
         }
         Insert: {
           created_at?: string
@@ -231,7 +230,6 @@ export type Database = {
           times_used: number
           type?: string
           user_id?: string | null
-          user_id_old?: number | null
         }
         Update: {
           created_at?: string
@@ -241,17 +239,8 @@ export type Database = {
           times_used?: number
           type?: string
           user_id?: string | null
-          user_id_old?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: 'recent_foods_user_id_old_fkey'
-            columns: ['user_id_old']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
       recipes: {
         Row: {
@@ -292,6 +281,45 @@ export type Database = {
         ]
       }
       users: {
+        Row: {
+          birthdate: string
+          created_at: string
+          desired_weight: number
+          diet: string
+          favorite_foods: number[] | null
+          gender: string
+          id: number
+          macro_profile: Json | null
+          name: string
+          uuid: string
+        }
+        Insert: {
+          birthdate?: string
+          created_at?: string
+          desired_weight: number
+          diet?: string
+          favorite_foods?: number[] | null
+          gender?: string
+          id?: number
+          macro_profile?: Json | null
+          name: string
+          uuid: string
+        }
+        Update: {
+          birthdate?: string
+          created_at?: string
+          desired_weight?: number
+          diet?: string
+          favorite_foods?: number[] | null
+          gender?: string
+          id?: number
+          macro_profile?: Json | null
+          name?: string
+          uuid?: string
+        }
+        Relationships: []
+      }
+      users_duplicate: {
         Row: {
           birthdate: string
           created_at: string

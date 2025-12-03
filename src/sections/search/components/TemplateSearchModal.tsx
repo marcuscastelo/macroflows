@@ -84,7 +84,11 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     const handleConfirm = async () => {
       props.onNewItem?.(newItem, originalAddedItem)
 
-      void recentFoodUseCases.touchRecentFoodForItem(originalAddedItem)
+      void recentFoodUseCases
+        .touchRecentFoodForItem(originalAddedItem)
+        .then(() => {
+          void refetchTemplates()
+        })
 
       const confirmModalId = openConfirmModal(
         'Deseja adicionar outro item ou finalizar a inclusão?',

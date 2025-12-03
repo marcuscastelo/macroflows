@@ -10,6 +10,7 @@ import {
   type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
 import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
+import { initializeRecentFoodRealtime } from '~/modules/recent-food/infrastructure/supabase/realtime'
 import { createSupabaseRecentFoodGateway } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
 import {
   showError,
@@ -22,20 +23,41 @@ const { recentFoodCrudService } = createRoot(() => {
   const supabaseRecentFoodGateway = createSupabaseRecentFoodGateway()
   const repository = createRecentFoodRepository(supabaseRecentFoodGateway)
   const recentFoodCrudService = createRecentFoodCrudService(repository)
+
+  // TODO: Implement recent food cache using realtime updates
+  initializeRecentFoodRealtime({
+    onInsert: (_: RecentFood) => {},
+    onUpdate: (_: RecentFood) => {},
+    onDelete: (_: RecentFood) => {},
+  })
+
   return { recentFoodCrudService }
 })
 
 export const recentFoodUseCases = {
-  fetchUserRecentFoods: async (
+  fetchUserRecentFoodsAsTemplates: async (
     userId: User['uuid'],
     search: string,
     opts?: { limit?: number },
   ) => {
-    return await recentFoodCrudService.fetchUserRecentFoods(
-      userId,
-      search,
-      opts,
-    )
+    try {
+      const recentFoods =
+        await recentFoodCrudService.fetchUserRecentFoodsAsTemplates(
+          userId,
+          search,
+          opts,
+        )
+
+      return recentFoods
+    } catch (error) {
+      logging.error('Error fetching user recent foods', {
+        error,
+        userId,
+        search,
+      })
+      showError(error, {}, 'Não foi possível carregar alimentos recentes.')
+      return []
+    }
   },
 
   insertRecentFood: async (

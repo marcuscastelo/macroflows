@@ -64,6 +64,7 @@ export function registerSubapabaseRealtimeCallback<T>(
   supabase
     .channel(table)
     .on(
+      // TODO: Make supabase realtime only subscribe to events of the current user (how?) (Note: remember to use reactive current user ID changes)
       'postgres_changes',
       { event: '*', schema: 'public', table },
       handleCallback,

@@ -3,6 +3,7 @@
  * Opens the TemplateSearchModal using the modal system.
  */
 
+import { refetchTemplates } from '~/modules/template-search/application/usecases/templateSearchState'
 import {
   TemplateSearchModal,
   type TemplateSearchModalProps,
@@ -43,6 +44,7 @@ export function openTemplateSearchModal(config: TemplateSearchModalConfig) {
     {
       title,
       onClose: () => {
+        void refetchTemplates()
         config.onClose?.()
       },
     },

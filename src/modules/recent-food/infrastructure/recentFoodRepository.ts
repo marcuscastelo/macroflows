@@ -24,7 +24,7 @@ export function createRecentFoodRepository(
           referenceId,
         )
       } catch (error) {
-        logging.error('RecentFood operation error:', error)
+        logging.error('[NON-FATAL] fetchByUserTypeAndReferenceId:', error)
         return null
       }
     },
@@ -41,7 +41,7 @@ export function createRecentFoodRepository(
           opts,
         )
       } catch (error) {
-        logging.error('RecentFood operation error:', error)
+        logging.error('[NON-FATAL] fetchUserRecentFoodsAsTemplates:', error)
         return []
       }
     },
@@ -50,7 +50,7 @@ export function createRecentFoodRepository(
       try {
         return await gateway.insert(input)
       } catch (error) {
-        logging.error('RecentFood operation error:', error)
+        logging.error('[NON-FATAL] insert:', error)
         return null
       }
     },
@@ -59,7 +59,7 @@ export function createRecentFoodRepository(
       try {
         return await gateway.update(id, input)
       } catch (error) {
-        logging.error('RecentFood operation error:', error)
+        logging.error('[NON-FATAL] update:', error)
         return null
       }
     },
@@ -72,7 +72,7 @@ export function createRecentFoodRepository(
       try {
         return await gateway.deleteByReference(userId, type, referenceId)
       } catch (error) {
-        logging.error('RecentFood operation error:', error)
+        logging.error('[NON-FATAL] deleteByReference:', error)
         return false
       }
     },

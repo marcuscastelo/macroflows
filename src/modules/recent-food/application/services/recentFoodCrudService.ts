@@ -21,7 +21,7 @@ export function createRecentFoodCrudService(repository: RecentFoodRepository) {
       )
     },
 
-    async fetchUserRecentFoods(
+    async fetchUserRecentFoodsAsTemplates(
       userId: User['uuid'],
       search: string,
       opts?: { limit?: number },
