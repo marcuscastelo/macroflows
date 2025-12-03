@@ -17,9 +17,9 @@ import { extractRecentFoodReference } from '~/modules/recent-food/application/us
 
 describe('extractRecentFoodReference', () => {
   const mockMacros = createMacroNutrients({
-    carbs: 25,
-    protein: 2,
-    fat: 0.5,
+    carbsInGrams: 25,
+    proteinInGrams: 2,
+    fatInGrams: 0.5,
   })
 
   const mockFood = promoteNewFoodToFood(
@@ -284,9 +284,9 @@ describe('extractRecentFoodReference', () => {
           name: 'Coca Cola Zero',
           ean: '7894900011517',
           macros: createMacroNutrients({
-            carbs: 0,
-            protein: 0,
-            fat: 0,
+            carbsInGrams: 0,
+            proteinInGrams: 0,
+            fatInGrams: 0,
           }),
         }),
         { id: 98765 }, // This is the database ID

@@ -1,4 +1,4 @@
-import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
+import { supabaseItemMapper } from '~/modules/diet/item/infrastructure/supabase/supabaseItemMapper'
 import {
   type NewRecipe,
   type Recipe,
@@ -16,7 +16,7 @@ function toInsertDTO(recipe: NewRecipe): InsertRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,
-    items: [...recipe.items],
+    items: recipe.items.map((item) => supabaseItemMapper.toInsertDTO(item)),
     prepared_multiplier: recipe.prepared_multiplier,
   }
 }
@@ -25,15 +25,18 @@ function toUpdateDTO(recipe: Recipe): UpdateRecipeDTO {
   return {
     name: recipe.name,
     user_id: recipe.user_id,
-    items: [...recipe.items],
+    items: recipe.items.map((item) => supabaseItemMapper.toUpdateDTO(item)),
     prepared_multiplier: recipe.prepared_multiplier,
   }
 }
 
 function toDomain(dto: RecipeDTO): Recipe {
+  if (!Array.isArray(dto.items)) {
+    throw new Error('Recipe DTO items field is not an array')
+  }
   return parseWithStack(recipeSchema, {
     ...dto,
-    items: [...parseWithStack(itemSchema.array(), dto.items)],
+    items: dto.items.map((itemDTO) => supabaseItemMapper.toDomain(itemDTO)),
   })
 }
 

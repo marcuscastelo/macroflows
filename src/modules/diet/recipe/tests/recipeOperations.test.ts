@@ -26,7 +26,11 @@ function makeItem(id: number, name = 'Arroz'): Item {
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbs: 10, protein: 2, fat: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
@@ -313,7 +317,11 @@ describe('Recipe scaling operations', () => {
           reference: {
             type: 'food' as const,
             id: 1,
-            macros: createMacroNutrients({ carbs: 25, protein: 8, fat: 1 }),
+            macros: createMacroNutrients({
+              carbsInGrams: 25,
+              proteinInGrams: 8,
+              fatInGrams: 1,
+            }),
           },
         })
 
@@ -336,7 +344,11 @@ describe('Recipe scaling operations', () => {
           reference: {
             type: 'food' as const,
             id: 1,
-            macros: createMacroNutrients({ carbs: 25, protein: 8, fat: 1 }),
+            macros: createMacroNutrients({
+              carbsInGrams: 25,
+              proteinInGrams: 8,
+              fatInGrams: 1,
+            }),
           },
         })
 

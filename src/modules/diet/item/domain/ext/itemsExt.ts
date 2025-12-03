@@ -1,19 +1,9 @@
-import { type Item } from '~/modules/diet/item/schema/itemSchema'
-
-/**
- * Tolerance for comparing normalized proportions (0.01% difference allowed).
- * This accounts for floating-point precision errors that occur when:
- * - Quantities are rounded to 2 decimal places during scaling
- * - Proportions are calculated from rounded quantities
- */
-const PROPORTION_TOLERANCE = 0.0001
-
-/**
- * Checks if two numbers are approximately equal within a tolerance.
- */
-function approxEqual(a: number, b: number, tolerance: number): boolean {
-  return Math.abs(a - b) <= tolerance
-}
+import { isFoodItem, type Item } from '~/modules/diet/item/schema/itemSchema'
+import {
+  DEFAULT_TOLERANCE_MG,
+  Macros,
+} from '~/modules/diet/macro-nutrients/domain/macrosExt'
+import { logging } from '~/shared/utils/logging'
 
 function equals(
   originalItems: readonly Item[],
@@ -35,157 +25,91 @@ function equals(
     const original = sortedOriginal[i]!
     const current = sortedCurrent[i]!
 
+    const quantityMgDifference = Math.abs(
+      Math.round(original.quantity * 1000) -
+        Math.round(current.quantity * 1000),
+    )
+
     // Compare essential properties that indicate manual editing
     if (
       original.id !== current.id ||
       original.name !== current.name ||
-      original.quantity !== current.quantity ||
+      quantityMgDifference > DEFAULT_TOLERANCE_MG ||
       original.reference.type !== current.reference.type
     ) {
       return false
     }
 
     // For food items, compare macros
-    if (
-      original.reference.type === 'food' &&
-      current.reference.type === 'food'
-    ) {
+    if (isFoodItem(original) && isFoodItem(current)) {
       const originalMacros = original.reference.macros
       const currentMacros = current.reference.macros
 
-      if (
-        originalMacros.protein !== currentMacros.protein ||
-        originalMacros.carbs !== currentMacros.carbs ||
-        originalMacros.fat !== currentMacros.fat
-      ) {
+      if (!Macros.approxEqual(originalMacros, currentMacros)) {
         return false
       }
-    }
-
-    // For recipe and group items, recursively compare children
-    if (
-      (original.reference.type === 'recipe' &&
-        current.reference.type === 'recipe') ||
-      (original.reference.type === 'group' &&
-        current.reference.type === 'group')
-    ) {
+      continue
+    } else if (!isFoodItem(original) && !isFoodItem(current)) {
       if (!equals(original.reference.children, current.reference.children)) {
         return false
       }
+      continue
     }
+    throw new Error('Mismatched item types during comparison')
   }
 
   return true
 }
 
-/**
- * Compares two sets of items by their normalized proportions.
- * Uses tolerance-based comparison for quantities to handle floating-point
- * precision errors that occur during quantity scaling and rounding.
- *
- * This is specifically designed for checking if recipe items are "in sync"
- * with their source recipe - items are considered in sync if their relative
- * proportions match, even if absolute quantities differ due to scaling.
- *
- * @param originalItems - The reference items (e.g., from recipe definition)
- * @param currentItems - The items to compare (e.g., from recipe item's children)
- * @returns true if all items match by proportion within tolerance
- */
-function equalsByProportion(
-  originalItems: readonly Item[],
-  currentItems: readonly Item[],
-): boolean {
-  // If lengths are different, items were added/removed
-  if (originalItems.length !== currentItems.length) {
-    return false
-  }
-
-  // Compare each item by sorting both arrays by ID first to handle reordering
-  const sortById = (items: readonly Item[]) =>
-    [...items].sort((a, b) => a.id - b.id)
-
-  const sortedOriginal = sortById(originalItems)
-  const sortedCurrent = sortById(currentItems)
-
-  for (let i = 0; i < sortedOriginal.length; i++) {
-    const original = sortedOriginal[i]!
-    const current = sortedCurrent[i]!
-
-    // Compare essential properties - use tolerance for quantity (normalized proportion)
-    if (
-      original.id !== current.id ||
-      original.name !== current.name ||
-      !approxEqual(original.quantity, current.quantity, PROPORTION_TOLERANCE) ||
-      original.reference.type !== current.reference.type
-    ) {
-      return false
-    }
-
-    // For food items, compare macros with tolerance
-    if (
-      original.reference.type === 'food' &&
-      current.reference.type === 'food'
-    ) {
-      const originalMacros = original.reference.macros
-      const currentMacros = current.reference.macros
-
-      if (
-        !approxEqual(
-          originalMacros.protein,
-          currentMacros.protein,
-          PROPORTION_TOLERANCE,
-        ) ||
-        !approxEqual(
-          originalMacros.carbs,
-          currentMacros.carbs,
-          PROPORTION_TOLERANCE,
-        ) ||
-        !approxEqual(
-          originalMacros.fat,
-          currentMacros.fat,
-          PROPORTION_TOLERANCE,
-        )
-      ) {
-        return false
-      }
-    }
-
-    // For recipe and group items, recursively compare children by proportion
-    if (
-      (original.reference.type === 'recipe' &&
-        current.reference.type === 'recipe') ||
-      (original.reference.type === 'group' &&
-        current.reference.type === 'group')
-    ) {
-      if (
-        !equalsByProportion(
-          original.reference.children,
-          current.reference.children,
-        )
-      ) {
-        return false
-      }
-    }
-  }
-
-  return true
-}
-
-// Normalize quantities so they sum to 1, preserving relative proportions
+// Normalize quantities so they sum to 100, preserving relative proportions
 function normalizedQuantitiesShallow(items: readonly Item[]): Item[] {
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
   if (totalQuantity === 0) {
-    return items.map((item) => ({ ...item, quantity: 1 / items.length }))
+    let normalizedItems = items.map((item) => ({
+      ...item,
+      quantity: Math.round(100 / items.length),
+    }))
+    const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+    if (sum !== 100) {
+      const difference = 100 - sum
+      const adjustPerItem = difference / normalizedItems.length
+      normalizedItems = normalizedItems.map((item) => ({
+        ...item,
+        quantity: item.quantity + adjustPerItem,
+      }))
+    }
+    return normalizedItems
   }
 
-  return items.map((item) => ({
+  let normalizedItems = items.map((item) => ({
     ...item,
-    quantity: item.quantity / totalQuantity,
+    quantity: Math.round((item.quantity / totalQuantity) * 100),
   }))
+
+  const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum !== 100) {
+    const difference = 100 - sum
+    const adjustPerItem = difference / normalizedItems.length
+    normalizedItems = normalizedItems.map((item) => ({
+      ...item,
+      quantity: item.quantity + adjustPerItem,
+    }))
+  }
+
+  const sum2 = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum2 !== 100) {
+    logging.warn(
+      '[Items.normalizedQuantitiesShallow] Normalization adjustment failed to reach 100%',
+      { sum2, normalizedItems, items },
+    )
+  }
+
+  return normalizedItems
 }
 
 export const Items = {
-  equals,
-  equalsByProportion,
-  normalizedQuantitiesShallow,
+  equals: (originalItems: readonly Item[], currentItems: readonly Item[]) =>
+    equals(originalItems, currentItems),
+  normalizedQuantitiesShallow: (items: readonly Item[]) =>
+    normalizedQuantitiesShallow(items),
 }

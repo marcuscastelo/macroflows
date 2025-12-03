@@ -21,9 +21,9 @@ describe('fetchTemplatesByTabLogic', () => {
       name: 'Banana',
       ean: '123',
       macros: createMacroNutrients({
-        carbs: 25,
-        protein: 2,
-        fat: 0.5,
+        carbsInGrams: 25,
+        proteinInGrams: 2,
+        fatInGrams: 0.5,
       }),
     }),
     { id: 1 },

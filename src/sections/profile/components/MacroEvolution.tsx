@@ -36,6 +36,8 @@ function _createChartData(
 ) {
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
+    const dayMacros = DayDietExt.of(day).macros()
+    const dayCalories = dayMacros.calories()
 
     const currentWeight = WeightsExt.effectiveAt(weights, dayDate)
     const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
@@ -47,25 +49,32 @@ function _createChartData(
           )
         : null
 
-    const dayMacros = DayDietExt.of(day).macros()
-    const dayCalories = dayMacros.calories()
+    if (macroTarget === null) {
+      return {
+        name: dateToDDMM(dayDate),
+        calories: dayCalories.toFixed(0),
+        protein: dayMacros.proteinInGrams().toFixed(0),
+        fat: dayMacros.fatInGrams().toFixed(0),
+        carbs: dayMacros.carbsInGrams().toFixed(0),
+      }
+    }
+
+    const macroTargetExt = MacroNutrientsExt.of(macroTarget)
+
     return {
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
-      targetCalories:
-        macroTarget !== null
-          ? MacroNutrientsExt.totalCalories(macroTarget)
-          : undefined,
-      protein: dayMacros.protein().toFixed(0),
-      targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat().toFixed(0),
-      targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs().toFixed(0),
-      targetCarbs: macroTarget?.carbs.toFixed(0),
+      targetCalories: macroTargetExt.calories(),
+      protein: dayMacros.proteinInGrams().toFixed(0),
+      targetProtein: macroTargetExt.proteinInGrams().toFixed(0),
+      fat: dayMacros.fatInGrams().toFixed(0),
+      targetFat: macroTargetExt.fatInGrams().toFixed(0),
+      carbs: dayMacros.carbsInGrams().toFixed(0),
+      targetCarbs: macroTargetExt.carbsInGrams().toFixed(0),
       targetGrams:
-        (macroTarget?.protein ?? NaN) +
-        (macroTarget?.carbs ?? NaN) +
-        (macroTarget?.fat ?? NaN),
+        macroTargetExt.proteinInGrams() +
+        macroTargetExt.carbsInGrams() +
+        macroTargetExt.fatInGrams(),
     }
   })
 

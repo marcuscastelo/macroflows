@@ -2,13 +2,17 @@ import { describe, expect, it } from 'vitest'
 
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import type { Item } from '~/modules/diet/item/schema/itemSchema'
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
+import {
+  createMacroNutrients,
+  type MacroNutrientsRecord,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
-  macros: { protein: number; carbs: number; fat: number },
+  macros: MacroNutrientsRecord,
 ): Item => ({
   id,
   name,
@@ -41,29 +45,30 @@ const makeRecipeItem = (
 describe('ItemExt macros and of()', () => {
   it('calculates macros for a food item proportionally to quantity', () => {
     const food = makeFoodItem(1, 'Apple', 150, {
-      protein: 10,
-      carbs: 20,
-      fat: 5,
+      proteinInMg: 10000,
+      carbsInMg: 20000,
+      fatInMg: 5000,
     })
 
     const macros = ItemExt.macros(food)
+    const macrosExt = MacroNutrientsExt.of(macros)
 
     // macros stored are per 100g, so for 150g multiply by 1.5
-    expect(macros.protein).toBeCloseTo((10 * 150) / 100)
-    expect(macros.carbs).toBeCloseTo((20 * 150) / 100)
-    expect(macros.fat).toBeCloseTo((5 * 150) / 100)
+    expect(macrosExt.proteinInGrams()).toBeCloseTo((10 * 150) / 100)
+    expect(macrosExt.carbsInGrams()).toBeCloseTo((20 * 150) / 100)
+    expect(macrosExt.fatInGrams()).toBeCloseTo((5 * 150) / 100)
   })
 
   it('calculates macros for a recipe (container) by summing children directly (no scaling)', () => {
     const child1 = makeFoodItem(10, 'Flour', 100, {
-      protein: 5,
-      carbs: 70,
-      fat: 1,
+      proteinInMg: 5000,
+      carbsInMg: 70000,
+      fatInMg: 1000,
     })
     const child2 = makeFoodItem(11, 'Sugar', 50, {
-      protein: 0,
-      carbs: 100,
-      fat: 0,
+      proteinInMg: 0,
+      carbsInMg: 100000,
+      fatInMg: 0,
     })
 
     // RecipeItem quantity is 300 (the mainQuantity/prepared amount),
@@ -73,19 +78,23 @@ describe('ItemExt macros and of()', () => {
     const recipe = makeRecipeItem(2, 'Cookie mix', 300, [child1, child2])
 
     const macros = ItemExt.macros(recipe)
+    const macrosExt = MacroNutrientsExt.of(macros)
 
     // Expected: sum of children macros WITHOUT scaling by quantity ratio
     const child1Macros = ItemExt.macros(child1)
+    const child1MacrosExt = MacroNutrientsExt.of(child1Macros)
     const child2Macros = ItemExt.macros(child2)
+    const child2MacrosExt = MacroNutrientsExt.of(child2Macros)
     const expected = {
-      protein: child1Macros.protein + child2Macros.protein,
-      carbs: child1Macros.carbs + child2Macros.carbs,
-      fat: child1Macros.fat + child2Macros.fat,
+      protein:
+        child1MacrosExt.proteinInGrams() + child2MacrosExt.proteinInGrams(),
+      carbs: child1MacrosExt.carbsInGrams() + child2MacrosExt.carbsInGrams(),
+      fat: child1MacrosExt.fatInGrams() + child2MacrosExt.fatInGrams(),
     }
 
-    expect(macros.protein).toBeCloseTo(expected.protein)
-    expect(macros.carbs).toBeCloseTo(expected.carbs)
-    expect(macros.fat).toBeCloseTo(expected.fat)
+    expect(macrosExt.proteinInGrams()).toBeCloseTo(expected.protein)
+    expect(macrosExt.carbsInGrams()).toBeCloseTo(expected.carbs)
+    expect(macrosExt.fatInGrams()).toBeCloseTo(expected.fat)
   })
 
   it('recipe item multiplier only affects mainQuantity, NOT macro calculations', () => {
@@ -95,9 +104,9 @@ describe('ItemExt macros and of()', () => {
 
     // 100g raw pasta with macros per 100g: 25g carbs, 8g protein, 1g fat
     const rawPasta = makeFoodItem(1, 'Raw Pasta', 100, {
-      protein: 8,
-      carbs: 25,
-      fat: 1,
+      proteinInMg: 8000,
+      carbsInMg: 25000,
+      fatInMg: 1000,
     })
 
     // Case 1: Recipe item with multiplier effect (quantity = 150, representing prepared weight)
@@ -116,27 +125,44 @@ describe('ItemExt macros and of()', () => {
     ])
 
     const macrosWithMultiplier = ItemExt.macros(cookedPastaWithMultiplier)
+    const macrosExtWithMultiplier = MacroNutrientsExt.of(macrosWithMultiplier)
     const macrosNoMultiplier = ItemExt.macros(pastaNoMultiplier)
+    const macrosExtNoMultiplier = MacroNutrientsExt.of(macrosNoMultiplier)
 
     // CRITICAL: Both should have the SAME macros because the multiplier
     // only affects the displayed quantity, not the nutritional content.
     // The macros come from the children (raw pasta = 100g)
-    expect(macrosWithMultiplier.protein).toBeCloseTo(macrosNoMultiplier.protein)
-    expect(macrosWithMultiplier.carbs).toBeCloseTo(macrosNoMultiplier.carbs)
-    expect(macrosWithMultiplier.fat).toBeCloseTo(macrosNoMultiplier.fat)
+    expect(macrosExtWithMultiplier.proteinInGrams()).toBeCloseTo(
+      macrosExtNoMultiplier.proteinInGrams(),
+    )
+    expect(macrosExtWithMultiplier.carbsInGrams()).toBeCloseTo(
+      macrosExtNoMultiplier.carbsInGrams(),
+    )
+    expect(macrosExtWithMultiplier.fatInGrams()).toBeCloseTo(
+      macrosExtNoMultiplier.fatInGrams(),
+    )
 
     // The raw pasta macros (100g * macros/100g)
     const expectedMacros = ItemExt.macros(rawPasta)
-    expect(macrosWithMultiplier.protein).toBeCloseTo(expectedMacros.protein)
-    expect(macrosWithMultiplier.carbs).toBeCloseTo(expectedMacros.carbs)
-    expect(macrosWithMultiplier.fat).toBeCloseTo(expectedMacros.fat)
+    const expectedMacrosExt = MacroNutrientsExt.of(expectedMacros)
+
+    // Verify against expected macros from raw pasta
+    expect(macrosExtWithMultiplier.proteinInGrams()).toBeCloseTo(
+      expectedMacrosExt.proteinInGrams(),
+    )
+    expect(macrosExtWithMultiplier.carbsInGrams()).toBeCloseTo(
+      expectedMacrosExt.carbsInGrams(),
+    )
+    expect(macrosExtWithMultiplier.fatInGrams()).toBeCloseTo(
+      expectedMacrosExt.fatInGrams(),
+    )
   })
 
   it('ItemExt.of returns helpful helpers and type guards', () => {
     const food = makeFoodItem(5, 'Banana', 100, {
-      protein: 1,
-      carbs: 25,
-      fat: 0,
+      proteinInMg: 1000,
+      carbsInMg: 25000,
+      fatInMg: 0,
     })
     const ext = ItemExt.of(food)
 

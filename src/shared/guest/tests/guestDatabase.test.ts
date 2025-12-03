@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import {
   clearGuestDatabase,
@@ -117,11 +118,12 @@ describe('GuestDatabase', () => {
       const db = loadGuestDatabase()
 
       for (const food of db.foods) {
+        const macrosExt = MacroNutrientsExt.of(food.macros)
         expect(food.name).toBeDefined()
         expect(food.macros).toBeDefined()
-        expect(typeof food.macros.carbs).toBe('number')
-        expect(typeof food.macros.protein).toBe('number')
-        expect(typeof food.macros.fat).toBe('number')
+        expect(typeof macrosExt.carbsInGrams()).toBe('number')
+        expect(typeof macrosExt.proteinInGrams()).toBe('number')
+        expect(typeof macrosExt.fatInGrams()).toBe('number')
       }
     })
 

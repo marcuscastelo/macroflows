@@ -1,5 +1,6 @@
 import { mergeProps } from 'solid-js'
 
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { cn } from '~/shared/cn'
 
@@ -24,6 +25,7 @@ export default function MacroNutrientsView(props_: {
   )
 
   const isMacroOverflowing = () => props.isMacroOverflowing
+  const macroExt = () => MacroNutrientsExt.of(props.macros)
 
   return (
     <>
@@ -34,7 +36,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        C: {Math.round(props.macros.carbs * 100) / 100}{' '}
+        C: {Math.round(macroExt().carbsInGrams() * 100) / 100}{' '}
       </span>
       <span
         class={cn('mr-1 text-red-700', {
@@ -43,7 +45,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        P: {Math.round(props.macros.protein * 100) / 100}{' '}
+        P: {Math.round(macroExt().proteinInGrams() * 100) / 100}{' '}
       </span>
       <span
         class={cn('text-orange-400', {
@@ -52,7 +54,7 @@ export default function MacroNutrientsView(props_: {
         })}
       >
         {' '}
-        G: {Math.round(props.macros.fat * 100) / 100}{' '}
+        G: {Math.round(macroExt().fatInGrams() * 100) / 100}{' '}
       </span>
     </>
   )

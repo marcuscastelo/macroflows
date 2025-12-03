@@ -31,7 +31,11 @@ function makeTestItem(id = 1) {
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbs: 10, protein: 2, fat: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
@@ -87,9 +91,9 @@ describe('DayEditdayUseCases', () => {
   describe('prepareMacroOverflowConfig', () => {
     it('should enable macro overflow when macro target exists', () => {
       const mockMacroTarget = createMacroNutrients({
-        carbs: 100,
-        protein: 50,
-        fat: 30,
+        carbsInGrams: 100,
+        proteinInGrams: 50,
+        fatInGrams: 30,
       })
       vi.spyOn(macroTargetUseCases, 'macroTargetAt').mockReturnValue(
         mockMacroTarget,

@@ -95,9 +95,9 @@ export default function TestApp() {
         type: 'food',
         id: 31606,
         macros: createMacroNutrients({
-          carbs: 10,
-          protein: 12,
-          fat: 10,
+          carbsInGrams: 10,
+          proteinInGrams: 12,
+          fatInGrams: 10,
         }),
       },
     }),

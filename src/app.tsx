@@ -7,8 +7,11 @@ import { FileRoutes } from '@solidjs/start/router'
 import {
   createSignal,
   ErrorBoundary,
+  For,
   lazy,
   onCleanup,
+  onMount,
+  Show,
   Suspense,
 } from 'solid-js'
 
@@ -16,6 +19,7 @@ import { BackendOutageBanner } from '~/sections/common/components/BackendOutageB
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { Providers } from '~/sections/common/context/Providers'
 import { GuestDataWarning } from '~/sections/settings/components/GuestDataWarning'
+import env from '~/shared/config/env'
 
 const SentryRouter = withSentryRouterRouting(Router)
 
@@ -48,8 +52,115 @@ export default function App() {
   const width = useAspectWidth()
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    <SentryErrorBoundary fallback={(err) => <div>Error: {err.message}</div>}>
+    <SentryErrorBoundary
+      fallback={(err) => {
+        onMount(() => {
+          console.error('Uncaught error in App:', err)
+        })
+        return (
+          <div class="p-4">
+            <p>
+              An unexpected error occurred:{' '}
+              {err instanceof Error ? err.message : String(err)}
+            </p>
+
+            <pre class="text-xs text-gray-300 ml-3 mt-5 ">
+              Stack:{'\n '}
+              {err instanceof Error
+                ? (() => {
+                    const raw = err.stack ?? ''
+                    const lines = raw
+                      .split('\n')
+                      .map((l) => l.trim())
+                      .filter(Boolean)
+
+                    type Frame = {
+                      name: string
+                      location: string
+                      line: string
+                    }
+
+                    const frames: Frame[] = lines.map((line) => {
+                      // V8/Node/Chrome: "at fnName (filePath:line:col)"
+                      let m = line.match(
+                        /^\s*at\s+(.*?)\s+\((.*?):(\d+):\d+\)\s*$/,
+                      )
+                      if (m)
+                        return {
+                          name: (m[1] ?? '') || '<anonymous>',
+                          location: m[2] ?? '',
+                          line: m[3] ?? '',
+                        }
+
+                      // Firefox: "fnName@filePath:line:col"
+                      m = line.match(/^(.*?)@(.*?):(\d+):\d+\s*$/)
+                      if (m)
+                        return {
+                          name: (m[1] ?? '') || '<anonymous>',
+                          location: m[2] ?? '',
+                          line: m[3] ?? '',
+                        }
+
+                      // V8 anonymous: "at filePath:line:col"
+                      m = line.match(/^\s*at\s+(.*?):(\d+):\d+\s*$/)
+                      if (m)
+                        return {
+                          name: '<anonymous>',
+                          location: m[1] ?? '',
+                          line: m[2] ?? '',
+                        }
+
+                      // Fallback: whole line in name column
+                      return { name: line, location: '', line: '' }
+                    })
+
+                    return (
+                      <Show
+                        when={frames.length > 0}
+                        fallback="No stack available"
+                      >
+                        <div class="overflow-auto mt-2">
+                          <table class="w-full text-xs table-auto border-collapse">
+                            <thead>
+                              <tr class="text-left text-gray-400">
+                                <th class="pb-1 pr-4">Name</th>
+                                <th class="pb-1 pr-4">Location</th>
+                                <th class="pb-1">Line</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <For each={frames}>
+                                {(f, i) => (
+                                  <tr class={i() % 2 ? 'bg-gray-900' : ''}>
+                                    <td class="align-top pr-4 whitespace-nowrap">
+                                      {f.name}
+                                    </td>
+                                    <td class="align-top pr-4 wrap-break-word">
+                                      <a
+                                        href={`vscode://file/${env.VITE_DEBUG_CWD}/${f.location.replace(/^.*[\\/]_build\//, '')}:${f.line}`}
+                                      >
+                                        {f.location.replace(
+                                          /^.*[\\/]_build\//,
+                                          '',
+                                        )}
+                                      </a>
+                                    </td>
+                                    <td class="align-top">{f.line}</td>
+                                  </tr>
+                                )}
+                              </For>
+                            </tbody>
+                          </table>
+                        </div>
+                      </Show>
+                    )
+                  })()
+                : 'No stack available'}
+            </pre>
+          </div>
+        )
+      }}
+    >
       <SentryRouter
         root={(props) => (
           <>

@@ -16,9 +16,9 @@ export const MacroNutrientsExt = {
     fat: number
   } {
     return {
-      carbs: macroNutrients.carbs * 4,
-      protein: macroNutrients.protein * 4,
-      fat: macroNutrients.fat * 9,
+      carbs: (macroNutrients.carbsInMg / 1000) * CARBO_CALORIES,
+      protein: (macroNutrients.proteinInMg / 1000) * PROTEIN_CALORIES,
+      fat: (macroNutrients.fatInMg / 1000) * FAT_CALORIES,
     }
   },
 
@@ -47,9 +47,9 @@ export const MacroNutrientsExt = {
       // Self reference
       value: macroNutrients,
       // Props
-      carbs: () => macroNutrients.carbs,
-      protein: () => macroNutrients.protein,
-      fat: () => macroNutrients.fat,
+      carbsInGrams: () => macroNutrients.carbsInMg / 1000,
+      proteinInGrams: () => macroNutrients.proteinInMg / 1000,
+      fatInGrams: () => macroNutrients.fatInMg / 1000,
       // Derived props
       calories: () => MacroNutrientsExt.totalCalories(macroNutrients),
       caloriesObj: () => MacroNutrientsExt.caloriesObj(macroNutrients),

@@ -6,7 +6,6 @@ import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import {
   createMacroNutrients,
   type MacroNutrients,
-  type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
@@ -36,7 +35,7 @@ function getContext() {
 export function isOverflow(args: {
   item: Item
   originalItem?: Item
-}): Record<keyof MacroNutrientsRecord, () => boolean> {
+}): Record<'carbs' | 'protein' | 'fat', () => boolean> {
   const context = getContext()
   if (context === null) {
     return {
@@ -52,15 +51,20 @@ export function isOverflow(args: {
   const originalItemMacros: MacroNutrients =
     args.originalItem !== undefined
       ? ItemExt.macros(args.originalItem)
-      : createMacroNutrients({ carbs: 0, protein: 0, fat: 0 })
+      : createMacroNutrients({
+          carbsInGrams: 0,
+          proteinInGrams: 0,
+          fatInGrams: 0,
+        })
 
   const dayMacros = DayDietExt.calcDayMacros(currentDayDiet)
 
-  const checkOverflowOf = (property: keyof MacroNutrientsRecord) => {
-    const current = dayMacros[property]
-    const target = macroTarget[property]
+  const checkOverflowOf = (property: 'carbs' | 'protein' | 'fat') => {
+    const current = dayMacros[`${property}InMg`]
+    const target = macroTarget[`${property}InMg`]
 
-    const delta = itemMacros[property] - originalItemMacros[property]
+    const delta =
+      itemMacros[`${property}InMg`] - originalItemMacros[`${property}InMg`]
     const newTotal = current + delta
 
     const doesOverflow = newTotal > target
@@ -77,7 +81,7 @@ export function isOverflow(args: {
 function getAvailableMacros(args: {
   dayDiet: DayDiet
   originalItem?: Item | undefined
-}): MacroNutrientsRecord {
+}): MacroNutrients {
   logging.debug('getAvailableMacros')
   const dayDiet = args.dayDiet
   const dayMacros = DayDietExt.calcDayMacros(dayDiet)
@@ -86,16 +90,20 @@ function getAvailableMacros(args: {
     new Date(dayDiet.target_day),
   )
   if (!macroTarget) {
-    return { carbs: 0, protein: 0, fat: 0 }
+    return createMacroNutrients({ carbsInMg: 0, proteinInMg: 0, fatInMg: 0 })
   }
 
   const originalItem = args.originalItem
   const originalMacros = ItemExt.macros(originalItem)
-  return {
-    carbs: macroTarget.carbs - dayMacros.carbs + originalMacros.carbs,
-    protein: macroTarget.protein - dayMacros.protein + originalMacros.protein,
-    fat: macroTarget.fat - dayMacros.fat + originalMacros.fat,
-  }
+  return createMacroNutrients({
+    carbsInMg:
+      macroTarget.carbsInMg - dayMacros.carbsInMg + originalMacros.carbsInMg,
+    proteinInMg:
+      macroTarget.proteinInMg -
+      dayMacros.proteinInMg +
+      originalMacros.proteinInMg,
+    fatInMg: macroTarget.fatInMg - dayMacros.fatInMg + originalMacros.fatInMg,
+  })
 }
 
 export const macroOverflowUseCases = {

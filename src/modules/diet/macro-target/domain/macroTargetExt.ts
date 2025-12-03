@@ -8,9 +8,9 @@ import { type MacroTarget } from '~/modules/diet/macro-target/domain/macroTarget
 export const MacroTargetExt = {
   forWeight(macroTarget: MacroTarget, weightKg: number): MacroNutrients {
     return createMacroNutrients({
-      carbs: weightKg * macroTarget.gramsPerKgCarbs,
-      protein: weightKg * macroTarget.gramsPerKgProtein,
-      fat: weightKg * macroTarget.gramsPerKgFat,
+      carbsInGrams: weightKg * macroTarget.gramsPerKgCarbs,
+      proteinInGrams: weightKg * macroTarget.gramsPerKgProtein,
+      fatInGrams: weightKg * macroTarget.gramsPerKgFat,
     })
   },
 

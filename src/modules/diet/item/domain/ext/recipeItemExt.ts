@@ -35,12 +35,18 @@ export const RecipeItemExt = {
     recipe: Recipe,
     newQuantity: number,
   ): RecipeItem {
-    if (newQuantity <= 0) {
-      throw new Error('New quantity must be greater than 0')
+    if (newQuantity < 1) {
+      throw new Error('New quantity must be greater than or equal to 1')
     }
 
-    const mainQuantity = Math.max(0.01, Math.round(newQuantity * 100) / 100)
-    const totalChildQuantity = mainQuantity / recipe.prepared_multiplier
+    const newQuantityInMg = newQuantity * 1000
+    const mainQuantityInMg = Math.max(
+      1000,
+      Math.round(newQuantityInMg * 100) / 100,
+    )
+    const totalChildQuantityInMg = Math.round(
+      mainQuantityInMg / recipe.prepared_multiplier,
+    )
 
     const normalizedChildren = Items.normalizedQuantitiesShallow(
       recipeItem.reference.children,
@@ -49,12 +55,13 @@ export const RecipeItemExt = {
     const scaledChildren = normalizedChildren.map((normalizedChild) => ({
       ...normalizedChild,
       quantity:
-        Math.round(totalChildQuantity * normalizedChild.quantity * 100) / 100,
+        Math.round(totalChildQuantityInMg * normalizedChild.quantity) /
+        (1000 * 100),
     }))
 
     return {
       ...recipeItem,
-      quantity: mainQuantity,
+      quantity: mainQuantityInMg / 1000,
       reference: {
         ...recipeItem.reference,
         children: scaledChildren,
@@ -71,12 +78,7 @@ export const RecipeItemExt = {
     const normalizedRecipeChildren =
       Items.normalizedQuantitiesShallow(recipeChildren)
 
-    // Use tolerance-based comparison for normalized proportions to handle
-    // floating-point precision errors from quantity rounding during scaling
-    return Items.equalsByProportion(
-      normalizedItemChildren,
-      normalizedRecipeChildren,
-    )
+    return Items.equals(normalizedItemChildren, normalizedRecipeChildren)
   },
 
   of(item: RecipeItem) {

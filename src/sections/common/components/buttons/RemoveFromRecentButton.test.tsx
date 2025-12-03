@@ -66,9 +66,9 @@ describe('RemoveFromRecentButton Logic', () => {
       name: 'Test Food',
       ean: '1234567890',
       macros: createMacroNutrients({
-        protein: 5,
-        carbs: 10,
-        fat: 5,
+        proteinInGrams: 5,
+        carbsInGrams: 10,
+        fatInGrams: 5,
       }),
     }),
     { id: 1 },
