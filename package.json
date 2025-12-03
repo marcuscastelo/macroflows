@@ -2,7 +2,7 @@
   "name": "macroflows",
   "private": true,
   "type": "module",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "packageManager": "pnpm@10.12.1",
   "scripts": {
     "assume-unchanged": "git update-index --assume-unchanged src/app-version.json",
