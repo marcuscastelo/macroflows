@@ -21,11 +21,6 @@ function equals(
   const sortedOriginal = sortById(originalItems)
   const sortedCurrent = sortById(currentItems)
 
-  console.log(
-    `Comparing \n\t${JSON.stringify(sortedOriginal.map((item) => item.quantity))} to \n\t${JSON.stringify(
-      sortedCurrent.map((item) => item.quantity),
-    )}`,
-  )
   for (let i = 0; i < sortedOriginal.length; i++) {
     const original = sortedOriginal[i]!
     const current = sortedCurrent[i]!
@@ -34,15 +29,6 @@ function equals(
       Math.round(original.quantity * 1000) -
         Math.round(current.quantity * 1000),
     )
-
-    console.log(
-      `Comparing Item ID ${original.name}: quantity difference in mg = ${quantityMgDifference}`,
-    )
-    if (quantityMgDifference > DEFAULT_TOLERANCE_MG) {
-      console.log(
-        `  Original quantity: ${original.quantity}, Current quantity: ${current.quantity}`,
-      )
-    }
 
     // Compare essential properties that indicate manual editing
     if (
