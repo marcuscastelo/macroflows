@@ -110,6 +110,10 @@ export function createSupabaseRecentFoodGateway() {
   }
 }
 
+export type RecentFoodGateway = ReturnType<
+  typeof createSupabaseRecentFoodGateway
+>
+
 async function fetchByUserTypeAndReferenceId(
   userId: User['uuid'],
   type: RecentFood['type'],

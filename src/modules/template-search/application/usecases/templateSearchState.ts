@@ -9,7 +9,7 @@ import {
   fetchUserRecipeByName,
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { recentFoodUseCases } from '~/modules/recent-food/application/usecases/recentFoodUseCases'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
@@ -35,9 +35,10 @@ export const [templates, { refetch: refetchTemplates }] = createResource(
       signals.search,
       signals.userId,
       {
+        // TODO: Convert fetchTemplatesByTabLogic deps to reactive signals?
         fetchUserRecipes,
         fetchUserRecipeByName,
-        fetchUserRecentFoods,
+        fetchUserRecentFoods: recentFoodUseCases.fetchUserRecentFoods,
         fetchFoods,
         fetchFoodsByName,
         getFavoriteFoods,

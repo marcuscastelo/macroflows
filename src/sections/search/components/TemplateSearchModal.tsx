@@ -1,6 +1,5 @@
 import { onMount, Suspense } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -12,13 +11,7 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import {
-  fetchRecentFoodByUserTypeAndReferenceId,
-  insertRecentFood,
-  updateRecentFood,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
+import { recentFoodUseCases } from '~/modules/recent-food/application/usecases/recentFoodUseCases'
 import {
   debouncedSearch,
   refetchTemplates,
@@ -89,52 +82,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     closeEditModal: () => void,
   ) => {
     const handleConfirm = async () => {
-      const userId = authUseCases.currentUserIdOrGuestId()
-
       props.onNewItem?.(newItem, originalAddedItem)
 
-      // Extract recent food reference from the item
-      const recentFoodRef = extractRecentFoodReference(originalAddedItem)
-      if (recentFoodRef === null) {
-        logging.warn(
-          'Cannot track recent food for item without trackable reference',
-          { originalAddedItem },
-        )
-        // Continue with the rest of the flow, just skip recent food tracking
-      } else {
-        const { type, referenceId } = recentFoodRef
-
-        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-          userId,
-          type,
-          referenceId,
-        )
-
-        if (
-          recentFood !== null &&
-          (recentFood.user_id !== authUseCases.currentUserIdOrGuestId() ||
-            recentFood.type !== type ||
-            recentFood.reference_id !== referenceId)
-        ) {
-          throw new Error(
-            'BUG: recentFood fetched does not match user/type/reference',
-          )
-        }
-
-        const recentFoodInput = createNewRecentFood({
-          user_id: userId,
-          type,
-          reference_id: referenceId,
-          last_used: new Date(),
-          times_used: (recentFood?.times_used ?? 0) + 1,
-        })
-
-        if (recentFood !== null) {
-          await updateRecentFood(recentFood.id, recentFoodInput)
-        } else {
-          await insertRecentFood(recentFoodInput)
-        }
-      }
+      void recentFoodUseCases.touchRecentFoodForItem(originalAddedItem)
 
       const confirmModalId = openConfirmModal(
         'Deseja adicionar outro item ou finalizar a inclusão?',
