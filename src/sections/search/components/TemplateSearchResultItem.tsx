@@ -6,7 +6,7 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
+import { RemoveFromRecentButton } from '~/modules/recent-food/ui/RemoveFromRecentButton'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
