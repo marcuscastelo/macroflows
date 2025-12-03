@@ -162,10 +162,10 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
                 const recipeQuantity = props.itemDraft().quantity || 1
                 // Convert to per-100g basis for the button
                 return createMacroNutrients({
-                  carbsInMg: (recipeMacros.carbsInMg * 100000) / recipeQuantity,
+                  carbsInMg: (recipeMacros.carbsInMg * 100) / recipeQuantity,
                   proteinInMg:
-                    (recipeMacros.proteinInMg * 100000) / recipeQuantity,
-                  fatInMg: (recipeMacros.fatInMg * 100000) / recipeQuantity,
+                    (recipeMacros.proteinInMg * 100) / recipeQuantity,
+                  fatInMg: (recipeMacros.fatInMg * 100) / recipeQuantity,
                 })
               }
               return createMacroNutrients({
