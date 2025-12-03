@@ -53,6 +53,7 @@ export function UserInfo() {
     }
 
     // TODO: Find a way to make Object.keys strongly typed
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1302
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const keys = Object.keys(innerData_) as (keyof UnsavedFields)[]
     setUnsavedFields(
