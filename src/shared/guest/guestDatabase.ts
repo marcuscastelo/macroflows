@@ -403,11 +403,11 @@ function createSeededDatabase(): GuestDatabase {
  */
 export function loadGuestDatabase(): GuestDatabase {
   if (guestDb !== null) {
-    // If today is empty, recreate the database
-    if (
-      guestDb.dayDiets.find((dd) => dd.target_day === getTodayYYYYMMDD()) ===
-      undefined
-    ) {
+    // If today's day diet is missing, recreate the database.
+    // Use UTC date (ISO string date portion) here to match how seeded
+    // databases are created (they use toISOString().split('T')[0]).
+    const todayUTC = new Date().toISOString().split('T')[0]!
+    if (!guestDb.dayDiets.some((dd) => dd.target_day === todayUTC)) {
       resetGuestDatabase()
     }
     return guestDb
