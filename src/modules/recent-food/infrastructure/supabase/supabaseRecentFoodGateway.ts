@@ -1,8 +1,10 @@
 import { z } from 'zod/v4'
 
 import { foodSchema } from '~/modules/diet/food/domain/food'
+import { supabaseItemMapper } from '~/modules/diet/item/infrastructure/supabase/supabaseItemMapper'
+import { supabaseMacroNutrientsMapper } from '~/modules/diet/macro-nutrients/infrastructure/supabase/supabaseMacroNutrientsMapper'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import type { Template } from '~/modules/diet/template/domain/template'
+import { type Template } from '~/modules/diet/template/domain/template'
 import {
   type NewRecentFood,
   type RecentFood,
@@ -10,6 +12,7 @@ import {
 import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
 import { supabaseRecentFoodMapper } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodMapper'
 import { type User } from '~/modules/user/domain/user'
+import { type Json } from '~/shared/supabase/database.types'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
@@ -55,22 +58,42 @@ function transformRowToTemplate(row: unknown): Template {
   const validatedRow = parseWithStack(enhancedRecentFoodRowSchema, row)
 
   if (validatedRow.type === 'food') {
+    const macrosDTO = parseWithStack(
+      z.object({ carbs: z.number(), protein: z.number(), fat: z.number() }),
+      validatedRow.template_macros,
+    )
+
     return parseWithStack(foodSchema, {
       id: validatedRow.template_id,
       name: validatedRow.template_name,
       ean: validatedRow.template_ean,
       source: validatedRow.template_source,
-      macros: validatedRow.template_macros,
+      macros: supabaseMacroNutrientsMapper.toDomain(macrosDTO),
       __type: 'Food',
     })
   } else {
     const { user_id: user_id, preparedMultiplier } =
       getRecipeFields(validatedRow)
+    const items = Array.isArray(validatedRow.template_items)
+      ? (() => {
+          const itemsDTO = parseWithStack(
+            z.array(z.any()),
+            validatedRow.template_items,
+          )
+          return itemsDTO.map((item: Json) => supabaseItemMapper.toDomain(item))
+        })()
+      : (() => {
+          throw new Error(
+            'Recent food recipe template items is not an array: ' +
+              JSON.stringify(validatedRow.template_items),
+          )
+        })()
+
     return parseWithStack(recipeSchema, {
       id: validatedRow.template_id,
       name: validatedRow.template_name,
       user_id,
-      items: validatedRow.template_items,
+      items,
       prepared_multiplier: preparedMultiplier,
       __type: 'Recipe',
     })
