@@ -96,7 +96,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     return
   } else if (
     profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
-                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1300
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1300
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Updating profile', profile)
@@ -118,7 +118,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
       })
   } else if (
     profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
-                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1299
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1299
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Inserting profile', profile)
