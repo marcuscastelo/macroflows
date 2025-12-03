@@ -2,8 +2,13 @@ import { createRoot } from 'solid-js'
 
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Template } from '~/modules/diet/template/domain/template'
 import { createRecentFoodCrudService } from '~/modules/recent-food/application/services/recentFoodCrudService'
-import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
+import {
+  extractRecentFoodReferenceFromItem,
+  extractRecentFoodReferenceFromTemplate,
+  type RecentFoodReference,
+} from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
 import {
   createNewRecentFood,
   type NewRecentFood,
@@ -109,17 +114,31 @@ export const recentFoodUseCases = {
     )
   },
 
-  touchRecentFoodForItem: async (item: Item) => {
-    const recentFoodRef = extractRecentFoodReference(item)
-    if (recentFoodRef === null) {
-      logging.warn(
-        'Cannot touch recent food for item - no trackable reference found',
-        { item },
-      )
-      showError('Não foi possível adicionar alimento aos alimentos recentes.')
+  async deleteRecentFoodOfTemplate(template: Template) {
+    const [recentFoodReference, ...rest] =
+      extractRecentFoodReferenceFromTemplate(template)
+
+    if (recentFoodReference === undefined) {
       return
     }
+    if (rest.length > 0) {
+      logging.warn(
+        'Expected only one recent food reference for template, but found multiple.',
+        {
+          template,
+          recentFoodReferences: [recentFoodReference, ...rest],
+        },
+      )
+    }
 
+    await recentFoodUseCases.deleteRecentFoodByReference(
+      authUseCases.currentUserIdOrGuestId(),
+      recentFoodReference.type,
+      recentFoodReference.referenceId,
+    )
+  },
+
+  touchRecentFood: async (recentFoodRef: RecentFoodReference) => {
     const currentRecentFood =
       await recentFoodCrudService.fetchRecentFoodByUserTypeAndReferenceId(
         authUseCases.currentUserIdOrGuestId(),
@@ -155,6 +174,22 @@ export const recentFoodUseCases = {
         currentRecentFood.id,
         newRecentFoodData,
       )
+    }
+  },
+
+  touchRecentFoodForItem: async (item: Item) => {
+    const [recentFoodRef] = extractRecentFoodReferenceFromItem(item)
+    if (recentFoodRef === undefined) {
+      logging.warn(
+        'Cannot touch recent food for item - no trackable reference found',
+        { item },
+      )
+      showError('Não foi possível adicionar alimento aos alimentos recentes.')
+      return
+    }
+
+    for (const recentFoodRef of extractRecentFoodReferenceFromItem(item)) {
+      await recentFoodUseCases.touchRecentFood(recentFoodRef)
     }
   },
 }

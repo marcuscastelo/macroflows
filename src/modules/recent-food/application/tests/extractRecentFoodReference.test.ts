@@ -13,9 +13,9 @@ import {
   type RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
+import { extractRecentFoodReferenceFromItem } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
 
-describe('extractRecentFoodReference', () => {
+describe('extractRecentFoodReferenceFromItem', () => {
   const mockMacros = createMacroNutrients({
     carbsInGrams: 25,
     proteinInGrams: 2,
@@ -44,7 +44,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(foodItem)
+      const [result] = extractRecentFoodReferenceFromItem(foodItem)
 
       expect(result).toEqual({
         type: 'food',
@@ -65,7 +65,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(eanFoodItem)
+      const [result] = extractRecentFoodReferenceFromItem(eanFoodItem)
 
       expect(result).toEqual({
         type: 'food',
@@ -87,7 +87,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(recipeItem)
+      const [result] = extractRecentFoodReferenceFromItem(recipeItem)
 
       expect(result).toEqual({
         type: 'recipe',
@@ -118,7 +118,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(recipeItem)
+      const [result] = extractRecentFoodReferenceFromItem(recipeItem)
 
       expect(result).toEqual({
         type: 'recipe',
@@ -150,7 +150,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupItem)
 
       expect(result).toEqual({
         type: 'food',
@@ -180,7 +180,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupItem)
 
       expect(result).toEqual({
         type: 'recipe',
@@ -221,7 +221,7 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupItem)
 
       expect(result).toEqual({
         type: 'food',
@@ -229,7 +229,7 @@ describe('extractRecentFoodReference', () => {
       })
     })
 
-    it('should return null for GroupItem with empty children', () => {
+    it('should return undefined for GroupItem with empty children', () => {
       const groupItem: GroupItem = createGroupItem({
         id: 7,
         name: 'Empty Group',
@@ -240,12 +240,12 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupItem)
 
-      expect(result).toBeNull()
+      expect(result).toBeUndefined()
     })
 
-    it('should return null for GroupItem with nested group child (no trackable reference)', () => {
+    it('should return undefined for GroupItem with nested group child (no trackable reference)', () => {
       const nestedGroup: GroupItem = createGroupItem({
         id: 40,
         name: 'Nested Group',
@@ -266,9 +266,9 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupItem)
 
-      expect(result).toBeNull()
+      expect(result).toBeUndefined()
     })
   })
 
@@ -277,7 +277,7 @@ describe('extractRecentFoodReference', () => {
       // This simulates the exact flow when a food is added via EAN scan:
       // 1. Food is fetched/imported from API with a database ID
       // 2. templateToItem creates a FoodItem with reference.id = food's database ID
-      // 3. extractRecentFoodReference should extract that reference for tracking
+      // 3. extractRecentFoodReferenceFromItem should extract that reference for tracking
 
       const eanScannedFood = promoteNewFoodToFood(
         createNewFood({
@@ -304,9 +304,9 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(itemFromEanFood)
+      const [result] = extractRecentFoodReferenceFromItem(itemFromEanFood)
 
-      expect(result).not.toBeNull()
+      expect(result).not.toBeUndefined()
       expect(result?.type).toBe('food')
       expect(result?.referenceId).toBe(98765) // Must match the database ID
     })
@@ -335,9 +335,9 @@ describe('extractRecentFoodReference', () => {
         },
       })
 
-      const result = extractRecentFoodReference(groupifiedItem)
+      const [result] = extractRecentFoodReferenceFromItem(groupifiedItem)
 
-      expect(result).not.toBeNull()
+      expect(result).not.toBeUndefined()
       expect(result?.type).toBe('food')
       expect(result?.referenceId).toBe(5555) // Should still track the original food
     })

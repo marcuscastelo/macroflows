@@ -86,9 +86,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
       void recentFoodUseCases
         .touchRecentFoodForItem(originalAddedItem)
-        .then(() => {
-          void refetchTemplates()
-        })
+        .then(refetchTemplates)
 
       const confirmModalId = openConfirmModal(
         'Deseja adicionar outro item ou finalizar a inclusão?',

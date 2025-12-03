@@ -4,6 +4,8 @@ import {
   isRecipeItem,
   type Item,
 } from '~/modules/diet/item/schema/itemSchema'
+import { templateToItem } from '~/modules/diet/template/application/templateToItem'
+import { type Template } from '~/modules/diet/template/domain/template'
 import { type RecentFood } from '~/modules/recent-food/domain/recentFood'
 
 /**
@@ -25,42 +27,45 @@ export type RecentFoodReference = {
  * @param item - The item to extract reference from
  * @returns The recent food reference, or null if the item cannot be tracked
  */
-export function extractRecentFoodReference(
+export function extractRecentFoodReferenceFromItem(
   item: Item,
-): RecentFoodReference | null {
+): RecentFoodReference[] {
   if (isFoodItem(item)) {
-    return {
-      type: 'food',
-      referenceId: item.reference.id,
-    }
+    return [
+      {
+        type: item.reference.type,
+        referenceId: item.reference.id,
+      },
+    ]
   }
 
   if (isRecipeItem(item)) {
-    return {
-      type: 'recipe',
-      referenceId: item.reference.id,
-    }
+    return [
+      {
+        type: item.reference.type,
+        referenceId: item.reference.id,
+      },
+    ]
   }
 
   if (isGroupItem(item)) {
-    // GroupItem: track using the first trackable child's reference
-    const firstChild = item.reference.children[0]
-    if (firstChild !== undefined && isFoodItem(firstChild)) {
-      return {
-        type: 'food',
-        referenceId: firstChild.reference.id,
+    const references: RecentFoodReference[] = []
+    for (const child of item.reference.children) {
+      const childReferences = extractRecentFoodReferenceFromItem(child)
+      if (childReferences.length > 0) {
+        references.push(...childReferences)
       }
     }
-    if (firstChild !== undefined && isRecipeItem(firstChild)) {
-      return {
-        type: 'recipe',
-        referenceId: firstChild.reference.id,
-      }
-    }
-    // Cannot track - no trackable children
-    return null
+    return references
   }
 
-  // Unknown item type (should never happen due to exhaustive checks)
-  return null
+  // Should never reach here
+  item satisfies never
+  return []
+}
+
+export function extractRecentFoodReferenceFromTemplate(
+  template: Template,
+): RecentFoodReference[] {
+  return extractRecentFoodReferenceFromItem(templateToItem(template))
 }
