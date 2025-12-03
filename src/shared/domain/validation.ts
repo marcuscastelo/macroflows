@@ -75,7 +75,7 @@ function createFieldValidationMessages(
           const fieldName =
             iss.path && iss.path.length > 0
               ? iss.path.join('.')
-              : (iss.message ?? 'unknown_field')
+              : 'campo desconhecido'
           return createInvalidTypeMessage(
             fieldName,
             entityName,
