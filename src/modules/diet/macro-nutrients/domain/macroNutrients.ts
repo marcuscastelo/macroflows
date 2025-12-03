@@ -5,7 +5,6 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const ze = createZodEntity('MacroNutrients')
 
-// TODO: Use macroNutrientsSchema for other schemas that need macro nutrients
 const macronutrientsEntity = ze.create(
   {
     carbsInMg: ze
@@ -26,12 +25,34 @@ const macronutrientsEntity = ze.create(
 
 export const { schema: macroNutrientsSchema } = macronutrientsEntity
 
+/**
+ * Strongly-typed representation of macro nutrients stored in milligrams.
+ * All fields are normalized to milligrams and are read-only to preserve
+ * domain immutability.
+ */
 export type MacroNutrients = Readonly<z.infer<typeof macroNutrientsSchema>>
+
+/**
+ * Partial input shape accepted by the macro nutrients factory. This omits
+ * computed convenience gram fields so callers can provide mg-based values
+ * directly or use the grams-variant overload of {@link createMacroNutrients}.
+ */
 export type MacroNutrientsRecord = Omit<
   MacroNutrients,
   '__type' | 'carbsInGrams' | 'proteinInGrams' | 'fatInGrams'
 >
 
+/**
+ * Create a validated MacroNutrients object.
+ *
+ * Overloads:
+ * - When passed an object with `carbsInGrams`, `proteinInGrams`, `fatInGrams`
+ *   the values are converted to milligrams.
+ * - Otherwise, pass values in milligrams matching the MacroNutrientsRecord shape.
+ *
+ * The returned value is validated against the internal schema and will
+ * normalize negative or NaN inputs to zero.
+ */
 export function createMacroNutrients(
   data:
     | MacroNutrientsRecord
