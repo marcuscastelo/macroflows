@@ -1,5 +1,3 @@
-// Domain layer for recent food - pure business logic without external dependencies
-
 import { z } from 'zod/v4'
 
 import { createZodEntity } from '~/shared/domain/validation'
