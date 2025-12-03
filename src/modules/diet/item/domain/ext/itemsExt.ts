@@ -30,11 +30,10 @@ function equals(
     const original = sortedOriginal[i]!
     const current = sortedCurrent[i]!
 
-    const quantityMgDifference =
-      Math.abs(
-        Math.round(original.quantity * 1000) -
-          Math.round(current.quantity * 1000),
-      ) * 1000
+    const quantityMgDifference = Math.abs(
+      Math.round(original.quantity * 1000) -
+        Math.round(current.quantity * 1000),
+    )
 
     console.log(
       `Comparing Item ID ${original.name}: quantity difference in mg = ${quantityMgDifference}`,
