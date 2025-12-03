@@ -11,6 +11,7 @@ import {
   lazy,
   onCleanup,
   onMount,
+  Show,
   Suspense,
 } from 'solid-js'
 
@@ -113,42 +114,45 @@ export default function App() {
                       return { name: line, location: '', line: '' }
                     })
 
-                    if (!frames.length) return 'No stack available'
-
                     return (
-                      <div class="overflow-auto mt-2">
-                        <table class="w-full text-xs table-auto border-collapse">
-                          <thead>
-                            <tr class="text-left text-gray-400">
-                              <th class="pb-1 pr-4">Name</th>
-                              <th class="pb-1 pr-4">Location</th>
-                              <th class="pb-1">Line</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <For each={frames}>
-                              {(f, i) => (
-                                <tr class={i() % 2 ? 'bg-gray-900' : ''}>
-                                  <td class="align-top pr-4 whitespace-nowrap">
-                                    {f.name}
-                                  </td>
-                                  <td class="align-top pr-4 wrap-break-word">
-                                    <a
-                                      href={`vscode://file/${env.VITE_DEBUG_CWD}/${f.location.replace(/^.*[\\/]_build\//, '')}:${f.line}`}
-                                    >
-                                      {f.location.replace(
-                                        /^.*[\\/]_build\//,
-                                        '',
-                                      )}
-                                    </a>
-                                  </td>
-                                  <td class="align-top">{f.line}</td>
-                                </tr>
-                              )}
-                            </For>
-                          </tbody>
-                        </table>
-                      </div>
+                      <Show
+                        when={frames.length > 0}
+                        fallback="No stack available"
+                      >
+                        <div class="overflow-auto mt-2">
+                          <table class="w-full text-xs table-auto border-collapse">
+                            <thead>
+                              <tr class="text-left text-gray-400">
+                                <th class="pb-1 pr-4">Name</th>
+                                <th class="pb-1 pr-4">Location</th>
+                                <th class="pb-1">Line</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <For each={frames}>
+                                {(f, i) => (
+                                  <tr class={i() % 2 ? 'bg-gray-900' : ''}>
+                                    <td class="align-top pr-4 whitespace-nowrap">
+                                      {f.name}
+                                    </td>
+                                    <td class="align-top pr-4 wrap-break-word">
+                                      <a
+                                        href={`vscode://file/${env.VITE_DEBUG_CWD}/${f.location.replace(/^.*[\\/]_build\//, '')}:${f.line}`}
+                                      >
+                                        {f.location.replace(
+                                          /^.*[\\/]_build\//,
+                                          '',
+                                        )}
+                                      </a>
+                                    </td>
+                                    <td class="align-top">{f.line}</td>
+                                  </tr>
+                                )}
+                              </For>
+                            </tbody>
+                          </table>
+                        </div>
+                      </Show>
                     )
                   })()
                 : 'No stack available'}
