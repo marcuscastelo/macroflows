@@ -1,5 +1,9 @@
 import { isFoodItem, type Item } from '~/modules/diet/item/schema/itemSchema'
-import { Macros } from '~/modules/diet/macro-nutrients/domain/macrosExt'
+import {
+  DEFAULT_TOLERANCE_MG,
+  Macros,
+} from '~/modules/diet/macro-nutrients/domain/macrosExt'
+import { logging } from '~/shared/utils/logging'
 
 function equals(
   originalItems: readonly Item[],
@@ -17,15 +21,35 @@ function equals(
   const sortedOriginal = sortById(originalItems)
   const sortedCurrent = sortById(currentItems)
 
+  console.log(
+    `Comparing \n\t${JSON.stringify(sortedOriginal.map((item) => item.quantity))} to \n\t${JSON.stringify(
+      sortedCurrent.map((item) => item.quantity),
+    )}`,
+  )
   for (let i = 0; i < sortedOriginal.length; i++) {
     const original = sortedOriginal[i]!
     const current = sortedCurrent[i]!
+
+    const quantityMgDifference =
+      Math.abs(
+        Math.round(original.quantity * 1000) -
+          Math.round(current.quantity * 1000),
+      ) * 1000
+
+    console.log(
+      `Comparing Item ID ${original.name}: quantity difference in mg = ${quantityMgDifference}`,
+    )
+    if (quantityMgDifference > DEFAULT_TOLERANCE_MG) {
+      console.log(
+        `  Original quantity: ${original.quantity}, Current quantity: ${current.quantity}`,
+      )
+    }
 
     // Compare essential properties that indicate manual editing
     if (
       original.id !== current.id ||
       original.name !== current.name ||
-      Math.abs(original.quantity - current.quantity) > 0.0001 ||
+      quantityMgDifference > DEFAULT_TOLERANCE_MG ||
       original.reference.type !== current.reference.type
     ) {
       return false
@@ -52,17 +76,50 @@ function equals(
   return true
 }
 
-// Normalize quantities so they sum to 1, preserving relative proportions
+// Normalize quantities so they sum to 100, preserving relative proportions
 function normalizedQuantitiesShallow(items: readonly Item[]): Item[] {
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
   if (totalQuantity === 0) {
-    return items.map((item) => ({ ...item, quantity: 1 / items.length }))
+    let normalizedItems = items.map((item) => ({
+      ...item,
+      quantity: Math.round(100 / items.length),
+    }))
+    const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+    if (sum !== 100) {
+      const difference = 100 - sum
+      const adjustPerItem = difference / normalizedItems.length
+      normalizedItems = normalizedItems.map((item) => ({
+        ...item,
+        quantity: item.quantity + adjustPerItem,
+      }))
+    }
+    return normalizedItems
   }
 
-  return items.map((item) => ({
+  let normalizedItems = items.map((item) => ({
     ...item,
-    quantity: item.quantity / totalQuantity,
+    quantity: Math.round((item.quantity / totalQuantity) * 100),
   }))
+
+  const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum !== 100) {
+    const difference = 100 - sum
+    const adjustPerItem = difference / normalizedItems.length
+    normalizedItems = normalizedItems.map((item) => ({
+      ...item,
+      quantity: item.quantity + adjustPerItem,
+    }))
+  }
+
+  const sum2 = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum2 !== 100) {
+    logging.warn(
+      '[Items.normalizedQuantitiesShallow] Normalization adjustment failed to reach 100%',
+      { sum2, normalizedItems, items },
+    )
+  }
+
+  return normalizedItems
 }
 
 export const Items = {

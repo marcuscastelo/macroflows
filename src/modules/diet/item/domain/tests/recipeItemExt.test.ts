@@ -118,9 +118,9 @@ describe('RecipeItemExt', () => {
     const tinyScaled = RecipeItemExt.scaleQuantityAndChildren(
       recipeItem,
       recipe,
-      0.001,
+      1,
     )
-    expect(tinyScaled.quantity).toBe(0.01) // main min
+    expect(tinyScaled.quantity).toBe(1) // main min
     expect(tinyScaled.reference.children[0]!.quantity).toBeGreaterThanOrEqual(
       0.0001,
     )

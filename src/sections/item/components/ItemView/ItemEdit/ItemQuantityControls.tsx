@@ -36,7 +36,7 @@ export function ItemQuantityControls(props: ItemQuantityControlsProps) {
   )
 
   createEffect(() => {
-    const newQuantity = props.quantityField.value() ?? 0.1
+    const newQuantity = Math.max(props.quantityField.value() ?? 1, 1)
     const currentItem = untrack(props.itemDraft)
     const recipe = recipeResource.value()
 

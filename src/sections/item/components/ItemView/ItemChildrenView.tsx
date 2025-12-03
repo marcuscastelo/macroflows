@@ -74,7 +74,7 @@ export function ItemChildrenView(props: ItemChildrenViewProps) {
 
                   <div class="text-sm text-gray-300 flex justify-between w-full">
                     <span>
-                      {child.name} ({child.quantity}g)
+                      {child.name} ({Math.round(child.quantity)}g)
                     </span>
                     <span class="text-gray-400">
                       {calories().toFixed(0)}kcal

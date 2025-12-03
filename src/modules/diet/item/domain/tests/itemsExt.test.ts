@@ -106,8 +106,8 @@ describe('Items', () => {
 
       const normalized = Items.normalizedQuantitiesShallow(items)
 
-      expect(normalized[0]!.quantity).toBe(0.5)
-      expect(normalized[1]!.quantity).toBe(0.5)
+      expect(normalized[0]!.quantity).toBe(50)
+      expect(normalized[1]!.quantity).toBe(50)
     })
 
     it('handles unequal quantities', () => {
@@ -126,8 +126,8 @@ describe('Items', () => {
 
       const normalized = Items.normalizedQuantitiesShallow(items)
 
-      expect(normalized[0]!.quantity).toBeCloseTo(0.6667, 3)
-      expect(normalized[1]!.quantity).toBeCloseTo(0.3333, 3)
+      expect(normalized[0]!.quantity).toBeCloseTo(66.67, 0)
+      expect(normalized[1]!.quantity).toBeCloseTo(33.33, 0)
     })
 
     it('handles zero total quantity', () => {
@@ -147,8 +147,8 @@ describe('Items', () => {
       const normalized = Items.normalizedQuantitiesShallow(items)
 
       // Should distribute equally when total is 0
-      expect(normalized[0]!.quantity).toBe(0.5)
-      expect(normalized[1]!.quantity).toBe(0.5)
+      expect(normalized[0]!.quantity).toBe(50)
+      expect(normalized[1]!.quantity).toBe(50)
     })
 
     it('preserves other item properties', () => {
