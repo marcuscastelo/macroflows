@@ -54,7 +54,7 @@ describe('Items', () => {
         }),
       ]
       const items2 = [
-        makeFoodItem(1, 'Apple', 100.001, {
+        makeFoodItem(1, 'Apple', 100.01, {
           proteinInMg: 1000,
           carbsInMg: 20000,
           fatInMg: 0,
