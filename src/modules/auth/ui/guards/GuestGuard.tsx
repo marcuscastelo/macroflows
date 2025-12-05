@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createEffect, type JSXElement, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type GuestGuardProps = {
@@ -14,6 +14,7 @@ type GuestGuardProps = {
  */
 export function GuestGuard(props: GuestGuardProps) {
   const navigate = useNavigate()
+  const authUseCases = useCases.authUseCases()
 
   createEffect(() => {
     if (!authUseCases.isAuthLoading() && authUseCases.isAuthenticated()) {

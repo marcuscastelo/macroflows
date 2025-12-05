@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 
@@ -11,6 +11,7 @@ export function OnboardingFlow() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = createSignal<OnboardingStep>('welcome')
 
+  const authUseCases = useCases.authUseCases()
   const user = authUseCases.getCurrentUser()
 
   const handleNext = () => {

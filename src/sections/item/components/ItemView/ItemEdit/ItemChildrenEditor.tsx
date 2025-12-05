@@ -1,6 +1,6 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardPayload,
@@ -141,6 +141,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     }
 
     try {
+      const authUseCases = useCases.authUseCases()
       const userId = authUseCases.currentUserIdOrGuestId()
 
       // Create new unified recipe directly from Item children

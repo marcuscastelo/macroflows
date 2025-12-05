@@ -7,7 +7,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { createDayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
@@ -24,6 +24,7 @@ import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
 export const dayUseCases = createRoot(() => {
+  const authUseCases = useCases.authUseCases()
   const dayChangeStore = createDayChangeStore()
   const dayStateStore = createDayStateStore()
   const dayCacheStore = createDayCacheStore()

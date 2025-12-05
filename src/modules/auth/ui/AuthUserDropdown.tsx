@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
@@ -14,6 +14,7 @@ import { vibrate } from '~/shared/utils/vibrate'
 
 export const AuthUserDropdown = (props: { modalId: string }) => {
   const navigate = useNavigate()
+  const authUseCases = useCases.authUseCases()
 
   const handleSignOut = () => {
     vibrate(50)

@@ -1,8 +1,8 @@
+import { useCases } from '~/di/useCases'
 import { type NewUser, type User } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 
 const supabaseUserRepository = createSupabaseUserRepository()
 const guestUserRepository = createGuestUserRepository()
@@ -11,6 +11,7 @@ const guestUserRepository = createGuestUserRepository()
  * Returns the appropriate repository based on guest mode state
  */
 function getRepository(): UserRepository {
+  const guestUseCases = useCases.guestUseCases()
   return guestUseCases.isGuestMode()
     ? guestUserRepository
     : supabaseUserRepository

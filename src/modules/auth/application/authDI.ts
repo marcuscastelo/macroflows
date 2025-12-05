@@ -4,10 +4,15 @@ import { createAuthService } from '~/modules/auth/application/services/authServi
 import { createAuthStore } from '~/modules/auth/application/store/authStore'
 import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import type { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 
-export function createAuthDI() {
+export type AuthDI = {
+  userUseCases: () => ReturnType<typeof createUserUseCases>
+}
+
+export function createAuthDI(di: AuthDI) {
   return createRoot(() => {
+    const userUseCases = di.userUseCases()
     const authStore = createAuthStore()
     const authGateway = createSupabaseAuthGateway()
     const authService = createAuthService(authStore, authGateway, {

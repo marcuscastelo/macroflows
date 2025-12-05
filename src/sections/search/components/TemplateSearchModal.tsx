@@ -1,6 +1,6 @@
 import { onMount, Suspense } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
@@ -88,6 +88,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     originalAddedItem: Item,
     closeEditModal: () => void,
   ) => {
+    const authUseCases = useCases.authUseCases()
     const handleConfirm = async () => {
       const userId = authUseCases.currentUserIdOrGuestId()
 

@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import {
   showError,
   showSuccess,
@@ -13,6 +13,7 @@ import { logging } from '~/shared/utils/logging'
 export function AuthSettings() {
   // Privacy setting state (example: allow data sharing)
   const [allowDataSharing, setAllowDataSharing] = createSignal(false)
+  const authUseCases = useCases.authUseCases()
 
   // Stub for backend integration
   async function handlePrivacyChange(newValue: boolean) {

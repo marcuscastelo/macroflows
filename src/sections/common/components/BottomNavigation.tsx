@@ -8,7 +8,7 @@ import {
 } from 'solid-js'
 
 import { APP_VERSION } from '~/app-version'
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
@@ -18,6 +18,7 @@ import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
 export function BottomNavigation() {
+  const authUseCases = useCases.authUseCases()
   const navigate = useNavigate()
   const location = useLocation()
   const pathname = () => location.pathname

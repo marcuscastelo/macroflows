@@ -1,6 +1,6 @@
 import { Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import {
   isTemplateFood,
   type Template,
@@ -17,6 +17,7 @@ type RemoveFromRecentButtonProps = {
 }
 
 export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
+  const authUseCases = useCases.authUseCases()
   const handleClick = (e: MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()

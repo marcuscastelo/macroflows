@@ -1,6 +1,6 @@
 import { createResource, createSignal } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import {
   fetchFoods,
   fetchFoodsByName,
@@ -11,7 +11,7 @@ import {
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+// userUseCases will be accessed via the DI container to avoid init order issues
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
@@ -21,13 +21,14 @@ export const [templateSearchTab, setTemplateSearchTab] =
   createSignal<TemplateSearchTab>('hidden')
 export const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
 
-const getFavoriteFoods = () => userUseCases.currentUser()?.favorite_foods ?? []
+const getFavoriteFoods = () =>
+  useCases.userUseCases().currentUser()?.favorite_foods ?? []
 
 export const [templates, { refetch: refetchTemplates }] = createResource(
   () => ({
     tab: debouncedTab(),
     search: debouncedSearch(),
-    userId: authUseCases.currentUserIdOrGuestId(),
+    userId: useCases.authUseCases().currentUserIdOrGuestId(),
   }),
   (signals) => {
     return fetchTemplatesByTabLogic(

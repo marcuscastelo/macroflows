@@ -1,18 +1,19 @@
 import { useLocation, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
+import { useCases } from '~/di/useCases'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 import { logging } from '~/shared/utils/logging'
 
 export function GuestDataWarning() {
   const navigate = useNavigate()
   const location = useLocation()
+  const guestUseCases = useCases.guestUseCases()
 
   const handleResetDemoData = () => {
     try {

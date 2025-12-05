@@ -1,6 +1,6 @@
 import { createEffect, createRoot, untrack } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { createMacroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
 import { macroProfileStateStore } from '~/modules/diet/macro-profile/application/store/macroProfileStateStore'
 import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
@@ -15,6 +15,7 @@ export const selectedUserId = macroProfileStateStore.selectedUserId
 export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 
 export const cache = createRoot(() => {
+  const authUseCases = useCases.authUseCases()
   const cache = createMacroProfileCacheStore()
   initializeMacroProfileRealtime({
     onInsert: (profile) => {
@@ -55,6 +56,7 @@ export const cache = createRoot(() => {
 })
 
 export const userMacroProfiles = () => {
+  const authUseCases = useCases.authUseCases()
   const userId = authUseCases.currentUserIdOrGuestId()
   return cache.getProfilesByUserId(userId)
 }
@@ -62,6 +64,7 @@ export const userMacroProfiles = () => {
 export const latestMacroProfile = () => {
   const profiles = userMacroProfiles()
   const latest = getLatestMacroProfile(profiles)
+  const authUseCases = useCases.authUseCases()
   console.debug('Latest macro profile:', { latest })
   console.debug('All profiles:', { profiles })
   if (latest === null) {
