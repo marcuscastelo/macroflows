@@ -2,17 +2,23 @@ import { showPromise } from '~/modules/toast/application/toastManager'
 import { createUserService } from '~/modules/user/application/services/userService'
 import { createUserStore } from '~/modules/user/application/store/userStore'
 import { type NewUser, type User } from '~/modules/user/domain/user'
+import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { logging } from '~/shared/utils/logging'
 
-export function createUserUseCases() {
+export type UserDI = {
+  repository: () => UserRepository
+}
+
+export function createUserUseCases({ repository }: UserDI) {
   const userStore = createUserStore()
-  const userService = createUserService()
+
+  const userService = () => createUserService(repository())
 
   return {
     currentUser: () => userStore.currentUser(),
     fetchUser: async (userId: User['uuid']) => {
       try {
-        const user = await userService.fetchUser(userId)
+        const user = await userService().fetchUser(userId)
         return user
       } catch (error) {
         logging.error('User use case error:', error)
@@ -21,7 +27,7 @@ export function createUserUseCases() {
     },
     insertUserSilently: async (newUser: NewUser) => {
       try {
-        const insertedUser = await userService.insertUser(newUser)
+        const insertedUser = await userService().insertUser(newUser)
         return insertedUser
       } catch (error) {
         logging.error('User use case error:', error)
@@ -34,7 +40,7 @@ export function createUserUseCases() {
     updateUser: async (userId: User['uuid'], newUser: NewUser) => {
       try {
         const updatedUser = await showPromise(
-          userService.updateUser(userId, newUser),
+          userService().updateUser(userId, newUser),
           {
             loading: 'Atualizando informações do usuário...',
             success: 'Informações do usuário atualizadas com sucesso',
@@ -54,7 +60,7 @@ export function createUserUseCases() {
     deleteUser: async (userId: User['uuid']) => {
       try {
         await showPromise(
-          userService.deleteUser(userId),
+          userService().deleteUser(userId),
           {
             loading: 'Excluindo usuário...',
             success: 'Usuário excluído com sucesso',

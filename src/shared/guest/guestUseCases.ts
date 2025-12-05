@@ -15,6 +15,9 @@ export function createGuestUseCases(di: GuestDI) {
 
   const guestUseCases = {
     isGuestMode: () => guestStore.guestModeEnabled(),
+    setGuestMode: (enabled: boolean) => {
+      guestStore.setGuestModeEnabled(enabled)
+    },
     hasAcceptedGuestTerms: () => {
       const item = localStorage.getItem(GUEST_TERMS_KEY)
       const accepted = item !== null ? jsonParseWithStack(item) : false
