@@ -1,3 +1,4 @@
+import { useCases } from '~/di/useCases'
 import {
   type MacroProfile,
   type NewMacroProfile,
@@ -7,12 +8,12 @@ import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain
 import { createGuestMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/guest/guestMacroProfileGateway'
 import { createSupabaseMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileGateway'
 import { type User } from '~/modules/user/domain/user'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 
 const supabaseGateway = createSupabaseMacroProfileGateway()
 const guestGateway = createGuestMacroProfileGateway()
 
 function getGateway(): MacroProfileGateway {
+  const guestUseCases = useCases.guestUseCases()
   return guestUseCases.isGuestMode() ? guestGateway : supabaseGateway
 }
 

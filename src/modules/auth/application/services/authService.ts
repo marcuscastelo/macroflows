@@ -5,10 +5,12 @@ import {
   type SignOutOptions,
 } from '~/modules/auth/domain/auth'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
-import { createSupabaseAuthGateway } from '~/modules/auth/infrastructure/supabase/supabaseAuthGateway'
 import { showError } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
-import { createNewUser, type NewUser } from '~/modules/user/domain/user'
+import {
+  createNewUser,
+  type NewUser,
+  type User,
+} from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
 /**
@@ -41,7 +43,12 @@ function generateDefaultUserFromSession(session: AuthSession): NewUser {
 
 export function createAuthService(
   authStore: AuthStore,
-  authGateway: AuthGateway = createSupabaseAuthGateway(),
+  authGateway: AuthGateway,
+  useCases: {
+    fetchUser: (userId: User['uuid']) => Promise<User | null>
+    insertUserSilently: (newUser: NewUser) => Promise<User | null>
+    forceSwitchToUser_unsafe: (user: User) => void
+  },
 ) {
   async function signIn(options: SignInOptions): Promise<void> {
     try {
@@ -119,7 +126,7 @@ export function createAuthService(
         }))
 
         if (session?.user.id !== undefined) {
-          userUseCases
+          useCases
             .fetchUser(session.user.id)
             .then(async (user) => {
               logging.debug('User: ', { user })
@@ -128,10 +135,9 @@ export function createAuthService(
                   'User profile not found, creating default profile for OAuth user',
                 )
                 const newUser = generateDefaultUserFromSession(session)
-                const createdUser =
-                  await userUseCases.insertUserSilently(newUser)
+                const createdUser = await useCases.insertUserSilently(newUser)
                 if (createdUser !== null) {
-                  userUseCases.forceSwitchToUser_unsafe(createdUser)
+                  useCases.forceSwitchToUser_unsafe(createdUser)
                   logging.info('User profile created successfully')
                 } else {
                   showError(

@@ -1,6 +1,6 @@
 import { createEffect, createRoot, onMount } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
@@ -14,7 +14,6 @@ import { createGuestWeightRepository } from '~/modules/weight/infrastructure/wei
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -39,11 +38,13 @@ const cache = createRoot(() => {
 })
 
 onMount(() => {
+  const authUseCases = useCases.authUseCases()
   const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 })
 
 createEffect(() => {
+  const authUseCases = useCases.authUseCases()
   const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 
@@ -57,6 +58,7 @@ createEffect(() => {
 })
 
 export function refetchUserWeights() {
+  const authUseCases = useCases.authUseCases()
   const userId = authUseCases.currentUserIdOrGuestId()
   void fetchUserWeights(userId)
 }
@@ -64,6 +66,7 @@ export function refetchUserWeights() {
 function getWeightRepository():
   | typeof supabaseWeightRepository
   | typeof guestWeightRepository {
+  const guestUseCases = useCases.guestUseCases()
   return guestUseCases.isGuestMode()
     ? guestWeightRepository
     : supabaseWeightRepository

@@ -1,3 +1,4 @@
+import { useCases } from '~/di/useCases'
 import {
   type DayDiet,
   type NewDayDiet,
@@ -7,12 +8,12 @@ import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietReposi
 import { createGuestDayGateway } from '~/modules/diet/day-diet/infrastructure/guest/guestDayGateway'
 import { createSupabaseDayGateway } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayGateway'
 import { type User } from '~/modules/user/domain/user'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 
 const supabaseGateway = createSupabaseDayGateway()
 const guestGateway = createGuestDayGateway()
 
 function getGateway(): DayGateway {
+  const guestUseCases = useCases.guestUseCases()
   return guestUseCases.isGuestMode() ? guestGateway : supabaseGateway
 }
 

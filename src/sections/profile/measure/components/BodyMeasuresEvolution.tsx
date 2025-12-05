@@ -1,6 +1,6 @@
 import { For, Show, Suspense } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
 import {
   bodyMeasures,
@@ -51,7 +51,9 @@ export function BodyMeasuresEvolution() {
 
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
+            type="button"
             onClick={() => {
+              const authUseCases = useCases.authUseCases()
               const userId = authUseCases.currentUserIdOrGuestId()
 
               handleAddMeasures({

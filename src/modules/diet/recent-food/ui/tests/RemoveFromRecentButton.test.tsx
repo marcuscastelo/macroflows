@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import {
   createNewFood,
   type Food,
@@ -87,7 +86,6 @@ describe('RemoveFromRecentButton Logic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.spyOn(authUseCases, 'currentUserIdOrGuestId').mockReturnValue(mockUserId)
     mockDebouncedTab.mockReturnValue('recent')
     mockShowPromise.mockImplementation((promise) => promise)
   })
