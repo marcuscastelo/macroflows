@@ -1,4 +1,4 @@
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { recentFoodCrudService } from '~/modules/diet/recent-food/application/usecases/deps'
 import {
@@ -97,6 +97,8 @@ export const recentFoodUseCases = {
   async deleteRecentFoodOfTemplate(template: Template) {
     const [recentFoodReference, ...rest] =
       extractRecentFoodReferenceFromTemplate(template)
+
+    const authUseCases = useCases.authUseCases()
 
     if (recentFoodReference === undefined) {
       return

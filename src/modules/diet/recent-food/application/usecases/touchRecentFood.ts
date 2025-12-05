@@ -1,4 +1,4 @@
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { recentFoodCrudService } from '~/modules/diet/recent-food/application/usecases/deps'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
 import {
@@ -7,6 +7,7 @@ import {
 } from '~/modules/diet/recent-food/domain/recentFood'
 
 export async function touchRecentFood(recentFoodRef: RecentFoodReference) {
+  const authUseCases = useCases.authUseCases()
   const currentRecentFood =
     await recentFoodCrudService.fetchRecentFoodByUserTypeAndReferenceId(
       authUseCases.currentUserIdOrGuestId(),
