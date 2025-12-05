@@ -1,6 +1,6 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
@@ -37,6 +37,7 @@ import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 function GoogleLoginButton() {
+  const authUseCases = useCases.authUseCases()
   const handleLogin = async () => {
     try {
       await authUseCases.signIn({
@@ -57,6 +58,7 @@ function GoogleLoginButton() {
 }
 
 function LogoutButton() {
+  const authUseCases = useCases.authUseCases()
   const handleLogout = async () => {
     try {
       await authUseCases.signOut()
@@ -73,6 +75,7 @@ function LogoutButton() {
 }
 
 function UserInfo() {
+  const authUseCases = useCases.authUseCases()
   return (
     <Show when={authUseCases.isAuthenticated()} fallback="not auth">
       <div class="p-4 border rounded-md">

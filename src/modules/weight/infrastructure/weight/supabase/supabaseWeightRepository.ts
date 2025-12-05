@@ -1,3 +1,4 @@
+import { useCases } from '~/di/useCases'
 import { type User } from '~/modules/user/domain/user'
 import {
   type NewWeight,
@@ -6,7 +7,6 @@ import {
 import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
 import { createGuestWeightRepository } from '~/modules/weight/infrastructure/weight/guest/guestWeightRepository'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 
 const supabaseWeightGateway = createSupabaseWeightGateway()
 const guestWeightRepository = createGuestWeightRepository()
@@ -42,6 +42,7 @@ const supabaseWeightRepository = createSupabaseWeightRepository()
  * When authenticated, returns a repository backed by Supabase.
  */
 export function createWeightRepository(): WeightRepository {
+  const guestUseCases = useCases.guestUseCases()
   return guestUseCases.isGuestMode()
     ? guestWeightRepository
     : supabaseWeightRepository

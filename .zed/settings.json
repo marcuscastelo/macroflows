@@ -3,6 +3,7 @@
 // For a full list of overridable settings, and general information on folder-specific settings,
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
+  "tab_size": 2,
   "languages": {
     "TypeScript": {
       "formatter": {
@@ -12,6 +13,17 @@
     "TSX": {
       "formatter": {
         "code_action": "source.fixAll.eslint"
+      }
+    }
+  },
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "preferences": {
+            "importModuleSpecifier": "non-relative"
+          }
+        }
       }
     }
   }

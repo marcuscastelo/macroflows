@@ -1,4 +1,4 @@
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { useCases } from '~/di/useCases'
 import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
@@ -178,14 +178,14 @@ function calculateWeightProgress(
 }
 
 function desiredWeight(): number {
-  return userUseCases.currentUser()?.desired_weight ?? 0
+  return useCases.userUseCases().currentUser()?.desired_weight ?? 0
 }
 
 function weightProgress() {
   return calculateWeightProgress(
     weightUseCases.weights(),
     desiredWeight(),
-    userUseCases.currentUser()?.diet ?? 'cut',
+    useCases.userUseCases().currentUser()?.diet ?? 'cut',
   )
 }
 

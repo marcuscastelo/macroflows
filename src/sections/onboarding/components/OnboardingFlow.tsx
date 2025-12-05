@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 
@@ -11,6 +11,7 @@ export function OnboardingFlow() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = createSignal<OnboardingStep>('welcome')
 
+  const authUseCases = useCases.authUseCases()
   const user = authUseCases.getCurrentUser()
 
   const handleNext = () => {
@@ -61,6 +62,7 @@ export function OnboardingFlow() {
             <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
               <span>Passo {getStepNumber()} de 4</span>
               <button
+                type="button"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 onClick={handleSkip}
               >
@@ -85,6 +87,7 @@ export function OnboardingFlow() {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>Ícone de boas-vindas</title>
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -121,6 +124,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de controle de macros</title>
                       <path
                         fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -144,6 +148,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de sincronização</title>
                       <path
                         fill-rule="evenodd"
                         d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
@@ -167,6 +172,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de receitas e refeições</title>
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -193,6 +199,7 @@ export function OnboardingFlow() {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>Ícone de segurança de dados</title>
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -216,6 +223,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de verificação</title>
                       <path
                         fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -230,6 +238,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de verificação</title>
                       <path
                         fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -244,6 +253,7 @@ export function OnboardingFlow() {
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
+                      <title>Ícone de verificação</title>
                       <path
                         fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -267,6 +277,7 @@ export function OnboardingFlow() {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>Ícone de conclusão</title>
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"

@@ -11,7 +11,16 @@ describe('Auth with automatic user creation', () => {
   it('should automatically create user profile for new OAuth users', async () => {
     const mockGateway: AuthGateway = createAuthGatewayMock()
     const mockStore: AuthStore = createAuthStoreMock()
-    const authService = createAuthService(mockStore, mockGateway)
+    const authService = createAuthService(mockStore, mockGateway, {
+      fetchUser: vi.fn(),
+      forceSwitchToUser_unsafe: vi.fn(),
+      insertUserSilently: vi.fn().mockResolvedValue({
+        uuid: 'new-user-uuid',
+        email: 'a@a.a',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+    })
 
     let stateChangeCallback:
       | ((event: string, session: AuthSession | null) => void)
@@ -29,7 +38,11 @@ describe('Auth with automatic user creation', () => {
   it('should handle errors gracefully when user creation fails', async () => {
     const mockGateway: AuthGateway = createAuthGatewayMock()
     const mockStore: AuthStore = createAuthStoreMock()
-    const authService = createAuthService(mockStore, mockGateway)
+    const authService = createAuthService(mockStore, mockGateway, {
+      fetchUser: vi.fn(),
+      forceSwitchToUser_unsafe: vi.fn(),
+      insertUserSilently: vi.fn().mockRejectedValue(new Error('DB error')),
+    })
 
     expect(() => authService.initializeAuth()).not.toThrow()
   })

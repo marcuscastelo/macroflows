@@ -1,17 +1,20 @@
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { showError } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+// access userUseCases via DI container
 import { demoteUserToNewUser } from '~/modules/user/domain/user'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { logging } from '~/shared/utils/logging'
 
 // TODO: Create module for favorites
 export function isFoodFavorite(foodId: number): boolean {
-  return userUseCases.currentUser()?.favorite_foods.includes(foodId) ?? false
+  return (
+    useCases.userUseCases().currentUser()?.favorite_foods.includes(foodId) ??
+    false
+  )
 }
 
 export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
-  const currentUser_ = userUseCases.currentUser()
+  const currentUser_ = useCases.userUseCases().currentUser()
   if (currentUser_ === null) {
     showError('Usuário não inicializado')
     logging.error('User application error:', new Error('User not initialized'))
@@ -27,7 +30,7 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
     return
   }
 
-  if (currentUser_.uuid !== authUseCases.getCurrentUser()?.id) {
+  if (currentUser_.uuid !== useCases.authUseCases().getCurrentUser()?.id) {
     showError('Usuário inconsistente')
     logging.error(
       'User application error:',
@@ -47,7 +50,8 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
       favoriteFoods.splice(index, 1)
     }
   }
-  void userUseCases
+  void useCases
+    .userUseCases()
     .updateUser(currentUser_.uuid, {
       ...demoteUserToNewUser(currentUser_),
       favorite_foods: favoriteFoods,

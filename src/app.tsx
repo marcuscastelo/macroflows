@@ -32,6 +32,7 @@ const BottomNavigation = lazy(async () => ({
 
 function useAspectWidth() {
   const [width, setWidth] = createSignal(getWidth())
+
   function getWidth() {
     return Math.min((window.innerHeight * 14) / 16, window.innerWidth)
   }

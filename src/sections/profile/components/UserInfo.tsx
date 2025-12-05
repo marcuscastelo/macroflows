@@ -1,5 +1,6 @@
 import { createEffect, Show } from 'solid-js'
 
+import { useCases } from '~/di/useCases'
 import {
   innerData,
   setUnsavedFields,
@@ -7,7 +8,6 @@ import {
 } from '~/modules/profile/application/profile'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import {
   demoteUserToNewUser,
   type User,
@@ -35,6 +35,7 @@ export const GENDER_TRANSLATION: Translation<User['gender']> = {
 }
 
 export function UserInfo() {
+  const userUseCases = useCases.userUseCases()
   createEffect(() => {
     const user_ = userUseCases.currentUser()
     const innerData_ = innerData()
@@ -111,6 +112,7 @@ export function UserInfo() {
         class={
           'btn-primary no-animation btn cursor-pointer uppercase w-full rounded-t-none'
         }
+        type="button"
         onClick={() => {
           const user = innerData()
           if (user === null) {

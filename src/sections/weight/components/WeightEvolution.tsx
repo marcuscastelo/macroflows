@@ -1,6 +1,6 @@
 import { For, Suspense } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import {
@@ -25,6 +25,7 @@ import { WeightView } from '~/sections/weight/components/WeightView'
  */
 export function WeightEvolution() {
   const weightField = useFloatField(undefined, { maxValue: 200 })
+  const authUseCases = useCases.authUseCases()
 
   return (
     <>
@@ -57,6 +58,7 @@ export function WeightEvolution() {
             style={{ width: '100%' }}
           />
           <button
+            type="button"
             class="btn cursor-pointer uppercase btn-primary w-full focus:ring-2 focus:ring-blue-400 bg-blue-700 hover:bg-blue-800 border-none text-white"
             onClick={() => {
               const weight = weightField.value()

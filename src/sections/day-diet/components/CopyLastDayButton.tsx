@@ -1,6 +1,6 @@
 import { type Accessor, Suspense } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useCases } from '~/di/useCases'
 import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   copyDay,
@@ -25,6 +25,7 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
+  const authUseCases = useCases.authUseCases()
   const {
     previousDays,
     handleStartCopying,
