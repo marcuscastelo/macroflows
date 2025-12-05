@@ -1,43 +1,23 @@
-import { createRoot } from 'solid-js'
-
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Template } from '~/modules/diet/template/domain/template'
-import { createRecentFoodCrudService } from '~/modules/recent-food/application/services/recentFoodCrudService'
+import { recentFoodCrudService } from '~/modules/recent-food/application/usecases/deps'
 import {
-  extractRecentFoodReferenceFromItem,
   extractRecentFoodReferenceFromTemplate,
   type RecentFoodReference,
 } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
+import { touchRecentFood } from '~/modules/recent-food/application/usecases/touchRecentFood'
+import { touchRecentFoodForItem } from '~/modules/recent-food/application/usecases/touchRecentFoodForItem'
 import {
-  createNewRecentFood,
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/recent-food/domain/recentFood'
-import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
-import { initializeRecentFoodRealtime } from '~/modules/recent-food/infrastructure/supabase/realtime'
-import { createSupabaseRecentFoodGateway } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
 import {
   showError,
   showPromise,
 } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
-
-const { recentFoodCrudService } = createRoot(() => {
-  const supabaseRecentFoodGateway = createSupabaseRecentFoodGateway()
-  const repository = createRecentFoodRepository(supabaseRecentFoodGateway)
-  const recentFoodCrudService = createRecentFoodCrudService(repository)
-
-  // TODO: Implement recent food cache using realtime updates
-  initializeRecentFoodRealtime({
-    onInsert: (_: RecentFood) => {},
-    onUpdate: (_: RecentFood) => {},
-    onDelete: (_: RecentFood) => {},
-  })
-
-  return { recentFoodCrudService }
-})
 
 export const recentFoodUseCases = {
   fetchUserRecentFoodsAsTemplates: async (
@@ -138,58 +118,9 @@ export const recentFoodUseCases = {
     )
   },
 
-  touchRecentFood: async (recentFoodRef: RecentFoodReference) => {
-    const currentRecentFood =
-      await recentFoodCrudService.fetchRecentFoodByUserTypeAndReferenceId(
-        authUseCases.currentUserIdOrGuestId(),
-        recentFoodRef.type,
-        recentFoodRef.referenceId,
-      )
+  touchRecentFood: async (recentFoodRef: RecentFoodReference) =>
+    await touchRecentFood(recentFoodRef),
 
-    const timesCurrentlyUsed = currentRecentFood?.times_used ?? 0
-    const newRecentFoodData = createNewRecentFood({
-      user_id: authUseCases.currentUserIdOrGuestId(),
-      type: recentFoodRef.type,
-      reference_id: recentFoodRef.referenceId,
-      last_used: new Date(),
-      times_used: timesCurrentlyUsed + 1,
-    })
-
-    if (currentRecentFood === null) {
-      await recentFoodUseCases.insertRecentFood(newRecentFoodData)
-    } else {
-      // TODO: Remove client-side user check after implementing row-level security (RLS)
-      if (currentRecentFood.user_id !== authUseCases.currentUserIdOrGuestId()) {
-        throw new Error('BUG: recentFood fetched does not match current user')
-      }
-
-      if (
-        currentRecentFood.type !== recentFoodRef.type ||
-        currentRecentFood.reference_id !== recentFoodRef.referenceId
-      ) {
-        throw new Error('BUG: recentFood fetched does not match type/reference')
-      }
-
-      await recentFoodUseCases.updateRecentFood(
-        currentRecentFood.id,
-        newRecentFoodData,
-      )
-    }
-  },
-
-  touchRecentFoodForItem: async (item: Item) => {
-    const [recentFoodRef] = extractRecentFoodReferenceFromItem(item)
-    if (recentFoodRef === undefined) {
-      logging.warn(
-        'Cannot touch recent food for item - no trackable reference found',
-        { item },
-      )
-      showError('Não foi possível adicionar alimento aos alimentos recentes.')
-      return
-    }
-
-    for (const recentFoodRef of extractRecentFoodReferenceFromItem(item)) {
-      await recentFoodUseCases.touchRecentFood(recentFoodRef)
-    }
-  },
+  touchRecentFoodForItem: async (item: Item) =>
+    await touchRecentFoodForItem(item),
 }
