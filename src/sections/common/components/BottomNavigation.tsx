@@ -124,6 +124,7 @@ export function BottomNavigation() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
+                      <title>Ícone de login</title>
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"

@@ -51,6 +51,7 @@ export function BodyMeasuresEvolution() {
 
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
+            type="button"
             onClick={() => {
               const userId = authUseCases.currentUserIdOrGuestId()
 

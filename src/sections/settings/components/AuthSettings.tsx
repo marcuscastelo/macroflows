@@ -100,6 +100,7 @@ export function AuthSettings() {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
+                <title>Ícone de usuário não autenticado</title>
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -132,6 +133,7 @@ export function AuthSettings() {
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
+                  <title>Ícone de usuário autenticado</title>
                   <path
                     fill-rule="evenodd"
                     d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
@@ -166,6 +168,7 @@ export function AuthSettings() {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
+                <title>Sair da conta</title>
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -200,10 +203,14 @@ export function AuthSettings() {
             </Button>
           </div>
           <div class="mt-4 flex items-center gap-3">
-            <label class="text-sm text-gray-700 dark:text-gray-300">
+            <label
+              for="data-sharing"
+              class="text-sm text-gray-700 dark:text-gray-300"
+            >
               Compartilhar meus dados anonimamente para melhorar o app
             </label>
             <input
+              id="data-sharing"
               type="checkbox"
               checked={allowDataSharing()}
               onChange={(e) => {

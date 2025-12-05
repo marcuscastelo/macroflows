@@ -57,6 +57,7 @@ export function WeightEvolution() {
             style={{ width: '100%' }}
           />
           <button
+            type="button"
             class="btn cursor-pointer uppercase btn-primary w-full focus:ring-2 focus:ring-blue-400 bg-blue-700 hover:bg-blue-800 border-none text-white"
             onClick={() => {
               const weight = weightField.value()

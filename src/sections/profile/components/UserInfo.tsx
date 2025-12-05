@@ -111,6 +111,7 @@ export function UserInfo() {
         class={
           'btn-primary no-animation btn cursor-pointer uppercase w-full rounded-t-none'
         }
+        type="button"
         onClick={() => {
           const user = innerData()
           if (user === null) {

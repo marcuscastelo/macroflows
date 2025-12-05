@@ -247,6 +247,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               <For each={[0.5, 1, 1.5, 2]}>
                 {(multiplier) => (
                   <button
+                    type="button"
                     class="btn btn-sm btn-primary flex-1"
                     onClick={() => applyMultiplierToAll(multiplier)}
                   >
@@ -266,6 +267,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={props.showAddButton === true && props.onAddNewItem}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-green-600 hover:bg-green-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => props.onAddNewItem?.()}
             title="Adicionar novo item ao grupo"
@@ -279,6 +281,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={children().length > 0 && !isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => void handleConvertToRecipe()}
             title="Converter grupo em receita"
@@ -293,6 +296,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-red-600 hover:bg-red-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => {
               const updatedItem = createItem({
