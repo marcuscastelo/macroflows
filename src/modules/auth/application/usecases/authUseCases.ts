@@ -1,31 +1,7 @@
-import { createEffect, createRoot } from 'solid-js'
-
-import { createAuthService } from '~/modules/auth/application/services/authService'
-import { createAuthStore } from '~/modules/auth/application/store/authStore'
-import { showPromise } from '~/modules/toast/application/toastManager'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { createAuthDI } from '~/modules/auth/application/authDI'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 
-const { authStore, authService } = createRoot(() => {
-  const authStore = createAuthStore()
-  const authService = createAuthService(authStore)
-
-  createEffect(() => {
-    const state = authStore.authState()
-    showPromise(
-      userUseCases
-        .fetchUser(state.user?.id ?? '')
-        .then(userUseCases.forceSwitchToUser_unsafe),
-      {
-        loading: 'Carregando dados do usuário...',
-        error: 'Falha ao carregar dados do usuário',
-      },
-      { context: 'background' },
-    ).catch(() => {})
-  })
-
-  return { authStore, authService }
-})
+const { authStore, authService } = createAuthDI()
 
 export const authUseCases = {
   currentUserIdOrGuestId: () => authStore.getCurrentUser()?.id ?? GUEST_USER_ID,

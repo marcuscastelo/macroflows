@@ -1,9 +1,6 @@
-import { createRoot } from 'solid-js'
-
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
+import { createGuestDI } from '~/shared/guest/guestDI'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'
@@ -13,15 +10,10 @@ type GuestTermValue = {
   acceptedAt: string
 }
 
-const { guestStore } = createRoot(() => {
-  const guestStore = createGuestStore()
-  return { guestStore }
-})
+const { guestStore, authUseCases } = createGuestDI()
 
 export const guestUseCases = {
-  isGuestMode: () =>
-    authUseCases.currentUserIdOrGuestId() === GUEST_USER_ID &&
-    guestUseCases.hasAcceptedGuestTerms(),
+  isGuestMode: () => guestStore.guestModeEnabled(),
   hasAcceptedGuestTerms: () => {
     const item = localStorage.getItem(GUEST_TERMS_KEY)
     const accepted = item !== null ? jsonParseWithStack(item) : false
@@ -71,7 +63,7 @@ export const guestUseCases = {
         cancelText: 'Cancelar',
         onConfirm: () => {
           guestUseCases.acceptGuestTerms()
-          showPromise(authUseCases.signOut(), {
+          showPromise(authUseCases().signOut(), {
             loading: 'Entrando em modo convidado...',
             success: 'Agora você está em modo convidado!',
             error: 'Erro ao entrar em modo convidado. Tente novamente.',
@@ -89,7 +81,7 @@ export const guestUseCases = {
   },
 
   exitGuestMode: (onSuccess: () => void) => {
-    showPromise(authUseCases.signOut(), {
+    showPromise(authUseCases().signOut(), {
       loading: 'Saindo do modo convidado...',
       success: 'Modo convidado desativado!',
       error: 'Erro ao sair do modo convidado. Tente novamente.',

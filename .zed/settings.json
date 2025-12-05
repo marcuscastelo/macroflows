@@ -17,33 +17,12 @@
     }
   },
   "lsp": {
-    "typescript-language-server": {
-      "initialization_options": {
-        "preferences": {
-          "importModuleSpecifierPreference": "non-relative",
-          "importModuleSpecifierEnding": "auto"
-        }
-      },
-      "settings": {
-        "preferences": {
-          "importModuleSpecifierPreference": "non-relative",
-          "importModuleSpecifierEnding": "auto"
-        }
-      }
-    },
     "vtsls": {
-      "initialization_options": {
+      "settings": {
         "typescript": {
           "preferences": {
-            "importModuleSpecifierPreference": "non-relative",
-            "importModuleSpecifierEnding": "auto"
+            "importModuleSpecifier": "non-relative"
           }
-        }
-      },
-      "settings": {
-        "preferences": {
-          "importModuleSpecifierPreference": "non-relative",
-          "importModuleSpecifierEnding": "auto"
         }
       }
     }
