@@ -12,6 +12,7 @@ export type AppMode = 'guest' | 'normal'
 
 const container = createRoot(() => {
   // TODO: Refactor global DI so that guestMode signal is not in the global DI container
+  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1441
   const [mode, setMode] = createSignal<AppMode>('normal')
 
   const userUseCases = createMemo(() =>
@@ -51,6 +52,7 @@ const container = createRoot(() => {
 })
 
 // TODO: Refactor global DI so that we don't need to switch repositories like this
+// Issue URL: https://github.com/marcuscastelo/macroflows/issues/1440
 function getUserRepository(mode: AppMode): UserRepository {
   return mode === 'guest'
     ? createGuestUserRepository()
