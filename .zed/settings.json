@@ -6,11 +6,17 @@
   "tab_size": 2,
   "languages": {
     "TypeScript": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      },
       "formatter": {
         "code_action": "source.fixAll.eslint"
       }
     },
     "TSX": {
+      "code_actions_on_format": {
+        "source.fixAll.biome": true
+      },
       "formatter": {
         "code_action": "source.fixAll.eslint"
       }

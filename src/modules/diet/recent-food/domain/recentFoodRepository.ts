@@ -2,7 +2,7 @@ import {
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/diet/recent-food/domain/recentFood'
-import type { Template } from '~/modules/diet/template/domain/template'
+import { type Template } from '~/modules/diet/template/domain/template'
 import { type User } from '~/modules/user/domain/user'
 
 export type RecentFoodRepository = {

@@ -1,6 +1,6 @@
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { recentFoodCrudService } from '~/modules/diet/recent-food/application/usecases/deps'
-import type { RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
 import {
   createNewRecentFood,
   type NewRecentFood,

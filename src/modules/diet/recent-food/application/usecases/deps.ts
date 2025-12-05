@@ -15,9 +15,9 @@ const { recentFoodCrudService } = createRoot(() => {
 
   // TODO: Implement recent food cache using realtime updates
   initializeRecentFoodRealtime({
-    onInsert: (_: unknown) => {},
-    onUpdate: (_: unknown) => {},
-    onDelete: (_: unknown) => {},
+    onInsert: (_: unknown) => undefined,
+    onUpdate: (_: unknown) => undefined,
+    onDelete: (_: unknown) => undefined,
   })
 
   return { recentFoodCrudService }
