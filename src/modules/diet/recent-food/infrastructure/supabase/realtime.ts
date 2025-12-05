@@ -1,8 +1,8 @@
 import {
   type RecentFood,
   recentFoodSchema,
-} from '~/modules/recent-food/domain/recentFood'
-import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
+} from '~/modules/diet/recent-food/domain/recentFood'
+import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/diet/recent-food/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 

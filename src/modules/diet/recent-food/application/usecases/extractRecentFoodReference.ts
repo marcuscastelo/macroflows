@@ -4,9 +4,9 @@ import {
   isRecipeItem,
   type Item,
 } from '~/modules/diet/item/schema/itemSchema'
+import { type RecentFood } from '~/modules/diet/recent-food/domain/recentFood'
 import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import { type Template } from '~/modules/diet/template/domain/template'
-import { type RecentFood } from '~/modules/recent-food/domain/recentFood'
 
 /**
  * Result of extracting recent food reference from an item.

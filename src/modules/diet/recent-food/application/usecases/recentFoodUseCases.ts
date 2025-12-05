@@ -1,17 +1,17 @@
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { type Template } from '~/modules/diet/template/domain/template'
-import { recentFoodCrudService } from '~/modules/recent-food/application/usecases/deps'
+import { recentFoodCrudService } from '~/modules/diet/recent-food/application/usecases/deps'
 import {
   extractRecentFoodReferenceFromTemplate,
   type RecentFoodReference,
-} from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import { touchRecentFood } from '~/modules/recent-food/application/usecases/touchRecentFood'
-import { touchRecentFoodForItem } from '~/modules/recent-food/application/usecases/touchRecentFoodForItem'
+} from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { touchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
+import { touchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
 import {
   type NewRecentFood,
   type RecentFood,
-} from '~/modules/recent-food/domain/recentFood'
+} from '~/modules/diet/recent-food/domain/recentFood'
+import { type Template } from '~/modules/diet/template/domain/template'
 import {
   showError,
   showPromise,

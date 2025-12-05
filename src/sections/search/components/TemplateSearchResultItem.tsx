@@ -1,3 +1,4 @@
+import { RemoveFromRecentButton } from '~/modules/diet/recent-food/ui/RemoveFromRecentButton'
 import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToItem } from '~/modules/diet/template/application/templateToItem'
@@ -6,7 +7,6 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { RemoveFromRecentButton } from '~/modules/recent-food/ui/RemoveFromRecentButton'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'

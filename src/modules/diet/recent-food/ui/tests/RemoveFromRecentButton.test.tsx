@@ -18,9 +18,12 @@ import {
 } from '~/modules/diet/template/domain/template'
 
 // Mock the modules
-vi.mock('~/modules/recent-food/application/usecases/recentFoodCrud', () => ({
-  deleteRecentFoodByReference: vi.fn(),
-}))
+vi.mock(
+  '~/modules/diet/recent-food/application/usecases/recentFoodCrud',
+  () => ({
+    deleteRecentFoodByReference: vi.fn(),
+  }),
+)
 
 vi.mock(
   '~/modules/template-search/application/usecases/templateSearchState',

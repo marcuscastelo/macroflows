@@ -1,9 +1,9 @@
-import type { Template } from '~/modules/diet/template/domain/template'
 import {
   type NewRecentFood,
   type RecentFood,
-} from '~/modules/recent-food/domain/recentFood'
-import { type RecentFoodRepository } from '~/modules/recent-food/domain/recentFoodRepository'
+} from '~/modules/diet/recent-food/domain/recentFood'
+import { type RecentFoodRepository } from '~/modules/diet/recent-food/domain/recentFoodRepository'
+import type { Template } from '~/modules/diet/template/domain/template'
 import { type User } from '~/modules/user/domain/user'
 import env from '~/shared/config/env'
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
+import { createNewRecentFood } from '~/modules/diet/recent-food/domain/recentFood'
 
 describe('Recent Food Domain', () => {
   describe('createRecentFoodInput', () => {

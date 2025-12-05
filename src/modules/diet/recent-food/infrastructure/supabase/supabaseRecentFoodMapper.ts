@@ -2,7 +2,7 @@ import {
   type NewRecentFood,
   type RecentFood,
   recentFoodSchema,
-} from '~/modules/recent-food/domain/recentFood'
+} from '~/modules/diet/recent-food/domain/recentFood'
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

@@ -1,6 +1,6 @@
 import type { Item } from '~/modules/diet/item/schema/itemSchema'
-import { extractRecentFoodReferenceFromItem } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import { touchRecentFood } from '~/modules/recent-food/application/usecases/touchRecentFood'
+import { extractRecentFoodReferenceFromItem } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { touchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 import { showError } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 

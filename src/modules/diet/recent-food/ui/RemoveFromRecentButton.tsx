@@ -1,7 +1,7 @@
 import { Show } from 'solid-js'
 
+import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { type Template } from '~/modules/diet/template/domain/template'
-import { recentFoodUseCases } from '~/modules/recent-food/application/usecases/recentFoodUseCases'
 import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 

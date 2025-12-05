@@ -2,6 +2,7 @@ import { onMount, Suspense } from 'solid-js'
 
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -11,7 +12,6 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { recentFoodUseCases } from '~/modules/recent-food/application/usecases/recentFoodUseCases'
 import {
   debouncedSearch,
   refetchTemplates,

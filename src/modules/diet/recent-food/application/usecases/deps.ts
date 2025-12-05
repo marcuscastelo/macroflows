@@ -1,9 +1,9 @@
 import { createRoot } from 'solid-js'
 
-import { createRecentFoodCrudService } from '~/modules/recent-food/application/services/recentFoodCrudService'
-import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
-import { initializeRecentFoodRealtime } from '~/modules/recent-food/infrastructure/supabase/realtime'
-import { createSupabaseRecentFoodGateway } from '~/modules/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
+import { createRecentFoodCrudService } from '~/modules/diet/recent-food/application/services/recentFoodCrudService'
+import { createRecentFoodRepository } from '~/modules/diet/recent-food/infrastructure/recentFoodRepository'
+import { initializeRecentFoodRealtime } from '~/modules/diet/recent-food/infrastructure/supabase/realtime'
+import { createSupabaseRecentFoodGateway } from '~/modules/diet/recent-food/infrastructure/supabase/supabaseRecentFoodGateway'
 
 // Centralized dependency wiring for recent-food use-cases.
 // This file performs the minimal initialization (createRoot) once and

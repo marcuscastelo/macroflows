@@ -13,7 +13,7 @@ import {
   type RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { extractRecentFoodReferenceFromItem } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
+import { extractRecentFoodReferenceFromItem } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
 
 describe('extractRecentFoodReferenceFromItem', () => {
   const mockMacros = createMacroNutrients({

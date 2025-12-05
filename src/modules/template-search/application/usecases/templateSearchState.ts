@@ -5,11 +5,11 @@ import {
   fetchFoods,
   fetchFoodsByName,
 } from '~/modules/diet/food/application/usecases/foodCrud'
+import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import {
   fetchUserRecipeByName,
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { recentFoodUseCases } from '~/modules/recent-food/application/usecases/recentFoodUseCases'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
