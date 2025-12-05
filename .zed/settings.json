@@ -15,5 +15,37 @@
         "code_action": "source.fixAll.eslint"
       }
     }
+  },
+  "lsp": {
+    "typescript-language-server": {
+      "initialization_options": {
+        "preferences": {
+          "importModuleSpecifierPreference": "non-relative",
+          "importModuleSpecifierEnding": "auto"
+        }
+      },
+      "settings": {
+        "preferences": {
+          "importModuleSpecifierPreference": "non-relative",
+          "importModuleSpecifierEnding": "auto"
+        }
+      }
+    },
+    "vtsls": {
+      "initialization_options": {
+        "typescript": {
+          "preferences": {
+            "importModuleSpecifierPreference": "non-relative",
+            "importModuleSpecifierEnding": "auto"
+          }
+        }
+      },
+      "settings": {
+        "preferences": {
+          "importModuleSpecifierPreference": "non-relative",
+          "importModuleSpecifierEnding": "auto"
+        }
+      }
+    }
   }
 }

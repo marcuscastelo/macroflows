@@ -14,10 +14,14 @@
     "strictNullChecks": true,
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["vinxi/types/client"],
+    "types": [
+      "vinxi/types/client"
+    ],
     "isolatedModules": true,
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ]
     },
   }
 }

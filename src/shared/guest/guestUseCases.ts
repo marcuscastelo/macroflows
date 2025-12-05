@@ -1,3 +1,5 @@
+import { createRoot } from 'solid-js'
+
 import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
@@ -10,6 +12,11 @@ const GUEST_TERMS_KEY = 'guest-terms-accepted'
 type GuestTermValue = {
   acceptedAt: string
 }
+
+const { guestStore } = createRoot(() => {
+  const guestStore = createGuestStore()
+  return { guestStore }
+})
 
 export const guestUseCases = {
   isGuestMode: () =>
