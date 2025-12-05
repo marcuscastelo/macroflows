@@ -24,6 +24,13 @@
   },
   "overrides": [
     {
+      "assist": {
+        "actions": {
+          "source": {
+            "organizeImports": "off"
+          }
+        }
+      },
       "includes": [
         "**/*.ts",
         "**/*.tsx"
@@ -215,7 +222,12 @@
             "useArrayLiterals": "error",
             "useAsConstAssertion": "error",
             "useConsistentObjectDefinitions": "warn",
-            "useConsistentTypeDefinitions": "error",
+            "useConsistentTypeDefinitions": {
+              "level": "error",
+              "options": {
+                "style": "type"
+              }
+            },
             "useImportType": {
               "level": "error",
               "options": {
