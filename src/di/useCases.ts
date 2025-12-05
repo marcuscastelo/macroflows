@@ -5,6 +5,7 @@ import { createUserUseCases } from '~/modules/user/application/usecases/userUseC
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { createGuestUseCases } from '~/shared/guest/guestUseCases'
 
 export type AppMode = 'guest' | 'normal'
@@ -32,7 +33,9 @@ const container = createRoot(() => {
   )
 
   createEffect(() => {
-    const isGuest = authUseCases().currentUserIdOrGuestId() === 'guest-user-id'
+    const isGuest =
+      authUseCases().currentUserIdOrGuestId() === GUEST_USER_ID &&
+      guestUseCases().hasAcceptedGuestTerms()
     setMode(isGuest ? 'guest' : 'normal')
   })
 

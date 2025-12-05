@@ -14,7 +14,6 @@ import { createGuestWeightRepository } from '~/modules/weight/infrastructure/wei
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-// guestUseCases accessed via DI container
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

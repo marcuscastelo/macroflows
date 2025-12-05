@@ -1,3 +1,5 @@
+import { onMount } from 'solid-js'
+
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { createGuestDI, type GuestDI } from '~/shared/guest/guestDI'
@@ -13,32 +15,41 @@ type GuestTermValue = {
 export function createGuestUseCases(di: GuestDI) {
   const { guestStore, authUseCases } = createGuestDI(di)
 
+  onMount(() => {
+    const item = localStorage.getItem(GUEST_TERMS_KEY)
+    const accepted = item !== null ? jsonParseWithStack(item) : false
+    if (typeof accepted === 'boolean') {
+      guestStore.setAcceptedGuestTerms(accepted)
+      return
+    }
+    if (
+      typeof accepted === 'object' &&
+      accepted !== null &&
+      'acceptedAt' in accepted
+    ) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const value = accepted as GuestTermValue
+      if (typeof value.acceptedAt !== 'string') {
+        guestStore.setAcceptedGuestTerms(false)
+        return
+      }
+      // 1d = 86400000 ms
+      const oneDayAgo = new Date(Date.now() - 86400000)
+      const isValid = new Date(value.acceptedAt) > oneDayAgo
+      guestStore.setAcceptedGuestTerms(isValid)
+      return
+    }
+    guestStore.setAcceptedGuestTerms(false)
+  })
+
   const guestUseCases = {
-    isGuestMode: () => guestStore.guestModeEnabled(),
-    setGuestMode: (enabled: boolean) => {
+    isGuestMode: () =>
+      guestStore.guestModeEnabled() && guestUseCases.hasAcceptedGuestTerms(),
+    setGuestModeEnabled: (enabled: boolean) => {
       guestStore.setGuestModeEnabled(enabled)
     },
     hasAcceptedGuestTerms: () => {
-      const item = localStorage.getItem(GUEST_TERMS_KEY)
-      const accepted = item !== null ? jsonParseWithStack(item) : false
-      if (typeof accepted === 'boolean') {
-        return accepted
-      }
-      if (
-        typeof accepted === 'object' &&
-        accepted !== null &&
-        'acceptedAt' in accepted
-      ) {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const value = accepted as GuestTermValue
-        if (typeof value.acceptedAt !== 'string') {
-          return false
-        }
-        // 1d = 86400000 ms
-        const oneDayAgo = new Date(Date.now() - 86400000)
-        return new Date(value.acceptedAt) > oneDayAgo
-      }
-      return false
+      return guestStore.acceptedGuestTerms()
     },
 
     acceptGuestTerms: () => {
@@ -46,10 +57,12 @@ export function createGuestUseCases(di: GuestDI) {
         GUEST_TERMS_KEY,
         JSON.stringify({ acceptedAt: new Date().toISOString() }),
       )
+      guestStore.setAcceptedGuestTerms(true)
     },
 
     revokeGuestTerms: () => {
       localStorage.removeItem(GUEST_TERMS_KEY)
+      guestStore.setAcceptedGuestTerms(false)
     },
 
     enterGuestMode: (onSuccess: () => void) => {
