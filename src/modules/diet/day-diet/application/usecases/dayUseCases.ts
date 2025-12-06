@@ -7,7 +7,6 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import { type AuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
@@ -39,6 +38,10 @@ export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
     const dayCacheStore = createDayCacheStore()
 
     const dayRepository = createDayDietRepository()
+
+    // NOTE: intentionally avoid importing `useCases` here to prevent circular
+    // dependency during module initialization. The DI container will call
+    // `initializeDayUseCases` to provide the auth use-cases provider when ready.
 
     const runTargetDayReset = () => {
       logging.debug(`Effect - Reset to today!`)
@@ -243,12 +246,9 @@ export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
  * Backward-compatible shim kept for legacy consumers.
  * Consumers may continue to import `dayUseCases` while migration proceeds.
  *
- * Export the concrete instance (not a provider function) so test spies and
- * legacy consumers that reference methods directly (e.g. `dayUseCases.insertDayDiet`)
- * work as expected.
+ * Historically the module exported a concrete instance created at module
+ * evaluation time which led to TDZ/circular import problems. To avoid that we
+ * export a lightweight stub object that is safe to import and can be
+ * initialized later by the DI container via `initializeDayUseCases`.
  */
-export const dayUseCases = createDayUseCases({
-  authUseCases: () => useCases.authUseCases(),
-})
-
 export type DayUseCases = ReturnType<typeof createDayUseCases>

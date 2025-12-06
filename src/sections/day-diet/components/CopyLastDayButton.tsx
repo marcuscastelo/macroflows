@@ -1,7 +1,6 @@
 import { type Accessor, Suspense } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   copyDay,
   useCopyDayUseCase,
@@ -45,7 +44,7 @@ export function CopyLastDayButton(props: {
         previousDays: previousDays.latest ?? [],
         existingDay: [
           ...(previousDays.latest ?? []),
-          dayUseCases.currentDayDiet(),
+          useCases.dayUseCases().currentDayDiet(),
         ]
           .filter((d): d is DayDiet => d !== null)
           .find((d) => d.target_day === props.selectedDay),

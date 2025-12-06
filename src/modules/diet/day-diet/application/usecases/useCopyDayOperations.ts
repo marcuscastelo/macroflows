@@ -1,7 +1,7 @@
 import { createResource, createSignal } from 'solid-js'
 
+import { useCases } from '~/di/useCases'
 import type { DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -133,7 +133,7 @@ export function createCopyDayOperations(deps: {
  * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultCopyOps = createCopyDayOperations({
-  dayUseCases: () => dayUseCases,
+  dayUseCases: () => useCases.dayUseCases(),
 })
 
 export const copyDay = _defaultCopyOps.copyDay

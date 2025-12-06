@@ -1,7 +1,6 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -170,7 +169,7 @@ export default function TestApp() {
       <Providers>
         <DayMacros
           dayDiet={
-            dayUseCases.currentDayDiet() ??
+            useCases.dayUseCases().currentDayDiet() ??
             promoteDayDiet(
               createNewDayDiet({
                 meals: [],
@@ -273,12 +272,12 @@ export default function TestApp() {
               readOnly={true}
               displayFormat="DD/MM/YYYY"
               value={{
-                startDate: dayUseCases.targetDay(),
-                endDate: dayUseCases.targetDay(),
+                startDate: useCases.dayUseCases().targetDay(),
+                endDate: useCases.dayUseCases().targetDay(),
               }}
               onChange={(value: DateValueType) => {
                 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                dayUseCases.setTargetDay(value?.startDate as string)
+                useCases.dayUseCases().setTargetDay(value?.startDate as string)
               }}
             />
           </div>
@@ -304,7 +303,7 @@ export default function TestApp() {
             <TestField />
             <DayMacros
               dayDiet={
-                dayUseCases.currentDayDiet() ??
+                useCases.dayUseCases().currentDayDiet() ??
                 promoteDayDiet(
                   createNewDayDiet({
                     meals: [],

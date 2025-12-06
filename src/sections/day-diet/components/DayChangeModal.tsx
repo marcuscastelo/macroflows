@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useCases } from '~/di/useCases'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
@@ -14,7 +14,11 @@ type DayChangeModalProps = {
 
 export function DayChangeModal(props: DayChangeModalProps) {
   const previousDate = () => {
-    const [year, month, day] = dayUseCases.targetDay().split('-').map(Number)
+    const [year, month, day] = useCases
+      .dayUseCases()
+      .targetDay()
+      .split('-')
+      .map(Number)
     return new Date(year!, month! - 1, day)
   }
   const formattedPreviousDay = () => dateToDDMM(previousDate())

@@ -1,7 +1,5 @@
-import {
-  type DayUseCases,
-  dayUseCases,
-} from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useCases } from '~/di/useCases'
+import { type DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
 import { type User } from '~/modules/user/domain/user'
@@ -37,5 +35,5 @@ export function createCreateBlankDay(deps: { dayUseCases: () => DayUseCases }) {
  * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const createBlankDay = createCreateBlankDay({
-  dayUseCases: () => dayUseCases,
+  dayUseCases: () => useCases.dayUseCases(),
 })

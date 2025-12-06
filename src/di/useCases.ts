@@ -2,6 +2,7 @@ import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { createClipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { createDayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 /**
  * Macro-profile state initializer.
  *
@@ -18,7 +19,6 @@ import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/u
  * be called once auth use-cases are ready. Wiring it here ensures the module's
  * proxy is initialized before any DI consumers expect the concrete instance.
  */
-import { initializeDayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -88,20 +88,10 @@ const coreContainer = createRoot(() => {
   }
 })
 
-// Initialize macro-profile state reactive effects that depend on the auth use-cases.
-// This wires the module-level effects (cache clearing / profile fetching) so the
-// macro-profile module does not try to read the global DI container during module
-// evaluation and avoids TDZ/circular import issues.
 initializeMacroProfileState({
   getAuthUseCases: () => coreContainer.authUseCases(),
   macroProfileUseCases,
 })
-
-// Initialize day-diet use-cases so the exported proxy in that module is backed
-// by a real instance before other modules attempt to call its methods.
-// This prevents the 'can't access lexical declaration "useCases" before initialization'
-// error by ensuring the day-use-cases are created after the core auth container is ready.
-initializeDayUseCases({ getAuthUseCases: () => coreContainer.authUseCases() })
 
 /**
  * Create weight use-cases after core container is established.
@@ -137,6 +127,12 @@ const clipboardUseCasesInstance = createRoot(() => {
   return createClipboardUseCases()
 })
 
+const daysUseCasesInstance = createRoot(() => {
+  return createDayUseCases({
+    authUseCases: () => coreContainer.authUseCases(),
+  })
+})
+
 /**
  * Full use-cases container with all modules wired.
  */
@@ -147,4 +143,5 @@ export const useCases = {
   weightUseCases: () => weightUseCasesInstance,
   weightChartUseCases: () => weightChartUseCasesInstance,
   clipboardUseCases: () => clipboardUseCasesInstance,
+  dayUseCases: () => daysUseCasesInstance,
 }

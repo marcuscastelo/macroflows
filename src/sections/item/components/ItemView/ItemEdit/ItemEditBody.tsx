@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useCases } from '~/di/useCases'
 import {
   isItemNameValid,
   MAX_ITEM_NAME_LENGTH,
@@ -25,7 +25,7 @@ import { logging } from '~/shared/utils/logging'
 
 // Create macro overflow instance for this module
 const macroOverflowUseCases = createMacroOverflow({
-  dayUseCases,
+  dayUseCases: useCases.dayUseCases(),
   macroTargetUseCases,
 })
 
@@ -111,7 +111,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         when={
           !isGroupItem(props.itemDraft()) &&
           props.viewMode !== 'group' &&
-          dayUseCases.currentDayDiet()
+          useCases.dayUseCases().currentDayDiet()
         }
       >
         {(currentDayDiet) => (

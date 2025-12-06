@@ -1,6 +1,6 @@
 import { type Accessor, createMemo } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useCases } from '~/di/useCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
@@ -10,7 +10,7 @@ import { logging } from '~/shared/utils/logging'
 
 // Create macro overflow instance for this module
 const macroOverflow = createMacroOverflow({
-  dayUseCases,
+  dayUseCases: useCases.dayUseCases(),
   macroTargetUseCases,
 })
 
