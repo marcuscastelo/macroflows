@@ -3,6 +3,9 @@ import { weightUseCases } from '~/modules/weight/application/weight/usecases/wei
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
+/**
+ * Helper: compare floats with epsilon
+ */
 function floatEqual(a: number, b: number, epsilon = 1e-3): boolean {
   return Math.abs(a - b) < epsilon
 }
@@ -37,10 +40,10 @@ function getTotalAndChange(
     case 'normo':
       goalDirection = 'none'
       break
-    default:
-      diet satisfies never
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`Unknown diet type: ${diet}`)
+    default: {
+      const _exhaustiveDiet: never = diet
+      throw new Error('Unknown diet type: ' + String(_exhaustiveDiet))
+    }
   }
 
   return {
@@ -177,54 +180,75 @@ function calculateWeightProgress(
   }
 }
 
-function desiredWeight(): number {
-  return useCases.userUseCases().currentUser()?.desired_weight ?? 0
-}
+/**
+ * Factory that creates weight-chart related helpers.
+ *
+ * Allows injecting `useCases` or `weightUseCases` for testing/DI.
+ */
+export function createWeightChartUseCases(deps?: {
+  useCases?: typeof useCases
+  weightUseCases?: typeof weightUseCases
+}) {
+  const localUseCases = deps?.useCases ?? useCases
+  const localWeightUseCases = deps?.weightUseCases ?? weightUseCases
 
-function weightProgress() {
-  return calculateWeightProgress(
-    weightUseCases.weights(),
-    desiredWeight(),
-    useCases.userUseCases().currentUser()?.diet ?? 'cut',
-  )
-}
+  function desiredWeight(): number {
+    return localUseCases.userUseCases().currentUser()?.desired_weight ?? 0
+  }
 
-const weightProgressText = () => {
-  const progress = weightProgress()
-  if (progress === null) return 'N/A'
+  function weightProgress() {
+    return calculateWeightProgress(
+      localWeightUseCases.weights(),
+      desiredWeight(),
+      localUseCases.userUseCases().currentUser()?.diet ?? 'cut',
+    )
+  }
 
-  switch (progress.type) {
-    case 'no_weights':
-      return 'Nenhum peso registrado'
-    case 'progress':
-      if (progress.progress >= 100) {
-        return `100% 🎉`
-      } else {
-        return `${progress.progress.toFixed(1)}%`
+  const weightProgressText = () => {
+    const progress = weightProgress()
+    if (progress === null) return 'N/A'
+
+    switch (progress.type) {
+      case 'no_weights':
+        return 'Nenhum peso registrado'
+      case 'progress':
+        if (progress.progress >= 100) {
+          return `100% 🎉`
+        } else {
+          return `${progress.progress.toFixed(1)}%`
+        }
+      case 'exceeded':
+        return `100% + ${progress.exceeded.toFixed(1)}kg 🎉`
+      case 'no_change':
+        return 'Sem mudança'
+      case 'reversal': {
+        const signal = progress.currentChange.direction === 'gain' ? '+' : '-'
+        return `Diverge ${signal}${progress.reversal.toFixed(1)}kg`
       }
-    case 'exceeded':
-      return `100% + ${progress.exceeded.toFixed(1)}kg 🎉`
-    case 'no_change':
-      return 'Sem mudança'
-    case 'reversal': {
-      const signal = progress.currentChange.direction === 'gain' ? '+' : '-'
-      return `Diverge ${signal}${progress.reversal.toFixed(1)}kg`
+      case 'normo':
+        if (progress.difference === 0) {
+          return 'Peso ideal atingido 🎉'
+        } else {
+          const signal = progress.direction === 'gain' ? '+' : '-'
+          return `Variação: ${signal}${progress.difference.toFixed(1)}kg`
+        }
+      default:
+        progress satisfies never
     }
-    case 'normo':
-      if (progress.difference === 0) {
-        return 'Peso ideal atingido 🎉'
-      } else {
-        const signal = progress.direction === 'gain' ? '+' : '-'
-        return `Variação: ${signal}${progress.difference.toFixed(1)}kg`
-      }
-    default:
-      progress satisfies never // Ensure all cases are handled
+  }
+
+  return {
+    calculateWeightProgress,
+    weightProgress,
+    desiredWeight,
+    weightProgressText,
   }
 }
 
-export const weightChartUseCases = {
-  calculateWeightProgress,
-  weightProgress,
-  desiredWeight,
-  weightProgressText,
-}
+/**
+ * Backward-compatible shim kept for legacy consumers.
+ * Consumers may continue to import `weightChartUseCases`.
+ */
+export const weightChartUseCases = createWeightChartUseCases()
+
+export type WeightChartUseCases = ReturnType<typeof createWeightChartUseCases>
