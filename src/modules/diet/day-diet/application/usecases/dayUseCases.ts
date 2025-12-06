@@ -245,13 +245,3 @@ export function createDayUseCases() {
 export const dayUseCases = createDayUseCases()
 
 export type DayUseCases = ReturnType<typeof createDayUseCases>
-/**
- * Public exported type for the day use-cases object.
- * Consumers (for example meal factories) should import this type to
- * correctly type injected `dayUseCases` dependencies:
- *
- *   import { DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
- *
- * This avoids using `any` in factories that depend on day use-cases.
- */
-export type DayUseCases = typeof dayUseCases
