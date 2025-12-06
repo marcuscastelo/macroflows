@@ -242,10 +242,13 @@ export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
 /**
  * Backward-compatible shim kept for legacy consumers.
  * Consumers may continue to import `dayUseCases` while migration proceeds.
+ *
+ * Export the concrete instance (not a provider function) so test spies and
+ * legacy consumers that reference methods directly (e.g. `dayUseCases.insertDayDiet`)
+ * work as expected.
  */
-export const dayUseCases = () =>
-  createDayUseCases({
-    authUseCases: () => useCases.authUseCases(),
-  })
+export const dayUseCases = createDayUseCases({
+  authUseCases: () => useCases.authUseCases(),
+})
 
 export type DayUseCases = ReturnType<typeof createDayUseCases>

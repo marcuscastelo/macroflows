@@ -2,6 +2,15 @@ import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { createClipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+/**
+ * Macro-profile state initializer.
+ *
+ * The macro-profile module exposes an `initializeMacroProfileState` function
+ * which must be called once the auth/use-cases are available. Wire it here so
+ * the DI container is responsible for starting module-level reactive effects.
+ */
+import { initializeMacroProfileState } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -69,6 +78,15 @@ const coreContainer = createRoot(() => {
     guestUseCases,
     authUseCases,
   }
+})
+
+// Initialize macro-profile state reactive effects that depend on the auth use-cases.
+// This wires the module-level effects (cache clearing / profile fetching) so the
+// macro-profile module does not try to read the global DI container during module
+// evaluation and avoids TDZ/circular import issues.
+initializeMacroProfileState({
+  getAuthUseCases: () => coreContainer.authUseCases(),
+  macroProfileUseCases,
 })
 
 /**
