@@ -42,6 +42,7 @@ export function createTelemetry(deps?: TelemetryDeps) {
 /**
  * Backward-compatible shim: preserve the original top-level export while allowing
  * DI consumers to call `createTelemetry` directly to inject dependencies.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultTelemetry = createTelemetry()
 

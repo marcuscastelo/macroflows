@@ -130,6 +130,7 @@ export function createCopyDayOperations(deps: {
 /**
  * Backward-compatible shim: keep existing named exports working while consumers migrate.
  * The shim wires the factory to the current `dayUseCases`.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultCopyOps = createCopyDayOperations({
   dayUseCases: () => dayUseCases,

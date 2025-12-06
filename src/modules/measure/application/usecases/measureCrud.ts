@@ -127,6 +127,7 @@ export function createMeasureCrud(deps?: {
 /**
  * Backward-compatible shim: keep existing named exports working while consumers migrate.
  * Wired to default repository and showPromise.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultMeasureCrud = createMeasureCrud()
 

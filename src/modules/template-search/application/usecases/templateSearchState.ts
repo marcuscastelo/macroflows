@@ -115,6 +115,7 @@ export function createTemplateSearchState(deps?: {
 /**
  * Backward-compatible shim: keep top-level named exports working while consumers migrate.
  * We wire the factory with the existing defaults from this module's current environment.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultTemplateSearchState = createTemplateSearchState()
 

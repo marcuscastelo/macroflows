@@ -45,6 +45,7 @@ export function createMealUseCases(deps: { dayUseCases: DayUseCases }) {
 
 /**
  * Backward-compatible shim: keep `updateMeal` function export working.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const mealUseCases = createMealUseCases({
   dayUseCases,

@@ -56,6 +56,7 @@ export function createCachedSearchCrud(deps?: {
 /**
  * Backward-compatible shim: keep the original named exports while allowing DI consumers
  * to call `createCachedSearchCrud` directly when they need to inject dependencies.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 const _defaultCachedSearchCrud = createCachedSearchCrud()
 

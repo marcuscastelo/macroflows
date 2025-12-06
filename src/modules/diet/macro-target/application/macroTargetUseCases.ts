@@ -58,6 +58,7 @@ export function createMacroTargetUseCases(deps?: {
 /**
  * Backward-compatible shim: preserve the previous top-level export while
  * allowing DI consumers to call `createMacroTargetUseCases` directly.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const macroTargetUseCases = createMacroTargetUseCases()
 export type MacroTargetUseCases = ReturnType<typeof createMacroTargetUseCases>

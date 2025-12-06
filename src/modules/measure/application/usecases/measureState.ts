@@ -48,6 +48,7 @@ export function createMeasureState(deps?: {
 /**
  * Backward-compatible shim: preserve the previous top-level exports while
  * allowing DI consumers to call `createMeasureState` directly to inject deps.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  *
  * Consumers that import:
  *   import { bodyMeasures, refetchBodyMeasures } from '~/modules/measure/application/usecases/measureState'

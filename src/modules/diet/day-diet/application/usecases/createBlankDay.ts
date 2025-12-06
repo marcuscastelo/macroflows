@@ -34,6 +34,7 @@ export function createCreateBlankDay(deps: { dayUseCases: () => DayUseCases }) {
 /**
  * Backward-compatible shim kept for legacy consumers.
  * Consumers may continue to import `createBlankDay` while migration proceeds.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const createBlankDay = createCreateBlankDay({
   dayUseCases: () => dayUseCases,

@@ -258,7 +258,4 @@ export function createWeightChartUseCases(deps: WeightChartDeps) {
   }
 }
 
-// Note: Shim removed - all consumers should use the centralized DI container.
-// Import via `useCases.weightChartUseCases()` from '~/di/useCases'.
-
 export type WeightChartUseCases = ReturnType<typeof createWeightChartUseCases>

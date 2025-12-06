@@ -51,6 +51,7 @@ export function createProfile(deps?: { useCases?: typeof useCases }) {
 /**
  * Backward-compatible shim: keep the original top-level named exports while
  * allowing consumers to opt into DI by calling `createProfile` directly.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  *
  * Consumers that still import `{ innerData, setInnerData, unsavedFields, setUnsavedFields }`
  * will continue to work during migration.

@@ -3,6 +3,7 @@
  *
  * This file exposes a factory `createToastManager()` that returns the toast API,
  * and keeps a backward-compatible shim that exports the original functions.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  *
  * The factory allows injecting overrides (for testing or container wiring).
  */
@@ -309,6 +310,7 @@ export function createToastManager(deps?: {
 
 /**
  * Backward-compatible wrappers that call a fresh manager on each invocation.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  *
  * We call `createToastManager()` at call time (not at module initialization)
  * so test-time spies/mocks that replace the underlying helpers (like

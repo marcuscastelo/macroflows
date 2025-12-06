@@ -14,6 +14,7 @@ import { logging } from '~/shared/utils/logging'
 export const selectedUserId = macroProfileStateStore.selectedUserId
 export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 
+//* TODO: Remove DI shims and use proper container/use-case injection.
 export const cache = createRoot(() => {
   const cache = createMacroProfileCacheStore()
   initializeMacroProfileRealtime({

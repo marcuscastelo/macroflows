@@ -87,6 +87,7 @@ export function createMacroProfileUseCases(deps?: {
 /**
  * Backward-compatible default instance (shim) used by legacy consumers.
  * Keeps existing imports working while migrating to the container.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const macroProfileUseCases = createMacroProfileUseCases()
 
