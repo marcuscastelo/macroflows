@@ -3,12 +3,18 @@ import { createUserService } from '~/modules/user/application/services/userServi
 import { createUserStore } from '~/modules/user/application/store/userStore'
 import { type NewUser, type User } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
+import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import { logging } from '~/shared/utils/logging'
 
 export type UserDI = {
   repository: () => UserRepository
 }
 
+/**
+ * Factory that returns user-related use-cases.
+ * Dependencies are injected via the `repository` function to allow swapping
+ * implementations (e.g. guest vs supabase) in the container or tests.
+ */
 export function createUserUseCases({ repository }: UserDI) {
   const userStore = createUserStore()
 
@@ -76,3 +82,17 @@ export function createUserUseCases({ repository }: UserDI) {
     },
   }
 }
+
+/**
+ * Public type for the concrete use-cases returned by the factory.
+ * Useful for typing containers and consumers.
+ */
+export type UserUseCases = ReturnType<typeof createUserUseCases>
+
+/**
+ * Backward-compatible default shim.
+ * Keeps existing imports working while consumers migrate to the container.
+ */
+export const userUseCases = createUserUseCases({
+  repository: () => createSupabaseUserRepository(),
+})

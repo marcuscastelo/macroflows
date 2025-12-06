@@ -6,9 +6,15 @@ import {
   Show,
 } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
+import { useCases } from '~/di/useCases'
+import { createFoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
+import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
+
+// Create food CRUD instance for this module
+const foodCrud = createFoodCrud({
+  repository: () => createSupabaseFoodRepository(),
+})
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
@@ -67,7 +73,8 @@ export function EANSearch(props: EANSearchProps) {
       props.setEAN('')
     }
 
-    fetchFoodByEan(props.EAN())
+    foodCrud
+      .fetchFoodByEan(props.EAN())
       .then(afterFetch)
       .catch(catchFetch)
       .finally(finallyFetch)
@@ -113,7 +120,7 @@ export function EANSearch(props: EANSearchProps) {
                         // TODO : default handlers for ItemView
                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
-                          clipboardUseCases.copy(item)
+                          useCases.clipboardUseCases().copy(item)
                         },
                       }}
                       mode="read-only"

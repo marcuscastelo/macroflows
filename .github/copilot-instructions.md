@@ -167,3 +167,74 @@ For the full label table and descriptions, refer to `docs/labels-usage.md`.
 
 ## Search Features (pt-BR/Portuguese)
 - All user-facing search features must be both diacritic-insensitive and case-insensitive for pt-BR/Portuguese contexts.
+
+## Memory Usage
+
+This project supports the use of persistent agent memories to capture and reuse project-specific context, workflows, and heuristics. Use memories thoughtfully and sparingly: they are intended to speed up repeated tasks and preserve institutional knowledge, not to store transient or sensitive information.
+
+### Purpose
+- Persist important, project-specific guidance or context that helps the agent perform actions consistently (examples: architecture decisions, workflow checklists, common search patterns).
+- Capture outcomes of long-running analysis or handoffs that will be reused across sessions.
+- Store canonical summaries or indexes to speed discovery (e.g., module map, developer-guidelines, workflow-and-commands).
+
+### When to Write Memories
+- After producing a stable summary or guideline that will be reused (architecture decisions, consolidated dev rules).
+- When a repeated operational pattern is discovered (search patterns, command sequences).
+- When completing a migration or a non-trivial refactor that others may need to reference later.
+- Prior to handing off context to another agent or human to preserve decisions.
+
+Recommended memory names (examples):
+- `project-context-macroflows`
+- `developer-guidelines`
+- `workflow-and-commands`
+- `module-map`
+- `lessons-learned`
+
+### When to Read Memories
+- Read a memory only if it is clearly relevant to the task at hand.
+- Avoid re-reading the same memory multiple times in the same conversation.
+- Prefer targeted memory reads (specific memory names) over broad searches.
+
+### Memory Format & Naming
+- Store memories in Markdown for readability.
+- Use clear, descriptive memory names (snake-case or kebab-case recommended).
+- Include a short metadata header in the memory body when useful (e.g., `lastUpdated`, `reportedBy` for machine-readable outputs).
+- Do NOT store secrets, credentials, or PII in memories.
+
+Example memory structure (Markdown):
+- Title
+- Purpose
+- Short summary
+- Relevant links/paths in the repo
+- Actions or next steps
+- lastUpdated: YYYY-MM-DD
+- reportedBy: <agent-name.vX> (optional for machine artifacts)
+
+### Editing & Deleting Memories
+- Use precise edits when updating memories (preserve historical notes if relevant).
+- If a memory becomes obsolete, delete it rather than leaving outdated content.
+- If only part of a memory is obsolete, update that section and add a changelog entry with `lastUpdated`.
+
+### Security & Privacy
+- Never write API keys, secrets, or personal data to memories.
+- Sensitive or restricted information must be referenced indirectly (e.g., “see secure vault”) rather than stored in memory.
+- If an accidental secret is written to a memory, delete the memory immediately and follow repository security procedures.
+
+### Usage Patterns & Examples
+- Before performing cross-module refactors, load `developer-guidelines` and `module-map` to verify naming and layering rules.
+- For repetitive searches (e.g., "recipe edit" TODOs), store the search regex in a memory to avoid re-deriving it each session.
+- Use a `lessons-learned` memory to capture post-mortems; convert actionable items into GitHub issues.
+
+### Best Practices
+- Keep memories small and focused; prefer several specific memories over a single large blob.
+- Use consistent naming so memories are discoverable.
+- Prefer writable canonical docs in the repository for rules that must be visible to humans; memories are a complementary convenience for the agent.
+- When automating workflows or commands, reference memories in the automation steps (e.g., load `workflow-and-commands` before running batch validation).
+- Treat memories as first-class artifacts: update them when processes change.
+
+### Integration with Agent Workflows
+- Load relevant memories during agent handoffs to preserve context (e.g., architecture rules, active migrations, quality gate expectations).
+- When producing machine-readable outputs intended for automation or audit, include `reportedBy: <agent-name.vX>` at the top of the artifact.
+- Use memories to reduce redundant discovery steps (e.g., mapping TODOs to known issue areas), but validate memory contents against the repository when precision matters.
+
+By following these guidelines, memories become a reliable accelerator for consistent, high-quality assistance without compromising security or clarity.

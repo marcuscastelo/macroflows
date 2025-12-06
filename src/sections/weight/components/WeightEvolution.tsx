@@ -8,8 +8,6 @@ import {
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -41,13 +39,15 @@ export function WeightEvolution() {
             />
           </div>
           <WeightProgress
-            weightProgress={weightChartUseCases.weightProgress()}
-            weightProgressText={weightChartUseCases.weightProgressText}
+            weightProgress={useCases.weightChartUseCases().weightProgress()}
+            weightProgressText={
+              useCases.weightChartUseCases().weightProgressText
+            }
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
-              weights={weightUseCases.weights}
-              desiredWeight={weightChartUseCases.desiredWeight()}
+              weights={() => useCases.weightUseCases().weights()}
+              desiredWeight={useCases.weightChartUseCases().desiredWeight()}
               type={weightChartType()}
             />
           </Suspense>
@@ -67,7 +67,8 @@ export function WeightEvolution() {
                 return
               }
 
-              weightUseCases
+              useCases
+                .weightUseCases()
                 .insertWeight(
                   createNewWeight({
                     user_id: authUseCases.currentUserIdOrGuestId(),
@@ -86,7 +87,9 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...weightUseCases.weights()].reverse().slice(0, 10)}
+              each={[...useCases.weightUseCases().weights()]
+                .reverse()
+                .slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

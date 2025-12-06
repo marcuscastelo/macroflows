@@ -15,7 +15,7 @@ export const selectedUserId = macroProfileStateStore.selectedUserId
 export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
 
 export const cache = createRoot(() => {
-  const authUseCases = useCases.authUseCases()
+  const authUseCases = () => useCases.authUseCases()
   const cache = createMacroProfileCacheStore()
   initializeMacroProfileRealtime({
     onInsert: (profile) => {
@@ -31,7 +31,7 @@ export const cache = createRoot(() => {
 
   // When user changes, update selected user and clear cache if needed
   createEffect(() => {
-    const userId = authUseCases.currentUserIdOrGuestId()
+    const userId = authUseCases().currentUserIdOrGuestId()
     logging.debug(`User changed to ${userId}`)
 
     const previousUserId = untrack(macroProfileStateStore.selectedUserId)

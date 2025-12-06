@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
+import { createDayEditOrchestrator } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import {
   createNewDayDiet,
   promoteDayDiet,
@@ -10,6 +10,10 @@ import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macr
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
+import {
+  addItemToMeal,
+  updateItemInMeal,
+} from '~/modules/diet/meal/domain/mealOperations'
 // Mock dependencies
 vi.mock('~/modules/diet/macro-target/application/macroTarget', () => ({
   getMacroTargetForDay: vi.fn(),
@@ -21,6 +25,7 @@ vi.mock('~/modules/diet/meal/application/meal', () => ({
 
 vi.mock('~/shared/utils/date/dateUtils', () => ({
   stringToDate: vi.fn(() => new Date('2023-01-01')),
+  getTodayYYYYMMDD: vi.fn(() => '2023-01-01'),
 }))
 
 function makeTestItem(id = 1) {
@@ -57,6 +62,14 @@ function makeTestDayDiet() {
     { id: 1 },
   )
 }
+
+// Create instance for testing
+const dayUseCases = createDayEditOrchestrator({
+  macroTargetAt: (d: Date) => macroTargetUseCases.macroTargetAt(d),
+  updateMeal,
+  addItemToMeal,
+  updateItemInMeal,
+})
 
 describe('DayEditdayUseCases', () => {
   describe('checkEditPermission', () => {
