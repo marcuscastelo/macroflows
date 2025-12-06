@@ -8,9 +8,9 @@ import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 // Types
-export type RecipeDTO = Database['public']['Tables']['recipes']['Row']
-export type InsertRecipeDTO = Database['public']['Tables']['recipes']['Insert']
-export type UpdateRecipeDTO = Database['public']['Tables']['recipes']['Update']
+type RecipeDTO = Database['public']['Tables']['recipes']['Row']
+type InsertRecipeDTO = Database['public']['Tables']['recipes']['Insert']
+type UpdateRecipeDTO = Database['public']['Tables']['recipes']['Update']
 
 function toInsertDTO(recipe: NewRecipe): InsertRecipeDTO {
   return {
