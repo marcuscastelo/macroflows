@@ -1,4 +1,7 @@
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import {
+  type DayUseCases,
+  dayUseCases,
+} from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
@@ -8,12 +11,7 @@ import { logging } from '~/shared/utils/logging'
  * Factory that returns meal-related use-cases.
  * @param deps.dayUseCases - injected day-use-cases provider
  */
-export function createMealUseCases(deps: {
-  dayUseCases: {
-    currentDayDiet: () => any
-    updateDayDietById: (dayId: any, newDay: any) => Promise<any>
-  }
-}) {
+export function createMealUseCases(deps: { dayUseCases: DayUseCases }) {
   const { dayUseCases } = deps
 
   return {
