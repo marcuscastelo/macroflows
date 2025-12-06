@@ -40,14 +40,6 @@ export function createTelemetry(deps?: TelemetryDeps) {
 }
 
 /**
- * Backward-compatible shim: preserve the original top-level export while allowing
- * DI consumers to call `createTelemetry` directly to inject dependencies.
- */
-const _defaultTelemetry = createTelemetry()
-
-export const initializeTelemetry = _defaultTelemetry.initializeTelemetry
-
-/**
  * Public type for DI/testing consumers.
  */
 export type TelemetryModule = ReturnType<typeof createTelemetry>

@@ -49,20 +49,6 @@ export function createProfile(deps?: { useCases?: typeof useCases }) {
 }
 
 /**
- * Backward-compatible shim: keep the original top-level named exports while
- * allowing consumers to opt into DI by calling `createProfile` directly.
- *
- * Consumers that still import `{ innerData, setInnerData, unsavedFields, setUnsavedFields }`
- * will continue to work during migration.
- */
-const _defaultProfile = createProfile()
-
-export const unsavedFields = _defaultProfile.unsavedFields
-export const setUnsavedFields = _defaultProfile.setUnsavedFields
-export const innerData = _defaultProfile.innerData
-export const setInnerData = _defaultProfile.setInnerData
-
-/**
  * Public type for the concrete profile module returned by the factory.
  */
 export type ProfileModule = ReturnType<typeof createProfile>
