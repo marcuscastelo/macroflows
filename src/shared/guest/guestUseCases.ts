@@ -45,9 +45,6 @@ export function createGuestUseCases(di: GuestDI) {
   const guestUseCases = {
     isGuestMode: () =>
       guestStore.guestModeEnabled() && guestUseCases.hasAcceptedGuestTerms(),
-    setGuestModeEnabled: (enabled: boolean) => {
-      guestStore.setGuestModeEnabled(enabled)
-    },
     hasAcceptedGuestTerms: () => {
       return guestStore.acceptedGuestTerms()
     },

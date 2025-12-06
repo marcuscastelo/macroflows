@@ -34,9 +34,7 @@ const container = createRoot(() => {
   )
 
   createEffect(() => {
-    const isGuest =
-      authUseCases().currentUserIdOrGuestId() === GUEST_USER_ID &&
-      guestUseCases().hasAcceptedGuestTerms()
+    const isGuest = guestUseCases().isGuestMode()
     setMode(isGuest ? 'guest' : 'normal')
   })
 
