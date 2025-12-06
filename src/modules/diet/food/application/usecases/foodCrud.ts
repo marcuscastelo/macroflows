@@ -1,5 +1,6 @@
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodSearchParams } from '~/modules/diet/food/domain/foodRepository'
+import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
 import {
   importFoodFromApiByEan,
   importFoodsFromApiByName,
@@ -12,102 +13,129 @@ import { formatError } from '~/shared/formatError'
 import { isBackendOutageError } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
-const foodRepository = createSupabaseFoodRepository()
-
 /**
- * Fetches foods by search params.
- * @param params - Search parameters.
- * @returns Array of foods or empty array on error.
+ * Factory that returns food-related use-cases with injected dependencies.
+ * Allows replacing the repository implementation (e.g. for guest mode or tests).
  */
-export async function fetchFoods(
-  params: FoodSearchParams = {},
-): Promise<readonly Food[]> {
-  try {
-    return await foodRepository.fetchFoods(params)
-  } catch (error) {
-    logging.error('Food application error:', error)
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return []
+export function createFoodCrud(deps: { repository: () => FoodRepository }) {
+  const foodRepository = deps.repository()
+
+  return {
+    async fetchFoods(params: FoodSearchParams = {}): Promise<readonly Food[]> {
+      try {
+        return await foodRepository.fetchFoods(params)
+      } catch (error) {
+        logging.error('Food application error:', error)
+        if (isBackendOutageError(error)) setBackendOutage(true)
+        return []
+      }
+    },
+
+    async fetchFoodsByName(
+      name: Required<Food>['name'],
+      params: FoodSearchParams = {},
+    ): Promise<readonly Food[]> {
+      try {
+        const isCached = await isSearchCached(name)
+
+        if (!isCached) {
+          await showPromise(
+            importFoodsFromApiByName(name),
+            {
+              loading: 'Importando alimentos...',
+              success: 'Alimentos importados com sucesso',
+              error: `Erro ao importar alimentos por nome: ${name}`,
+            },
+            { context: 'background' },
+          )
+        }
+
+        const foods = await showPromise(
+          foodRepository.fetchFoodsByName(name, params),
+          {
+            loading: 'Buscando alimentos por nome...',
+            success: 'Alimentos encontrados',
+            error: (error: unknown) =>
+              `Erro ao buscar alimentos por nome: ${formatError(error)}`,
+          },
+          { context: 'background' },
+        )
+
+        return foods
+      } catch (error) {
+        logging.error('Food application error:', error)
+        if (isBackendOutageError(error)) setBackendOutage(true)
+        return []
+      }
+    },
+
+    async fetchFoodByEan(
+      ean: NonNullable<Food['ean']>,
+      params: FoodSearchParams = {},
+    ): Promise<Food | null> {
+      try {
+        await showPromise(
+          importFoodFromApiByEan(ean),
+          {
+            loading: 'Importando alimento...',
+            success: 'Alimento importado com sucesso',
+            error: `Erro ao importar alimento por EAN: ${ean}`,
+          },
+          { context: 'background' },
+        )
+        return await showPromise(
+          foodRepository.fetchFoodByEan(ean, params),
+          {
+            loading: 'Buscando alimento por EAN...',
+            success: 'Alimento encontrado',
+            error: (error: unknown) =>
+              `Erro ao buscar alimento por EAN: ${formatError(error)}`,
+          },
+          { context: 'user-action' },
+        )
+      } catch (error) {
+        logging.error('Food application error:', error)
+        if (isBackendOutageError(error)) setBackendOutage(true)
+        return null
+      }
+    },
   }
 }
 
 /**
- * Fetches foods by name, importing if not cached.
- * @param name - Food name.
- * @param params - Search parameters.
- * @returns Array of foods or empty array on error.
+ * Convenience type for the concrete use-cases returned by the factory.
  */
-export async function fetchFoodsByName(
+export type FoodCrud = ReturnType<typeof createFoodCrud>
+
+/**
+ * Backward-compatible default instance (shim) used by legacy consumers.
+ * Keeps existing imports working while migrating to the container.
+ */
+const defaultRepository = createSupabaseFoodRepository()
+export const foodCrud = createFoodCrud({
+  repository: () => defaultRepository,
+})
+
+/**
+ * Backward-compatible named exports (function shims) so existing imports keep working.
+ * These delegate to the default `foodCrud` instance.
+ */
+export const fetchFoods = async (
+  params: FoodSearchParams = {},
+): Promise<readonly Food[]> => {
+  return await foodCrud.fetchFoods(params)
+}
+
+export const fetchFoodsByName = async (
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
-): Promise<readonly Food[]> {
-  try {
-    const isCached = await isSearchCached(name)
-
-    if (!isCached) {
-      await showPromise(
-        importFoodsFromApiByName(name),
-        {
-          loading: 'Importando alimentos...',
-          success: 'Alimentos importados com sucesso',
-          error: `Erro ao importar alimentos por nome: ${name}`,
-        },
-        { context: 'background' },
-      )
-    }
-
-    const foods = await showPromise(
-      foodRepository.fetchFoodsByName(name, params),
-      {
-        loading: 'Buscando alimentos por nome...',
-        success: 'Alimentos encontrados',
-        error: (error: unknown) =>
-          `Erro ao buscar alimentos por nome: ${formatError(error)}`,
-      },
-      { context: 'background' },
-    )
-
-    return foods
-  } catch (error) {
-    logging.error('Food application error:', error)
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return []
-  }
+): Promise<readonly Food[]> => {
+  return await foodCrud.fetchFoodsByName(name, params)
 }
 
-/**
- * Fetches a food by EAN, importing if not cached.
- * @param ean - Food EAN.
- * @param params - Search parameters.
- * @returns Food or null on error.
- */
-export async function fetchFoodByEan(
+export const fetchFoodByEan = async (
   ean: NonNullable<Food['ean']>,
   params: FoodSearchParams = {},
-): Promise<Food | null> {
-  try {
-    await showPromise(
-      importFoodFromApiByEan(ean),
-      {
-        loading: 'Importando alimento...',
-        success: 'Alimento importado com sucesso',
-        error: `Erro ao importar alimento por EAN: ${ean}`,
-      },
-      { context: 'background' },
-    )
-    return await showPromise(
-      foodRepository.fetchFoodByEan(ean, params),
-      {
-        loading: 'Buscando alimento por EAN...',
-        success: 'Alimento encontrado',
-        error: (error: unknown) =>
-          `Erro ao buscar alimento por EAN: ${formatError(error)}`,
-      },
-      { context: 'user-action' },
-    )
-  } catch (error) {
-    logging.error('Food application error:', error)
-    if (isBackendOutageError(error)) setBackendOutage(true)
-    return null
-  }
+): Promise<Food | null> => {
+  return await foodCrud.fetchFoodByEan(ean, params)
 }
