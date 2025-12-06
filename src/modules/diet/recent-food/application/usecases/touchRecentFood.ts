@@ -25,7 +25,11 @@ export async function touchRecentFood(recentFoodRef: RecentFoodReference) {
   })
 
   if (currentRecentFood === null) {
-    await recentFoodCrudService.insertRecentFood(newRecentFoodData)
+    const insertResult =
+      await recentFoodCrudService.insertRecentFood(newRecentFoodData)
+    if (insertResult === null) {
+      throw new Error('Failed to insert recent food record')
+    }
   } else {
     // TODO: Remove client-side user check after implementing row-level security (RLS)
     if (currentRecentFood.user_id !== authUseCases.currentUserIdOrGuestId()) {
@@ -39,9 +43,12 @@ export async function touchRecentFood(recentFoodRef: RecentFoodReference) {
       throw new Error('BUG: recentFood fetched does not match type/reference')
     }
 
-    await recentFoodCrudService.updateRecentFood(
+    const updateResult = await recentFoodCrudService.updateRecentFood(
       currentRecentFood.id,
       newRecentFoodData,
     )
+    if (updateResult === null) {
+      throw new Error('Failed to update recent food record')
+    }
   }
 }
