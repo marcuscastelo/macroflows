@@ -1,12 +1,6 @@
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
-import {
-  addItemToMeal,
-  updateItemInMeal,
-} from '~/modules/diet/meal/domain/mealOperations'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -175,13 +169,4 @@ export function createDayEditOrchestrator(deps: {
   }
 }
 
-/**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `dayUseCases` while migration proceeds.
- */
-export const dayUseCases = createDayEditOrchestrator({
-  macroTargetAt: (d: Date) => macroTargetUseCases.macroTargetAt(d),
-  updateMeal,
-  addItemToMeal,
-  updateItemInMeal,
-})
+export type DayEditOrchestrator = ReturnType<typeof createDayEditOrchestrator>
