@@ -427,3 +427,71 @@ Observações / notas rápidas
 - Estratégia aplicada: converter módulos para factories e manter shims até migrar consumidores. Isso mantém o código rodando e testes verdes durante a migração gradual.
 - Após a sua ação de "comprimir a conversa" e retomar, prossigo com Batch 3 (vou manter a estratégia padrão de manter shims para minimizar impacto — altere se quiser injetar dependências imediatamente).
 - Se preferir, posso também gerar um arquivo `.github/di-migration-checklist.md` com o mesmo checklist para tracking no repo.
+
+---
+
+Assistant migration snapshot (recorded progress)
+- Short summary
+  - Pattern applied: convert application modules to DI-friendly factories `createXxx(...)` and keep backward-compatible shims `export const xxx = createXxx(...)` while migrating consumers incrementally.
+  - Commits are small and frequent; `npm run copilot:check` (lint + tsc + tests) was run after each change set.
+
+- Batches completed (so far)
+  - Batch 0 — Preparation DI: done (container & providers ready).
+  - Batch 1 — Auth & User: done (user/auth use-cases converted & wired).
+  - Batch 2 — Diet core: done (recipes/food/meal/macro-profile converted).
+  - Batch 3 — Day-diet, template, template-search: done (factories + shims; pure template functions left unchanged).
+  - Batch 4 — Weight: partial — `weightUseCases` converted to `createWeightUseCases` + shim.
+  - Batch 5 — Toast / Recent-food / Clipboard: partial — `toastManager`, `recentFoodCrud`, `clipboardUseCases` converted to factories + shims.
+
+- Files modified (high-level)
+  - Day-diet:
+    - `src/modules/diet/day-diet/application/usecases/createBlankDay.ts` — `createCreateBlankDay` + shim.
+    - `src/modules/diet/day-diet/application/usecases/dayEditOrchestrator.ts` — `createDayEditOrchestrator` + shim.
+    - `src/modules/diet/day-diet/application/usecases/useCopyDayOperations.ts` — `createCopyDayOperations` + shim.
+  - Template / Template-search:
+    - `src/modules/diet/template/application/templateToItem.ts` — pure/domain (reviewed).
+    - `src/modules/diet/template/application/createGroupFromTemplate.ts` — pure/domain (reviewed).
+    - `src/modules/template-search/application/templateSearchLogic.ts` — pure logic (reviewed).
+    - `src/modules/template-search/application/usecases/templateSearchState.ts` — `createTemplateSearchState` + shim.
+  - Weight:
+    - `src/modules/weight/application/weight/usecases/weightUseCases.ts` — `createWeightUseCases` + shim.
+  - Toast:
+    - `src/modules/toast/application/toastManager.ts` — `createToastManager` factory; top-level wrappers call the factory at call-time to keep tests/spies working.
+  - Recent-food:
+    - `src/modules/recent-food/application/usecases/recentFoodCrud.ts` — `createRecentFoodCrud` + shim.
+  - Clipboard:
+    - `src/modules/clipboard/application/usecases/clipboardUseCases.ts` — `createClipboardUseCases` + shim.
+
+- Important commits (recent)
+  - `0d22e1f8` — batch-3 day-diet & template-search changes
+  - `2cdecde1` — docs update (marked Batch 3 completed)
+  - `207f7220` — batch-4 weight usecases factory + shim
+  - `b7247c22` — batch-5 toast manager factory + shim
+  - `5f81d81c` — batch-5 recent-food CRUD factory + shim
+  - `fbba9d19` — batch-5 clipboard usecases factory + shim
+
+- Verification status
+  - After each set of edits I ran `npm run copilot:check`. Final recorded state: all checks passed (lint/ts/tests) at the last commit; 562 tests green.
+
+- Design notes & rationale
+  - Keep shims for backward compatibility and stepwise consumer migration.
+  - Create signals/resources inside `createRoot` when needed to respect Solid lifecycle and reactivity lint.
+  - Avoid introducing barrel files (index.ts) or changing import conventions; keep absolute `~/` imports.
+  - Prefer explicit types and avoid unsafe `any` or unchecked conditionals.
+
+How to resume (exact lines you can paste to resume)
+- Minimal resume command:
+  - "Resume: continue Batch 6"
+- Specific-file resume:
+  - "Resume: migrate src/modules/observability/application/telemetry.ts"
+  - "Resume: migrate src/modules/profile/application/profile.ts"
+  - "Resume: migrate src/modules/search/application/usecases/cachedSearchCrud.ts"
+- Default behavior on resume:
+  - I will continue converting files in the chosen batch to the factory+shim pattern, run `npm run copilot:check` after each logical change, commit frequently with messages like:
+    - `refactor(di): batch-6 - <module-name> factory + shim`
+  - I will update this `DI-migration-plan.md` checklist as I complete files.
+
+Notes before you reset the conversation
+- The file `DI-migration-plan.md` is already updated to reflect Batch 3 completion.
+- If you want a separate artifact for CI tracking, tell me to generate `.github/di-migration-checklist.md` and I will produce it.
+- When you come back, paste one of the resume lines above and I will continue exactly where I left off.
