@@ -15,12 +15,6 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
-
-// Create macro overflow instance for this module
-const macroOverflowUseCases = createMacroOverflow({
-  dayUseCases,
-  macroTargetUseCases,
-})
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'
@@ -28,6 +22,12 @@ import { ItemQuantityControls } from '~/sections/item/components/ItemView/ItemEd
 import { ItemQuantityShortcuts } from '~/sections/item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
+
+// Create macro overflow instance for this module
+const macroOverflowUseCases = createMacroOverflow({
+  dayUseCases,
+  macroTargetUseCases,
+})
 
 export type ItemEditBodyProps = {
   canApply: boolean
@@ -70,8 +70,11 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       {/* Name input for GroupItem and RecipeItem */}
       <Show when={isParentItem(props.itemDraft())}>
         <div class="mb-4">
-          <label class="block text-sm text-gray-400 mb-1">Nome do item</label>
+          <label for="item-name-input" class="block text-sm text-gray-400 mb-1">
+            Nome do item
+          </label>
           <input
+            id="item-name-input"
             class={`input w-full bg-gray-800 border-gray-600 text-white ${
               !isItemNameValid(props.itemDraft().name) ? 'border-red-500' : ''
             }`}
