@@ -1,5 +1,9 @@
 import { createContext, type JSXElement, useContext } from 'solid-js'
 
+import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+
 /**
  * Minimal interfaces for commonly-used use-cases.
  * Keep these small and extend as consumers need more functionality.
@@ -60,16 +64,20 @@ export type Container = {
 export function createContainer(
   overrides: Partial<Container> = {},
 ): Readonly<Container> {
-  const defaultAuthUseCases: AuthUseCases = {
-    initializeAuth: () => {
-      /* no-op default */
-    },
-    currentUserIdOrGuestId: () => null,
-  }
+  // Create default implementations using factories. These defaults are plain
+  // objects (not signals) and are safe to reuse as the container's defaults.
+  // Consumers and tests can override any of these via `overrides`.
+  const defaultUserUseCases = createUserUseCases({
+    repository: () => createSupabaseUserRepository(),
+  })
+
+  const defaultAuthUseCases: AuthUseCases = createAuthUseCases({
+    userUseCases: () => defaultUserUseCases,
+  })
 
   const base: Container = {
     authUseCases: defaultAuthUseCases,
-    userUseCases: {},
+    userUseCases: defaultUserUseCases,
     guestUseCases: {},
     initializeWeightRealtime: undefined,
   }
