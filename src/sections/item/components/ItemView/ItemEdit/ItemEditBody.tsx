@@ -13,7 +13,14 @@ import {
   type Item,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+
+// Create macro overflow instance for this module
+const macroOverflowUseCases = createMacroOverflow({
+  dayUseCases,
+  macroTargetUseCases,
+})
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'

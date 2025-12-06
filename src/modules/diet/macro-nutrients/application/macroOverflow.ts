@@ -145,14 +145,4 @@ export function createMacroOverflow(deps?: {
   }
 }
 
-/**
- * Backward-compatible shim: preserve the previous top-level export while
- * allowing DI consumers to call `createMacroOverflow` directly to inject deps.
- */
-export const macroOverflowUseCases = createMacroOverflow()
-
-// Legacy named exports kept for backward compatibility while migration proceeds.
-export const isOverflow = macroOverflowUseCases.isOverflow
-export const getAvailableMacros = macroOverflowUseCases.getAvailableMacros
-
 export type MacroOverflowUseCases = ReturnType<typeof createMacroOverflow>

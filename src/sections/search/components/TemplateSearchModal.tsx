@@ -1,8 +1,10 @@
 import { onMount, Suspense } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -49,6 +51,12 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
+
+// Create macro overflow instance for this module
+const macroOverflow = createMacroOverflow({
+  dayUseCases,
+  macroTargetUseCases,
+})
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -161,7 +169,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = isOverflow({
+    const overflowResults = macroOverflow.isOverflow({
       item: originalAddedItem,
     })
 
