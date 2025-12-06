@@ -20,7 +20,7 @@ export function createRecentFoodRepository(): RecentFoodRepository {
   }
 }
 
-export async function fetchByUserTypeAndReferenceId(
+async function fetchByUserTypeAndReferenceId(
   userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
@@ -37,7 +37,7 @@ export async function fetchByUserTypeAndReferenceId(
   }
 }
 
-export async function fetchUserRecentFoodsAsTemplates(
+async function fetchUserRecentFoodsAsTemplates(
   userId: User['uuid'],
   search: string,
   opts?: { limit?: number },
@@ -54,7 +54,7 @@ export async function fetchUserRecentFoodsAsTemplates(
   }
 }
 
-export async function insert(input: NewRecentFood): Promise<RecentFood | null> {
+async function insert(input: NewRecentFood): Promise<RecentFood | null> {
   try {
     return await supabaseGateway.insert(input)
   } catch (error) {
@@ -63,7 +63,7 @@ export async function insert(input: NewRecentFood): Promise<RecentFood | null> {
   }
 }
 
-export async function update(
+async function update(
   id: number,
   input: NewRecentFood,
 ): Promise<RecentFood | null> {
@@ -75,7 +75,7 @@ export async function update(
   }
 }
 
-export async function deleteByReference(
+async function deleteByReference(
   userId: User['uuid'],
   type: RecentFood['type'],
   referenceId: number,
