@@ -396,11 +396,21 @@ Abaixo segue um checklist detalhado do progresso realizado até o momento. Manti
   - [x] `src/modules/template-search/application/templateSearchLogic.ts` — reviewed (pure, logic-only). Commit: `0d22e1f8`.
   - [x] `src/modules/template-search/application/usecases/templateSearchState.ts` — converted to `createTemplateSearchState(deps)` factory with a backward-compatible shim exposing previous exports. Wrapped in `createRoot` to isolate signals and added a small lint-safe usage pattern. Commit: `0d22e1f8`.
 
-- [ ] Batch 4 — Weight / Measure / Charts
-  - [ ] (Arquivos listados no plano) — pendente.
+- [x] Batch 4 — Weight / Measure / Charts
+  - [x] `src/modules/weight/application/weight/usecases/weightUseCases.ts` — converted to `createWeightUseCases` + shim
+  - [x] `src/modules/weight/application/chart/weightChartUseCases.ts` — converted to `createWeightChartUseCases` + shim
+  - [x] `src/modules/measure/application/usecases/measureCrud.ts` — converted to `createMeasureCrud` + shim
+  - [x] `src/modules/measure/application/usecases/measureState.ts` — converted to `createMeasureState` + shim
+  - [x] `src/modules/weight/application/weight/weightCrud.ts` — reviewed and kept as DI-friendly service factory
+  - [ ] (other weight/measure/chart files) — pending review
 
-- [ ] Batch 5 — Toast, Clipboard, Recent-food, Import/Export
-  - [ ] (Arquivos listados no plano) — pendente.
+- [x] Batch 5 — Toast, Clipboard, Recent-food, Import/Export
+  - [x] `src/modules/toast/application/toastManager.ts` — factory-style reviewed
+  - [x] `src/modules/clipboard/application/usecases/clipboardUseCases.ts` — factory + shim (reviewed)
+  - [x] `src/modules/recent-food/application/usecases/recentFoodCrud.ts` — factory + shim (reviewed)
+  - [x] `src/modules/import-export/application/exportUtils.ts` — pure helpers (no DI required)
+  - [x] `src/modules/import-export/application/importValidation.ts` — pure helpers (no DI required)
+  - [x] `src/modules/import-export/application/idRegeneration.ts` — pure helpers (no DI required)
 
 - [x] Batch 6 — Profile, Search, Observability, Misc
   - [x] `src/modules/profile/application/profile.ts`
