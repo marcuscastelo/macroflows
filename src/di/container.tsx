@@ -89,8 +89,14 @@ export function createContainer(
     userUseCases: () => defaultUserUseCases,
   })
 
-  // Default weight use-cases (uses the global useCases for auth/guest dependencies)
-  const defaultWeightUseCases = createWeightUseCases()
+  // Default weight use-cases - provide auth dependencies from the defaults above
+  const defaultWeightUseCases = createWeightUseCases({
+    authDeps: {
+      getCurrentUserIdOrGuestId: () =>
+        defaultAuthUseCases.currentUserIdOrGuestId?.() ?? '',
+      isGuestMode: () => false, // Default container assumes non-guest mode
+    },
+  })
 
   const base: Container = {
     authUseCases: defaultAuthUseCases,

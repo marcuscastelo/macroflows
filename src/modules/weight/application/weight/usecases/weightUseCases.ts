@@ -1,6 +1,5 @@
 import { createEffect, createRoot, onMount } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
@@ -35,14 +34,9 @@ export type WeightUseCasesDeps = {
  * DI wiring or testing with fakes is possible. When no overrides are provided,
  * the current module defaults are used (keeps backward-compatible behavior).
  */
-export function createWeightUseCases(deps?: {
-  /** Granular auth/guest dependencies (preferred over legacy useCases) */
-  authDeps?: WeightUseCasesDeps
-  /** @deprecated Use authDeps instead. Legacy useCases object for backward compatibility. */
-  useCases?: {
-    authUseCases: () => { currentUserIdOrGuestId: () => string }
-    guestUseCases: () => { isGuestMode: () => boolean }
-  }
+export function createWeightUseCases(deps: {
+  /** Granular auth/guest dependencies (required) */
+  authDeps: WeightUseCasesDeps
   createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
   createSupabaseWeightGateway?: typeof createSupabaseWeightGateway
   createGuestWeightRepository?: typeof createGuestWeightRepository
@@ -52,8 +46,7 @@ export function createWeightUseCases(deps?: {
   parseWithStack?: typeof parseWithStack
 }) {
   const {
-    authDeps: injectedAuthDeps,
-    useCases: injectedUseCases,
+    authDeps,
     createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
     createSupabaseWeightGateway: injectedCreateSupabase,
     createGuestWeightRepository: injectedCreateGuest,
@@ -61,29 +54,7 @@ export function createWeightUseCases(deps?: {
     initializeWeightRealtime: injectedInitializeRealtime,
     createWeightCrudService: injectedCreateWeightCrudService,
     parseWithStack: injectedParseWithStack,
-  } = deps ?? {}
-
-  // Resolve auth dependencies: prefer granular authDeps, fallback to legacy useCases, then global
-  const resolveAuthDeps = (): WeightUseCasesDeps => {
-    if (injectedAuthDeps) {
-      return injectedAuthDeps
-    }
-    if (injectedUseCases) {
-      return {
-        getCurrentUserIdOrGuestId: () =>
-          injectedUseCases.authUseCases().currentUserIdOrGuestId(),
-        isGuestMode: () => injectedUseCases.guestUseCases().isGuestMode(),
-      }
-    }
-    // Default: use global useCases
-    return {
-      getCurrentUserIdOrGuestId: () =>
-        useCases.authUseCases().currentUserIdOrGuestId(),
-      isGuestMode: () => useCases.guestUseCases().isGuestMode(),
-    }
-  }
-
-  const authDeps = resolveAuthDeps()
+  } = deps
 
   const localCreateLocalStorage =
     injectedCreateLocalStorage ?? createLocalStorageWeightCacheRepository
