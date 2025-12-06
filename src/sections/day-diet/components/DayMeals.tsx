@@ -1,13 +1,27 @@
 import { For } from 'solid-js'
 
 import {
-  dayUseCases,
+  createDayEditOrchestrator,
   type EditMode,
 } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+import { updateMeal } from '~/modules/diet/meal/application/meal'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
+import {
+  addItemToMeal,
+  updateItemInMeal,
+} from '~/modules/diet/meal/domain/mealOperations'
 import { showError } from '~/modules/toast/application/toastManager'
+
+// Create day edit orchestrator instance for this module
+const dayUseCases = createDayEditOrchestrator({
+  macroTargetAt: (d: Date) => macroTargetUseCases.macroTargetAt(d),
+  updateMeal,
+  addItemToMeal,
+  updateItemInMeal,
+})
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
 import { DeleteDayButton } from '~/sections/day-diet/components/DeleteDayButton'
 import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
@@ -59,7 +73,7 @@ const handleEditItem = (
     onApply: (updatedItem) => {
       dayUseCases
         .updateItemInMealOrchestrated(meal, item, updatedItem)
-        .catch((e) => {
+        .catch((e: unknown) => {
           logging.error('DayMeals item update error:', e, {
             component: 'DayMeals',
             mealId: meal.id,
@@ -122,7 +136,7 @@ const handleNewItem = (
     return
   }
 
-  dayUseCases.addItemToMealOrchestrated(meal, newItem).catch((e) => {
+  dayUseCases.addItemToMealOrchestrated(meal, newItem).catch((e: unknown) => {
     logging.error('DayMeals item add error:', e, {
       component: 'DayMeals',
       mealId: meal.id,
@@ -186,7 +200,7 @@ export default function DayMeals(props: {
               header={
                 <MealEditViewHeader
                   onUpdateMeal={(meal) => {
-                    handleUpdateMeal(meal, props).catch((e) => {
+                    handleUpdateMeal(meal, props).catch((e: unknown) => {
                       logging.error('DayMeals meal update error:', e, {
                         component: 'DayMeals',
                         mealId: meal.id,

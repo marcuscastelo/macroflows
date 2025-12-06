@@ -1,10 +1,18 @@
 import { type Accessor, createMemo } from 'solid-js'
 
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
+
+// Create macro overflow instance for this module
+const macroOverflow = createMacroOverflow({
+  dayUseCases,
+  macroTargetUseCases,
+})
 
 export type ItemViewMacrosProps = {
   item: Accessor<Item>
@@ -38,7 +46,7 @@ export function ItemViewMacros(props: ItemViewMacrosProps) {
 
     logging.debug('Creating macro overflow checker for item:', item)
 
-    return isOverflow({ item, originalItem })
+    return macroOverflow.isOverflow({ item, originalItem })
   })
 
   return (

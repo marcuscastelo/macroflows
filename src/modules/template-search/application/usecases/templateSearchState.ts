@@ -7,9 +7,10 @@ import {
 
 import { useCases } from '~/di/useCases'
 import {
-  fetchFoods,
-  fetchFoodsByName,
+  createFoodCrud,
+  type FoodCrud,
 } from '~/modules/diet/food/application/usecases/foodCrud'
+import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import {
   fetchUserRecipeByName,
   fetchUserRecipes,
@@ -25,36 +26,34 @@ import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
  *
  * This allows wiring the module via DI and avoids init-order issues.
  */
-export function createTemplateSearchState(deps: {
-  useCases: {
+export function createTemplateSearchState(deps?: {
+  useCases?: {
     authUseCases: () => { currentUserIdOrGuestId: () => string | undefined }
     userUseCases: () => {
       currentUser: () => { favorite_foods?: number[] } | null
     }
   }
-  fetchUserRecentFoods: typeof fetchUserRecentFoods
-  fetchFoods: typeof fetchFoods
-  fetchFoodsByName: typeof fetchFoodsByName
-  fetchUserRecipes: typeof fetchUserRecipes
-  fetchUserRecipeByName: typeof fetchUserRecipeByName
+  fetchUserRecentFoods?: typeof fetchUserRecentFoods
+  foodCrud?: FoodCrud
+  fetchUserRecipes?: typeof fetchUserRecipes
+  fetchUserRecipeByName?: typeof fetchUserRecipeByName
   createDebouncedSignal?: typeof createDebouncedSignal
 }) {
   // Wrap the factory body in createRoot so all signals/resources are created
   // in a tracked root scope. This satisfies Solid reactivity lint rules that
   // require reactive variables to be created/used within tracked scopes.
   return createRoot(() => {
-    const {
-      useCases: injectedUseCases,
-      fetchUserRecentFoods: injectedFetchUserRecentFoods,
-      fetchFoods: injectedFetchFoods,
-      fetchFoodsByName: injectedFetchFoodsByName,
-      fetchUserRecipes: injectedFetchUserRecipes,
-      fetchUserRecipeByName: injectedFetchUserRecipeByName,
-      createDebouncedSignal: injectedCreateDebouncedSignal,
-    } = deps
-
+    const injectedUseCases = deps?.useCases ?? useCases
+    const injectedFetchUserRecentFoods =
+      deps?.fetchUserRecentFoods ?? fetchUserRecentFoods
+    const foodCrud =
+      deps?.foodCrud ??
+      createFoodCrud({ repository: () => createSupabaseFoodRepository() })
+    const injectedFetchUserRecipes = deps?.fetchUserRecipes ?? fetchUserRecipes
+    const injectedFetchUserRecipeByName =
+      deps?.fetchUserRecipeByName ?? fetchUserRecipeByName
     const localCreateDebouncedSignal =
-      injectedCreateDebouncedSignal ?? createDebouncedSignal
+      deps?.createDebouncedSignal ?? createDebouncedSignal
 
     /* eslint-disable solid/reactivity */
     // Signals must be local constants inside the factory (no `export` here).
@@ -82,8 +81,9 @@ export function createTemplateSearchState(deps: {
             fetchUserRecipes: injectedFetchUserRecipes,
             fetchUserRecipeByName: injectedFetchUserRecipeByName,
             fetchUserRecentFoods: injectedFetchUserRecentFoods,
-            fetchFoods: injectedFetchFoods,
-            fetchFoodsByName: injectedFetchFoodsByName,
+            fetchFoods: (params) => foodCrud.fetchFoods(params),
+            fetchFoodsByName: (name, params) =>
+              foodCrud.fetchFoodsByName(name, params),
             getFavoriteFoods,
           },
         )
@@ -116,15 +116,7 @@ export function createTemplateSearchState(deps: {
  * Backward-compatible shim: keep top-level named exports working while consumers migrate.
  * We wire the factory with the existing defaults from this module's current environment.
  */
-const _defaultTemplateSearchState = createTemplateSearchState({
-  useCases,
-  fetchUserRecentFoods,
-  fetchFoods,
-  fetchFoodsByName,
-  fetchUserRecipes,
-  fetchUserRecipeByName,
-  createDebouncedSignal,
-})
+const _defaultTemplateSearchState = createTemplateSearchState()
 
 export const templateSearch = _defaultTemplateSearchState.templateSearch
 export const setTemplateSearch = _defaultTemplateSearchState.setTemplateSearch

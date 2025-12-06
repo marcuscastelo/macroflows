@@ -109,7 +109,7 @@ pnpm run test
 
 **Progress (Batch 7):**
 
-Completed:
+Completed (previous work):
 - [x] `weightUseCases` — centralized in DI container, shim removed
   - Refactored `createWeightUseCases` to accept required `authDeps` parameter
   - Removed circular `useCases` import from weightUseCases.ts
@@ -119,6 +119,24 @@ Completed:
   - Refactored `createWeightChartUseCases` to accept granular `WeightChartDeps` instead of `typeof useCases`
   - Updated consumers (WeightChartTooltip, WeightEvolution) to use `useCases.weightChartUseCases()`
 
+Completed (current work - 2025-12-06):
+- [x] `macroProfileCrudService` — shim removed (internal only, used by macroProfileUseCases)
+  - Made `createMacroProfileUseCases` use the factory directly with optional deps
+  - Removed shim export from `macroProfileCrudService.ts`
+- [x] `dayUseCases` (duplicate in dayEditOrchestrator) — removed shadowing export
+  - Removed duplicate shim from `dayEditOrchestrator.ts` that was shadowing main export
+  - Updated test to create instance using factory
+  - Updated `DayMeals.tsx` to create module-level instance
+  - Fixed TypeScript 'any' type errors in catch blocks
+- [x] `macroOverflowUseCases` — shim removed (1 consumer + 2 legacy exports)
+  - Removed shim and legacy named exports (`isOverflow`, `getAvailableMacros`)
+  - Updated consumers to create module-level instances with factory
+  - Updated `ItemEditBody.tsx`, `ItemViewMacros.tsx`, `TemplateSearchModal.tsx`
+- [x] `foodCrud` — shim removed (1 consumer + named exports)
+  - Removed shim and legacy named exports (`fetchFoods`, `fetchFoodsByName`, `fetchFoodByEan`)
+  - Updated `EANSearch.tsx` to create module-level instance
+  - Updated `templateSearchState.ts` to accept `foodCrud` as optional dependency
+
 Blocked (circular dependency):
 - [ ] `clipboardUseCases` — cannot centralize due to import chain causing circular dependency:
   - Import chain: `useCases.ts` → `clipboardUseCases` → `PasteConfirmModal` → `ItemListView` → `ItemView` → `ItemViewMacros` → `macroOverflow` → `dayUseCases` → `useCases.ts`
@@ -126,13 +144,14 @@ Blocked (circular dependency):
   - Keeping shim pattern for now.
 
 Remaining shims to evaluate (may have similar circular dependency issues):
-- `macroProfileCrudService`, `macroProfileUseCases`
-- `dayUseCases`, `createBlankDay`, `dayEditOrchestrator`
-- `foodCrud`, `recipeCrud`
-- `recipeItemUseCases`
-- `macroOverflowUseCases`, `macroTargetUseCases`
-- `mealUseCases`
-- `weightChartUseCases`
+- `macroProfileUseCases` (3 consumers)
+- `dayUseCases` (14 consumers) - high risk, needs careful planning
+- `createBlankDay` (function shim)
+- `recipeCrud` (4 consumers)
+- `recipeItemUseCases` (4 consumers)
+- `macroTargetUseCases` (4 consumers)
+- `mealUseCases` (0 direct imports, may be using through other modules)
+- `authUseCases`, `userUseCases` (already in central container)
 
 **Commits (Batch 7):**
 - `de7b3ccd` — refactor(di): batch-7 - centralize weightUseCases in DI container
@@ -141,6 +160,9 @@ Remaining shims to evaluate (may have similar circular dependency issues):
 - `ab2e709c` — refactor(di): batch-7 - make weightUseCases.authDeps required, remove circular import
 - `5f66ea6e` — docs(di): update migration plan with Batch 7 progress
 - `0021f244` — refactor(di): batch-7 - centralize weightChartUseCases in DI container
+- `ad458e2` — refactor(di): Remove macroProfileCrudService and dayUseCases shims (2025-12-06)
+- `7f26850` — refactor(di): Remove macroOverflowUseCases shim (2025-12-06)
+- `69a8491` — refactor(di): Remove foodCrud shims (2025-12-06)
 
 ---
 
