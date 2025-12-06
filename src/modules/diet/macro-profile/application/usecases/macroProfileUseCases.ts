@@ -1,5 +1,4 @@
 import {
-  createMacroProfileCrudService,
   type MacroProfileCrudService,
   macroProfileCrudService,
 } from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
