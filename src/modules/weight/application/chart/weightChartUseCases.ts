@@ -1,5 +1,4 @@
-import { useCases } from '~/di/useCases'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { useCases, type WeightUseCases } from '~/di/useCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
@@ -184,13 +183,16 @@ function calculateWeightProgress(
  * Factory that creates weight-chart related helpers.
  *
  * Allows injecting `useCases` or `weightUseCases` for testing/DI.
+ * Now uses the centralized container's weightUseCases by default.
  */
 export function createWeightChartUseCases(deps?: {
   useCases?: typeof useCases
-  weightUseCases?: typeof weightUseCases
+  weightUseCases?: WeightUseCases
 }) {
   const localUseCases = deps?.useCases ?? useCases
-  const localWeightUseCases = deps?.weightUseCases ?? weightUseCases
+  // Use centralized weightUseCases from container by default
+  const localWeightUseCases =
+    deps?.weightUseCases ?? localUseCases.weightUseCases()
 
   function desiredWeight(): number {
     return localUseCases.userUseCases().currentUser()?.desired_weight ?? 0
