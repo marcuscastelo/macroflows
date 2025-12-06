@@ -1,6 +1,19 @@
-import { useCases, type WeightUseCases } from '~/di/useCases'
+import { type WeightUseCases } from '~/di/useCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
+
+/**
+ * Granular dependencies for weight chart use-cases.
+ * These replace the full `useCases` object to avoid circular dependencies.
+ */
+export type WeightChartDeps = {
+  /** Returns the current user's desired weight */
+  getDesiredWeight: () => number
+  /** Returns the current user's diet type */
+  getDiet: () => 'cut' | 'normo' | 'bulk'
+  /** Weight use-cases for accessing weight data */
+  weightUseCases: WeightUseCases
+}
 
 /**
  * Helper: compare floats with epsilon
@@ -182,27 +195,25 @@ function calculateWeightProgress(
 /**
  * Factory that creates weight-chart related helpers.
  *
- * Allows injecting `useCases` or `weightUseCases` for testing/DI.
- * Now uses the centralized container's weightUseCases by default.
+ * Accepts granular dependencies to avoid circular dependency issues.
+ * All dependencies are required to ensure proper DI wiring.
  */
-export function createWeightChartUseCases(deps?: {
-  useCases?: typeof useCases
-  weightUseCases?: WeightUseCases
-}) {
-  const localUseCases = deps?.useCases ?? useCases
-  // Use centralized weightUseCases from container by default
-  const localWeightUseCases =
-    deps?.weightUseCases ?? localUseCases.weightUseCases()
+export function createWeightChartUseCases(deps: WeightChartDeps) {
+  const {
+    getDesiredWeight,
+    getDiet,
+    weightUseCases: localWeightUseCases,
+  } = deps
 
   function desiredWeight(): number {
-    return localUseCases.userUseCases().currentUser()?.desired_weight ?? 0
+    return getDesiredWeight()
   }
 
   function weightProgress() {
     return calculateWeightProgress(
       localWeightUseCases.weights(),
       desiredWeight(),
-      localUseCases.userUseCases().currentUser()?.diet ?? 'cut',
+      getDiet(),
     )
   }
 
@@ -247,10 +258,7 @@ export function createWeightChartUseCases(deps?: {
   }
 }
 
-/**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `weightChartUseCases`.
- */
-export const weightChartUseCases = createWeightChartUseCases()
+// Note: Shim removed - all consumers should use the centralized DI container.
+// Import via `useCases.weightChartUseCases()` from '~/di/useCases'.
 
 export type WeightChartUseCases = ReturnType<typeof createWeightChartUseCases>

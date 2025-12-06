@@ -8,7 +8,6 @@ import {
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -40,13 +39,15 @@ export function WeightEvolution() {
             />
           </div>
           <WeightProgress
-            weightProgress={weightChartUseCases.weightProgress()}
-            weightProgressText={weightChartUseCases.weightProgressText}
+            weightProgress={useCases.weightChartUseCases().weightProgress()}
+            weightProgressText={
+              useCases.weightChartUseCases().weightProgressText
+            }
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
               weights={() => useCases.weightUseCases().weights()}
-              desiredWeight={weightChartUseCases.desiredWeight()}
+              desiredWeight={useCases.weightChartUseCases().desiredWeight()}
               type={weightChartType()}
             />
           </Suspense>

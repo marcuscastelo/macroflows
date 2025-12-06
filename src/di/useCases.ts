@@ -6,6 +6,10 @@ import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import {
+  createWeightChartUseCases,
+  type WeightChartUseCases,
+} from '~/modules/weight/application/chart/weightChartUseCases'
+import {
   createWeightUseCases,
   type WeightUseCases,
 } from '~/modules/weight/application/weight/usecases/weightUseCases'
@@ -14,8 +18,8 @@ import { createGuestUseCases } from '~/shared/guest/guestUseCases'
 
 export type AppMode = 'guest' | 'normal'
 
-// Re-export WeightUseCases type for consumers
-export type { WeightUseCases }
+// Re-export use-case types for consumers
+export type { WeightChartUseCases, WeightUseCases }
 
 // TODO: Refactor global DI so that we don't need to switch repositories like this
 // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1440
@@ -81,6 +85,19 @@ const weightUseCasesInstance = createRoot(() => {
 })
 
 /**
+ * Create weight chart use-cases after weight use-cases are established.
+ * Uses granular dependencies to avoid circular dependency.
+ */
+const weightChartUseCasesInstance = createRoot(() => {
+  return createWeightChartUseCases({
+    getDesiredWeight: () =>
+      coreContainer.userUseCases().currentUser()?.desired_weight ?? 0,
+    getDiet: () => coreContainer.userUseCases().currentUser()?.diet ?? 'cut',
+    weightUseCases: weightUseCasesInstance,
+  })
+})
+
+/**
  * Full use-cases container with all modules wired.
  */
 export const useCases = {
@@ -88,4 +105,5 @@ export const useCases = {
   guestUseCases: coreContainer.guestUseCases,
   authUseCases: coreContainer.authUseCases,
   weightUseCases: () => weightUseCasesInstance,
+  weightChartUseCases: () => weightChartUseCasesInstance,
 }
