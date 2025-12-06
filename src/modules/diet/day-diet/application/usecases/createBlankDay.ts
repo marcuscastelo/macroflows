@@ -1,4 +1,3 @@
-import { useCases } from '~/di/useCases'
 import { type DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
@@ -30,10 +29,14 @@ export function createCreateBlankDay(deps: { dayUseCases: () => DayUseCases }) {
 }
 
 /**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `createBlankDay` while migration proceeds.
- * TODO: Remove DI shims and use proper container/use-case injection.
+ * Shim removed: consumers must now use the factory `createCreateBlankDay`.
+ *
+ * Example usage:
+ *   const createBlankDay = createCreateBlankDay({
+ *     dayUseCases: () => useCases.dayUseCases,
+ *   })
+ *
+ * This file exposes the factory `createCreateBlankDay`. Update any consumers
+ * that previously imported `createBlankDay` to call the factory (or obtain
+ * the instance from the DI container) before removing this comment.
  */
-export const createBlankDay = createCreateBlankDay({
-  dayUseCases: () => useCases.dayUseCases(),
-})
