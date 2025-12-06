@@ -17,14 +17,15 @@ export function createMacroTargetUseCases(deps?: {
   getEffectiveMacroProfile?: typeof getEffectiveMacroProfile
 }) {
   // Use centralized weightUseCases from container by default
-  const localWeightUseCases = deps?.weightUseCases ?? useCases.weightUseCases()
+  const localWeightUseCases = () =>
+    deps?.weightUseCases ?? useCases.weightUseCases()
   const localUserMacroProfiles = deps?.userMacroProfiles ?? userMacroProfiles
   const localGetEffectiveMacroProfile =
     deps?.getEffectiveMacroProfile ?? getEffectiveMacroProfile
 
   function macroTargetAt(day: Date): MacroNutrients | null {
     const targetDayWeight_ =
-      localWeightUseCases.effectiveAt(day)?.weight ?? null
+      localWeightUseCases().effectiveAt(day)?.weight ?? null
     const targetDayMacroProfile_ = localGetEffectiveMacroProfile(
       localUserMacroProfiles(),
       day,

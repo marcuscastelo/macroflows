@@ -1,6 +1,6 @@
 import { type JSXElement, Show } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 
@@ -38,9 +38,9 @@ export function ClipboardToggleButton(
       </svg>
 
       {/* Badge with entry count */}
-      <Show when={clipboardUseCases.entryCount() > 0}>
+      <Show when={useCases.clipboardUseCases().entryCount() > 0}>
         <span class="absolute -top-1 -right-1 badge badge-sm badge-error">
-          {clipboardUseCases.entryCount()}
+          {useCases.clipboardUseCases().entryCount()}
         </span>
       </Show>
     </Button>

@@ -20,7 +20,7 @@ export function createMacroProfileUseCases(deps?: {
   cache?: typeof cache
 }) {
   const svc = deps?.crudService?.() ?? createMacroProfileCrudService()
-  const localCache = deps?.cache ?? cache
+  const localCache = () => deps?.cache ?? cache
 
   return {
     async fetchUserMacroProfiles(
@@ -28,11 +28,11 @@ export function createMacroProfileUseCases(deps?: {
     ): Promise<readonly MacroProfile[]> {
       try {
         const profiles = await svc.fetchUserMacroProfiles(userId)
-        localCache.upsertManyToCache(profiles)
+        localCache().upsertManyToCache(profiles)
         return profiles
       } catch (error) {
         logging.error('MacroProfile fetch error:', error)
-        localCache.removeFromCache({ by: 'user_id', value: userId })
+        localCache().removeFromCache({ by: 'user_id', value: userId })
         return []
       }
     },
@@ -43,7 +43,7 @@ export function createMacroProfileUseCases(deps?: {
       try {
         const profile = await svc.insertMacroProfile(newMacroProfile)
         if (profile !== null) {
-          localCache.upsertToCache(profile)
+          localCache().upsertToCache(profile)
         }
         return profile
       } catch (error) {
@@ -62,7 +62,7 @@ export function createMacroProfileUseCases(deps?: {
           newMacroProfile,
         )
         if (profile !== null) {
-          localCache.upsertToCache(profile)
+          localCache().upsertToCache(profile)
         }
         return profile
       } catch (error) {
@@ -76,7 +76,7 @@ export function createMacroProfileUseCases(deps?: {
     ): Promise<void> {
       try {
         await svc.deleteMacroProfile(macroProfileId)
-        localCache.removeFromCache({ by: 'id', value: macroProfileId })
+        localCache().removeFromCache({ by: 'id', value: macroProfileId })
       } catch (error) {
         logging.error('MacroProfile delete error:', error)
       }

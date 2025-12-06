@@ -1,6 +1,6 @@
 import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -106,7 +106,9 @@ export function MealEditViewHeader(props: {
       class="flex"
       tabindex={0}
       onPaste={() =>
-        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        useCases
+          .clipboardUseCases()
+          .confirmPaste(clipboardPayloadSchema, onPaste)
       }
     >
       <div class="my-2">
@@ -118,9 +120,11 @@ export function MealEditViewHeader(props: {
           canCopy={meal().items.length > 0}
           canPaste={true}
           canClear={meal().items.length > 0}
-          onCopy={() => clipboardUseCases.copy(meal())}
+          onCopy={() => useCases.clipboardUseCases().copy(meal())}
           onPaste={() =>
-            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+            useCases
+              .clipboardUseCases()
+              .confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={onClearItems}
         />
@@ -148,7 +152,7 @@ export function MealEditViewContent(props: {
       handlers={{
         onEdit: props.onEditItem,
         onCopy: (item) => {
-          clipboardUseCases.copy(item)
+          useCases.clipboardUseCases().copy(item)
         },
         onDelete: (item) => {
           openDeleteConfirmModal({

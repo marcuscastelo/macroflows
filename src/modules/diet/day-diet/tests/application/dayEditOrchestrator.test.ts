@@ -25,6 +25,7 @@ vi.mock('~/modules/diet/meal/application/meal', () => ({
 
 vi.mock('~/shared/utils/date/dateUtils', () => ({
   stringToDate: vi.fn(() => new Date('2023-01-01')),
+  getTodayYYYYMMDD: vi.fn(() => '2023-01-01'),
 }))
 
 function makeTestItem(id = 1) {

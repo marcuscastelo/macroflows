@@ -8,6 +8,7 @@ import {
 } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
+import { type AuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { createDayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
@@ -30,9 +31,9 @@ import { logging } from '~/shared/utils/logging'
  * signals and stores properly isolated. Consumers should inject or call the
  * factory (via the backward-compatible shim below) to obtain the use-cases.
  */
-export function createDayUseCases() {
+export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
   return createRoot(() => {
-    const authUseCases = useCases.authUseCases()
+    const authUseCases = () => deps.authUseCases()
     const dayChangeStore = createDayChangeStore()
     const dayStateStore = createDayStateStore()
     const dayCacheStore = createDayCacheStore()
@@ -213,7 +214,7 @@ export function createDayUseCases() {
     }
 
     createEffect(() => {
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authUseCases().currentUserIdOrGuestId()
       const currentTargetDay = dayStateStore.targetDay()
 
       dayCacheStore.runCacheManagement({
@@ -225,7 +226,7 @@ export function createDayUseCases() {
     })
 
     createEffect(() => {
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authUseCases().currentUserIdOrGuestId()
       logging.debug(`User changed to ${userId}, resetting target day`)
       runTargetDayReset()
     })
@@ -242,6 +243,9 @@ export function createDayUseCases() {
  * Backward-compatible shim kept for legacy consumers.
  * Consumers may continue to import `dayUseCases` while migration proceeds.
  */
-export const dayUseCases = createDayUseCases()
+export const dayUseCases = () =>
+  createDayUseCases({
+    authUseCases: () => useCases.authUseCases(),
+  })
 
 export type DayUseCases = ReturnType<typeof createDayUseCases>

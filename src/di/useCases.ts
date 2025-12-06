@@ -1,6 +1,7 @@
 import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { createClipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -98,6 +99,13 @@ const weightChartUseCasesInstance = createRoot(() => {
 })
 
 /**
+ * Create clipboard use-cases after core container is established.
+ */
+const clipboardUseCasesInstance = createRoot(() => {
+  return createClipboardUseCases()
+})
+
+/**
  * Full use-cases container with all modules wired.
  */
 export const useCases = {
@@ -106,4 +114,5 @@ export const useCases = {
   authUseCases: coreContainer.authUseCases,
   weightUseCases: () => weightUseCasesInstance,
   weightChartUseCases: () => weightChartUseCasesInstance,
+  clipboardUseCases: () => clipboardUseCasesInstance,
 }

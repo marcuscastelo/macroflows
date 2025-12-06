@@ -6,7 +6,7 @@ import {
   Show,
 } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import { createFoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
@@ -120,7 +120,7 @@ export function EANSearch(props: EANSearchProps) {
                         // TODO : default handlers for ItemView
                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
-                          clipboardUseCases.copy(item)
+                          useCases.clipboardUseCases().copy(item)
                         },
                       }}
                       mode="read-only"

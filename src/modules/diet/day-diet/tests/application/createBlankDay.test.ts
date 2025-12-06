@@ -18,6 +18,8 @@ vi.mock('~/modules/diet/day-diet/domain/defaultMeals', () => ({
 vi.mock('~/modules/toast/application/toastManager', () => ({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   showPromise: vi.fn((promise) => promise), // Pass through the promise
+  showSuccess: vi.fn(),
+  showError: vi.fn(),
 }))
 
 describe('createBlankDay', () => {

@@ -1,7 +1,6 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -193,10 +192,12 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={() => clipboardUseCases.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+          onCopy={() => useCases.clipboardUseCases().copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
           // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1358
           onPaste={() =>
-            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+            useCases
+              .clipboardUseCases()
+              .confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={() => {}} // Empty function since canClear is false
         />
@@ -206,7 +207,9 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         class="mt-3 space-y-2"
         tabindex={0}
         onPaste={() =>
-          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+          useCases
+            .clipboardUseCases()
+            .confirmPaste(clipboardPayloadSchema, onPaste)
         }
       >
         <For each={children()}>
@@ -219,7 +222,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onEditChild={props.onEditChild}
               onCopyChild={(childToCopy) => {
                 // Copy the specific child item to clipboard
-                clipboardUseCases.copy(childToCopy)
+                useCases.clipboardUseCases().copy(childToCopy)
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
@@ -341,7 +344,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
       props.onCopyChild(props.child)
     } else {
       // Fallback: copy to clipboard directly
-      clipboardUseCases.copy(props.child)
+      useCases.clipboardUseCases().copy(props.child)
     }
   }
 
