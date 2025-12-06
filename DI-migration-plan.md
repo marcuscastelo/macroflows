@@ -107,6 +107,36 @@ pnpm run test
 - Remove backward-compat shims as consumers migrate.
 - Remove dead imports, run full lint & test again.
 
+**Progress (Batch 7):**
+
+Completed:
+- [x] `weightUseCases` — centralized in DI container, shim removed
+  - Refactored `createWeightUseCases` to accept required `authDeps` parameter
+  - Removed circular `useCases` import from weightUseCases.ts
+  - Updated all consumers (8 files) to use `useCases.weightUseCases()`
+  - Updated `container.tsx` to provide `authDeps` when creating default weight use-cases
+
+Blocked (circular dependency):
+- [ ] `clipboardUseCases` — cannot centralize due to import chain causing circular dependency:
+  - Import chain: `useCases.ts` → `clipboardUseCases` → `PasteConfirmModal` → `ItemListView` → `ItemView` → `ItemViewMacros` → `macroOverflow` → `dayUseCases` → `useCases.ts`
+  - This requires refactoring `macroOverflow` to not import `dayUseCases` at module level, which is out of scope for this batch.
+  - Keeping shim pattern for now.
+
+Remaining shims to evaluate (may have similar circular dependency issues):
+- `macroProfileCrudService`, `macroProfileUseCases`
+- `dayUseCases`, `createBlankDay`, `dayEditOrchestrator`
+- `foodCrud`, `recipeCrud`
+- `recipeItemUseCases`
+- `macroOverflowUseCases`, `macroTargetUseCases`
+- `mealUseCases`
+- `weightChartUseCases`
+
+**Commits (Batch 7):**
+- `de7b3ccd` — refactor(di): batch-7 - centralize weightUseCases in DI container
+- `861518ea` — refactor(di): batch-7 - migrate weightUseCases consumers to use container
+- `696725b4` — refactor(di): batch-7 - remove weightUseCases backward-compatible shim
+- `ab2e709c` — refactor(di): batch-7 - make weightUseCases.authDeps required, remove circular import
+
 ---
 
 ## Per-file change template (concrete before -> after)
