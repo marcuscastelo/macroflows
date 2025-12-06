@@ -150,4 +150,9 @@ export function createMacroOverflow(deps?: {
  * allowing DI consumers to call `createMacroOverflow` directly to inject deps.
  */
 export const macroOverflowUseCases = createMacroOverflow()
+
+// Legacy named exports kept for backward compatibility while migration proceeds.
+export const isOverflow = macroOverflowUseCases.isOverflow
+export const getAvailableMacros = macroOverflowUseCases.getAvailableMacros
+
 export type MacroOverflowUseCases = ReturnType<typeof createMacroOverflow>
