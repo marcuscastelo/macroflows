@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import {
   createNewFood,
   type Food,
@@ -49,13 +50,11 @@ vi.mock('~/shared/utils/logging', () => ({
 import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { logging } from '~/shared/utils/logging'
 
 const mockDeleteRecentFoodByReference = vi.mocked(deleteRecentFoodByReference)
 const mockDebouncedTab = vi.mocked(debouncedTab)
 const mockShowPromise = vi.mocked(showPromise)
-const mockCurrentUserId = vi.mocked(currentUserId)
 const mockLogging = vi.mocked(logging)
 
 describe('RemoveFromRecentButton Logic', () => {
@@ -67,9 +66,9 @@ describe('RemoveFromRecentButton Logic', () => {
       name: 'Test Food',
       ean: '1234567890',
       macros: createMacroNutrients({
-        protein: 5,
-        carbs: 10,
-        fat: 5,
+        proteinInGrams: 5,
+        carbsInGrams: 10,
+        fatInGrams: 5,
       }),
     }),
     { id: 1 },
@@ -87,7 +86,7 @@ describe('RemoveFromRecentButton Logic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockCurrentUserId.mockReturnValue(mockUserId)
+    vi.spyOn(authUseCases, 'currentUserIdOrGuestId').mockReturnValue(mockUserId)
     mockDebouncedTab.mockReturnValue('recent')
     mockShowPromise.mockImplementation((promise) => promise)
     mockDeleteRecentFoodByReference.mockResolvedValue(true)
@@ -183,6 +182,7 @@ describe('RemoveFromRecentButton Logic', () => {
         expect.objectContaining({
           loading: 'Removendo item da lista de recentes...',
           success: 'Item removido da lista de recentes com sucesso!',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           error: expect.any(Function),
         }),
       )

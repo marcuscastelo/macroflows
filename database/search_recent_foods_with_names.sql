@@ -76,7 +76,7 @@ BEGIN
       f.ean as template_ean,
       f.source as template_source,
       f.macros::jsonb as template_macros,
-      r.owner as template_owner,
+      r.user_id as template_owner,
       r.items as template_items,
       r.prepared_multiplier as template_prepared_multiplier
     FROM public.recent_foods rf

@@ -9,25 +9,22 @@ import {
 } from 'solid-js'
 
 import {
-  insertMacroProfile,
-  updateMacroProfile,
-} from '~/modules/diet/macro-profile/application/usecases/macroProfileCrud'
+  CARBO_CALORIES,
+  FAT_CALORIES,
+  PROTEIN_CALORIES,
+} from '~/modules/diet/macro-nutrients/domain/macroExt'
+import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import {
   createNewMacroProfile,
   type MacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
+import { openRestoreProfileModal } from '~/modules/diet/macro-profile/ui/RestoreProfileModal'
+import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { showError } from '~/modules/toast/application/toastManager'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Button } from '~/sections/common/components/buttons/Button'
-import { openRestoreProfileModal } from '~/shared/modal/helpers/specializedModalHelpers'
 import { dateToYYYYMMDD, getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { calcCalories } from '~/shared/utils/macroMath'
-
-const CARBO_CALORIES = 4 as const
-const PROTEIN_CALORIES = 4 as const
-const FAT_CALORIES = 9 as const
 
 export type MacroRepresentation = {
   name: string
@@ -44,28 +41,28 @@ const calculateMacroRepresentation = (
   >,
   weight: number,
 ) => {
-  const targetGrams = calculateMacroTarget(weight, profile)
-  const calories = calcCalories(targetGrams)
+  const targetMacros = MacroTargetExt.of(profile).forWeight(weight)
+  const caloriesPercentages = targetMacros.caloriesPercentages()
 
   return {
     carbs: {
       name: 'Carboidratos',
-      percentage: (targetGrams.carbs * 4) / calories,
-      grams: targetGrams.carbs,
+      percentage: caloriesPercentages.carbs,
+      grams: targetMacros.carbsInGrams(),
       gramsPerKg: profile.gramsPerKgCarbs,
       calorieMultiplier: CARBO_CALORIES,
     },
     protein: {
       name: 'Proteínas',
-      percentage: (targetGrams.protein * 4) / calories,
-      grams: targetGrams.protein,
+      percentage: caloriesPercentages.protein,
+      grams: targetMacros.proteinInGrams(),
       gramsPerKg: profile.gramsPerKgProtein,
       calorieMultiplier: PROTEIN_CALORIES,
     },
     fat: {
       name: 'Gorduras',
-      percentage: (targetGrams.fat * 9) / calories,
-      grams: targetGrams.fat,
+      percentage: caloriesPercentages.fat,
+      grams: targetMacros.fatInGrams(),
       gramsPerKg: profile.gramsPerKgFat,
       calorieMultiplier: FAT_CALORIES,
     },
@@ -99,33 +96,35 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
     return
   } else if (
     profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
-                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1300
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1300
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Updating profile', profile)
 
     // Same day, update
-    updateMacroProfile(
-      profile.id,
-      createNewMacroProfile({
-        user_id: profile.user_id,
-        target_day: profile.target_day,
-        gramsPerKgCarbs: profile.gramsPerKgCarbs,
-        gramsPerKgProtein: profile.gramsPerKgProtein,
-        gramsPerKgFat: profile.gramsPerKgFat,
-      }),
-    ).catch((error) => {
-      showError(error, {}, 'Erro ao atualizar perfil de macro')
-    })
+    macroProfileUseCases
+      .updateMacroProfile(
+        profile.id,
+        createNewMacroProfile({
+          user_id: profile.user_id,
+          target_day: profile.target_day,
+          gramsPerKgCarbs: profile.gramsPerKgCarbs,
+          gramsPerKgProtein: profile.gramsPerKgProtein,
+          gramsPerKgFat: profile.gramsPerKgFat,
+        }),
+      )
+      .catch((error) => {
+        showError(error, {}, 'Erro ao atualizar perfil de macro')
+      })
   } else if (
     profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
-                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1299
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1299
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Inserting profile', profile)
 
     // Past day, insert with new date
-    void insertMacroProfile(
+    void macroProfileUseCases.insertMacroProfile(
       createNewMacroProfile({
         ...profile,
         target_day: new Date(getTodayYYYYMMDD()),
@@ -142,8 +141,10 @@ export function MacroTarget(props: MacroTargetProps) {
   )
 
   const targetCalories = createMemo(() => {
-    const grams = calculateMacroTarget(props.weight(), props.currentProfile())
-    const calories = Math.round(calcCalories(grams) * 100) / 100
+    const macros = MacroTargetExt.of(props.currentProfile()).forWeight(
+      props.weight(),
+    )
+    const calories = Math.round(macros.calories() * 100) / 100
     return calories.toString() + ' kcal'
   })
 

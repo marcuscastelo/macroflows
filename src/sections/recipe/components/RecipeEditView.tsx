@@ -1,10 +1,14 @@
-// TODO: Unify Recipe and Recipe components into a single component?
-
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
-import { z } from 'zod/v4'
 
-import { mealSchema } from '~/modules/diet/meal/domain/meal'
-import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import {
+  type ClipboardPayload,
+  clipboardPayloadSchema,
+} from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
+import { RecipeExt } from '~/modules/diet/recipe/domain/recipeExt'
 import {
   addItemsToRecipe,
   clearRecipeItems,
@@ -13,22 +17,16 @@ import {
   updateRecipePreparedMultiplier,
 } from '~/modules/diet/recipe/domain/recipeOperations'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { showError } from '~/modules/toast/application/toastManager'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { FloatInput } from '~/sections/common/components/FloatInput'
 import { PreparedQuantity } from '~/sections/common/components/PreparedQuantity'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
 import { useFloatField } from '~/sections/common/hooks/useField'
+import { ItemListView } from '~/sections/item/components/ItemListView'
+import { SingleItemConversionIndicator } from '~/sections/recipe/components/SingleItemConversionIndicator'
 import { useRecipeEditContext } from '~/sections/recipe/context/RecipeEditContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
-import { openClearItemsConfirmModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { regenerateId } from '~/shared/utils/idUtils'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
 import { logging } from '~/shared/utils/logging'
-import { calcRecipeCalories } from '~/shared/utils/macroMath'
 
 export type RecipeEditViewProps = {
   recipe: Accessor<Recipe>
@@ -53,55 +51,15 @@ export type RecipeEditViewProps = {
 export function RecipeEditHeader(props: {
   onUpdateRecipe: (Recipe: Recipe) => void
 }) {
-  const acceptedClipboardSchema = mealSchema
-    .or(recipeSchema)
-    .or(unifiedItemSchema)
-    .or(z.array(unifiedItemSchema))
-
   const { recipe } = useRecipeEditContext()
 
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => recipe(),
-      onPaste: (data) => {
-        // Helper function to check if an object is a UnifiedItem
-        const isUnifiedItem = (obj: unknown): obj is UnifiedItem => {
-          return (
-            typeof obj === 'object' &&
-            obj !== null &&
-            '__type' in obj &&
-            obj.__type === 'UnifiedItem'
-          )
-        }
+  const onPaste = (data: ClipboardPayload) => {
+    const itemsToAdd = ClipboardPayloadExt.extractItems(data)
+    const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
+    props.onUpdateRecipe(newRecipe)
+  }
 
-        // Check if data is array of UnifiedItems
-        if (Array.isArray(data) && data.every(isUnifiedItem)) {
-          const itemsToAdd = data
-            .filter((item) => item.reference.type === 'food') // Only food items in recipes
-            .map((item) => regenerateId(item))
-          const newRecipe = addItemsToRecipe(recipe(), itemsToAdd)
-          props.onUpdateRecipe(newRecipe)
-          return
-        }
-
-        // Check if data is single UnifiedItem
-        if (isUnifiedItem(data)) {
-          if (data.reference.type === 'food') {
-            const item = data
-            const regeneratedItem = regenerateId(item)
-            const newRecipe = addItemsToRecipe(recipe(), [regeneratedItem])
-            props.onUpdateRecipe(newRecipe)
-          }
-          return
-        }
-
-        // Handle other supported clipboard formats
-        logging.warn('Unsupported paste format:', data)
-      },
-    })
-
-  const recipeCalories = calcRecipeCalories(recipe())
+  const recipeCalories = RecipeExt.of(recipe()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
     e.preventDefault()
@@ -115,17 +73,25 @@ export function RecipeEditHeader(props: {
   }
 
   return (
-    <div class="flex">
+    <div
+      class="flex"
+      tabindex={0}
+      onPaste={() =>
+        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+      }
+    >
       <div class="my-2">
         <h5 class="text-3xl text-blue-500">{recipe().name}</h5>
         <p class="italic text-gray-400">{recipeCalories.toFixed(0)}kcal</p>
       </div>
       <ClipboardActionButtons
-        canCopy={!hasValidPastableOnClipboard() && recipe().items.length > 0}
-        canPaste={hasValidPastableOnClipboard()}
+        canCopy={recipe().items.length > 0}
+        canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={handleCopy}
-        onPaste={handlePaste}
+        onCopy={() => clipboardUseCases.copy(recipe())}
+        onPaste={() =>
+          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        }
         onClear={onClearItems}
       />
     </div>
@@ -137,7 +103,6 @@ export function RecipeEditContent(props: {
   onNewItem: () => void
 }) {
   const { recipe, setRecipe } = useRecipeEditContext()
-  const clipboard = useClipboard()
 
   return (
     <>
@@ -152,17 +117,17 @@ export function RecipeEditContent(props: {
         }}
         value={recipe().name}
       />
-      <UnifiedItemListView
+      <ItemListView
         items={() => [...recipe().items]}
         mode="edit"
         handlers={{
-          onEdit: (unifiedItem: UnifiedItem) => {
-            props.onEditItem(unifiedItem)
+          onEdit: (Item: Item) => {
+            props.onEditItem(Item)
           },
-          onCopy: (unifiedItem: UnifiedItem) => {
-            clipboard.write(JSON.stringify(unifiedItem))
+          onCopy: (Item: Item) => {
+            clipboardUseCases.copy(Item)
           },
-          onDelete: (item: UnifiedItem) => {
+          onDelete: (item: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), item.id))
           },
         }}
@@ -181,12 +146,26 @@ export function RecipeEditContent(props: {
             )}
             preparedMultiplier={recipe().prepared_multiplier}
             onPreparedQuantityChange={({ newMultiplier }) => {
-              const newRecipe = updateRecipePreparedMultiplier(
-                recipe(),
-                newMultiplier(),
-              )
+              try {
+                const newRecipe = updateRecipePreparedMultiplier(
+                  recipe(),
+                  newMultiplier(),
+                )
 
-              setRecipe(newRecipe)
+                setRecipe(newRecipe)
+              } catch (error) {
+                logging.error(
+                  'RecipeEditView prepared quantity update error:',
+                  error,
+                  { component: 'RecipeEditView', recipeId: recipe().id },
+                )
+                showError(
+                  error instanceof Error
+                    ? error
+                    : new Error('Multiplicador deve ser um número positivo'),
+                  { context: 'user-action' },
+                )
+              }
             }}
           />
           <div class="text-gray-400 ml-1">Peso (pronto)</div>
@@ -196,6 +175,7 @@ export function RecipeEditContent(props: {
           <div class="text-gray-400 ml-1">Mult.</div>
         </div>
       </div>
+      <SingleItemConversionIndicator />
     </>
   )
 }
@@ -256,12 +236,26 @@ function PreparedMultiplier() {
           event.target.select()
         }}
         onFieldCommit={(newMultiplier) => {
-          const newRecipe = updateRecipePreparedMultiplier(
-            recipe(),
-            newMultiplier ?? 1,
-          )
+          try {
+            const newRecipe = updateRecipePreparedMultiplier(
+              recipe(),
+              newMultiplier ?? 1,
+            )
 
-          setRecipe(newRecipe)
+            setRecipe(newRecipe)
+          } catch (error) {
+            logging.error(
+              'RecipeEditView prepared multiplier commit error:',
+              error,
+              { component: 'RecipeEditView', recipeId: recipe().id },
+            )
+            showError(
+              error instanceof Error
+                ? error
+                : new Error('Multiplicador deve ser um número positivo'),
+              { context: 'user-action' },
+            )
+          }
         }}
         style={{ width: '100%' }}
       />

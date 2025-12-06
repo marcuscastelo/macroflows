@@ -1,33 +1,29 @@
-import { type Accessor, createEffect, type JSXElement, Show } from 'solid-js'
-import { z } from 'zod/v4'
+import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
+import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import {
+  type ClipboardPayload,
+  clipboardPayloadSchema,
+} from '~/modules/clipboard/domain/clipboardEntry'
+import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { type Meal } from '~/modules/diet/meal/domain/meal'
+import { MealExt } from '~/modules/diet/meal/domain/mealExt'
 import {
   addItemsToMeal,
   clearMealItems,
   removeItemFromMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import {
-  type UnifiedItem,
-  unifiedItemSchema,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
-import { useClipboard } from '~/sections/common/hooks/useClipboard'
-import { useCopyPasteActions } from '~/sections/common/hooks/useCopyPasteActions'
+import { ItemListView } from '~/sections/item/components/ItemListView'
 import {
   MealContextProvider,
   useMealContext,
 } from '~/sections/meal/context/MealContext'
-import { UnifiedItemListView } from '~/sections/unified-item/components/UnifiedItemListView'
-import {
-  openClearItemsConfirmModal,
-  openDeleteConfirmModal,
-} from '~/shared/modal/helpers/specializedModalHelpers'
-import { regenerateId } from '~/shared/utils/idUtils'
+import { openClearItemsConfirmModal } from '~/shared/modal/ui/ClearItemsConfirmModal'
+import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
 import { logging } from '~/shared/utils/logging'
-import { calcMealCalories } from '~/shared/utils/macroMath'
 
 // TODO: Remove deprecated props and their usages
 export type MealEditViewProps = {
@@ -85,80 +81,14 @@ export function MealEditViewHeader(props: {
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const acceptedClipboardSchema = mealSchema
-    .or(recipeSchema)
-    .or(unifiedItemSchema)
-    .or(z.array(unifiedItemSchema))
 
-  const { handleCopy, handlePaste, hasValidPastableOnClipboard } =
-    useCopyPasteActions({
-      acceptedClipboardSchema,
-      getDataToCopy: () => meal(),
-      onPaste: (data) => {
-        // Check if data is already UnifiedItem(s) and handle directly
-        if (Array.isArray(data)) {
-          const firstItem = data[0]
-          if (firstItem && '__type' in firstItem) {
-            // Handle array of UnifiedItems - type is already validated by schema
-            const unifiedItemsToAdd = data.map((item) => ({
-              ...item,
-              id: regenerateId(item).id,
-            }))
+  const onPaste = (data: ClipboardPayload) => {
+    const itemsToAdd = ClipboardPayloadExt.extractItems(data)
+    const updatedMeal = addItemsToMeal(meal(), itemsToAdd)
+    props.onUpdateMeal(updatedMeal)
+  }
 
-            // Update the meal with all items at once
-            const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
-            props.onUpdateMeal(updatedMeal)
-            return
-          }
-        }
-
-        if (
-          typeof data === 'object' &&
-          '__type' in data &&
-          data.__type === 'Meal'
-        ) {
-          // Handle pasted Meal - extract its items and add them to current meal
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          const mealData = data as Meal
-          logging.debug('Pasting meal with items:', { mealData })
-          const unifiedItemsToAdd = mealData.items.map((item) => ({
-            ...item,
-            id: regenerateId(item).id,
-          }))
-          logging.debug('Items to add:', { unifiedItemsToAdd })
-
-          // Update the meal with all items at once
-          const updatedMeal = addItemsToMeal(meal(), unifiedItemsToAdd)
-          props.onUpdateMeal(updatedMeal)
-          return
-        }
-
-        if (
-          typeof data === 'object' &&
-          '__type' in data &&
-          data.__type === 'UnifiedItem'
-        ) {
-          // Handle single UnifiedItem - type is already validated by schema
-          const regeneratedItem = {
-            ...data,
-            id: regenerateId(data).id,
-          }
-
-          // Update the meal with the single item
-          const updatedMeal = addItemsToMeal(meal(), [regeneratedItem])
-          props.onUpdateMeal(updatedMeal)
-          return
-        }
-
-        // Handle other types supported by schema (recipes, etc.)
-        // Since schema validation passed, this should be a recipe
-        // For now, we'll skip unsupported formats in paste
-        // TODO: Add proper recipe-to-items conversion if needed
-        logging.warn('Unsupported paste format:', { data })
-      },
-    })
-
-  const mealCalories = () => calcMealCalories(meal())
+  const mealCalories = () => MealExt.of(meal()).macros().calories()
 
   const onClearItems = (e: MouseEvent) => {
     e.preventDefault()
@@ -172,38 +102,39 @@ export function MealEditViewHeader(props: {
   }
 
   return (
-    <Show when={meal()}>
-      {(mealSignal) => (
-        <div class="flex">
-          <div class="my-2">
-            <h5 class="text-3xl">{mealSignal().name}</h5>
-            <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
-          </div>
-          {props.mode !== 'summary' && (
-            <ClipboardActionButtons
-              canCopy={
-                !hasValidPastableOnClipboard() && mealSignal().items.length > 0
-              }
-              canPaste={hasValidPastableOnClipboard()}
-              canClear={mealSignal().items.length > 0}
-              onCopy={handleCopy}
-              onPaste={handlePaste}
-              onClear={onClearItems}
-            />
-          )}
-        </div>
+    <div
+      class="flex"
+      tabindex={0}
+      onPaste={() =>
+        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+      }
+    >
+      <div class="my-2">
+        <h5 class="text-3xl">{meal().name}</h5>
+        <p class="italic text-gray-400">{mealCalories().toFixed(0)}kcal</p>
+      </div>
+      {props.mode !== 'summary' && (
+        <ClipboardActionButtons
+          canCopy={meal().items.length > 0}
+          canPaste={true}
+          canClear={meal().items.length > 0}
+          onCopy={() => clipboardUseCases.copy(meal())}
+          onPaste={() =>
+            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+          }
+          onClear={onClearItems}
+        />
       )}
-    </Show>
+    </div>
   )
 }
 
 export function MealEditViewContent(props: {
-  onEditItem: (item: UnifiedItem) => void
+  onEditItem: (item: Item) => void
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
   const { meal } = useMealContext()
-  const clipboard = useClipboard()
 
   logging.debug('meal.value:', meal())
 
@@ -212,12 +143,12 @@ export function MealEditViewContent(props: {
   })
 
   return (
-    <UnifiedItemListView
+    <ItemListView
       items={() => meal().items}
       handlers={{
         onEdit: props.onEditItem,
         onCopy: (item) => {
-          clipboard.write(JSON.stringify(item))
+          clipboardUseCases.copy(item)
         },
         onDelete: (item) => {
           openDeleteConfirmModal({

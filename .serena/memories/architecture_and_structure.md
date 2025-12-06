@@ -9,13 +9,13 @@ The project follows a strict 3-layer Domain-Driven Design (DDD) architecture:
   - Framework-agnostic
   - Uses Zod schemas for validation and type inference
   - Entities have `__type` discriminators for type safety
-  - NEVER imports side-effect utilities (handleApiError, logging, toasts)
-  - Only throws pure domain errors with context
+  - NEVER imports side-effect utilities (showError, logging, toasts)
+  - Only throws pure errors with descriptive messages and context via `cause`
 
 ### 2. Application Layer (`modules/*/application/`)
 - **Purpose**: SolidJS resources, signals, and orchestration logic
 - **Characteristics**:
-  - Must always catch domain errors and call `handleApiError` with full context
+  - Catches domain errors and uses `showError` for toasts and `logging` for telemetry
   - Manages global reactive state using `createSignal`/`createEffect`
   - Coordinates between UI and infrastructure layers
   - Handles all side effects and user feedback (toasts, notifications)

@@ -1,210 +1,41 @@
-import { createEffect, createSignal } from 'solid-js'
-
-import { showPromise } from '~/modules/toast/application/toastManager'
-import {
-  demoteUserToNewUser,
-  type NewUser,
-  type User,
-} from '~/modules/user/domain/user'
-import {
-  loadUserIdFromLocalStorage,
-  saveUserIdToLocalStorage,
-} from '~/modules/user/infrastructure/localStorage/localStorageUserRepository'
-import {
-  createSupabaseUserRepository,
-  setupUserRealtimeSubscription,
-} from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { showError } from '~/modules/toast/application/toastManager'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
+import { demoteUserToNewUser } from '~/modules/user/domain/user'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { logging } from '~/shared/utils/logging'
-
-const userRepository = createSupabaseUserRepository()
-
-export const [users, setUsers] = createSignal<readonly User[]>([])
-
-export const [currentUser, setCurrentUser] = createSignal<User | null>(null)
-
-export const [currentUserId, setCurrentUserId] = createSignal<User['uuid']>(
-  'a141dbbd-d33b-4a90-918d-cbaddc769c73',
-)
-
-createEffect(() => {
-  setCurrentUserId(loadUserIdFromLocalStorage())
-  void showPromise(
-    fetchCurrentUser(),
-    {
-      loading: 'Carregando usuário atual...',
-      success: 'Usuário atual carregado com sucesso',
-      error: 'Falha ao carregar usuário atual',
-    },
-    { context: 'background' },
-  )
-})
-
-function bootstrap() {
-  fetchUsers().catch((error) => {
-    logging.error('User application error:', error)
-  })
-}
-
-/**
- * At app start, fetch all users
- */
-createEffect(() => {
-  bootstrap()
-})
-
-/**
- * When realtime event occurs, fetch all users again
- */
-setupUserRealtimeSubscription(() => {
-  bootstrap()
-})
-
-/**
- * Fetches all users and sets current user.
- * @returns Array of users or empty array on error.
- */
-export async function fetchUsers(): Promise<readonly User[]> {
-  try {
-    const users = await userRepository.fetchUsers()
-    const newCurrentUser = users.find((user) => user.uuid === currentUserId())
-    setUsers(users)
-    setCurrentUser(newCurrentUser ?? null)
-    return users
-  } catch (error) {
-    logging.error('User application error:', error)
-    setUsers([])
-    setCurrentUser(null)
-    return []
-  }
-}
-
-/**
- * Fetches the current user.
- * @returns The current user or null on error.
- */
-export async function fetchCurrentUser(): Promise<User | null> {
-  try {
-    const user = await userRepository.fetchUser(currentUserId())
-    setCurrentUser(user)
-
-    return user
-  } catch (error) {
-    logging.error('User application error:', error)
-    setCurrentUser(null)
-    return null
-  }
-}
-
-/**
- * Inserts a new user.
- * @param newUser - The new user data.
- * @returns True if inserted, false otherwise.
- */
-export async function insertUser(newUser: NewUser): Promise<boolean> {
-  try {
-    await showPromise(
-      userRepository.insertUser(newUser),
-      {
-        loading: 'Inserindo usuário...',
-        success: 'Usuário inserido com sucesso',
-        error: 'Falha ao inserir usuário',
-      },
-      { context: 'user-action' },
-    )
-    await fetchUsers()
-    return true
-  } catch (error) {
-    logging.error('User application error:', error)
-    return false
-  }
-}
-
-/**
- * Silently inserts a new user without showing toast notifications.
- * @param newUser - The new user data.
- * @returns The created user or null on error.
- */
-export async function insertUserSilently(
-  newUser: NewUser,
-): Promise<User | null> {
-  try {
-    const createdUser = await userRepository.insertUser(newUser)
-    await fetchUsers()
-    return createdUser
-  } catch (error) {
-    logging.error('User application error:', error)
-    return null
-  }
-}
-
-/**
- * Updates a user by ID.
- * @param userId - The user ID.
- * @param newUser - The new user data.
- * @returns The updated user or null on error.
- */
-export async function updateUser(
-  userId: User['uuid'],
-  newUser: NewUser,
-): Promise<User | null> {
-  try {
-    const user = await showPromise(
-      userRepository.updateUser(userId, newUser),
-      {
-        loading: 'Atualizando informações do usuário...',
-        success: 'Informações do usuário atualizadas com sucesso',
-        error: 'Falha ao atualizar informações do usuário',
-      },
-      { context: 'user-action' },
-    )
-    await fetchUsers()
-    return user
-  } catch (error) {
-    logging.error('User application error:', error)
-    return null
-  }
-}
-
-/**
- * Deletes a user by ID.
- * @param userId - The user ID.
- * @returns True if deleted, false otherwise.
- */
-export async function deleteUser(userId: User['uuid']): Promise<boolean> {
-  try {
-    await showPromise(
-      userRepository.deleteUser(userId),
-      {
-        loading: 'Removendo usuário...',
-        success: 'Usuário removido com sucesso',
-        error: 'Falha ao remover usuário',
-      },
-      { context: 'user-action' },
-    )
-    await fetchUsers()
-    return true
-  } catch (error) {
-    logging.error('User application error:', error)
-    return false
-  }
-}
-
-export function changeToUser(userId: User['uuid']): void {
-  saveUserIdToLocalStorage(userId)
-  setCurrentUserId(userId)
-}
 
 // TODO: Create module for favorites
 export function isFoodFavorite(foodId: number): boolean {
-  return currentUser()?.favorite_foods.includes(foodId) ?? false
+  return userUseCases.currentUser()?.favorite_foods.includes(foodId) ?? false
 }
 
 export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
-  const currentUser_ = currentUser()
+  const currentUser_ = userUseCases.currentUser()
   if (currentUser_ === null) {
+    showError('Usuário não inicializado')
     logging.error('User application error:', new Error('User not initialized'))
     return
   }
+
+  if (currentUser_.uuid === GUEST_USER_ID) {
+    showError('Ação indisponível no modo convidado')
+    logging.error(
+      'User application error:',
+      new Error('Inconsistent user state'),
+    )
+    return
+  }
+
+  if (currentUser_.uuid !== authUseCases.getCurrentUser()?.id) {
+    showError('Usuário inconsistente')
+    logging.error(
+      'User application error:',
+      new Error('Inconsistent user state'),
+    )
+    return
+  }
+
   const favoriteFoods = currentUser_.favorite_foods
   if (favorite) {
     if (!favoriteFoods.includes(foodId)) {
@@ -216,11 +47,11 @@ export function setFoodAsFavorite(foodId: number, favorite: boolean): void {
       favoriteFoods.splice(index, 1)
     }
   }
-  void updateUser(currentUser_.uuid, {
-    ...demoteUserToNewUser(currentUser_),
-    favorite_foods: favoriteFoods,
-  })
-    .then(fetchCurrentUser)
+  void userUseCases
+    .updateUser(currentUser_.uuid, {
+      ...demoteUserToNewUser(currentUser_),
+      favorite_foods: favoriteFoods,
+    })
     .catch((error) => {
       logging.error('User application error:', error)
     })

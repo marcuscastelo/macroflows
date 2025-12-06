@@ -1,15 +1,20 @@
-import { type Accessor } from 'solid-js'
+import { type Accessor, Suspense } from 'solid-js'
 
-import { createCopyDayOperations } from '~/modules/diet/day-diet/application/usecases/copyDayOperations'
-import { currentDayDiet } from '~/modules/diet/day-diet/application/usecases/dayState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import {
+  copyDay,
+  useCopyDayUseCase,
+} from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
-import { currentUserId } from '~/modules/user/application/user'
+import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { lazyImport } from '~/shared/solid/lazyImport'
+import { logging } from '~/shared/utils/logging'
 
 const { CopyLastDayModal } = lazyImport(
   () => import('~/sections/day-diet/components/CopyLastDayModal'),
@@ -20,37 +25,61 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
-  const { state, copyDay, loadPreviousDays, resetState } =
-    createCopyDayOperations()
+  const {
+    previousDays,
+    handleStartCopying,
+    handleFinishCopying,
+    isCopying,
+    copyingDay,
+    fetchPreviousDays,
+    resetState,
+  } = useCopyDayUseCase()
+
+  const handleCopy = async (day: string) => {
+    handleStartCopying(day)
+    try {
+      await copyDay({
+        fromDay: day,
+        toDay: props.selectedDay,
+        previousDays: previousDays.latest ?? [],
+        existingDay: [
+          ...(previousDays.latest ?? []),
+          dayUseCases.currentDayDiet(),
+        ]
+          .filter((d): d is DayDiet => d !== null)
+          .find((d) => d.target_day === props.selectedDay),
+      })
+    } catch (error) {
+      logging.error('CopyLastDayButton handleCopy error:', error)
+      showError('Erro ao copiar o dia. Por favor, tente novamente.')
+    } finally {
+      handleFinishCopying()
+    }
+  }
 
   return (
     <>
       <Button
         class="btn-primary w-full mt-3 rounded px-4 py-2 font-bold text-white"
         onClick={() => {
-          void loadPreviousDays(currentUserId(), props.selectedDay)
+          const userId = authUseCases.currentUserIdOrGuestId()
+
+          void fetchPreviousDays(userId, props.selectedDay)
 
           openContentModal(
             (modalId) => (
-              <CopyLastDayModal
-                previousDays={state().previousDays}
-                copying={state().isCopying}
-                copyingDay={state().copyingDay}
-                onCopy={(day) => {
-                  void copyDay({
-                    fromDay: day,
-                    toDay: props.selectedDay,
-                    previousDays: state().previousDays,
-                    existingDay: [...state().previousDays, currentDayDiet()]
-                      .filter((d) => d !== null)
-                      .find((d) => d.target_day === props.selectedDay),
-                  })
-                }}
-                onClose={() => {
-                  resetState()
-                  closeModal(modalId)
-                }}
-              />
+              <Suspense>
+                <CopyLastDayModal
+                  previousDays={previousDays.latest ?? []}
+                  copying={isCopying()}
+                  copyingDay={copyingDay()}
+                  onCopy={(day) => void handleCopy(day)}
+                  onClose={() => {
+                    resetState()
+                    closeModal(modalId)
+                  }}
+                />
+              </Suspense>
             ),
             {
               title: 'Copiar dia anterior',

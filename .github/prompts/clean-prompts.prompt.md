@@ -1,7 +1,7 @@
 ---
 description: 'Analyze all prompt files in .github/prompts for prompt leaks (text from one prompt appearing in another), inconsistencies, and incorrect prompt structure. Clean and fix all detected issues in-place.'
-mode: 'agent'
-tools: ['codebase', 'insert_edit_into_file']
+agent: prompt-engineer
+tools: ['search/codebase', 'edit/editFiles', 'githubRepo']
 ---
 
 # Clean Prompts Agent

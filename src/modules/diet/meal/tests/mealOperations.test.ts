@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 import {
@@ -8,38 +9,42 @@ import {
   setMealItems,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
-import { createUnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { assertItemApproxEqual } from '~/shared/testing/assertions/approxEqual'
 
-function makeUnifiedItem(id: number, name = 'Arroz') {
-  return createUnifiedItem({
+function makeItem(id: number, name = 'Arroz') {
+  return createItem({
     id,
     name,
     quantity: 100,
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbs: 10, protein: 2, fat: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
 
-function makeMeal(id: number, name = 'Almoço', items = [makeUnifiedItem(1)]) {
+function makeMeal(id: number, name = 'Almoço', items = [makeItem(1)]) {
   return promoteMeal(createNewMeal({ name, items }), { id })
 }
 
-const baseUnifiedItem = makeUnifiedItem(1)
-const baseMeal = makeMeal(1, 'Almoço', [baseUnifiedItem])
+const baseItem = makeItem(1)
+const baseMeal = makeMeal(1, 'Almoço', [baseItem])
 
 describe('mealOperations', () => {
   it('addItemsToMeal adds multiple items', () => {
-    const items = [makeUnifiedItem(2, 'Feijão'), makeUnifiedItem(3, 'Carne')]
+    const items = [makeItem(2, 'Feijão'), makeItem(3, 'Carne')]
     const result = addItemsToMeal(baseMeal, items)
     expect(result.items).toHaveLength(3)
   })
 
   it('updateItemInMeal updates an item', () => {
-    const updatedItem = createUnifiedItem({
-      ...baseUnifiedItem,
+    const updatedItem = createItem({
+      ...baseItem,
       name: 'Arroz Integral',
     })
     const result = updateItemInMeal(baseMeal, 1, updatedItem)
@@ -52,8 +57,11 @@ describe('mealOperations', () => {
   })
 
   it('setMealItems sets items', () => {
-    const items = [makeUnifiedItem(2, 'Feijão')]
+    const items = [makeItem(2, 'Feijão')]
     const result = setMealItems(baseMeal, items)
-    expect(result.items).toEqual(items)
+    expect(result.items.length).toBe(items.length)
+    for (let i = 0; i < items.length; i++) {
+      assertItemApproxEqual(result.items[i], items[i])
+    }
   })
 })

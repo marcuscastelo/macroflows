@@ -328,23 +328,34 @@ All code, comments, documentation, and commit messages must be written strictly 
 
 ## 🛑 Error Handling Standard
 
-All domain and application errors must be reported using the shared error handler utility:
+All domain and application errors should use standard JavaScript `Error` instances with descriptive messages and context via the `cause` property.
 
-- Use `handleApiError` from `~/shared/error/errorHandler` to log, report, or propagate errors.
-- Never throw or log errors directly in domain/application code without also calling `handleApiError`.
-- Always provide context (component, operation, additionalData) for traceability.
+- **Domain layer:** Throw pure errors with descriptive messages and optional context via `cause`. Never use side-effect utilities.
+- **Application layer:** Catch domain errors and provide user feedback using:
+  - `showError` from `~/modules/toast/application/toastManager` for user-facing toasts
+  - `logging` from `~/shared/utils/logging` for telemetry and Sentry integration
+- Always provide context (component, operation, additional data) for traceability.
 
-**Example:**
+**Canonical Pattern:**
 ```typescript
-import { handleApiError } from '~/shared/error/errorHandler'
+// Domain (pure)
+throw new Error('Something went wrong', {
+  cause: { code: 'VALIDATION_ERROR', groupId, groupRecipeId }
+})
 
-if (somethingWentWrong) {
-  handleApiError(new Error('Something went wrong'), {
+// Application (toast + telemetry)
+import { showError } from '~/modules/toast/application/toastManager'
+import { logging } from '~/shared/utils/logging'
+
+try {
+  await domainFunc()
+} catch (e) {
+  logging.error('isRecipedGroupUpToDate failed', e, { 
     component: 'itemGroupDomain',
-    operation: 'isRecipedGroupUpToDate',
     additionalData: { groupId, groupRecipeId }
   })
-  throw new Error('Something went wrong')
+  showError(e, { context: 'user-action' })
+  throw e
 }
 ```
 

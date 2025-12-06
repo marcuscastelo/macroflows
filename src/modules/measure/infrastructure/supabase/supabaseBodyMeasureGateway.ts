@@ -37,10 +37,10 @@ async function fetchUserBodyMeasures(userId: User['uuid']) {
 async function insertBodyMeasure(
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
-  const createDAO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
+  const createDTO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_BODY_MEASURES)
-    .insert(createDAO)
+    .insert(createDTO)
     .select()
     .single()
 
@@ -56,10 +56,10 @@ async function updateBodyMeasure(
   bodyMeasureId: BodyMeasure['id'],
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
-  const updateDAO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
+  const updateDTO = supabaseBodyMeasureMapper.toInsertDTO(newBodyMeasure)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_BODY_MEASURES)
-    .update(updateDAO)
+    .update(updateDTO)
     .eq('id', bodyMeasureId)
     .select()
     .single()

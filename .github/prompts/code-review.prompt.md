@@ -1,7 +1,7 @@
 ---
 description: 'Perform an actionable, reviewer-style code review for each file in the current PR, providing prioritized, concrete feedback and suggestions for improvement. Save the review for each file in the docs/ directory. If a suggestion is too large to include, recommend opening an issue.'
-mode: 'agent'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'activePullRequest']
+agent: agent
+tools: ['changes', 'search/codebase', 'edit/editFiles', 'extensions', 'fetch', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'search/searchResults', 'runCommands/terminalLastCommand', 'runCommands/terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'github.vscode-pull-request-github/activePullRequest']
 ---
 
 # Actionable Code Review Agent (code-review-actionable)

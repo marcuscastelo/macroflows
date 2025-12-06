@@ -4,10 +4,12 @@ import type { ToastError } from '~/modules/toast/domain/toastTypes'
 
 export type ModalId = string
 export type ModalPriority = 'low' | 'normal' | 'high' | 'critical'
+export type ModalTitle = string
+export type ModalBody = JSXElement
 
 export type BaseModalConfig = {
   id?: ModalId
-  title?: string
+  title?: ModalTitle | ((modalId: ModalId) => ModalTitle)
   priority?: ModalPriority
   closeOnOutsideClick?: boolean
   closeOnEscape?: boolean
@@ -24,15 +26,15 @@ export type ErrorModalConfig = BaseModalConfig & {
 
 export type ContentModalConfig = BaseModalConfig & {
   type: 'content'
-  content: JSXElement | ((modalId: ModalId) => JSXElement)
-  footer?: JSXElement | (() => JSXElement)
+  content: ModalBody | ((modalId: ModalId) => ModalBody)
+  footer?: ModalBody | ((modalId: ModalId) => ModalBody)
 }
 
 export type ConfirmationModalConfig = BaseModalConfig & {
   type: 'confirmation'
-  message: string
-  confirmText?: string
-  cancelText?: string
+  message: string | Accessor<string>
+  confirmText?: string | Accessor<string>
+  cancelText?: string | Accessor<string>
   onConfirm?: () => void | Promise<void>
   onCancel?: () => void
 }

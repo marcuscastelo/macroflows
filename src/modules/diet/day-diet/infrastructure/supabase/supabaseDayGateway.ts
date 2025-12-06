@@ -1,11 +1,10 @@
 import {
   type DayDiet,
-  dayDietSchema,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type DayGateway } from '~/modules/diet/day-diet/domain/dayDietGateway'
 import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
-import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseMapper'
+import { supabaseDayMapper } from '~/modules/diet/day-diet/infrastructure/supabase/supabaseDayMapper'
 import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
@@ -28,23 +27,14 @@ async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet> {
       .from(SUPABASE_TABLE_DAYS)
       .select()
       .eq('id', dayId)
+      .single()
 
     if (error !== null) {
       logging.error('DayDiet fetch error:', error)
       throw error
     }
 
-    const dayDiets = Array.isArray(data) ? data : []
-    if (dayDiets.length === 0) {
-      logging.error('DayDiet not found:', { dayId })
-      throw new Error('DayDiet not found')
-    }
-    const result = dayDietSchema.safeParse(dayDiets[0])
-    if (!result.success) {
-      logging.error('DayDiet invalid:', { dayId, parseError: result.error })
-      throw new Error('DayDiet invalid')
-    }
-    return result.data
+    return supabaseDayMapper.toDomain(data)
   } catch (err) {
     logging.error('DayDiet fetch error:', err)
     throw err
@@ -76,18 +66,8 @@ async function fetchDayDietByUserIdAndTargetDay(
     throw error
   }
 
-  const dayData = data
-  const result = dayDietSchema.safeParse(dayData)
-  if (!result.success) {
-    logging.error('Error parsing current day diet:', {
-      parseError: result.error,
-      targetDay,
-    })
-    throw wrapErrorWithStack(result.error)
-  }
-
   logging.debug(`[supabaseDayRepository] Successfully fetched day ${targetDay}`)
-  return result.data
+  return supabaseDayMapper.toDomain(data)
 }
 
 async function fetchDayDietsByUserIdBeforeDate(

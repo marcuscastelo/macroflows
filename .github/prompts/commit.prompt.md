@@ -1,7 +1,8 @@
 ---
 description: 'Analyze staged changes and generate a concise, conventional commit message in English. Ensure clarity, security, and adherence to best practices. For multi-line commit messages, always use printf and git commit -F <file> to avoid shell interpretation issues in zsh. Respect existing git command aliases if present. Commit messages should be explicit and atomic, referencing all affected modules and summarizing the main change.'
-mode: 'agent'
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'activePullRequest']
+name: commit
+agent: agent
+tools: ['changes', 'search/codebase', 'edit/editFiles', 'extensions', 'fetch', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'search/searchResults', 'runCommands/terminalLastCommand', 'runCommands/terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'github.vscode-pull-request-github/activePullRequest']
 ---
 
 # Commit Message Agent

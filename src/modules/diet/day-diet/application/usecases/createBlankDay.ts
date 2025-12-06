@@ -1,4 +1,4 @@
-import { insertDayDiet } from '~/modules/diet/day-diet/application/usecases/dayCrud'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { createDefaultMeals } from '~/modules/diet/day-diet/domain/defaultMeals'
 import { type User } from '~/modules/user/domain/user'
@@ -19,5 +19,5 @@ export async function createBlankDay(
     meals: createDefaultMeals(),
   })
 
-  await insertDayDiet(newDayDiet)
+  await dayUseCases.insertDayDiet(newDayDiet)
 }

@@ -7,7 +7,7 @@ import {
 } from '~/modules/profile/application/profile'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUser, updateUser } from '~/modules/user/application/user'
+import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import {
   demoteUserToNewUser,
   type User,
@@ -36,7 +36,7 @@ export const GENDER_TRANSLATION: Translation<User['gender']> = {
 
 export function UserInfo() {
   createEffect(() => {
-    const user_ = currentUser()
+    const user_ = userUseCases.currentUser()
     const innerData_ = innerData()
 
     if (user_ === null) {
@@ -81,7 +81,7 @@ export function UserInfo() {
     <>
       <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE} rounded-b-none pb-6`}>
         <h1 class={'mx-auto text-center text-3xl font-bold'}>
-          <Show when={currentUser()}>
+          <Show when={userUseCases.currentUser()}>
             {(user) => (
               <>
                 <UserIcon
@@ -118,7 +118,7 @@ export function UserInfo() {
           }
           // Convert User to NewUser for the update
           const newUser = demoteUserToNewUser(user)
-          updateUser(user.uuid, newUser).catch((error) => {
+          userUseCases.updateUser(user.uuid, newUser).catch((error) => {
             logging.error('UserInfo changeUser error:', error)
             showError(error, {}, 'Erro ao atualizar usuário')
           })

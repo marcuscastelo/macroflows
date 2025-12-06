@@ -1,5 +1,20 @@
 import { vi } from 'vitest'
 
+// Mock logging module to prevent console output during tests
+vi.mock('~/shared/utils/logging', () => ({
+  __esModule: true,
+  logging: {
+    debug: (_message: string, _data?: Record<string, unknown>) => {},
+    info: (_message: string, _data?: Record<string, unknown>) => {},
+    warn: (_message: string, _data?: Record<string, unknown>) => {},
+    error: (
+      _message: string,
+      _error?: unknown,
+      _data?: Record<string, unknown>,
+    ) => {},
+  },
+}))
+
 vi.mock('solid-toast', () => ({
   __esModule: true,
   default: {
@@ -60,3 +75,52 @@ vi.spyOn(console, 'info').mockImplementation(() => {})
 vi.spyOn(console, 'warn').mockImplementation(() => {})
 vi.spyOn(console, 'error').mockImplementation(() => {})
 vi.spyOn(console, 'debug').mockImplementation(() => {})
+
+// Add custom matchers for approximate equality of domain objects
+import { expect as expectGlobal } from 'vitest'
+
+import {
+  assertDayDietApproxEqual,
+  assertItemApproxEqual,
+  assertMacrosApproxEqual,
+  assertMealApproxEqual,
+} from '~/shared/testing/assertions/approxEqual'
+
+expectGlobal.extend({
+  toBeDayDietApprox(received: unknown, expected: unknown, epsilon = 0.1) {
+    try {
+      const eps = typeof epsilon === 'number' ? epsilon : Number(epsilon)
+      assertDayDietApproxEqual(received, expected, eps)
+      return { pass: true, message: () => 'DayDiet matches approximately' }
+    } catch (err: unknown) {
+      return { pass: false, message: () => String(err) }
+    }
+  },
+  toBeMealApprox(received: unknown, expected: unknown, epsilon = 0.1) {
+    try {
+      const eps = typeof epsilon === 'number' ? epsilon : Number(epsilon)
+      assertMealApproxEqual(received, expected, eps)
+      return { pass: true, message: () => 'Meal matches approximately' }
+    } catch (err: unknown) {
+      return { pass: false, message: () => String(err) }
+    }
+  },
+  toBeItemApprox(received: unknown, expected: unknown, epsilon = 0.1) {
+    try {
+      const eps = typeof epsilon === 'number' ? epsilon : Number(epsilon)
+      assertItemApproxEqual(received, expected, eps)
+      return { pass: true, message: () => 'Item matches approximately' }
+    } catch (err: unknown) {
+      return { pass: false, message: () => String(err) }
+    }
+  },
+  toHaveMacrosApprox(received: unknown, expected: unknown, epsilon = 0.1) {
+    try {
+      const eps = typeof epsilon === 'number' ? epsilon : Number(epsilon)
+      assertMacrosApproxEqual(received, expected, eps)
+      return { pass: true, message: () => 'Macros match approximately' }
+    } catch (err: unknown) {
+      return { pass: false, message: () => String(err) }
+    }
+  },
+})

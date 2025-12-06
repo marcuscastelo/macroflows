@@ -1,6 +1,6 @@
 import { type z } from 'zod/v4'
 
-import { unifiedItemSchema } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { createZodEntity } from '~/shared/domain/validation'
 
 const ze = createZodEntity('Meal')
@@ -12,7 +12,7 @@ export const {
   promote: promoteMeal,
 } = ze.create({
   name: ze.string(),
-  items: ze.array(unifiedItemSchema),
+  items: ze.array(itemSchema),
 })
 
 export type Meal = Readonly<z.infer<typeof mealSchema>>

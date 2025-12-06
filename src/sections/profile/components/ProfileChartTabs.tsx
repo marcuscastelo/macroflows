@@ -2,7 +2,7 @@ import { type Accessor, For, type Setter } from 'solid-js'
 
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
-import { type ObjectValues } from '~/shared/utils/typeUtils'
+import { type ObjectValues, typedKeys } from '~/shared/utils/typeUtils'
 
 type TabDefinition = {
   id: string
@@ -38,34 +38,29 @@ type ProfileChartTabsProps = {
  * @returns SolidJS component
  */
 export function ProfileChartTabs(props: ProfileChartTabsProps) {
-  // TODO: Find a way to make Object.keys strongly typed
-  // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1301
-  const tabKeys = Object.keys(availableChartTabs)
+  const tabKeys = typedKeys(availableChartTabs)
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const currentIndex = tabKeys.findIndex(
-      (key) =>
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        availableChartTabs[key as keyof typeof availableChartTabs].id ===
-        props.activeTab(),
+      (key) => availableChartTabs[key].id === props.activeTab(),
     )
 
     if (event.key === 'ArrowLeft' && currentIndex > 0) {
       event.preventDefault()
       const prevTab = tabKeys[currentIndex - 1]
-      const prevTabId =
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        availableChartTabs[prevTab as keyof typeof availableChartTabs].id
-      props.setActiveTab(prevTabId)
+      if (prevTab !== undefined) {
+        const prevTabId = availableChartTabs[prevTab].id
+        props.setActiveTab(prevTabId)
+      }
     }
 
     if (event.key === 'ArrowRight' && currentIndex < tabKeys.length - 1) {
       event.preventDefault()
       const nextTab = tabKeys[currentIndex + 1]
-      const nextTabId =
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        availableChartTabs[nextTab as keyof typeof availableChartTabs].id
-      props.setActiveTab(nextTabId)
+      if (nextTab !== undefined) {
+        const nextTabId = availableChartTabs[nextTab].id
+        props.setActiveTab(nextTabId)
+      }
     }
   }
 
@@ -74,13 +69,8 @@ export function ProfileChartTabs(props: ProfileChartTabsProps) {
       <ul class="flex text-font-medium text-center text-gray-500 divide-x divide-gray-600 rounded-lg shadow dark:divide-gray-600 dark:text-gray-300 bg-gray-900 dark:bg-gray-900">
         <For each={tabKeys}>
           {(tabKey, i) => {
-            const tabId = () =>
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              availableChartTabs[tabKey as keyof typeof availableChartTabs].id
-            const tabTitle = () =>
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              availableChartTabs[tabKey as keyof typeof availableChartTabs]
-                .title
+            const tabId = () => availableChartTabs[tabKey].id
+            const tabTitle = () => availableChartTabs[tabKey].title
             const isActive = () => props.activeTab() === tabId()
 
             return (

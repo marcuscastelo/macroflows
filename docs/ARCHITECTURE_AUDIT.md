@@ -61,7 +61,7 @@ A comprehensive migration to the Unified Item System has been completed for new 
 - [ ] Add custom error classes for domain invariants and business rules.
 
 ### 2. Application Layer
-- [ ] Audit all error handling for missing `handleApiError` context and ensure context is always provided.
+- [ ] Audit all error handling for proper use of `showError` and `logging` with context.
 - [ ] Refactor orchestration logic to keep business rules in the domain; avoid business logic in application or UI.
 - [ ] Expand audit to async flows, side effects, and error propagation.
 - [ ] Create `audit_application_<module>.md` for modules with complex orchestration or async logic.

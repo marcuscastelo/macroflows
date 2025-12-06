@@ -8,7 +8,6 @@ export function createAuthGatewayMock(): AuthGateway {
     getUser: vi.fn().mockReturnValue(null),
     signIn: vi.fn().mockResolvedValue({ error: null }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
-    refreshSession: vi.fn().mockResolvedValue(undefined),
     onAuthStateChange: vi.fn().mockReturnValue(() => {}),
   }
 }

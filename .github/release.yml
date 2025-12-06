@@ -10,6 +10,7 @@ changelog:
     - title: Improvements
       labels:
         - improvement
+        - refactor
     - title: Other
       labels:
         - '*'
@@ -18,4 +19,5 @@ changelog:
           - feature
           - bug
           - improvement
+          - refactor
           - hotfix

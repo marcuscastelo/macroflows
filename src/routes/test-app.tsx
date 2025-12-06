@@ -1,32 +1,19 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
-import {
-  signIn,
-  signOut,
-} from '~/modules/auth/application/services/authService'
-import {
-  getCurrentUser,
-  isAuthenticated,
-} from '~/modules/auth/application/usecases/authState'
-import {
-  setTargetDay,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
   type DayDiet,
   promoteDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
+import { createItem, type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   createNewMeal,
   type Meal,
   promoteMeal,
 } from '~/modules/diet/meal/domain/meal'
-import {
-  createUnifiedItem,
-  type UnifiedItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { TestChart } from '~/sections/common/components/charts/TestChart'
 import { FloatInput } from '~/sections/common/components/FloatInput'
@@ -39,8 +26,8 @@ import { useFloatField } from '~/sections/common/hooks/useField'
 import { Datepicker } from '~/sections/datepicker/components/Datepicker'
 import { type DateValueType } from '~/sections/datepicker/types'
 import DayMacros from '~/sections/day-diet/components/DayMacros'
+import { ItemView } from '~/sections/item/components/ItemView'
 import { TemplateSearchModal } from '~/sections/search/components/TemplateSearchModal'
-import { UnifiedItemView } from '~/sections/unified-item/components/UnifiedItemView'
 import {
   openConfirmModal,
   openContentModal,
@@ -52,23 +39,19 @@ import { logging } from '~/shared/utils/logging'
 function GoogleLoginButton() {
   const handleLogin = async () => {
     try {
-      await signIn({ provider: 'google', redirectTo: window.location.origin })
+      await authUseCases.signIn({
+        provider: 'google',
+        redirectTo: window.location.origin,
+      })
     } catch (error) {
-      // TODO: ban inline imports
-      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1045
-      import('~/shared/utils/logging')
-        .then(({ logging }) => {
-          logging.error('TestApp login error:', error)
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('TestApp login error:', error)
     }
   }
 
   return (
     <button class="btn btn-primary" onClick={() => void handleLogin()}>
-      Login with Google (Test) [{getCurrentUser()?.id ?? 'not logged in'}]
+      Login with Google (Test) [
+      {authUseCases.getCurrentUser()?.id ?? 'not logged in'}]
     </button>
   )
 }
@@ -76,15 +59,9 @@ function GoogleLoginButton() {
 function LogoutButton() {
   const handleLogout = async () => {
     try {
-      await signOut()
+      await authUseCases.signOut()
     } catch (error) {
-      import('~/shared/utils/logging')
-        .then(({ logging }) => {
-          logging.error('TestApp logout error:', error)
-        })
-        .catch(() => {
-          // Fallback if import fails
-        })
+      logging.error('TestApp logout error:', error)
     }
   }
 
@@ -97,9 +74,9 @@ function LogoutButton() {
 
 function UserInfo() {
   return (
-    <Show when={isAuthenticated} fallback="not auth">
+    <Show when={authUseCases.isAuthenticated()} fallback="not auth">
       <div class="p-4 border rounded-md">
-        <p>User: {getCurrentUser()?.email}</p>
+        <p>User: {authUseCases.getCurrentUser()?.email}</p>
         <LogoutButton />
       </div>
     </Show>
@@ -107,10 +84,10 @@ function UserInfo() {
 }
 
 export default function TestApp() {
-  const [_, setUnifiedItemEditModalVisible] = createSignal(false)
+  const [_, setItemEditModalVisible] = createSignal(false)
 
-  const [item] = createSignal<UnifiedItem>(
-    createUnifiedItem({
+  const [item1] = createSignal<Item>(
+    createItem({
       id: generateId(),
       name: 'Teste',
       quantity: 100,
@@ -118,16 +95,16 @@ export default function TestApp() {
         type: 'food',
         id: 31606,
         macros: createMacroNutrients({
-          carbs: 10,
-          protein: 12,
-          fat: 10,
+          carbsInGrams: 10,
+          proteinInGrams: 12,
+          fatInGrams: 10,
         }),
       },
     }),
   )
 
-  const [group, setGroup] = createSignal<UnifiedItem>(
-    createUnifiedItem({
+  const [item2, setItem2] = createSignal<Item>(
+    createItem({
       id: generateId(),
       name: 'Teste',
       quantity: 100,
@@ -139,11 +116,11 @@ export default function TestApp() {
   )
 
   createEffect(() => {
-    setGroup({
-      ...untrack(group),
+    setItem2({
+      ...untrack(item2),
       reference: {
         type: 'group',
-        children: [item()],
+        children: [item1()],
       },
     })
   })
@@ -188,8 +165,19 @@ export default function TestApp() {
   return (
     <>
       <Providers>
-        <DayMacros />
-
+        <DayMacros
+          dayDiet={
+            dayUseCases.currentDayDiet() ??
+            promoteDayDiet(
+              createNewDayDiet({
+                meals: [],
+                user_id: '3',
+                target_day: '2023-11-02',
+              }),
+              { id: 1 },
+            )
+          }
+        />
         {/* Auth */}
         <details open>
           <summary class="text-lg cursor-pointer select-none">Auth</summary>
@@ -213,7 +201,7 @@ export default function TestApp() {
                   () => (
                     <TemplateSearchModal
                       targetName="Teste"
-                      onNewUnifiedItem={() => {
+                      onNewItem={() => {
                         logging.debug('New unified item added')
                       }}
                       onFinish={() => {}}
@@ -231,10 +219,10 @@ export default function TestApp() {
             <button
               class="btn cursor-pointer uppercase"
               onClick={() => {
-                setUnifiedItemEditModalVisible(true)
+                setItemEditModalVisible(true)
               }}
             >
-              setUnifiedItemEditModalVisible
+              setItemEditModalVisible
             </button>
           </div>
         </details>
@@ -245,22 +233,22 @@ export default function TestApp() {
             Item Group & List
           </summary>
           <div class="pl-4 flex flex-col gap-2">
-            <h1>UnifiedItemListView (legacy test)</h1>
-            {/* <UnifiedItemListView
-              items={() => group().items.map(itemToUnifiedItem)}
+            <h1>ItemListView (legacy test)</h1>
+            {/* <ItemListView
+              items={() => group().items.map(itemToItem)}
               mode="edit"
               handlers={{
                 onClick: () => {
-                  setUnifiedItemEditModalVisible(true)
+                  setItemEditModalVisible(true)
                 },
               }}
             /> */}
-            <h1>UnifiedItemView (ItemGroup test)</h1>
-            <UnifiedItemView
-              item={() => group()}
+            <h1>ItemView (ItemGroup test)</h1>
+            <ItemView
+              item={item2}
               handlers={{
                 onEdit: () => {
-                  setUnifiedItemEditModalVisible(true)
+                  setItemEditModalVisible(true)
                 },
                 onCopy: (item) => {
                   logging.debug('Copy item:', item)
@@ -282,12 +270,12 @@ export default function TestApp() {
               readOnly={true}
               displayFormat="DD/MM/YYYY"
               value={{
-                startDate: targetDay(),
-                endDate: targetDay(),
+                startDate: dayUseCases.targetDay(),
+                endDate: dayUseCases.targetDay(),
               }}
               onChange={(value: DateValueType) => {
                 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                setTargetDay(value?.startDate as string)
+                dayUseCases.setTargetDay(value?.startDate as string)
               }}
             />
           </div>
@@ -311,7 +299,19 @@ export default function TestApp() {
             <EANIcon />
             <TestChart />
             <TestField />
-            <DayMacros />
+            <DayMacros
+              dayDiet={
+                dayUseCases.currentDayDiet() ??
+                promoteDayDiet(
+                  createNewDayDiet({
+                    meals: [],
+                    user_id: '3',
+                    target_day: '2023-11-02',
+                  }),
+                  { id: 1 },
+                )
+              }
+            />
             <LoadingRing />
             <PageLoading message="Carregando bugigangas" />
           </div>

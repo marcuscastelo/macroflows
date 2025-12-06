@@ -117,7 +117,7 @@ interface WorkflowContext {
 {
   phase: 'implementation',
   modifiedFiles: ['RecipeEditModal.tsx', 'recipe.ts'],
-  architecturalDecisions: ['use domain validation', 'add handleApiError'],
+  architecturalDecisions: ['use domain validation', 'use showError and logging'],
   testPatterns: ['mock validation', 'test error scenarios'],
   suggestedActions: ['run quality checks', 'update related tests']
 }

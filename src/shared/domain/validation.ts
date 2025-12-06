@@ -73,7 +73,9 @@ function createFieldValidationMessages(
         case validErrorCode: {
           // Use iss.path to get the field name automatically
           const fieldName =
-            iss.path && iss.path.length > 0 ? iss.path.join('.') : 'campo'
+            iss.path && iss.path.length > 0
+              ? iss.path.join('.')
+              : 'campo desconhecido'
           return createInvalidTypeMessage(
             fieldName,
             entityName,
@@ -153,8 +155,6 @@ export function createZodEntity<TEntity extends keyof typeof ENTITY_NAMES>(
       shape: TShape,
       entityExtras?: TExtras,
     ) => {
-      // TODO: remove defaultExtras (maybe entire entityExtras?)
-      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1065
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const defaultExtras = {
         id: z.number(

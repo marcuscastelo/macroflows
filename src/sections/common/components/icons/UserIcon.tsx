@@ -1,11 +1,11 @@
 import { type Accessor, createSignal, Show } from 'solid-js'
 
-import { getAuthState } from '~/modules/auth/application/usecases/authState'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { type User } from '~/modules/user/domain/user'
 import { UserInitialFallback } from '~/sections/common/components/icons/UserInitialFallback'
 
 export function UserIcon(props: {
-  userId: Accessor<User['uuid']>
+  userId: Accessor<User['uuid'] | undefined>
   userName: Accessor<string>
   class?: string
 }) {
@@ -20,8 +20,10 @@ export function UserIcon(props: {
       >
         <img
           class="w-full h-full rounded-full"
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          src={getAuthState().user?.userMetadata?.['picture'] as string}
+          src={
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            authUseCases.getCurrentUser()?.userMetadata?.['picture'] as string
+          }
           sizes="100vw"
           alt=""
           width={0}

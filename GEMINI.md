@@ -180,7 +180,7 @@ The codebase follows a strict 3-layer architecture. Adherence to these boundarie
 2.  **Application Layer** (`modules/*/application/`)
     - Orchestrates the domain logic. Contains SolidJS resources, signals, and application-specific logic.
     - **MUST** catch errors from the Domain layer.
-    - **MUST** call `handleApiError` to standardize error handling and provide context.
+    - **MUST** use `showError` for user feedback (toasts) and `logging` for telemetry/observability.
     - Manages all side-effects and user feedback (toasts, notifications).
 
 3.  **Infrastructure Layer** (`modules/*/infrastructure/`)
@@ -227,8 +227,8 @@ The codebase follows a strict 3-layer architecture. Adherence to these boundarie
 - **Code Duplication:** Avoid copy-pasting logic. For example, the clipboard and validation logic was duplicated between `MealEditView.tsx` and `RecipeEditView.tsx`. This should be abstracted into a shared utility.
 
 ### 6.5. Error Handling
-- **Domain:** Throws pure errors (e.g., `throw new GroupConflictError(...)`).
-- **Application:** Catches domain errors and **MUST** use `handleApiError(e, { context })`.
+- **Domain:** Throws pure errors with descriptive messages and context via `cause` (e.g., `throw new Error('Group conflict', { cause: { groupId, recipeId } })`).
+- **Application:** Catches domain errors and uses `showError` for toasts and `logging` for telemetry/observability.
 - **NEVER** use `.catch(() => {})` to silence promise errors. Use the `void` operator only for non-critical, fire-and-forget side-effects in event handlers where errors are handled at the application level.
 
 ### 6.6. Commits & JSDoc
@@ -311,7 +311,6 @@ Be aware of the following technical debt and future plans:
 ## 8. Final Reminders
 - **TODOs:** Never remove `TODO` comments from the codebase.
 - **Labels:** When creating issues, use the labels defined in `docs/labels-usage.md`.
-- **Session Start:** Always run `export GIT_PAGER=cat` at the beginning of a session to prevent interactive pager issues with `git`.
 
 # QA Workflow for Macroflows 
 

@@ -18,7 +18,7 @@ import {
   createNewWeight,
   promoteToWeight,
   type Weight,
-} from '~/modules/weight/domain/weight'
+} from '~/modules/weight/domain/weight/weight'
 
 describe('measureUtils', () => {
   describe('groupMeasuresByDay', () => {

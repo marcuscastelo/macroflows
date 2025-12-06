@@ -1,9 +1,6 @@
 import { Suspense } from 'solid-js'
 
-import {
-  setTargetDay,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
+import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type DateValueType } from '~/sections/datepicker/types'
 import { lazyImport } from '~/shared/solid/lazyImport'
 import {
@@ -30,7 +27,7 @@ export function TargetDayPicker() {
       dayString = dateToYYYYMMDD(date)
     }
 
-    setTargetDay(dayString)
+    dayUseCases.setTargetDay(dayString)
     if (element) {
       element.blur() // Remove focus from the datepicker input
       element.value = dayString // Update the input value
@@ -47,13 +44,13 @@ export function TargetDayPicker() {
         disabledDates={[
           // targetDay(), future days are disabled
           {
-            startDate: targetDay(),
-            endDate: targetDay(),
+            startDate: dayUseCases.targetDay(),
+            endDate: dayUseCases.targetDay(),
           },
         ]}
         value={{
-          startDate: targetDay(),
-          endDate: targetDay(),
+          startDate: dayUseCases.targetDay(),
+          endDate: dayUseCases.targetDay(),
         }}
         onChange={handleDayChange}
       />

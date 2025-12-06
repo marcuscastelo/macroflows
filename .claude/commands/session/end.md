@@ -130,8 +130,8 @@ export interface SessionLearning {
 - **Data access patterns:** Efficient database and API usage
 
 ### Error Handling Strategies
-- **Domain layer purity:** Maintaining clean error throwing
-- **Application layer coordination:** Effective `handleApiError` usage
+- **Domain layer purity:** Maintaining clean error throwing with context via `cause`
+- **Application layer coordination:** Effective `showError` and `logging` usage
 - **User feedback patterns:** Toast and notification strategies
 - **Recovery mechanisms:** Graceful error recovery approaches
 
@@ -236,7 +236,7 @@ export interface SessionLearning {
 - **Performance:** Sliding window algorithm for period grouping
 - **Architecture:** Clean separation of domain and application concerns
 - **Testing:** Effective mock patterns for Supabase integration
-- **Error Handling:** Consistent `handleApiError` usage patterns
+- **Error Handling:** Consistent `showError` and `logging` usage patterns
 
 ## Process Improvements
 - **Quality Validation:** Streamlined npm run copilot:check workflow

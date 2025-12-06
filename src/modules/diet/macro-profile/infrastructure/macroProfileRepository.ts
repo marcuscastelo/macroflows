@@ -2,13 +2,19 @@ import {
   type MacroProfile,
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
+import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
 import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
-import { macroProfileCacheStore } from '~/modules/diet/macro-profile/infrastructure/signals/macroProfileCacheStore'
+import { createGuestMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/guest/guestMacroProfileGateway'
 import { createSupabaseMacroProfileGateway } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileGateway'
 import { type User } from '~/modules/user/domain/user'
-import { logging } from '~/shared/utils/logging'
+import { guestUseCases } from '~/shared/guest/guestUseCases'
 
 const supabaseGateway = createSupabaseMacroProfileGateway()
+const guestGateway = createGuestMacroProfileGateway()
+
+function getGateway(): MacroProfileGateway {
+  return guestUseCases.isGuestMode() ? guestGateway : supabaseGateway
+}
 
 export function createMacroProfileRepository(): MacroProfileRepository {
   return {
@@ -19,61 +25,25 @@ export function createMacroProfileRepository(): MacroProfileRepository {
   }
 }
 
-export async function fetchUserMacroProfiles(
+async function fetchUserMacroProfiles(
   userId: User['uuid'],
 ): Promise<readonly MacroProfile[]> {
-  try {
-    const profiles = await supabaseGateway.fetchUserMacroProfiles(userId)
-    macroProfileCacheStore.upsertManyToCache(profiles)
-    return profiles
-  } catch (error) {
-    logging.error('MacroProfile fetch error:', error)
-    macroProfileCacheStore.removeFromCache({ by: 'user_id', value: userId })
-    return []
-  }
+  return await getGateway().fetchUserMacroProfiles(userId)
 }
 
-export async function insertMacroProfile(
+async function insertMacroProfile(
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  try {
-    const profile = await supabaseGateway.insertMacroProfile(newMacroProfile)
-    if (profile !== null) {
-      macroProfileCacheStore.upsertToCache(profile)
-    }
-    return profile
-  } catch (error) {
-    logging.error('MacroProfile fetch error:', error)
-    return null
-  }
+  return await getGateway().insertMacroProfile(newMacroProfile)
 }
 
-export async function updateMacroProfile(
+async function updateMacroProfile(
   macroProfileId: MacroProfile['id'],
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  try {
-    const profile = await supabaseGateway.updateMacroProfile(
-      macroProfileId,
-      newMacroProfile,
-    )
-    if (profile !== null) {
-      macroProfileCacheStore.upsertToCache(profile)
-    }
-    return profile
-  } catch (error) {
-    logging.error('MacroProfile fetch error:', error)
-    return null
-  }
+  return await getGateway().updateMacroProfile(macroProfileId, newMacroProfile)
 }
 
-export async function deleteMacroProfile(
-  id: MacroProfile['id'],
-): Promise<void> {
-  try {
-    await supabaseGateway.deleteMacroProfile(id)
-    macroProfileCacheStore.removeFromCache({ by: 'id', value: id })
-  } catch (error) {
-    logging.error('MacroProfile fetch error:', error)
-  }
+async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {
+  await getGateway().deleteMacroProfile(id)
 }

@@ -1,19 +1,16 @@
 import { type Accessor } from 'solid-js'
 
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
+import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { calculateMacroTarget } from '~/modules/diet/macro-target/application/macroTarget'
+import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
+import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { userWeights } from '~/modules/weight/application/usecases/weightState'
-import { type Weight } from '~/modules/weight/domain/weight'
+import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { type Weight } from '~/modules/weight/domain/weight/weight'
+import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
-import {
-  calcCalories,
-  calcDayCalories,
-  calcDayMacros,
-} from '~/shared/utils/macroMath'
-import { inForceMacroProfile } from '~/shared/utils/macroProfileUtils'
-import { inForceWeight } from '~/shared/utils/weightUtils'
 
 export function MacroEvolution() {
   return (
@@ -22,11 +19,11 @@ export function MacroEvolution() {
         Evolução de Macronutrientes
       </h5>
       <div class="mx-5 lg:mx-20">
-        <AllMacrosChart weights={userWeights} />
-        <CaloriesChart weights={userWeights} />
-        <ProteinChart weights={userWeights} />
-        <FatChart weights={userWeights} />
-        <CarbsChart weights={userWeights} />
+        <AllMacrosChart weights={weightUseCases.weights} />
+        <CaloriesChart weights={weightUseCases.weights} />
+        <ProteinChart weights={weightUseCases.weights} />
+        <FatChart weights={weightUseCases.weights} />
+        <CarbsChart weights={weightUseCases.weights} />
       </div>
     </div>
   )
@@ -39,31 +36,45 @@ function _createChartData(
 ) {
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
+    const dayMacros = DayDietExt.of(day).macros()
+    const dayCalories = dayMacros.calories()
 
-    const currentWeight = inForceWeight(weights, dayDate)
-    const currentMacroProfile = inForceMacroProfile(macroProfiles, dayDate)
+    const currentWeight = WeightsExt.effectiveAt(weights, dayDate)
+    const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
     const macroTarget =
-      currentMacroProfile !== undefined
-        ? calculateMacroTarget(currentWeight?.weight ?? 0, currentMacroProfile)
+      currentMacroProfile !== null
+        ? MacroTargetExt.forWeight(
+            currentMacroProfile,
+            currentWeight?.weight ?? 0,
+          )
         : null
 
-    const dayMacros = calcDayMacros(day)
-    const dayCalories = calcDayCalories(day)
+    if (macroTarget === null) {
+      return {
+        name: dateToDDMM(dayDate),
+        calories: dayCalories.toFixed(0),
+        protein: dayMacros.proteinInGrams().toFixed(0),
+        fat: dayMacros.fatInGrams().toFixed(0),
+        carbs: dayMacros.carbsInGrams().toFixed(0),
+      }
+    }
+
+    const macroTargetExt = MacroNutrientsExt.of(macroTarget)
+
     return {
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
-      targetCalories:
-        macroTarget !== null ? calcCalories(macroTarget) : undefined,
-      protein: dayMacros.protein.toFixed(0),
-      targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat.toFixed(0),
-      targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs.toFixed(0),
-      targetCarbs: macroTarget?.carbs.toFixed(0),
+      targetCalories: macroTargetExt.calories(),
+      protein: dayMacros.proteinInGrams().toFixed(0),
+      targetProtein: macroTargetExt.proteinInGrams().toFixed(0),
+      fat: dayMacros.fatInGrams().toFixed(0),
+      targetFat: macroTargetExt.fatInGrams().toFixed(0),
+      carbs: dayMacros.carbsInGrams().toFixed(0),
+      targetCarbs: macroTargetExt.carbsInGrams().toFixed(0),
       targetGrams:
-        (macroTarget?.protein ?? NaN) +
-        (macroTarget?.carbs ?? NaN) +
-        (macroTarget?.fat ?? NaN),
+        macroTargetExt.proteinInGrams() +
+        macroTargetExt.carbsInGrams() +
+        macroTargetExt.fatInGrams(),
     }
   })
 

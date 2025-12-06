@@ -1,25 +1,18 @@
-import { createEffect, Suspense } from 'solid-js'
+import { onMount, Suspense } from 'solid-js'
 
-import {
-  currentDayDiet,
-  targetDay,
-} from '~/modules/diet/day-diet/application/usecases/dayState'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { getMacroTargetForDay } from '~/modules/diet/macro-target/application/macroTarget'
+import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
-import { createUnifiedItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
+import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
   DEFAULT_QUANTITY,
-  templateToUnifiedItem,
+  templateToItem,
 } from '~/modules/diet/template/application/templateToItem'
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  isFoodItem,
-  isRecipeItem,
-} from '~/modules/diet/unified-item/schema/unifiedItemSchema'
-import { type UnifiedItem } from '~/modules/diet/unified-item/schema/unifiedItemSchema'
+import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
 import {
   fetchRecentFoodByUserTypeAndReferenceId,
   insertRecentFood,
@@ -33,16 +26,20 @@ import {
   templates,
   templateSearchTab,
 } from '~/modules/template-search/application/usecases/templateSearchState'
+import {
+  loadTabPreference,
+  saveTabPreference,
+} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
+import { openItemEditModal } from '~/sections/item/ui/openItemEditModal'
 import { TemplateSearchBar } from '~/sections/search/components/TemplateSearchBar'
 import { TemplateSearchResults } from '~/sections/search/components/TemplateSearchResults'
 import {
-  availableTabs,
+  type TemplateSearchTab,
   TemplateSearchTabs,
 } from '~/sections/search/components/TemplateSearchTabs'
 import { formatError } from '~/shared/formatError'
@@ -51,19 +48,11 @@ import {
   openConfirmModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
-import { openUnifiedItemEditModal } from '~/shared/modal/helpers/specializedModalHelpers'
-import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
-import { isOverflow } from '~/shared/utils/macroOverflow'
-
-const TEMPLATE_SEARCH_DEFAULT_TAB = availableTabs.Todos.id
 
 export type TemplateSearchModalProps = {
   targetName: string
-  onNewUnifiedItem?: (
-    item: UnifiedItem,
-    originalAddedItem: TemplateItem,
-  ) => void
+  onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
   onFinish?: () => void
   onClose?: () => void
 }
@@ -74,92 +63,77 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       ? getRecipePreparedQuantity(template)
       : DEFAULT_QUANTITY
 
-    const controller = openUnifiedItemEditModal({
+    const modalId = openItemEditModal({
       targetMealName: props.targetName,
-      item: () => templateToUnifiedItem(template, initialQuantity),
+      item: () => templateToItem(template, initialQuantity),
       macroOverflow: () => ({ enable: true }),
       title: 'Edit Item',
       targetName: props.targetName,
       onApply: (templateItem: TemplateItem) => {
-        const { unifiedItem } = createUnifiedItemFromTemplate(
-          template,
-          templateItem,
-        )
+        const Item = createItemFromTemplate(template, templateItem)
 
-        handleNewUnifiedItem(unifiedItem, templateItem, () =>
-          controller.close(),
-        ).catch((err) => {
-          logging.error('TemplateSearchModal handleNewUnifiedItem error:', err)
-          showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
-        })
+        handleNewItem(Item, templateItem, () => closeModal(modalId)).catch(
+          (err) => {
+            logging.error('TemplateSearchModal handleNewItem error:', err)
+            showError(err, {}, `Erro ao adicionar item: ${formatError(err)}`)
+          },
+        )
       },
-      onClose: () => controller.close(),
+      onClose: () => closeModal(modalId),
     })
   }
 
-  const handleNewUnifiedItem = async (
-    newItem: UnifiedItem,
-    originalAddedItem: TemplateItem,
+  const handleNewItem = async (
+    newItem: Item,
+    originalAddedItem: Item,
     closeEditModal: () => void,
   ) => {
-    // For UnifiedItem, we need to check macro overflow
+    const handleConfirm = async () => {
+      const userId = authUseCases.currentUserIdOrGuestId()
 
-    const currentDayDiet_ = currentDayDiet()
-    const macroTarget_ = getMacroTargetForDay(stringToDate(targetDay()))
+      props.onNewItem?.(newItem, originalAddedItem)
 
-    // Create context object once
-    const macroOverflowContext = {
-      currentDayDiet: currentDayDiet_,
-      macroTarget: macroTarget_,
-      macroOverflowOptions: { enable: true },
-    }
-
-    // Helper function for checking individual macro properties on the unified item
-    const checkMacroOverflow = (property: keyof MacroNutrientsRecord) => {
-      return isOverflow(originalAddedItem, property, macroOverflowContext)
-    }
-
-    const onConfirm = async () => {
-      props.onNewUnifiedItem?.(newItem, originalAddedItem)
-
-      let type: 'food' | 'recipe'
-      if (isFoodItem(originalAddedItem)) {
-        type = 'food'
-      } else if (isRecipeItem(originalAddedItem)) {
-        type = 'recipe'
-      } else {
-        throw new Error('Invalid template item type')
-      }
-
-      const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-        currentUserId(),
-        type,
-        originalAddedItem.reference.id,
-      )
-
-      if (
-        recentFood !== null &&
-        (recentFood.user_id !== currentUserId() ||
-          recentFood.type !== type ||
-          recentFood.reference_id !== originalAddedItem.reference.id)
-      ) {
-        throw new Error(
-          'BUG: recentFood fetched does not match user/type/reference',
+      // Extract recent food reference from the item
+      const recentFoodRef = extractRecentFoodReference(originalAddedItem)
+      if (recentFoodRef === null) {
+        logging.warn(
+          'Cannot track recent food for item without trackable reference',
+          { originalAddedItem },
         )
-      }
-
-      const recentFoodInput = createNewRecentFood({
-        user_id: currentUserId(),
-        type,
-        reference_id: originalAddedItem.reference.id,
-        last_used: new Date(),
-        times_used: (recentFood?.times_used ?? 0) + 1,
-      })
-
-      if (recentFood !== null) {
-        await updateRecentFood(recentFood.id, recentFoodInput)
+        // Continue with the rest of the flow, just skip recent food tracking
       } else {
-        await insertRecentFood(recentFoodInput)
+        const { type, referenceId } = recentFoodRef
+
+        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
+          userId,
+          type,
+          referenceId,
+        )
+
+        if (
+          recentFood !== null &&
+          (recentFood.user_id !== authUseCases.currentUserIdOrGuestId() ||
+            recentFood.type !== type ||
+            recentFood.reference_id !== referenceId)
+        ) {
+          throw new Error(
+            'BUG: recentFood fetched does not match user/type/reference',
+          )
+        }
+
+        const recentFoodInput = createNewRecentFood({
+          user_id: userId,
+          type,
+          reference_id: referenceId,
+          last_used: new Date(),
+          times_used: (recentFood?.times_used ?? 0) + 1,
+        })
+
+        if (recentFood !== null) {
+          await updateRecentFood(recentFood.id, recentFoodInput)
+        } else {
+          await insertRecentFood(recentFoodInput)
+        }
       }
 
       const confirmModalId = openConfirmModal(
@@ -186,11 +160,15 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
+    const overflowResults = isOverflow({
+      item: originalAddedItem,
+    })
+
     // Check if any macro nutrient would overflow
     const isOverflowing =
-      checkMacroOverflow('carbs') ||
-      checkMacroOverflow('protein') ||
-      checkMacroOverflow('fat')
+      overflowResults['carbs']() ||
+      overflowResults['protein']() ||
+      overflowResults['fat']()
 
     if (isOverflowing) {
       // Prompt if user wants to add item even if it overflows
@@ -201,7 +179,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
           confirmText: 'Adicionar mesmo assim',
           cancelText: 'Cancelar',
           onConfirm: () => {
-            onConfirm()
+            handleConfirm()
               .then(() => {
                 closeModal(overflowModalId)
                 closeEditModal()
@@ -222,7 +200,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     } else {
       try {
-        await onConfirm()
+        await handleConfirm()
       } catch (err) {
         logging.error('TemplateSearchModal adicionar item error:', err)
         showError(err, {}, 'Erro ao adicionar item')
@@ -269,9 +247,27 @@ export function TemplateSearch(props: {
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
-  createEffect(() => {
-    setTemplateSearchTab(TEMPLATE_SEARCH_DEFAULT_TAB)
+  // Load persisted tab preference on mount (only once)
+  onMount(() => {
+    const persistedTab = loadTabPreference()
+    setTemplateSearchTab(persistedTab)
   })
+
+  // Wrapper that persists tab changes to localStorage
+  const handleSetTab = (
+    tabOrUpdater:
+      | TemplateSearchTab
+      | ((prev: TemplateSearchTab) => TemplateSearchTab),
+  ) => {
+    // Compute the new value based on whether it's a function or direct value
+    const newTab =
+      typeof tabOrUpdater === 'function'
+        ? tabOrUpdater(templateSearchTab())
+        : tabOrUpdater
+
+    setTemplateSearchTab(newTab)
+    saveTabPreference(newTab)
+  }
 
   return (
     <>
@@ -286,10 +282,7 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs
-        tab={templateSearchTab}
-        setTab={setTemplateSearchTab}
-      />
+      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense
@@ -301,7 +294,7 @@ export function TemplateSearch(props: {
       >
         <TemplateSearchResults
           search={debouncedSearch()}
-          filteredTemplates={templates() ?? []}
+          filteredTemplates={() => templates() ?? []}
           onTemplateSelected={props.onTemplateSelected}
           refetch={refetchTemplates}
         />

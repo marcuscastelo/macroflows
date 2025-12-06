@@ -59,7 +59,7 @@ export function getFirstMacroProfile(
   return profiles[0] ?? null
 }
 
-export function inForceMacroProfile(
+export function getEffectiveMacroProfile(
   profiles: readonly MacroProfile[],
   date: Date,
 ): MacroProfile | null {
