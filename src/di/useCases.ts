@@ -11,6 +11,14 @@ import { createClipboardUseCases } from '~/modules/clipboard/application/usecase
  */
 import { initializeMacroProfileState } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
+/**
+ * Day-diet use-cases initializer.
+ *
+ * The day-use-cases module exports an `initializeDayUseCases` function that must
+ * be called once auth use-cases are ready. Wiring it here ensures the module's
+ * proxy is initialized before any DI consumers expect the concrete instance.
+ */
+import { initializeDayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -88,6 +96,12 @@ initializeMacroProfileState({
   getAuthUseCases: () => coreContainer.authUseCases(),
   macroProfileUseCases,
 })
+
+// Initialize day-diet use-cases so the exported proxy in that module is backed
+// by a real instance before other modules attempt to call its methods.
+// This prevents the 'can't access lexical declaration "useCases" before initialization'
+// error by ensuring the day-use-cases are created after the core auth container is ready.
+initializeDayUseCases({ getAuthUseCases: () => coreContainer.authUseCases() })
 
 /**
  * Create weight use-cases after core container is established.
