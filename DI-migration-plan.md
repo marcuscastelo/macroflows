@@ -388,13 +388,13 @@ Abaixo segue um checklist detalhado do progresso realizado até o momento. Manti
     - Commits: `77a080eb`, `b882ae3b`
   - [x] Verificação: `npm run copilot:check` passou após cada alteração e no conjunto final (lint / tsc / tests).
 
-- [ ] Batch 3 — Day-diet, template, template-search (próximo)
-  - [ ] `src/modules/diet/day-diet/application/usecases/createBlankDay.ts` — ajustar para injetar `dayUseCases` ou manter shim (decisão: manter shims por padrão, a menos que desejado o contrário).
-  - [ ] `src/modules/diet/day-diet/application/usecases/dayEditOrchestrator.ts` — revisar e converter para factory pattern quando aplicável.
-  - [ ] `src/modules/diet/template/application/createGroupFromTemplate.ts` — pendente (se existir no repositório).
-  - [ ] `src/modules/diet/template/application/templateToItem.ts` — pendente.
-  - [ ] `src/modules/template-search/application/templateSearchLogic.ts` — pendente.
-  - [ ] `src/modules/template-search/application/usecases/templateSearchState.ts` — pendente.
+- [x] Batch 3 — Day-diet, template, template-search (concluído)
+  - [x] `src/modules/diet/day-diet/application/usecases/createBlankDay.ts` — convertido para factory (`createCreateBlankDay`) com backward-compatible shim `createBlankDay`. Note: kept shim to avoid breaking consumers. Commit: `0d22e1f8`.
+  - [x] `src/modules/diet/day-diet/application/usecases/dayEditOrchestrator.ts` — converted to `createDayEditOrchestrator(deps)` and shimmed as `dayUseCases`. Adjusted types and null-checks to satisfy lint. Commit: `0d22e1f8`.
+  - [x] `src/modules/diet/template/application/createGroupFromTemplate.ts` — reviewed (pure/domain function); no DI required. Commit: `0d22e1f8`.
+  - [x] `src/modules/diet/template/application/templateToItem.ts` — reviewed (pure/domain function); no DI required. Commit: `0d22e1f8`.
+  - [x] `src/modules/template-search/application/templateSearchLogic.ts` — reviewed (pure, logic-only). Commit: `0d22e1f8`.
+  - [x] `src/modules/template-search/application/usecases/templateSearchState.ts` — converted to `createTemplateSearchState(deps)` factory with a backward-compatible shim exposing previous exports. Wrapped in `createRoot` to isolate signals and added a small lint-safe usage pattern. Commit: `0d22e1f8`.
 
 - [ ] Batch 4 — Weight / Measure / Charts
   - [ ] (Arquivos listados no plano) — pendente.
