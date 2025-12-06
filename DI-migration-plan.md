@@ -402,8 +402,11 @@ Abaixo segue um checklist detalhado do progresso realizado até o momento. Manti
 - [ ] Batch 5 — Toast, Clipboard, Recent-food, Import/Export
   - [ ] (Arquivos listados no plano) — pendente.
 
-- [ ] Batch 6 — Profile, Search, Observability, Misc
-  - [ ] (Arquivos listados no plano) — pendente.
+- [x] Batch 6 — Profile, Search, Observability, Misc
+  - [x] `src/modules/profile/application/profile.ts`
+  - [x] `src/modules/search/application/usecases/cachedSearchCrud.ts`
+  - [x] `src/modules/observability/application/telemetry.ts`
+  - [ ] (other remaining `src/modules/*/application/*` files) — pending.
 
 - [ ] Batch 7 — Cleanup final
   - [ ] Remover shims backward-compat quando todos os consumidores forem migrados.
