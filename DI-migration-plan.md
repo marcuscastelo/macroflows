@@ -354,13 +354,76 @@ Use these exact paths while editing. (If you need the complete raw list in a sin
 
 ---
 
-## Final notes
+## Migration progress checklist (registro automático de progresso)
 
-- This file is intended to be self-sufficient. Save it, then reset the conversation and proceed. When you want me to apply changes, provide the short resume (branch/batch) shown in section "How to resume".
-- I recommend starting on Batch 1 (Auth & User) to validate the container wiring and guest/normal repository switching early.
+Abaixo segue um checklist detalhado do progresso realizado até o momento. Mantive shims backward-compatible onde necessário e rodei os checks (lint/ts/tests) após cada conjunto de mudanças.
 
-If you want, I can also produce:
-- A single PR-ready diff for Batch 1 converting `authUseCases.ts` and wiring the container, or
-- A checklist file in repo (e.g., `.github/di-migration-checklist.md`) generated from this plan.
+- [x] Batch 0 — Preparation DI
+  - [x] `src/di/container.tsx` — criado/ajustado e preparado para receber wiring de use-cases (wired defaults para auth/user).
+  - [x] `src/sections/common/context/Providers.tsx` — atualizado para criar o container de bootstrap e inicializar lifecycles (usa `useCases` legacy como overrides).
 
-Which of those would you like next?
+- [x] Batch 1 — Auth & User
+  - [x] `src/modules/user/application/usecases/userUseCases.ts` — convertido para `createUserUseCases({ repository })`, adicionado `userUseCases` shim.
+    - Commit relacionado: `0d90b17e` ("refactor(di): batch 1 - user & container wiring")
+  - [x] `src/di/container.tsx` — wired defaults para `userUseCases` (Supabase repo) e `authUseCases`.
+    - Commit relacionado: `0d90b17e`
+  - [x] `src/modules/auth/application/usecases/authUseCases.ts` — export `createAuthUseCases` e added `authUseCases` shim delegando ao `userUseCases` shim.
+    - Commit relacionado: `3159e614` ("refactor(di): auth usecases shim")
+  - [x] Verificação: `npm run copilot:check` passou (lint / tsc / tests).
+
+- [x] Batch 2 — Diet core (recipes, items, food, meal, macro-profile)
+  - [x] `src/modules/diet/recipe/application/usecases/recipeCrud.ts` — convertido para `createRecipeCrud({ repository })` + default `recipeCrud` + shims (`fetch*`, `insertRecipe`, etc).
+    - Commit: `4e300d92` ("refactor(di): batch 2 - recipe crud factory + shims")
+  - [x] `src/modules/diet/recipe/application/services/cacheManagement.ts` — já era factory-style; revisado e mantido.
+  - [x] `src/modules/diet/item/application/recipeItemUseCases.ts` — já compatível com DI (usa `fetchRecipeById` shim).
+  - [x] `src/modules/diet/food/application/usecases/foodCrud.ts` — convertido para `createFoodCrud({ repository })` + default shim `foodCrud`.
+    - Commit: `74c193e6` ("refactor(di): batch 2 - food crud factory + shims")
+  - [x] `src/modules/diet/meal/application/meal.ts` — criado `createMealUseCases(deps)` com shim `mealUseCases`, tipado para usar `DayUseCases`.
+    - Commits: `1d024d79`, `22d36b6e` ("refactor(di): batch 2 - meal usecases factory + shim" / "meal uses DayUseCases type")
+  - [x] `src/modules/diet/day-diet/application/usecases/dayUseCases.ts` — convertido para `createDayUseCases()` (encloses signals in createRoot) e exportado `dayUseCases` shim; export `DayUseCases` type.
+    - Commits: `78e9ad7e`, `fad6fb6e` ("refactor(di): batch 2 - dayUseCases factory + shim" / "refactor(di): batch 2 - dedupe DayUseCases export")
+  - [x] `src/modules/diet/macro-profile/application/service/macroProfileCrudService.ts` — convertido para `createMacroProfileCrudService` + default `macroProfileCrudService` shim.
+    - Commit: `77a080eb`
+  - [x] `src/modules/diet/macro-profile/application/usecases/macroProfileUseCases.ts` — convertido para `createMacroProfileUseCases({ crudService, cache })` + default shim `macroProfileUseCases`.
+    - Commits: `77a080eb`, `b882ae3b`
+  - [x] Verificação: `npm run copilot:check` passou após cada alteração e no conjunto final (lint / tsc / tests).
+
+- [ ] Batch 3 — Day-diet, template, template-search (próximo)
+  - [ ] `src/modules/diet/day-diet/application/usecases/createBlankDay.ts` — ajustar para injetar `dayUseCases` ou manter shim (decisão: manter shims por padrão, a menos que desejado o contrário).
+  - [ ] `src/modules/diet/day-diet/application/usecases/dayEditOrchestrator.ts` — revisar e converter para factory pattern quando aplicável.
+  - [ ] `src/modules/diet/template/application/createGroupFromTemplate.ts` — pendente (se existir no repositório).
+  - [ ] `src/modules/diet/template/application/templateToItem.ts` — pendente.
+  - [ ] `src/modules/template-search/application/templateSearchLogic.ts` — pendente.
+  - [ ] `src/modules/template-search/application/usecases/templateSearchState.ts` — pendente.
+
+- [ ] Batch 4 — Weight / Measure / Charts
+  - [ ] (Arquivos listados no plano) — pendente.
+
+- [ ] Batch 5 — Toast, Clipboard, Recent-food, Import/Export
+  - [ ] (Arquivos listados no plano) — pendente.
+
+- [ ] Batch 6 — Profile, Search, Observability, Misc
+  - [ ] (Arquivos listados no plano) — pendente.
+
+- [ ] Batch 7 — Cleanup final
+  - [ ] Remover shims backward-compat quando todos os consumidores forem migrados.
+  - [ ] Remover imports mortos, rodar lint+tests e limpar tipos.
+
+Commits relevantes (resumo)
+- `0d90b17e` — refactor(di): batch 1 - user & container wiring
+- `3159e614` — refactor(di): auth usecases shim
+- `323e037c` — docs(di): add DI migration plan
+- `4e300d92` — refactor(di): batch 2 - recipe crud factory + shims
+- `74c193e6` — refactor(di): batch 2 - food crud factory + shims
+- `1d024d79` — refactor(di): batch 2 - meal usecases factory + shim
+- `22d36b6e` — refactor(di): batch 2 - meal uses DayUseCases type
+- `3bbc71c2` — refactor(di): batch 2 - day and meal typing + meal factory
+- `77a080eb` — refactor(di): batch 2 - macro-profile service & usecases factories + shims
+- `b882ae3b` — refactor(di): batch 2 - macro-profile factories + shims
+- `78e9ad7e` — refactor(di): batch 2 - dayUseCases factory + shim
+- `fad6fb6e` — refactor(di): batch 2 - dedupe DayUseCases export
+
+Observações / notas rápidas
+- Estratégia aplicada: converter módulos para factories e manter shims até migrar consumidores. Isso mantém o código rodando e testes verdes durante a migração gradual.
+- Após a sua ação de "comprimir a conversa" e retomar, prossigo com Batch 3 (vou manter a estratégia padrão de manter shims para minimizar impacto — altere se quiser injetar dependências imediatamente).
+- Se preferir, posso também gerar um arquivo `.github/di-migration-checklist.md` com o mesmo checklist para tracking no repo.
