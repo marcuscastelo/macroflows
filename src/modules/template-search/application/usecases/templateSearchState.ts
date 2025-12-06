@@ -10,8 +10,8 @@ import {
   createFoodCrud,
   type FoodCrud,
 } from '~/modules/diet/food/application/usecases/foodCrud'
-import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
+import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import {
   fetchUserRecipeByName,
   fetchUserRecipes,
@@ -33,7 +33,7 @@ export function createTemplateSearchState(deps?: {
       currentUser: () => { favorite_foods?: number[] } | null
     }
   }
-  fetchUserRecentFoods?: typeof fetchUserRecentFoods
+  fetchUserRecentFoods?: typeof recentFoodUseCases.fetchUserRecentFoodsAsTemplates
   foodCrud?: FoodCrud
   fetchUserRecipes?: typeof fetchUserRecipes
   fetchUserRecipeByName?: typeof fetchUserRecipeByName
@@ -45,7 +45,8 @@ export function createTemplateSearchState(deps?: {
   return createRoot(() => {
     const injectedUseCases = deps?.useCases ?? useCases
     const injectedFetchUserRecentFoods =
-      deps?.fetchUserRecentFoods ?? fetchUserRecentFoods
+      deps?.fetchUserRecentFoods ??
+      recentFoodUseCases.fetchUserRecentFoodsAsTemplates
     const foodCrud =
       deps?.foodCrud ??
       createFoodCrud({ repository: () => createSupabaseFoodRepository() })
@@ -63,26 +64,6 @@ export function createTemplateSearchState(deps?: {
       createSignal<TemplateSearchTab>('hidden')
     const [debouncedTab] = localCreateDebouncedSignal(templateSearchTab, 500)
 
-export const [templates, { refetch: refetchTemplates }] = createResource(
-  () => ({
-    tab: debouncedTab(),
-    search: debouncedSearch(),
-    userId: useCases.authUseCases().currentUserIdOrGuestId(),
-  }),
-  (signals) => {
-    return fetchTemplatesByTabLogic(
-      signals.tab,
-      signals.search,
-      signals.userId,
-      {
-        // TODO: Convert fetchTemplatesByTabLogic deps to reactive signals?
-        fetchUserRecipes,
-        fetchUserRecipeByName,
-        fetchUserRecentFoodsAsTemplates:
-          recentFoodUseCases.fetchUserRecentFoodsAsTemplates,
-        fetchFoods,
-        fetchFoodsByName,
-        getFavoriteFoods,
     const getFavoriteFoods = () =>
       injectedUseCases.userUseCases().currentUser()?.favorite_foods ?? []
 
@@ -92,22 +73,16 @@ export const [templates, { refetch: refetchTemplates }] = createResource(
         search: debouncedSearch(),
         userId: injectedUseCases.authUseCases().currentUserIdOrGuestId(),
       }),
-      (signals) => {
-        return fetchTemplatesByTabLogic(
-          signals.tab,
-          signals.search,
-          signals.userId,
-          {
-            fetchUserRecipes: injectedFetchUserRecipes,
-            fetchUserRecipeByName: injectedFetchUserRecipeByName,
-            fetchUserRecentFoods: injectedFetchUserRecentFoods,
-            fetchFoods: (params) => foodCrud.fetchFoods(params),
-            fetchFoodsByName: (name, params) =>
-              foodCrud.fetchFoodsByName(name, params),
-            getFavoriteFoods,
-          },
-        )
-      },
+      (signals) =>
+        fetchTemplatesByTabLogic(signals.tab, signals.search, signals.userId, {
+          fetchUserRecipes: injectedFetchUserRecipes,
+          fetchUserRecipeByName: injectedFetchUserRecipeByName,
+          fetchUserRecentFoodsAsTemplates: injectedFetchUserRecentFoods,
+          fetchFoods: (params) => foodCrud.fetchFoods(params),
+          fetchFoodsByName: (name, params) =>
+            foodCrud.fetchFoodsByName(name, params),
+          getFavoriteFoods,
+        }),
     )
 
     // Ensure the reactive signals are referenced inside a tracked scope so the
