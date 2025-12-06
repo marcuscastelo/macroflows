@@ -199,16 +199,6 @@ export function createWeightUseCases(deps?: {
 }
 
 /**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `weightUseCases` and `refetchUserWeights`.
- */
-export const weightUseCases = createWeightUseCases()
-
-export function refetchUserWeights() {
-  return weightUseCases.refetchUserWeights()
-}
-
-/**
  * Type representing the weight use-cases returned by the factory.
  */
 export type WeightUseCases = ReturnType<typeof createWeightUseCases>
