@@ -18,6 +18,17 @@ import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 /**
+ * Granular dependencies for weight use-cases.
+ * These replace the full `useCases` object to avoid circular dependencies.
+ */
+export type WeightUseCasesDeps = {
+  /** Returns the current user ID or guest ID */
+  getCurrentUserIdOrGuestId: () => string
+  /** Returns true if the app is in guest mode */
+  isGuestMode: () => boolean
+}
+
+/**
  * Factory that creates weight-related use-cases.
  *
  * Accepts optional overrides for repositories, store creators and utilities so
@@ -25,7 +36,13 @@ import { parseWithStack } from '~/shared/utils/parseWithStack'
  * the current module defaults are used (keeps backward-compatible behavior).
  */
 export function createWeightUseCases(deps?: {
-  useCases?: typeof useCases
+  /** Granular auth/guest dependencies (preferred over legacy useCases) */
+  authDeps?: WeightUseCasesDeps
+  /** @deprecated Use authDeps instead. Legacy useCases object for backward compatibility. */
+  useCases?: {
+    authUseCases: () => { currentUserIdOrGuestId: () => string }
+    guestUseCases: () => { isGuestMode: () => boolean }
+  }
   createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
   createSupabaseWeightGateway?: typeof createSupabaseWeightGateway
   createGuestWeightRepository?: typeof createGuestWeightRepository
@@ -35,6 +52,7 @@ export function createWeightUseCases(deps?: {
   parseWithStack?: typeof parseWithStack
 }) {
   const {
+    authDeps: injectedAuthDeps,
     useCases: injectedUseCases,
     createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
     createSupabaseWeightGateway: injectedCreateSupabase,
@@ -45,7 +63,28 @@ export function createWeightUseCases(deps?: {
     parseWithStack: injectedParseWithStack,
   } = deps ?? {}
 
-  const localUseCases = injectedUseCases ?? useCases
+  // Resolve auth dependencies: prefer granular authDeps, fallback to legacy useCases, then global
+  const resolveAuthDeps = (): WeightUseCasesDeps => {
+    if (injectedAuthDeps) {
+      return injectedAuthDeps
+    }
+    if (injectedUseCases) {
+      return {
+        getCurrentUserIdOrGuestId: () =>
+          injectedUseCases.authUseCases().currentUserIdOrGuestId(),
+        isGuestMode: () => injectedUseCases.guestUseCases().isGuestMode(),
+      }
+    }
+    // Default: use global useCases
+    return {
+      getCurrentUserIdOrGuestId: () =>
+        useCases.authUseCases().currentUserIdOrGuestId(),
+      isGuestMode: () => useCases.guestUseCases().isGuestMode(),
+    }
+  }
+
+  const authDeps = resolveAuthDeps()
+
   const localCreateLocalStorage =
     injectedCreateLocalStorage ?? createLocalStorageWeightCacheRepository
   const localCreateSupabase =
@@ -83,8 +122,7 @@ export function createWeightUseCases(deps?: {
     function getWeightRepository():
       | typeof supabaseWeightRepository
       | typeof guestWeightRepository {
-      const guestUseCases = localUseCases.guestUseCases()
-      return guestUseCases.isGuestMode()
+      return authDeps.isGuestMode()
         ? guestWeightRepository
         : supabaseWeightRepository
     }
@@ -111,21 +149,18 @@ export function createWeightUseCases(deps?: {
 
     // Public refetch function (reads current user id and refetches)
     function refetchUserWeights() {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
     }
 
     // Lifecycle: on mount and effect to keep cache in sync
     onMount(() => {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
     })
 
     createEffect(() => {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
 
       const cachedWeights = localParseWithStack(
@@ -172,3 +207,8 @@ export const weightUseCases = createWeightUseCases()
 export function refetchUserWeights() {
   return weightUseCases.refetchUserWeights()
 }
+
+/**
+ * Type representing the weight use-cases returned by the factory.
+ */
+export type WeightUseCases = ReturnType<typeof createWeightUseCases>
