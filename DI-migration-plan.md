@@ -115,6 +115,9 @@ Completed:
   - Removed circular `useCases` import from weightUseCases.ts
   - Updated all consumers (8 files) to use `useCases.weightUseCases()`
   - Updated `container.tsx` to provide `authDeps` when creating default weight use-cases
+- [x] `weightChartUseCases` — centralized in DI container, shim removed
+  - Refactored `createWeightChartUseCases` to accept granular `WeightChartDeps` instead of `typeof useCases`
+  - Updated consumers (WeightChartTooltip, WeightEvolution) to use `useCases.weightChartUseCases()`
 
 Blocked (circular dependency):
 - [ ] `clipboardUseCases` — cannot centralize due to import chain causing circular dependency:
@@ -136,6 +139,8 @@ Remaining shims to evaluate (may have similar circular dependency issues):
 - `861518ea` — refactor(di): batch-7 - migrate weightUseCases consumers to use container
 - `696725b4` — refactor(di): batch-7 - remove weightUseCases backward-compatible shim
 - `ab2e709c` — refactor(di): batch-7 - make weightUseCases.authDeps required, remove circular import
+- `5f66ea6e` — docs(di): update migration plan with Batch 7 progress
+- `0021f244` — refactor(di): batch-7 - centralize weightChartUseCases in DI container
 
 ---
 
