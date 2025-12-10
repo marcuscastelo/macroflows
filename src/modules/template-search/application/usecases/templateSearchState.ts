@@ -15,7 +15,10 @@ import {
   fetchUserRecipeByName,
   fetchUserRecipes,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import {
+  createRecentFoodCrud,
+  type RecentFoodCrud,
+} from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 // userUseCases will be accessed via the DI container to avoid init order issues
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
@@ -33,7 +36,7 @@ export function createTemplateSearchState(deps?: {
       currentUser: () => { favorite_foods?: number[] } | null
     }
   }
-  fetchUserRecentFoods?: typeof fetchUserRecentFoods
+  recentFoodCrud?: RecentFoodCrud
   foodCrud?: FoodCrud
   fetchUserRecipes?: typeof fetchUserRecipes
   fetchUserRecipeByName?: typeof fetchUserRecipeByName
@@ -44,8 +47,7 @@ export function createTemplateSearchState(deps?: {
   // require reactive variables to be created/used within tracked scopes.
   return createRoot(() => {
     const injectedUseCases = deps?.useCases ?? useCases
-    const injectedFetchUserRecentFoods =
-      deps?.fetchUserRecentFoods ?? fetchUserRecentFoods
+    const recentFoodCrud = deps?.recentFoodCrud ?? createRecentFoodCrud()
     const foodCrud =
       deps?.foodCrud ??
       createFoodCrud({ repository: () => createSupabaseFoodRepository() })
@@ -80,7 +82,7 @@ export function createTemplateSearchState(deps?: {
           {
             fetchUserRecipes: injectedFetchUserRecipes,
             fetchUserRecipeByName: injectedFetchUserRecipeByName,
-            fetchUserRecentFoods: injectedFetchUserRecentFoods,
+            fetchUserRecentFoods: recentFoodCrud.fetchUserRecentFoods,
             fetchFoods: (params) => foodCrud.fetchFoods(params),
             fetchFoodsByName: (name, params) =>
               foodCrud.fetchFoodsByName(name, params),

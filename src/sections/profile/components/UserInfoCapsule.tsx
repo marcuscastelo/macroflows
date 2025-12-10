@@ -1,10 +1,6 @@
 import { Show } from 'solid-js'
 
-import {
-  innerData,
-  setInnerData,
-  unsavedFields,
-} from '~/modules/profile/application/profile'
+import { useCases } from '~/di/useCases'
 import { type User, userSchema } from '~/modules/user/domain/user'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
@@ -30,7 +26,7 @@ const makeOnChange = <T extends keyof User>(
   ) => {
     event.preventDefault()
 
-    const innerData_ = innerData()
+    const innerData_ = useCases.profileUseCases().innerData()
 
     if (innerData_ === null) {
       return
@@ -42,7 +38,7 @@ const makeOnChange = <T extends keyof User>(
     // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1304
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     newUser[field] = convert(event.target.value) as unknown as User[T]
-    setInnerData(newUser)
+    useCases.profileUseCases().setInnerData(newUser)
   }
 }
 
@@ -58,7 +54,7 @@ const makeOnBlur = <T extends keyof User>(
   ) => {
     event.preventDefault()
 
-    const innerData_ = innerData()
+    const innerData_ = useCases.profileUseCases().innerData()
 
     if (innerData_ === null) {
       return
@@ -69,7 +65,7 @@ const makeOnBlur = <T extends keyof User>(
     newUser[field] = convert(event.target.value)
 
     // TODO: Move to server onSave(newProfile)
-    setInnerData(parseWithStack(userSchema, newUser))
+    useCases.profileUseCases().setInnerData(parseWithStack(userSchema, newUser))
   }
 }
 
@@ -154,11 +150,15 @@ function LeftContent(props: { field: UserFieldKey; extra?: string }) {
     <CapsuleContent>
       <h5
         class={`text-xl ${
-          unsavedFields()[props.field] === true ? 'text-red-500 italic' : ''
+          useCases.profileUseCases().unsavedFields()[props.field] === true
+            ? 'text-red-500 italic'
+            : ''
         }`}
       >
         {USER_FIELD_TRANSLATION[props.field]} {props.extra}{' '}
-        {unsavedFields()[props.field] === true ? '*' : ''}
+        {useCases.profileUseCases().unsavedFields()[props.field] === true
+          ? '*'
+          : ''}
       </h5>
     </CapsuleContent>
   )
@@ -172,7 +172,7 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
   return (
     <CapsuleContent>
       <div class="flex items-center justify-center w-full">
-        <Show when={innerData()}>
+        <Show when={useCases.profileUseCases().innerData()}>
           {(innerData) => {
             if (props.field === 'diet' || props.field === 'gender') {
               const translation =
@@ -181,7 +181,7 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
                 props.field,
                 translation,
                 innerData,
-                setInnerData,
+                useCases.profileUseCases().setInnerData,
               )
             }
             return (

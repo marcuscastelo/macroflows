@@ -15,12 +15,10 @@ import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import {
-  fetchRecentFoodByUserTypeAndReferenceId,
-  insertRecentFood,
-  updateRecentFood,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
+
+const recentFoodCrud = createRecentFoodCrud()
 import {
   debouncedSearch,
   refetchTemplates,
@@ -113,11 +111,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       } else {
         const { type, referenceId } = recentFoodRef
 
-        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-          userId,
-          type,
-          referenceId,
-        )
+        const recentFood =
+          await recentFoodCrud.fetchRecentFoodByUserTypeAndReferenceId(
+            userId,
+            type,
+            referenceId,
+          )
 
         if (
           recentFood !== null &&
@@ -139,9 +138,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         })
 
         if (recentFood !== null) {
-          await updateRecentFood(recentFood.id, recentFoodInput)
+          await recentFoodCrud.updateRecentFood(recentFood.id, recentFoodInput)
         } else {
-          await insertRecentFood(recentFoodInput)
+          await recentFoodCrud.insertRecentFood(recentFoodInput)
         }
       }
 
