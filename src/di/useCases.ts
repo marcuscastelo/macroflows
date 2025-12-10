@@ -3,6 +3,7 @@ import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { createTelemetry } from '~/modules/observability/application/telemetry'
 import { initializeSentry } from '~/modules/observability/infrastructure/sentry/sentry'
+import { createProfile } from '~/modules/profile/application/profile'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -106,6 +107,12 @@ const weightChartUseCasesInstance = createRoot(() => {
   })
 })
 
+const profileUseCasesInstance = createRoot(() => {
+  return createProfile({
+    userUseCases: () => coreContainer.userUseCases(),
+  })
+})
+
 /**
  * Full use-cases container with all modules wired.
  */
@@ -114,6 +121,7 @@ export const useCases = {
   userUseCases: coreContainer.userUseCases,
   guestUseCases: coreContainer.guestUseCases,
   authUseCases: coreContainer.authUseCases,
+  profileUseCases: () => profileUseCasesInstance,
   weightUseCases: () => weightUseCasesInstance,
   weightChartUseCases: () => weightChartUseCasesInstance,
 }

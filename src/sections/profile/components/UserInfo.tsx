@@ -1,13 +1,8 @@
 import { createEffect, Show } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
-import {
-  createProfile,
-  type UnsavedFields,
-} from '~/modules/profile/application/profile'
+import { type UnsavedFields } from '~/modules/profile/application/profile'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-
-const profile = createProfile()
 import { showError } from '~/modules/toast/application/toastManager'
 import {
   demoteUserToNewUser,
@@ -39,7 +34,7 @@ export function UserInfo() {
   const userUseCases = useCases.userUseCases()
   createEffect(() => {
     const user_ = userUseCases.currentUser()
-    const innerData_ = profile.innerData()
+    const innerData_ = useCases.profileUseCases().innerData()
 
     if (user_ === null) {
       return
@@ -58,9 +53,11 @@ export function UserInfo() {
     // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1302
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const keys = Object.keys(innerData_) as (keyof UnsavedFields)[]
-    profile.setUnsavedFields(
-      keys.reduce<UnsavedFields>(reduceFunc, {} satisfies UnsavedFields),
-    )
+    useCases
+      .profileUseCases()
+      .setUnsavedFields(
+        keys.reduce<UnsavedFields>(reduceFunc, {} satisfies UnsavedFields),
+      )
   })
 
   const convertDesiredWeight = (value: string) => Number(value)
@@ -115,7 +112,7 @@ export function UserInfo() {
         }
         type="button"
         onClick={() => {
-          const user = profile.innerData()
+          const user = useCases.profileUseCases().innerData()
           if (user === null) {
             return
           }
