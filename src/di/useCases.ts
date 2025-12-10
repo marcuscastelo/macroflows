@@ -1,6 +1,8 @@
 import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { createTelemetry } from '~/modules/observability/application/telemetry'
+import { initializeSentry } from '~/modules/observability/infrastructure/sentry/sentry'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -38,6 +40,12 @@ const coreContainer = createRoot(() => {
   // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1441
   const [mode, setMode] = createSignal<AppMode>('normal')
 
+  const telemetryUseCases = createMemo(() =>
+    createTelemetry({
+      initializeSentry,
+    }),
+  )
+
   const userUseCases = createMemo(() =>
     createUserUseCases({
       repository: () => getUserRepository(mode()),
@@ -64,6 +72,7 @@ const coreContainer = createRoot(() => {
   })
 
   return {
+    telemetryUseCases,
     userUseCases,
     guestUseCases,
     authUseCases,
@@ -101,6 +110,7 @@ const weightChartUseCasesInstance = createRoot(() => {
  * Full use-cases container with all modules wired.
  */
 export const useCases = {
+  telemetryUseCases: coreContainer.telemetryUseCases,
   userUseCases: coreContainer.userUseCases,
   guestUseCases: coreContainer.guestUseCases,
   authUseCases: coreContainer.authUseCases,
