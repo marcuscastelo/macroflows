@@ -101,20 +101,6 @@ export function createRecentFoodCrud(deps?: {
 }
 
 /**
- * Backward-compatible shim: keep existing named exports working while consumers migrate.
- * Wired to default repository and showPromise.
- * TODO: Remove DI shims and use proper container/use-case injection.
+ * Type for DI/testing consumers.
  */
-const _defaultRecentFoodCrud = createRecentFoodCrud()
-
-export const fetchRecentFoodByUserTypeAndReferenceId =
-  _defaultRecentFoodCrud.fetchRecentFoodByUserTypeAndReferenceId
-export const fetchUserRecentFoods = _defaultRecentFoodCrud.fetchUserRecentFoods
-export const insertRecentFood = _defaultRecentFoodCrud.insertRecentFood
-export const updateRecentFood = _defaultRecentFoodCrud.updateRecentFood
-export const deleteRecentFoodByReference =
-  _defaultRecentFoodCrud.deleteRecentFoodByReference
-
-// Also export the factory for DI consumers
-export { _defaultRecentFoodCrud as recentFoodCrud }
 export type RecentFoodCrud = ReturnType<typeof createRecentFoodCrud>

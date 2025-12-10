@@ -3,22 +3,11 @@ import { createEffect, createMemo, createRoot, createSignal } from 'solid-js'
 import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { createClipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { createDayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
-/**
- * Macro-profile state initializer.
- *
- * The macro-profile module exposes an `initializeMacroProfileState` function
- * which must be called once the auth/use-cases are available. Wire it here so
- * the DI container is responsible for starting module-level reactive effects.
- */
 import { initializeMacroProfileState } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
-/**
- * Day-diet use-cases initializer.
- *
- * The day-use-cases module exports an `initializeDayUseCases` function that must
- * be called once auth use-cases are ready. Wiring it here ensures the module's
- * proxy is initialized before any DI consumers expect the concrete instance.
- */
+import { createTelemetry } from '~/modules/observability/application/telemetry'
+import { initializeSentry } from '~/modules/observability/infrastructure/sentry/sentry'
+import { createProfile } from '~/modules/profile/application/profile'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
@@ -56,6 +45,12 @@ const coreContainer = createRoot(() => {
   // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1441
   const [mode, setMode] = createSignal<AppMode>('normal')
 
+  const telemetryUseCases = createMemo(() =>
+    createTelemetry({
+      initializeSentry,
+    }),
+  )
+
   const userUseCases = createMemo(() =>
     createUserUseCases({
       repository: () => getUserRepository(mode()),
@@ -82,6 +77,7 @@ const coreContainer = createRoot(() => {
   })
 
   return {
+    telemetryUseCases,
     userUseCases,
     guestUseCases,
     authUseCases,
@@ -120,6 +116,12 @@ const weightChartUseCasesInstance = createRoot(() => {
   })
 })
 
+const profileUseCasesInstance = createRoot(() => {
+  return createProfile({
+    userUseCases: () => coreContainer.userUseCases(),
+  })
+})
+
 /**
  * Create clipboard use-cases after core container is established.
  */
@@ -137,9 +139,11 @@ const daysUseCasesInstance = createRoot(() => {
  * Full use-cases container with all modules wired.
  */
 export const useCases = {
+  telemetryUseCases: coreContainer.telemetryUseCases,
   userUseCases: coreContainer.userUseCases,
   guestUseCases: coreContainer.guestUseCases,
   authUseCases: coreContainer.authUseCases,
+  profileUseCases: () => profileUseCasesInstance,
   weightUseCases: () => weightUseCasesInstance,
   weightChartUseCases: () => weightChartUseCasesInstance,
   clipboardUseCases: () => clipboardUseCasesInstance,

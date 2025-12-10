@@ -54,17 +54,6 @@ export function createCachedSearchCrud(deps?: {
 }
 
 /**
- * Backward-compatible shim: keep the original named exports while allowing DI consumers
- * to call `createCachedSearchCrud` directly when they need to inject dependencies.
- * TODO: Remove DI shims and use proper container/use-case injection.
+ * Type for DI/testing consumers.
  */
-const _defaultCachedSearchCrud = createCachedSearchCrud()
-
-export const isSearchCached = _defaultCachedSearchCrud.isSearchCached
-export const markSearchAsCached = _defaultCachedSearchCrud.markSearchAsCached
-export const unmarkSearchAsCached =
-  _defaultCachedSearchCrud.unmarkSearchAsCached
-
-// Also export the factory and type for DI/testing consumers
-export { _defaultCachedSearchCrud as cachedSearchCrud }
 export type CachedSearchCrud = ReturnType<typeof createCachedSearchCrud>
