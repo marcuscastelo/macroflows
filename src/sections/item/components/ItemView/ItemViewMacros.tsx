@@ -8,11 +8,19 @@ import { macroTargetUseCases } from '~/modules/diet/macro-target/application/mac
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
 
-// Create macro overflow instance for this module
-const macroOverflow = createMacroOverflow({
-  dayUseCases: useCases.dayUseCases(),
-  macroTargetUseCases,
-})
+// Create macro overflow instance lazily inside the component to avoid
+// circular initialization during SSR/prerender. Using a memo ensures we
+// don't recreate the factory on every render.
+const getMacroOverflow = () => {
+  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
+    createMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases,
+    }),
+  )
+
+  return memo
+}
 
 export type ItemViewMacrosProps = {
   item: Accessor<Item>
@@ -46,7 +54,7 @@ export function ItemViewMacros(props: ItemViewMacrosProps) {
 
     logging.debug('Creating macro overflow checker for item:', item)
 
-    return macroOverflow.isOverflow({ item, originalItem })
+    return getMacroOverflow()().isOverflow({ item, originalItem })
   })
 
   return (

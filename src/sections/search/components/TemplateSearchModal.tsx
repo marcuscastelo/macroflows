@@ -1,4 +1,4 @@
-import { onMount, Suspense } from 'solid-js'
+import { createMemo, onMount, Suspense } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
@@ -49,11 +49,18 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
-// Create macro overflow instance for this module
-const macroOverflow = createMacroOverflow({
-  dayUseCases: useCases.dayUseCases(),
-  macroTargetUseCases,
-})
+// Create macro overflow instance lazily to avoid circular initialization
+// during SSR/prerender. Use a memo so the factory is reused.
+const getMacroOverflow = () => {
+  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
+    createMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases,
+    }),
+  )
+
+  return memo
+}
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -167,7 +174,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = macroOverflow.isOverflow({
+    const overflowResults = getMacroOverflow()().isOverflow({
       item: originalAddedItem,
     })
 
