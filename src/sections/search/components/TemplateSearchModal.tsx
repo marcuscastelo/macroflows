@@ -1,9 +1,8 @@
 import { createMemo, onMount, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -18,13 +17,6 @@ import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
 
 const recentFoodCrud = createRecentFoodCrud()
-import {
-  debouncedSearch,
-  refetchTemplates,
-  setTemplateSearchTab,
-  templates,
-  templateSearchTab,
-} from '~/modules/template-search/application/usecases/templateSearchState'
 import {
   loadTabPreference,
   saveTabPreference,
@@ -51,12 +43,9 @@ import { logging } from '~/shared/utils/logging'
 
 // Create macro overflow instance lazily to avoid circular initialization
 // during SSR/prerender. Use a memo so the factory is reused.
-const getMacroOverflow = () => {
+const getMacroOverflow = (deps: Parameters<typeof createMacroOverflow>[0]) => {
   const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
-    createMacroOverflow({
-      dayUseCases: useCases.dayUseCases(),
-      macroTargetUseCases,
-    }),
+    createMacroOverflow(deps),
   )
 
   return memo
@@ -70,6 +59,7 @@ export type TemplateSearchModalProps = {
 }
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
+  const useCases = useContainer()
   const handleTemplateSelected = (template: Template) => {
     const initialQuantity = isTemplateRecipe(template)
       ? getRecipePreparedQuantity(template)
@@ -174,7 +164,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = getMacroOverflow()().isOverflow({
+    const overflowResults = getMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases: useCases.macroTargetUseCases(),
+    })().isOverflow({
       item: originalAddedItem,
     })
 
@@ -258,13 +251,14 @@ export function TemplateSearch(props: {
   onTemplateSelected: (template: Template) => void
   onEANModal: () => void
 }) {
+  const templateSearchState = useContainer().templateSearchState()
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   // Load persisted tab preference on mount (only once)
   onMount(() => {
     const persistedTab = loadTabPreference()
-    setTemplateSearchTab(persistedTab)
+    templateSearchState.setTemplateSearchTab(persistedTab)
   })
 
   // Wrapper that persists tab changes to localStorage
@@ -276,10 +270,10 @@ export function TemplateSearch(props: {
     // Compute the new value based on whether it's a function or direct value
     const newTab =
       typeof tabOrUpdater === 'function'
-        ? tabOrUpdater(templateSearchTab())
+        ? tabOrUpdater(templateSearchState.templateSearchTab())
         : tabOrUpdater
 
-    setTemplateSearchTab(newTab)
+    templateSearchState.setTemplateSearchTab(newTab)
     saveTabPreference(newTab)
   }
 
@@ -296,7 +290,10 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
+      <TemplateSearchTabs
+        tab={templateSearchState.templateSearchTab}
+        setTab={handleSetTab}
+      />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense
@@ -307,10 +304,10 @@ export function TemplateSearch(props: {
         }
       >
         <TemplateSearchResults
-          search={debouncedSearch()}
-          filteredTemplates={() => templates() ?? []}
+          search={templateSearchState.debouncedSearch()}
+          filteredTemplates={() => templateSearchState.templates() ?? []}
           onTemplateSelected={props.onTemplateSelected}
-          refetch={refetchTemplates}
+          refetch={templateSearchState.refetchTemplates}
         />
       </Suspense>
     </>

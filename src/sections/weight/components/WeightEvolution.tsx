@@ -1,6 +1,6 @@
 import { For, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import {
@@ -22,8 +22,10 @@ import { WeightView } from '~/sections/weight/components/WeightView'
  * @returns SolidJS component
  */
 export function WeightEvolution() {
+  const useCases = useContainer()
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const authUseCases = useCases.authUseCases()
+  const userUseCases = useCases.userUseCases()
   const weightUseCases = useCases.weightUseCases()
   const weightChartUseCases = useCases.weightChartUseCases()
 
@@ -48,6 +50,10 @@ export function WeightEvolution() {
             <WeightChart
               weights={weightUseCases.weights}
               desiredWeight={weightChartUseCases.desiredWeight()}
+              calculateWeightProgress={
+                weightChartUseCases.calculateWeightProgress
+              }
+              diet={userUseCases.currentUser()?.diet ?? 'cut'}
               type={weightChartType()}
             />
           </Suspense>

@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { closeModal } from '~/shared/modal/helpers/modalHelpers'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
@@ -13,6 +13,7 @@ type DayChangeModalProps = {
 }
 
 export function DayChangeModal(props: DayChangeModalProps) {
+  const useCases = useContainer()
   const previousDate = () => {
     const [year, month, day] = useCases
       .dayUseCases()

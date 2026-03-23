@@ -7,7 +7,7 @@ import { type User } from '~/modules/user/domain/user'
  * Factory that creates the `createBlankDay` use-case.
  *
  * We accept a callable `dayUseCases` provider to avoid init-order issues
- * (so consumers can pass `() => container.dayUseCases` or a local shim).
+ * (for example, `() => container.dayUseCases()`).
  *
  * @param deps.dayUseCases - provider for DayUseCases
  */
@@ -33,7 +33,7 @@ export function createCreateBlankDay(deps: { dayUseCases: () => DayUseCases }) {
  *
  * Example usage:
  *   const createBlankDay = createCreateBlankDay({
- *     dayUseCases: () => useCases.dayUseCases,
+ *     dayUseCases: () => container.dayUseCases(),
  *   })
  *
  * This file exposes the factory `createCreateBlankDay`. Update any consumers

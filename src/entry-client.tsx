@@ -1,8 +1,8 @@
 // @refresh reload
 import { mount, StartClient } from '@solidjs/start/client'
 
-import { useCases } from '~/di/useCases'
+import { initializeAppTelemetry } from '~/di/container'
 
-useCases.telemetryUseCases().initializeTelemetry('client')
+initializeAppTelemetry('client')
 
 mount(() => <StartClient />, document.getElementById('app')!)

@@ -3,8 +3,7 @@
  * Provides UI for restoring a previous macro profile.
  */
 
-import { useCases } from '~/di/useCases'
-import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
+import { useContainer } from '~/di/container'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   showError,
@@ -30,6 +29,7 @@ export type RestoreProfileModalConfig = {
 function RestoreProfileModalContent(props: {
   previousMacroProfile: MacroProfile
 }) {
+  const useCases = useContainer()
   const previousProfileWeight = () =>
     useCases.weightUseCases().effectiveAt(props.previousMacroProfile.target_day)
       ?.weight ??
@@ -64,6 +64,8 @@ function RestoreProfileModalFooter(props: {
   onCancel?: () => void
   onClose: () => void
 }) {
+  const macroProfileUseCases = useContainer().macroProfileUseCases()
+
   const handleRestore = () => {
     const closeModal = props.onClose
     const profileId = props.currentProfile.id

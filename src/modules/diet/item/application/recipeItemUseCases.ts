@@ -7,8 +7,12 @@ import {
   type Item,
   type RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { fetchRecipeById } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import {
+  createRecipeCrud,
+  type RecipeCrud,
+} from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import type { Recipe } from '~/modules/diet/recipe/domain/recipe'
+import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { showError } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 
@@ -20,7 +24,7 @@ import { logging } from '~/shared/utils/logging'
  * @param deps.fetchRecipeById - function to fetch a recipe by id
  */
 export function createRecipeItemUseCases(deps: {
-  fetchRecipeById: (id: number) => Promise<Recipe | null>
+  fetchRecipeById: RecipeCrud['fetchRecipeById']
 }) {
   return {
     withEditedQuantity: (
@@ -94,6 +98,10 @@ export function createRecipeItemUseCases(deps: {
   }
 }
 
+const defaultRecipeCrud = createRecipeCrud({
+  repository: () => createRecipeRepository(),
+})
+
 export const recipeItemUseCases = createRecipeItemUseCases({
-  fetchRecipeById,
+  fetchRecipeById: (recipeId) => defaultRecipeCrud.fetchRecipeById(recipeId),
 })

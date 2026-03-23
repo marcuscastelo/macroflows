@@ -1,3 +1,3 @@
-import { useCases } from '~/di/useCases'
+import { initializeAppTelemetry } from '~/di/container'
 
-useCases.telemetryUseCases().initializeTelemetry('server')
+initializeAppTelemetry('server')

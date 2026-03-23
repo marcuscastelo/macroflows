@@ -1,6 +1,6 @@
 import { For, type JSXElement, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardEntry,
   isItemPayload,
@@ -146,6 +146,7 @@ function ClipboardEntryRow(props: {
  * Clipboard panel that displays recent clipboard entries
  */
 export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
+  const useCases = useContainer()
   return (
     <Show when={props.isOpen}>
       <div class="fixed top-0 right-0 h-full w-80 bg-gray-800 text-white shadow-lg z-50 flex flex-col">

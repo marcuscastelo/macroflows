@@ -53,6 +53,27 @@ export function createClipboardUseCases(deps?: {
       return store
     })
 
+  function fetchLatestParsing<T extends ClipboardPayload>(
+    acceptedClipboardSchema: z.ZodType<T>,
+  ): T | null {
+    const data = clipboardStore.read()
+    if (data === null) {
+      logging.debug('No clipboard data present')
+      return null
+    }
+
+    const safeParseResult = acceptedClipboardSchema.safeParse(data.payload)
+    if (!safeParseResult.success) {
+      logging.warn('Clipboard data did not match accepted schema', {
+        errors: safeParseResult.error,
+      })
+      _showError('O conteúdo da área de transferência não é compatível.')
+      return null
+    }
+
+    return safeParseResult.data satisfies T
+  }
+
   return {
     copy(payload: ClipboardPayload): void {
       clipboardStore.copy(payload)
@@ -63,7 +84,7 @@ export function createClipboardUseCases(deps?: {
       acceptedClipboardSchema: z.ZodType<T>,
       onPasteConfirmed: (data: T) => void,
     ) {
-      const parsed = this.fetchLatestParsing(acceptedClipboardSchema)
+      const parsed = fetchLatestParsing(acceptedClipboardSchema)
       if (parsed === null) {
         _showError(
           'A área de transferência está vazia ou o conteúdo é inválido.',
@@ -97,22 +118,7 @@ export function createClipboardUseCases(deps?: {
     fetchLatestParsing<T extends ClipboardPayload>(
       acceptedClipboardSchema: z.ZodType<T>,
     ): T | null {
-      const data = clipboardStore.read()
-      if (data === null) {
-        logging.debug('No clipboard data present')
-        return null
-      }
-
-      const safeParseResult = acceptedClipboardSchema.safeParse(data.payload)
-      if (!safeParseResult.success) {
-        logging.warn('Clipboard data did not match accepted schema', {
-          errors: safeParseResult.error,
-        })
-        _showError('O conteúdo da área de transferência não é compatível.')
-        return null
-      }
-
-      return safeParseResult.data satisfies T
+      return fetchLatestParsing(acceptedClipboardSchema)
     },
 
     clear(): void {

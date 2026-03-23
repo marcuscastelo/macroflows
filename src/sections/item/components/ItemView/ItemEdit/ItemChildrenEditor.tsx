@@ -1,6 +1,6 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -17,7 +17,6 @@ import {
   type Item,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
@@ -35,6 +34,8 @@ export type ItemChildrenEditorProps = {
 }
 
 export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
+  const useCases = useContainer()
+  const recipeCrud = useCases.recipeCrud()
   const children = () => {
     const item = props.itemDraft()
     return isGroupItem(item) || isRecipeItem(item)
@@ -153,7 +154,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         user_id: userId,
       })
 
-      const insertedRecipe = await saveRecipe(newUnifiedRecipe)
+      const insertedRecipe = await recipeCrud.saveRecipe(newUnifiedRecipe)
 
       if (!insertedRecipe) {
         showError('Falha ao criar receita a partir do grupo')
@@ -333,6 +334,7 @@ type GroupChildEditorProps = {
 }
 
 function GroupChildEditor(props: GroupChildEditorProps) {
+  const useCases = useContainer()
   const handleEditChild = () => {
     if (props.onEditChild) {
       props.onEditChild(props.child)

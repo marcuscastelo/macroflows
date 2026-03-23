@@ -1,10 +1,7 @@
 import { type Accessor, For, Show } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { type Template } from '~/modules/diet/template/domain/template'
-import {
-  debouncedTab,
-  templates,
-} from '~/modules/template-search/application/usecases/templateSearchState'
 import { Alert } from '~/sections/common/components/Alert'
 import { SearchLoadingIndicator } from '~/sections/search/components/SearchLoadingIndicator'
 import { TemplateSearchResultItem } from '~/sections/search/components/TemplateSearchResultItem'
@@ -15,16 +12,24 @@ export function TemplateSearchResults(props: {
   onTemplateSelected: (template: Template) => void
   refetch: (info?: unknown) => unknown
 }) {
+  const templateSearchState = useContainer().templateSearchState()
+
   const notFoundAlert = () => {
     if (props.filteredTemplates().length > 0) {
       return null
     }
 
-    if (debouncedTab() === 'recent' && props.search === '') {
+    if (
+      templateSearchState.debouncedTab() === 'recent' &&
+      props.search === ''
+    ) {
       return 'Sem alimentos recentes. Eles aparecerão aqui assim que você adicionar seu primeiro alimento'
     }
 
-    if (debouncedTab() === 'favorites' && props.search === '') {
+    if (
+      templateSearchState.debouncedTab() === 'favorites' &&
+      props.search === ''
+    ) {
       return 'Sem favoritos. Adicione alimentos ou receitas aos favoritos para vê-los aqui.'
     }
 
@@ -34,7 +39,7 @@ export function TemplateSearchResults(props: {
   return (
     <>
       <Show
-        when={!templates.loading}
+        when={!templateSearchState.templates.loading}
         fallback={
           <SearchLoadingIndicator
             message="Buscando alimentos..."

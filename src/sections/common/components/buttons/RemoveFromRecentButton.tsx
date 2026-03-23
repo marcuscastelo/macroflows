@@ -1,12 +1,11 @@
 import { Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
 import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 
 const recentFoodCrud = createRecentFoodCrud()
 import { showPromise } from '~/modules/toast/application/toastManager'
@@ -19,7 +18,9 @@ type RemoveFromRecentButtonProps = {
 }
 
 export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
+  const useCases = useContainer()
   const authUseCases = useCases.authUseCases()
+  const templateSearchState = useCases.templateSearchState()
   const handleClick = (e: MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
@@ -49,7 +50,7 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
   }
 
   return (
-    <Show when={debouncedTab() === 'recent'}>
+    <Show when={templateSearchState.debouncedTab() === 'recent'}>
       <button
         class="my-auto pt-2 pl-1 hover:animate-pulse"
         onClick={handleClick}

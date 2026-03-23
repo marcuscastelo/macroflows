@@ -1,6 +1,6 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { AuthGuard } from '~/modules/auth/ui/guards/AuthGuard'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
@@ -16,6 +16,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 
 export default function DietPage() {
+  const useCases = useContainer()
   const [mode, setMode] = createSignal<'edit' | 'read-only' | 'summary'>('edit')
 
   function handleRequestEditMode() {

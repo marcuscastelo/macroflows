@@ -1,6 +1,6 @@
 import { type JSXElement, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { CopyButton } from '~/sections/common/components/CopyButton'
 import { PasteIcon } from '~/sections/common/components/icons/PasteIcon'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
@@ -23,6 +23,7 @@ type ClipboardActionButtonsProps = {
 export function ClipboardActionButtons(
   props: ClipboardActionButtonsProps,
 ): JSXElement {
+  const useCases = useContainer()
   return (
     <div class="ml-auto flex gap-2" role="group" aria-label="Clipboard actions">
       <Show when={props.canCopy}>

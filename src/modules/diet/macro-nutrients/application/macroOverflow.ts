@@ -7,7 +7,7 @@ import {
   createMacroNutrients,
   type MacroNutrients,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { macroTargetUseCases as defaultMacroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
+import { type MacroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -25,14 +25,12 @@ import { logging } from '~/shared/utils/logging'
  */
 export function createMacroOverflow(deps: {
   dayUseCases: DayUseCases
-  macroTargetUseCases?: typeof defaultMacroTargetUseCases
+  macroTargetUseCases: MacroTargetUseCases
   stringToDate?: typeof stringToDate
   DayDietExt?: typeof DayDietExt
   ItemExt?: typeof ItemExt
   createMacroNutrients?: typeof createMacroNutrients
 }) {
-  const localMacroTargetUseCases =
-    deps.macroTargetUseCases ?? defaultMacroTargetUseCases
   const localStringToDate = deps.stringToDate ?? stringToDate
   const localDayDietExt = deps.DayDietExt ?? DayDietExt
   const localItemExt = deps.ItemExt ?? ItemExt
@@ -46,7 +44,7 @@ export function createMacroOverflow(deps: {
       return null
     }
 
-    const macroTarget_ = localMacroTargetUseCases.macroTargetAt(
+    const macroTarget_ = deps.macroTargetUseCases.macroTargetAt(
       localStringToDate(deps.dayUseCases.targetDay()),
     )
     if (macroTarget_ === null) {
@@ -114,7 +112,7 @@ export function createMacroOverflow(deps: {
     const dayDiet = args.dayDiet
     const dayMacros = localDayDietExt.calcDayMacros(dayDiet)
 
-    const macroTarget = localMacroTargetUseCases.macroTargetAt(
+    const macroTarget = deps.macroTargetUseCases.macroTargetAt(
       new Date(dayDiet.target_day),
     )
     if (!macroTarget) {

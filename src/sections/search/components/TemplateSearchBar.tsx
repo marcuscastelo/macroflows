@@ -1,18 +1,16 @@
 import { Show } from 'solid-js'
 
-import {
-  setTemplateSearch,
-  templates,
-  templateSearch,
-} from '~/modules/template-search/application/usecases/templateSearchState'
+import { useContainer } from '~/di/container'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 export function TemplateSearchBar(props: { isDesktop: boolean }) {
+  const templateSearchState = useContainer().templateSearchState()
+
   return (
     <div class="relative">
       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <Show
-          when={templates.loading}
+          when={templateSearchState.templates.loading}
           fallback={
             <svg
               aria-hidden="true"
@@ -36,9 +34,9 @@ export function TemplateSearchBar(props: { isDesktop: boolean }) {
       </div>
       <input
         autofocus={props.isDesktop}
-        value={templateSearch()}
+        value={templateSearchState.templateSearch()}
         onInput={(e) => {
-          setTemplateSearch(e.target.value)
+          templateSearchState.setTemplateSearch(e.target.value)
         }}
         type="search"
         id="default-search"
@@ -46,9 +44,11 @@ export function TemplateSearchBar(props: { isDesktop: boolean }) {
         placeholder="Buscar alimentos"
         required
         aria-label="Buscar alimentos"
-        aria-describedby={templates.loading ? 'search-loading' : undefined}
+        aria-describedby={
+          templateSearchState.templates.loading ? 'search-loading' : undefined
+        }
       />
-      <Show when={templates.loading}>
+      <Show when={templateSearchState.templates.loading}>
         <div id="search-loading" class="sr-only" aria-live="polite">
           Buscando alimentos...
         </div>

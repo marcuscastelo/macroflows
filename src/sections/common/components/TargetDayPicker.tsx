@@ -1,6 +1,6 @@
 import { Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type DateValueType } from '~/sections/datepicker/types'
 import { lazyImport } from '~/shared/solid/lazyImport'
 import {
@@ -14,6 +14,7 @@ const { Datepicker } = lazyImport(
 )
 
 export function TargetDayPicker() {
+  const useCases = useContainer()
   const handleDayChange = (
     newValue: DateValueType,
     element?: HTMLInputElement | null,

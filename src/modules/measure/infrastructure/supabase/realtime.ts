@@ -1,4 +1,3 @@
-import { refetchBodyMeasures } from '~/modules/measure/application/usecases/measureState'
 import {
   type BodyMeasure,
   bodyMeasureSchema,
@@ -27,7 +26,9 @@ export function setupBodyMeasureRealtimeSubscription(
   )
 }
 
-export function initializeMeasureRealtime(): void {
+export function initializeMeasureRealtime(deps: {
+  refetchBodyMeasures: () => void
+}): void {
   if (initialized) {
     return
   }
@@ -44,7 +45,7 @@ export function initializeMeasureRealtime(): void {
         case 'UPDATE':
         case 'DELETE': {
           // For measures, we simply refetch since we don't have complex caching
-          void refetchBodyMeasures()
+          deps.refetchBodyMeasures()
           break
         }
       }

@@ -19,6 +19,10 @@ export type WeightChartProps = {
   weights: Accessor<readonly Weight[]>
   desiredWeight: number
   type: WeightChartType
+  calculateWeightProgress: Parameters<
+    typeof buildWeightChartOptions
+  >[0]['calculateWeightProgress']
+  diet: Parameters<typeof buildWeightChartOptions>[0]['diet']
 }
 
 /**
@@ -98,6 +102,8 @@ export function WeightChart(props: WeightChartProps) {
       min,
       max,
       polishedData: polishedData(),
+      calculateWeightProgress: props.calculateWeightProgress,
+      diet: props.diet,
       isMobile: isMobile(),
       weightsByPeriod: weightsByPeriod(),
     })

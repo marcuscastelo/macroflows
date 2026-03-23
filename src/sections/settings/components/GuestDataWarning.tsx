@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   showError,
   showSuccess,
@@ -11,6 +11,7 @@ import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { logging } from '~/shared/utils/logging'
 
 export function GuestDataWarning() {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const location = useLocation()
   const guestUseCases = useCases.guestUseCases()

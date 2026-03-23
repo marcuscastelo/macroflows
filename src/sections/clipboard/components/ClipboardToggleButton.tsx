@@ -1,6 +1,6 @@
 import { type JSXElement, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { cn } from '~/shared/cn'
 
@@ -16,6 +16,7 @@ type ClipboardToggleButtonProps = {
 export function ClipboardToggleButton(
   props: ClipboardToggleButtonProps,
 ): JSXElement {
+  const useCases = useContainer()
   return (
     <Button
       type="button"

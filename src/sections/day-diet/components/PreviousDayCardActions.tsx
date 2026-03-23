@@ -1,4 +1,4 @@
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
@@ -12,6 +12,7 @@ type PreviousDayCardActionsProps = {
 }
 
 export function PreviousDayCardActions(props: PreviousDayCardActionsProps) {
+  const useCases = useContainer()
   const handleCopy = (day: string) => {
     const meals =
       useCases

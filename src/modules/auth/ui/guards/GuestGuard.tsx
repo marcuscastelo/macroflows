@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createEffect, type JSXElement, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type GuestGuardProps = {
@@ -13,6 +13,7 @@ type GuestGuardProps = {
  * Guest guard component that redirects authenticated users away from login/register pages
  */
 export function GuestGuard(props: GuestGuardProps) {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const authUseCases = useCases.authUseCases()
 

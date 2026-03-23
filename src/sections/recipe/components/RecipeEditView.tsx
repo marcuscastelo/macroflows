@@ -1,6 +1,6 @@
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -51,6 +51,7 @@ export type RecipeEditViewProps = {
 export function RecipeEditHeader(props: {
   onUpdateRecipe: (Recipe: Recipe) => void
 }) {
+  const useCases = useContainer()
   const { recipe } = useRecipeEditContext()
 
   const onPaste = (data: ClipboardPayload) => {
@@ -106,6 +107,7 @@ export function RecipeEditContent(props: {
   onEditItem: (item: TemplateItem) => void
   onNewItem: () => void
 }) {
+  const useCases = useContainer()
   const { recipe, setRecipe } = useRecipeEditContext()
 
   return (

@@ -1,6 +1,6 @@
 import { type Accessor } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
@@ -13,6 +13,7 @@ import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
 
 export function MacroEvolution() {
+  const useCases = useContainer()
   const weightUseCases = useCases.weightUseCases()
 
   return (

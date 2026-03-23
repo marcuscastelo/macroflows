@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   isItemNameValid,
   MAX_ITEM_NAME_LENGTH,
@@ -14,7 +14,6 @@ import {
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'
@@ -44,9 +43,10 @@ export type ItemEditBodyProps = {
 }
 
 export function ItemEditBody(props: ItemEditBodyProps) {
+  const useCases = useContainer()
   const macroOverflowUseCases = createMacroOverflow({
     dayUseCases: useCases.dayUseCases(),
-    macroTargetUseCases,
+    macroTargetUseCases: useCases.macroTargetUseCases(),
   })
 
   const handleQuantitySelect = (quantity: number) => {

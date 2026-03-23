@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createEffect, type JSXElement, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 
 type AuthGuardProps = {
@@ -15,6 +15,7 @@ type AuthGuardProps = {
  * In guest mode, allows access without redirecting to login.
  */
 export function AuthGuard(props: AuthGuardProps) {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const authUseCases = useCases.authUseCases()
   const guestUseCases = useCases.guestUseCases()

@@ -8,7 +8,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
@@ -24,10 +24,6 @@ import {
   type Item,
   itemSchema,
 } from '~/modules/diet/item/schema/itemSchema'
-import {
-  deleteRecipe,
-  updateRecipe,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { type Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { DownloadIcon } from '~/sections/common/components/icons/DownloadIcon'
 import { useFloatField } from '~/sections/common/hooks/useField'
@@ -54,6 +50,8 @@ export type ItemEditModalProps = {
 }
 
 export const ItemEditModal = (_props: ItemEditModalProps) => {
+  const useCases = useContainer()
+  const recipeCrud = useCases.recipeCrud()
   logging.debug('[ItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 
@@ -175,7 +173,10 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
 
   // Recipe edit handlers
   const handleSaveRecipe = async (updatedRecipe: Recipe) => {
-    const result = await updateRecipe(updatedRecipe.id, updatedRecipe)
+    const result = await recipeCrud.updateRecipe(
+      updatedRecipe.id,
+      updatedRecipe,
+    )
     if (result) {
       // Update the current item to reflect the changes
       const currentItem = itemDraft()
@@ -193,7 +194,7 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
   }
 
   const handleDeleteRecipe = async (recipeId: Recipe['id']) => {
-    await deleteRecipe(recipeId)
+    await recipeCrud.deleteRecipe(recipeId)
     // The parent component should handle removing this item
   }
 

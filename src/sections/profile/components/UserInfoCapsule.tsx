@@ -1,6 +1,6 @@
 import { Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type User, userSchema } from '~/modules/user/domain/user'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
@@ -14,7 +14,14 @@ import { type Mutable } from '~/shared/utils/typeUtils'
 
 type Translation<T extends string> = { [key in T]: string }
 
+type ProfileUseCasesLike = {
+  innerData: () => User | null
+  setInnerData: (user: User) => void
+  unsavedFields: () => Partial<Record<UserFieldKey, boolean>>
+}
+
 const makeOnChange = <T extends keyof User>(
+  profileUseCases: ProfileUseCasesLike,
   field: T,
   convert: (value: string) => User[T] | string,
 ) => {
@@ -26,7 +33,7 @@ const makeOnChange = <T extends keyof User>(
   ) => {
     event.preventDefault()
 
-    const innerData_ = useCases.profileUseCases().innerData()
+    const innerData_ = profileUseCases.innerData()
 
     if (innerData_ === null) {
       return
@@ -38,11 +45,12 @@ const makeOnChange = <T extends keyof User>(
     // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1304
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     newUser[field] = convert(event.target.value) as unknown as User[T]
-    useCases.profileUseCases().setInnerData(newUser)
+    profileUseCases.setInnerData(newUser)
   }
 }
 
 const makeOnBlur = <T extends keyof User>(
+  profileUseCases: ProfileUseCasesLike,
   field: T,
   convert: (value: string) => User[T],
 ) => {
@@ -54,7 +62,7 @@ const makeOnBlur = <T extends keyof User>(
   ) => {
     event.preventDefault()
 
-    const innerData_ = useCases.profileUseCases().innerData()
+    const innerData_ = profileUseCases.innerData()
 
     if (innerData_ === null) {
       return
@@ -65,7 +73,7 @@ const makeOnBlur = <T extends keyof User>(
     newUser[field] = convert(event.target.value)
 
     // TODO: Move to server onSave(newProfile)
-    useCases.profileUseCases().setInnerData(parseWithStack(userSchema, newUser))
+    profileUseCases.setInnerData(parseWithStack(userSchema, newUser))
   }
 }
 
@@ -146,19 +154,19 @@ export function UserInfoCapsule<T extends UserFieldKey>(props: {
 }
 
 function LeftContent(props: { field: UserFieldKey; extra?: string }) {
+  const profileUseCases = useContainer().profileUseCases()
+
   return (
     <CapsuleContent>
       <h5
         class={`text-xl ${
-          useCases.profileUseCases().unsavedFields()[props.field] === true
+          profileUseCases.unsavedFields()[props.field] === true
             ? 'text-red-500 italic'
             : ''
         }`}
       >
         {USER_FIELD_TRANSLATION[props.field]} {props.extra}{' '}
-        {useCases.profileUseCases().unsavedFields()[props.field] === true
-          ? '*'
-          : ''}
+        {profileUseCases.unsavedFields()[props.field] === true ? '*' : ''}
       </h5>
     </CapsuleContent>
   )
@@ -168,11 +176,13 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
   field: T
   convert: (value: string) => User[T]
 }) {
+  const profileUseCases = useContainer().profileUseCases()
+
   // Render ComboBox for diet and gender, input for others
   return (
     <CapsuleContent>
       <div class="flex items-center justify-center w-full">
-        <Show when={useCases.profileUseCases().innerData()}>
+        <Show when={profileUseCases.innerData()}>
           {(innerData) => {
             if (props.field === 'diet' || props.field === 'gender') {
               const translation =
@@ -181,7 +191,7 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
                 props.field,
                 translation,
                 innerData,
-                useCases.profileUseCases().setInnerData,
+                profileUseCases.setInnerData,
               )
             }
             return (
@@ -192,8 +202,12 @@ function RightContent<T extends keyof Omit<User, '__type'>>(props: {
                 value={valueToString(innerData()[props.field])}
                 // TODO: Stop storing intermediate values with type assertion lies (maybe store in local var)
                 // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1303
-                onChange={makeOnChange(props.field, convertString)}
-                onBlur={makeOnBlur(props.field, props.convert)}
+                onChange={makeOnChange(
+                  profileUseCases,
+                  props.field,
+                  convertString,
+                )}
+                onBlur={makeOnBlur(profileUseCases, props.field, props.convert)}
                 style={{ width: '100%' }}
               />
             )

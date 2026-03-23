@@ -16,7 +16,10 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
+import {
+  createDayDietRepository,
+  type DayRepository,
+} from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
@@ -28,16 +31,19 @@ import { logging } from '~/shared/utils/logging'
  *
  * This returns a stable object created inside a `createRoot` to keep internal
  * signals and stores properly isolated. Consumers should inject or call the
- * factory (via the backward-compatible shim below) to obtain the use-cases.
+ * factory to obtain the use-cases.
  */
-export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
+export function createDayUseCases(deps: {
+  authUseCases: () => AuthUseCases
+  dayRepository?: DayRepository
+}) {
   return createRoot(() => {
     const authUseCases = () => deps.authUseCases()
     const dayChangeStore = createDayChangeStore()
     const dayStateStore = createDayStateStore()
     const dayCacheStore = createDayCacheStore()
 
-    const dayRepository = createDayDietRepository()
+    const dayRepository = deps.dayRepository ?? createDayDietRepository()
 
     // NOTE: intentionally avoid importing `useCases` here to prevent circular
     // dependency during module initialization. The DI container will call
@@ -242,13 +248,4 @@ export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
   })
 }
 
-/**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `dayUseCases` while migration proceeds.
- *
- * Historically the module exported a concrete instance created at module
- * evaluation time which led to TDZ/circular import problems. To avoid that we
- * export a lightweight stub object that is safe to import and can be
- * initialized later by the DI container via `initializeDayUseCases`.
- */
 export type DayUseCases = ReturnType<typeof createDayUseCases>

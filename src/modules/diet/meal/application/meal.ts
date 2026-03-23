@@ -1,4 +1,3 @@
-import { useCases } from '~/di/useCases'
 import { type DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
@@ -41,13 +40,4 @@ export function createMealUseCases(deps: { dayUseCases: DayUseCases }) {
   }
 }
 
-/**
- * Backward-compatible shim: keep `updateMeal` function export working.
- * TODO: Remove DI shims and use proper container/use-case injection.
- */
-export const mealUseCases = createMealUseCases({
-  dayUseCases: useCases.dayUseCases(),
-})
-
-export const updateMeal = (mealId: Meal['id'], newMeal: Meal) =>
-  mealUseCases.updateMeal(mealId, newMeal)
+export type MealUseCases = ReturnType<typeof createMealUseCases>

@@ -1,4 +1,4 @@
-import { type WeightUseCases } from '~/di/useCases'
+import { type WeightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 

@@ -1,6 +1,6 @@
 import { createEffect, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type UnsavedFields } from '~/modules/profile/application/profile'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
@@ -31,6 +31,7 @@ export const GENDER_TRANSLATION: Translation<User['gender']> = {
 }
 
 export function UserInfo() {
+  const useCases = useContainer()
   const userUseCases = useCases.userUseCases()
   createEffect(() => {
     const user_ = userUseCases.currentUser()

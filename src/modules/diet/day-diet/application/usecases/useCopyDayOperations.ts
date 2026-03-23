@@ -1,6 +1,5 @@
 import { createResource, createSignal } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import type { DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import {
   createNewDayDiet,
@@ -127,14 +126,4 @@ export function createCopyDayOperations(deps: {
   }
 }
 
-/**
- * Backward-compatible shim: keep existing named exports working while consumers migrate.
- * The shim wires the factory to the current `dayUseCases`.
- * TODO: Remove DI shims and use proper container/use-case injection.
- */
-const _defaultCopyOps = createCopyDayOperations({
-  dayUseCases: () => useCases.dayUseCases(),
-})
-
-export const copyDay = _defaultCopyOps.copyDay
-export const useCopyDayUseCase = _defaultCopyOps.useCopyDayUseCase
+export type CopyDayOperations = ReturnType<typeof createCopyDayOperations>

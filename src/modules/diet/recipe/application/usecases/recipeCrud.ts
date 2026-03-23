@@ -3,7 +3,6 @@ import {
   type Recipe,
 } from '~/modules/diet/recipe/domain/recipe'
 import { type RecipeRepository } from '~/modules/diet/recipe/domain/recipeRepository'
-import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 
@@ -92,60 +91,3 @@ export function createRecipeCrud(deps: { repository: () => RecipeRepository }) {
  * Convenience type for the concrete use-cases returned by the factory.
  */
 export type RecipeCrud = ReturnType<typeof createRecipeCrud>
-
-/**
- * Backward-compatible default instance (shim) used by legacy consumers.
- * Keeps existing imports working while migrating to the container.
- * TODO: Remove DI shims and use proper container/use-case injection.
- */
-const defaultRepository = createRecipeRepository()
-export const recipeCrud = createRecipeCrud({
-  repository: () => defaultRepository,
-})
-
-/**
- * Backward-compatible named exports (function shims) so existing imports keep working.
- * These delegate to the default `recipeCrud` instance.
- * TODO: Remove DI shims and use proper container/use-case injection.
- */
-export const fetchUserRecipes = async (
-  userId: User['uuid'],
-): Promise<readonly Recipe[]> => {
-  return await recipeCrud.fetchUserRecipes(userId)
-}
-
-export const fetchUserRecipeByName = async (
-  userId: User['uuid'],
-  name: string,
-): Promise<readonly Recipe[]> => {
-  return await recipeCrud.fetchUserRecipeByName(userId, name)
-}
-
-export const fetchRecipeById = async (
-  recipeId: Recipe['id'],
-): Promise<Recipe | null> => {
-  return await recipeCrud.fetchRecipeById(recipeId)
-}
-
-export const insertRecipe = async (newRecipe: NewRecipe): Promise<void> => {
-  return await recipeCrud.insertRecipe(newRecipe)
-}
-
-export const saveRecipe = async (
-  newRecipe: NewRecipe,
-): Promise<Recipe | null> => {
-  return await recipeCrud.saveRecipe(newRecipe)
-}
-
-export const updateRecipe = async (
-  recipeId: Recipe['id'],
-  newRecipe: Recipe,
-): Promise<Recipe | null> => {
-  return await recipeCrud.updateRecipe(recipeId, newRecipe)
-}
-
-export const deleteRecipe = async (
-  recipeId: Recipe['id'],
-): Promise<boolean> => {
-  return await recipeCrud.deleteRecipe(recipeId)
-}

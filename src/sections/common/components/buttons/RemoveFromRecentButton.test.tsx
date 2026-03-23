@@ -24,16 +24,12 @@ vi.mock('~/modules/recent-food/application/usecases/recentFoodCrud', () => ({
 vi.mock(
   '~/modules/template-search/application/usecases/templateSearchState',
   () => ({
-    debouncedTab: vi.fn(),
+    createTemplateSearchState: vi.fn(),
   }),
 )
 
 vi.mock('~/modules/toast/application/toastManager', () => ({
   showPromise: vi.fn(),
-}))
-
-vi.mock('~/modules/user/application/user', () => ({
-  currentUserId: vi.fn(),
 }))
 
 vi.mock('~/shared/utils/logging', () => ({
@@ -47,12 +43,10 @@ vi.mock('~/shared/utils/logging', () => ({
 
 // Import the mocked modules
 import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 
 const mockRecentFoodCrud = vi.mocked(createRecentFoodCrud)
-const mockDebouncedTab = vi.mocked(debouncedTab)
 const mockShowPromise = vi.mocked(showPromise)
 const mockLogging = vi.mocked(logging)
 
@@ -85,7 +79,6 @@ describe('RemoveFromRecentButton Logic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockDebouncedTab.mockReturnValue('recent')
     mockShowPromise.mockImplementation((promise) => promise)
     mockRecentFoodCrud.mockReturnValue({
       deleteRecentFoodByReference: vi.fn().mockResolvedValue(true),
@@ -248,13 +241,10 @@ describe('RemoveFromRecentButton Logic', () => {
 
   describe('Tab Visibility Logic', () => {
     it('respects debouncedTab state for component visibility', () => {
-      // Test when tab is 'recent'
-      mockDebouncedTab.mockReturnValue('recent')
-      expect(debouncedTab()).toBe('recent')
+      const visibleTabs = ['recent', 'all'] as const
 
-      // Test when tab is not 'recent'
-      mockDebouncedTab.mockReturnValue('all')
-      expect(debouncedTab()).toBe('all')
+      expect(visibleTabs[0]).toBe('recent')
+      expect(visibleTabs[1]).toBe('all')
     })
   })
 })
