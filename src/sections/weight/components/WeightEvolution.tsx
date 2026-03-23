@@ -24,6 +24,8 @@ import { WeightView } from '~/sections/weight/components/WeightView'
 export function WeightEvolution() {
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const authUseCases = useCases.authUseCases()
+  const weightUseCases = useCases.weightUseCases()
+  const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
     <>
@@ -39,15 +41,13 @@ export function WeightEvolution() {
             />
           </div>
           <WeightProgress
-            weightProgress={useCases.weightChartUseCases().weightProgress()}
-            weightProgressText={
-              useCases.weightChartUseCases().weightProgressText
-            }
+            weightProgress={weightChartUseCases.weightProgress()}
+            weightProgressText={weightChartUseCases.weightProgressText}
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
-              weights={() => useCases.weightUseCases().weights()}
-              desiredWeight={useCases.weightChartUseCases().desiredWeight()}
+              weights={weightUseCases.weights}
+              desiredWeight={weightChartUseCases.desiredWeight()}
               type={weightChartType()}
             />
           </Suspense>
@@ -67,8 +67,7 @@ export function WeightEvolution() {
                 return
               }
 
-              useCases
-                .weightUseCases()
+              weightUseCases
                 .insertWeight(
                   createNewWeight({
                     user_id: authUseCases.currentUserIdOrGuestId(),
@@ -87,9 +86,7 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...useCases.weightUseCases().weights()]
-                .reverse()
-                .slice(0, 10)}
+              each={[...weightUseCases.weights()].reverse().slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

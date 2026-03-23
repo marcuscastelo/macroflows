@@ -1,4 +1,4 @@
-import { type Accessor, createMemo, type Setter, Show } from 'solid-js'
+import { type Accessor, type Setter, Show } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
 import {
@@ -23,19 +23,6 @@ import { ItemQuantityShortcuts } from '~/sections/item/components/ItemView/ItemE
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
 
-// Create macro overflow instance lazily to avoid circular initialization
-// issues during SSR/prerender. Use a memo so the factory is reused.
-const getMacroOverflowUseCases = () => {
-  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
-    createMacroOverflow({
-      dayUseCases: useCases.dayUseCases(),
-      macroTargetUseCases,
-    }),
-  )
-
-  return memo
-}
-
 export type ItemEditBodyProps = {
   canApply: boolean
   itemDraft: Accessor<Item>
@@ -57,6 +44,11 @@ export type ItemEditBodyProps = {
 }
 
 export function ItemEditBody(props: ItemEditBodyProps) {
+  const macroOverflowUseCases = createMacroOverflow({
+    dayUseCases: useCases.dayUseCases(),
+    macroTargetUseCases,
+  })
+
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[ItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
@@ -128,7 +120,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
               setItemDraft={props.setItemDraft}
               canApply={props.canApply}
               getAvailableMacros={() =>
-                getMacroOverflowUseCases()().getAvailableMacros({
+                macroOverflowUseCases.getAvailableMacros({
                   dayDiet: currentDayDiet(),
                   originalItem: props.macroOverflow().originalItem,
                 })

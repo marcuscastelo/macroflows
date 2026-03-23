@@ -13,17 +13,19 @@ import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
 
 export function MacroEvolution() {
+  const weightUseCases = useCases.weightUseCases()
+
   return (
     <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE}`}>
       <h5 class={'mx-auto mb-5 text-center text-3xl font-bold'}>
         Evolução de Macronutrientes
       </h5>
       <div class="mx-5 lg:mx-20">
-        <AllMacrosChart weights={() => useCases.weightUseCases().weights()} />
-        <CaloriesChart weights={() => useCases.weightUseCases().weights()} />
-        <ProteinChart weights={() => useCases.weightUseCases().weights()} />
-        <FatChart weights={() => useCases.weightUseCases().weights()} />
-        <CarbsChart weights={() => useCases.weightUseCases().weights()} />
+        <AllMacrosChart weights={weightUseCases.weights} />
+        <CaloriesChart weights={weightUseCases.weights} />
+        <ProteinChart weights={weightUseCases.weights} />
+        <FatChart weights={weightUseCases.weights} />
+        <CarbsChart weights={weightUseCases.weights} />
       </div>
     </div>
   )
