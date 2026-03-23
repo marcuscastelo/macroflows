@@ -121,12 +121,6 @@ export function createClipboardUseCases(deps?: {
   }
 }
 
-/**
- * Backward-compatible shim: keep the original named export while allowing DI consumers
- * to call `createClipboardUseCases` directly when they need to inject dependencies.
- */
-export const clipboardUseCases = createClipboardUseCases()
-
 // Export the factory type for DI/testing consumers (do not re-export the function which
 // is already exported above to avoid duplicate export errors)
 export type ClipboardUseCases = ReturnType<typeof createClipboardUseCases>

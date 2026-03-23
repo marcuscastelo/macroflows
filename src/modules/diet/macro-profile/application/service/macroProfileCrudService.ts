@@ -71,12 +71,8 @@ export function createMacroProfileCrudService(
 }
 
 /**
- * Public type and backward-compatible default instance.
- * Keep `macroProfileCrudService` as an object for legacy consumers while
- * migrating callers to use explicit factories and the container.
+ * Public type for the macro profile CRUD service.
  */
 export type MacroProfileCrudService = ReturnType<
   typeof createMacroProfileCrudService
 >
-
-export const macroProfileCrudService = createMacroProfileCrudService()

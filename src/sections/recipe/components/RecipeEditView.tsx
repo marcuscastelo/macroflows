@@ -1,6 +1,6 @@
 import { type Accessor, type JSXElement, type Setter } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -77,7 +77,9 @@ export function RecipeEditHeader(props: {
       class="flex"
       tabindex={0}
       onPaste={() =>
-        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        useCases
+          .clipboardUseCases()
+          .confirmPaste(clipboardPayloadSchema, onPaste)
       }
     >
       <div class="my-2">
@@ -88,9 +90,11 @@ export function RecipeEditHeader(props: {
         canCopy={recipe().items.length > 0}
         canPaste={true}
         canClear={recipe().items.length > 0}
-        onCopy={() => clipboardUseCases.copy(recipe())}
+        onCopy={() => useCases.clipboardUseCases().copy(recipe())}
         onPaste={() =>
-          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+          useCases
+            .clipboardUseCases()
+            .confirmPaste(clipboardPayloadSchema, onPaste)
         }
         onClear={onClearItems}
       />
@@ -125,7 +129,7 @@ export function RecipeEditContent(props: {
             props.onEditItem(Item)
           },
           onCopy: (Item: Item) => {
-            clipboardUseCases.copy(Item)
+            useCases.clipboardUseCases().copy(Item)
           },
           onDelete: (item: Item) => {
             setRecipe(removeItemFromRecipe(recipe(), item.id))

@@ -21,7 +21,7 @@ export function createRecipeRepository(): RecipeRepository {
   }
 }
 
-export async function fetchUserRecipes(
+async function fetchUserRecipes(
   userId: User['uuid'],
 ): Promise<readonly Recipe[]> {
   try {
@@ -36,9 +36,7 @@ export async function fetchUserRecipes(
   }
 }
 
-export async function fetchRecipeById(
-  recipeId: Recipe['id'],
-): Promise<Recipe | null> {
+async function fetchRecipeById(recipeId: Recipe['id']): Promise<Recipe | null> {
   try {
     // Check cache first
     const cached = recipeCacheStore.findInCache({ by: 'id', value: recipeId })
@@ -60,7 +58,7 @@ export async function fetchRecipeById(
   }
 }
 
-export async function fetchUserRecipeByName(
+async function fetchUserRecipeByName(
   userId: User['uuid'],
   name: Recipe['name'],
 ): Promise<readonly Recipe[]> {
@@ -76,9 +74,7 @@ export async function fetchUserRecipeByName(
   }
 }
 
-export async function insertRecipe(
-  newRecipe: NewRecipe,
-): Promise<Recipe | null> {
+async function insertRecipe(newRecipe: NewRecipe): Promise<Recipe | null> {
   try {
     const insertedRecipe = await supabaseGateway.insertRecipe(newRecipe)
     if (insertedRecipe !== null) {
@@ -91,7 +87,7 @@ export async function insertRecipe(
   }
 }
 
-export async function updateRecipe(
+async function updateRecipe(
   recipeId: Recipe['id'],
   newRecipe: Recipe,
 ): Promise<Recipe | null> {
@@ -110,7 +106,7 @@ export async function updateRecipe(
   }
 }
 
-export async function deleteRecipe(recipeId: Recipe['id']): Promise<void> {
+async function deleteRecipe(recipeId: Recipe['id']): Promise<void> {
   try {
     await supabaseGateway.deleteRecipe(recipeId)
     recipeCacheStore.removeFromCache({ by: 'id', value: recipeId })

@@ -1,5 +1,4 @@
 import { type AuthDI, createAuthDI } from '~/modules/auth/application/authDI'
-import { userUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 
 /**
@@ -28,11 +27,3 @@ export function createAuthUseCases(di: AuthDI) {
  * Public type for the concrete auth use-cases returned by the factory.
  */
 export type AuthUseCases = ReturnType<typeof createAuthUseCases>
-
-/**
- * Backward-compatible default instance (shim) used by legacy consumers.
- * Keeps existing imports working while consumers migrate to the container.
- */
-export const authUseCases = createAuthUseCases({
-  userUseCases: () => userUseCases,
-})

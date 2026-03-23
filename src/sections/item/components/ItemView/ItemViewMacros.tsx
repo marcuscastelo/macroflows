@@ -1,10 +1,26 @@
 import { type Accessor, createMemo } from 'solid-js'
 
+import { useCases } from '~/di/useCases'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import MacroNutrientsView from '~/sections/macro-nutrients/components/MacroNutrientsView'
 import { logging } from '~/shared/utils/logging'
+
+// Create macro overflow instance lazily inside the component to avoid
+// circular initialization during SSR/prerender. Using a memo ensures we
+// don't recreate the factory on every render.
+const getMacroOverflow = () => {
+  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
+    createMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases,
+    }),
+  )
+
+  return memo
+}
 
 export type ItemViewMacrosProps = {
   item: Accessor<Item>
@@ -38,7 +54,7 @@ export function ItemViewMacros(props: ItemViewMacrosProps) {
 
     logging.debug('Creating macro overflow checker for item:', item)
 
-    return isOverflow({ item, originalItem })
+    return getMacroOverflow()().isOverflow({ item, originalItem })
   })
 
   return (

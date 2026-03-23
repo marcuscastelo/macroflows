@@ -8,7 +8,6 @@ import {
   processMeasuresByDay,
 } from '~/modules/measure/application/measureUtils'
 import type { BodyMeasure } from '~/modules/measure/domain/measure'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { Chart } from '~/sections/common/components/charts/Chart'
 
 type DayAverage = {
@@ -42,7 +41,7 @@ export function BodyMeasureChart(props: BodyMeasureChartProps) {
   const data = createMemo(() =>
     processMeasuresByDay(
       measuresByDay(),
-      weightUseCases.weights(),
+      useCases.weightUseCases().weights(),
       userUseCases.currentUser()?.gender ?? 'female',
     ),
   )

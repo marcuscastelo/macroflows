@@ -8,7 +8,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
@@ -202,7 +202,9 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
       <div
         class="flex-1 p-4"
         tabindex={0}
-        onPaste={() => clipboardUseCases.confirmPaste(itemSchema, setItemDraft)}
+        onPaste={() =>
+          useCases.clipboardUseCases().confirmPaste(itemSchema, setItemDraft)
+        }
       >
         {/* Toggle button for recipes */}
         <Show
@@ -284,9 +286,11 @@ export const ItemEditModal = (_props: ItemEditModalProps) => {
           onEditChild={handleEditChild}
           viewMode={viewMode()}
           clipboardActions={{
-            onCopy: () => clipboardUseCases.copy(itemDraft()),
+            onCopy: () => useCases.clipboardUseCases().copy(itemDraft()),
             onPaste: () =>
-              clipboardUseCases.confirmPaste(itemSchema, setItemDraft),
+              useCases
+                .clipboardUseCases()
+                .confirmPaste(itemSchema, setItemDraft),
           }}
           onAddNewItem={() => {
             openTemplateSearchModal({

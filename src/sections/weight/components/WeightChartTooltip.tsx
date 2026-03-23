@@ -1,4 +1,4 @@
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
+import { useCases } from '~/di/useCases'
 import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
 import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/chart/weightEvolutionDomain'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
@@ -93,11 +93,9 @@ export function WeightChartTooltip({
           .currentUser?.diet
         if (d === 'cut' || d === 'normo' || d === 'bulk') diet = d
       }
-      const progressResult = weightChartUseCases.calculateWeightProgress(
-        periodWeights,
-        desired,
-        diet,
-      )
+      const progressResult = useCases
+        .weightChartUseCases()
+        .calculateWeightProgress(periodWeights, desired, diet)
       if (progressResult && progressResult.type === 'progress') {
         progress = progressResult.progress.toFixed(2) + '%'
       } else if (progressResult && progressResult.type === 'exceeded') {

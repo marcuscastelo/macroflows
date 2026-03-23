@@ -5,8 +5,7 @@ import {
   importFoodFromApiByEan,
   importFoodsFromApiByName,
 } from '~/modules/diet/food/infrastructure/api/application/apiFood'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { formatError } from '~/shared/formatError'
@@ -19,6 +18,7 @@ import { logging } from '~/shared/utils/logging'
  */
 export function createFoodCrud(deps: { repository: () => FoodRepository }) {
   const foodRepository = deps.repository()
+  const cachedSearchCrud = createCachedSearchCrud()
 
   return {
     async fetchFoods(params: FoodSearchParams = {}): Promise<readonly Food[]> {
@@ -36,7 +36,7 @@ export function createFoodCrud(deps: { repository: () => FoodRepository }) {
       params: FoodSearchParams = {},
     ): Promise<readonly Food[]> {
       try {
-        const isCached = await isSearchCached(name)
+        const isCached = await cachedSearchCrud.isSearchCached(name)
 
         if (!isCached) {
           await showPromise(
@@ -106,36 +106,3 @@ export function createFoodCrud(deps: { repository: () => FoodRepository }) {
  * Convenience type for the concrete use-cases returned by the factory.
  */
 export type FoodCrud = ReturnType<typeof createFoodCrud>
-
-/**
- * Backward-compatible default instance (shim) used by legacy consumers.
- * Keeps existing imports working while migrating to the container.
- */
-const defaultRepository = createSupabaseFoodRepository()
-export const foodCrud = createFoodCrud({
-  repository: () => defaultRepository,
-})
-
-/**
- * Backward-compatible named exports (function shims) so existing imports keep working.
- * These delegate to the default `foodCrud` instance.
- */
-export const fetchFoods = async (
-  params: FoodSearchParams = {},
-): Promise<readonly Food[]> => {
-  return await foodCrud.fetchFoods(params)
-}
-
-export const fetchFoodsByName = async (
-  name: Required<Food>['name'],
-  params: FoodSearchParams = {},
-): Promise<readonly Food[]> => {
-  return await foodCrud.fetchFoodsByName(name, params)
-}
-
-export const fetchFoodByEan = async (
-  ean: NonNullable<Food['ean']>,
-  params: FoodSearchParams = {},
-): Promise<Food | null> => {
-  return await foodCrud.fetchFoodByEan(ean, params)
-}

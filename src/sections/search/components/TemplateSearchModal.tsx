@@ -1,8 +1,9 @@
-import { onMount, Suspense } from 'solid-js'
+import { createMemo, onMount, Suspense } from 'solid-js'
 
 import { useCases } from '~/di/useCases'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -13,12 +14,10 @@ import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import {
-  fetchRecentFoodByUserTypeAndReferenceId,
-  insertRecentFood,
-  updateRecentFood,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
+
+const recentFoodCrud = createRecentFoodCrud()
 import {
   debouncedSearch,
   refetchTemplates,
@@ -49,6 +48,19 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
+
+// Create macro overflow instance lazily to avoid circular initialization
+// during SSR/prerender. Use a memo so the factory is reused.
+const getMacroOverflow = () => {
+  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
+    createMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases,
+    }),
+  )
+
+  return memo
+}
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -105,11 +117,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       } else {
         const { type, referenceId } = recentFoodRef
 
-        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-          userId,
-          type,
-          referenceId,
-        )
+        const recentFood =
+          await recentFoodCrud.fetchRecentFoodByUserTypeAndReferenceId(
+            userId,
+            type,
+            referenceId,
+          )
 
         if (
           recentFood !== null &&
@@ -131,9 +144,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         })
 
         if (recentFood !== null) {
-          await updateRecentFood(recentFood.id, recentFoodInput)
+          await recentFoodCrud.updateRecentFood(recentFood.id, recentFoodInput)
         } else {
-          await insertRecentFood(recentFoodInput)
+          await recentFoodCrud.insertRecentFood(recentFoodInput)
         }
       }
 
@@ -161,7 +174,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = isOverflow({
+    const overflowResults = getMacroOverflow()().isOverflow({
       item: originalAddedItem,
     })
 

@@ -5,8 +5,10 @@ import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { debouncedTab } from '~/modules/template-search/application/usecases/templateSearchState'
+
+const recentFoodCrud = createRecentFoodCrud()
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { logging } from '~/shared/utils/logging'
@@ -28,7 +30,11 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
     const userId = authUseCases.currentUserIdOrGuestId()
 
     void showPromise(
-      deleteRecentFoodByReference(userId, templateType, templateId),
+      recentFoodCrud.deleteRecentFoodByReference(
+        userId,
+        templateType,
+        templateId,
+      ),
       {
         loading: 'Removendo item da lista de recentes...',
         success: 'Item removido da lista de recentes com sucesso!',

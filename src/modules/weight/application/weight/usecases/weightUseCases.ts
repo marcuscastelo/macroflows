@@ -1,6 +1,5 @@
 import { createEffect, createRoot, onMount } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
 import { createWeightCrudService } from '~/modules/weight/application/weight/weightCrud'
@@ -18,14 +17,26 @@ import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 /**
+ * Granular dependencies for weight use-cases.
+ * These replace the full `useCases` object to avoid circular dependencies.
+ */
+export type WeightUseCasesDeps = {
+  /** Returns the current user ID or guest ID */
+  getCurrentUserIdOrGuestId: () => string
+  /** Returns true if the app is in guest mode */
+  isGuestMode: () => boolean
+}
+
+/**
  * Factory that creates weight-related use-cases.
  *
  * Accepts optional overrides for repositories, store creators and utilities so
  * DI wiring or testing with fakes is possible. When no overrides are provided,
  * the current module defaults are used (keeps backward-compatible behavior).
  */
-export function createWeightUseCases(deps?: {
-  useCases?: typeof useCases
+export function createWeightUseCases(deps: {
+  /** Granular auth/guest dependencies (required) */
+  authDeps: WeightUseCasesDeps
   createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
   createSupabaseWeightGateway?: typeof createSupabaseWeightGateway
   createGuestWeightRepository?: typeof createGuestWeightRepository
@@ -35,7 +46,7 @@ export function createWeightUseCases(deps?: {
   parseWithStack?: typeof parseWithStack
 }) {
   const {
-    useCases: injectedUseCases,
+    authDeps,
     createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
     createSupabaseWeightGateway: injectedCreateSupabase,
     createGuestWeightRepository: injectedCreateGuest,
@@ -43,9 +54,8 @@ export function createWeightUseCases(deps?: {
     initializeWeightRealtime: injectedInitializeRealtime,
     createWeightCrudService: injectedCreateWeightCrudService,
     parseWithStack: injectedParseWithStack,
-  } = deps ?? {}
+  } = deps
 
-  const localUseCases = injectedUseCases ?? useCases
   const localCreateLocalStorage =
     injectedCreateLocalStorage ?? createLocalStorageWeightCacheRepository
   const localCreateSupabase =
@@ -83,8 +93,7 @@ export function createWeightUseCases(deps?: {
     function getWeightRepository():
       | typeof supabaseWeightRepository
       | typeof guestWeightRepository {
-      const guestUseCases = localUseCases.guestUseCases()
-      return guestUseCases.isGuestMode()
+      return authDeps.isGuestMode()
         ? guestWeightRepository
         : supabaseWeightRepository
     }
@@ -111,21 +120,18 @@ export function createWeightUseCases(deps?: {
 
     // Public refetch function (reads current user id and refetches)
     function refetchUserWeights() {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
     }
 
     // Lifecycle: on mount and effect to keep cache in sync
     onMount(() => {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
     })
 
     createEffect(() => {
-      const authUseCases = localUseCases.authUseCases()
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
 
       const cachedWeights = localParseWithStack(
@@ -164,11 +170,6 @@ export function createWeightUseCases(deps?: {
 }
 
 /**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `weightUseCases` and `refetchUserWeights`.
+ * Type representing the weight use-cases returned by the factory.
  */
-export const weightUseCases = createWeightUseCases()
-
-export function refetchUserWeights() {
-  return weightUseCases.refetchUserWeights()
-}
+export type WeightUseCases = ReturnType<typeof createWeightUseCases>

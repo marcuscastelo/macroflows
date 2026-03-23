@@ -92,6 +92,7 @@ export type UserUseCases = ReturnType<typeof createUserUseCases>
 /**
  * Backward-compatible default shim.
  * Keeps existing imports working while consumers migrate to the container.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const userUseCases = createUserUseCases({
   repository: () => createSupabaseUserRepository(),

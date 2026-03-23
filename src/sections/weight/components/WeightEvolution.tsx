@@ -8,8 +8,6 @@ import {
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -26,6 +24,8 @@ import { WeightView } from '~/sections/weight/components/WeightView'
 export function WeightEvolution() {
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const authUseCases = useCases.authUseCases()
+  const weightUseCases = useCases.weightUseCases()
+  const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
     <>

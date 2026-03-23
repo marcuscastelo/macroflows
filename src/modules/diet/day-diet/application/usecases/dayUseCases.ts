@@ -7,7 +7,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { type AuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { createDayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
@@ -30,14 +30,18 @@ import { logging } from '~/shared/utils/logging'
  * signals and stores properly isolated. Consumers should inject or call the
  * factory (via the backward-compatible shim below) to obtain the use-cases.
  */
-export function createDayUseCases() {
+export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
   return createRoot(() => {
-    const authUseCases = useCases.authUseCases()
+    const authUseCases = () => deps.authUseCases()
     const dayChangeStore = createDayChangeStore()
     const dayStateStore = createDayStateStore()
     const dayCacheStore = createDayCacheStore()
 
     const dayRepository = createDayDietRepository()
+
+    // NOTE: intentionally avoid importing `useCases` here to prevent circular
+    // dependency during module initialization. The DI container will call
+    // `initializeDayUseCases` to provide the auth use-cases provider when ready.
 
     const runTargetDayReset = () => {
       logging.debug(`Effect - Reset to today!`)
@@ -213,7 +217,7 @@ export function createDayUseCases() {
     }
 
     createEffect(() => {
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authUseCases().currentUserIdOrGuestId()
       const currentTargetDay = dayStateStore.targetDay()
 
       dayCacheStore.runCacheManagement({
@@ -225,7 +229,7 @@ export function createDayUseCases() {
     })
 
     createEffect(() => {
-      const userId = authUseCases.currentUserIdOrGuestId()
+      const userId = authUseCases().currentUserIdOrGuestId()
       logging.debug(`User changed to ${userId}, resetting target day`)
       runTargetDayReset()
     })
@@ -241,7 +245,10 @@ export function createDayUseCases() {
 /**
  * Backward-compatible shim kept for legacy consumers.
  * Consumers may continue to import `dayUseCases` while migration proceeds.
+ *
+ * Historically the module exported a concrete instance created at module
+ * evaluation time which led to TDZ/circular import problems. To avoid that we
+ * export a lightweight stub object that is safe to import and can be
+ * initialized later by the DI container via `initializeDayUseCases`.
  */
-export const dayUseCases = createDayUseCases()
-
 export type DayUseCases = ReturnType<typeof createDayUseCases>

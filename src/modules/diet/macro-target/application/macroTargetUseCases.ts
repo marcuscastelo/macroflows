@@ -1,8 +1,8 @@
+import { useCases, type WeightUseCases } from '~/di/useCases'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { userMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { logging } from '~/shared/utils/logging'
 
 /**
@@ -12,18 +12,20 @@ import { logging } from '~/shared/utils/logging'
  * for testing or alternate DI wiring. When not provided, module defaults are used.
  */
 export function createMacroTargetUseCases(deps?: {
-  weightUseCases?: typeof weightUseCases
+  weightUseCases?: WeightUseCases
   userMacroProfiles?: typeof userMacroProfiles
   getEffectiveMacroProfile?: typeof getEffectiveMacroProfile
 }) {
-  const localWeightUseCases = deps?.weightUseCases ?? weightUseCases
+  // Use centralized weightUseCases from container by default
+  const localWeightUseCases = () =>
+    deps?.weightUseCases ?? useCases.weightUseCases()
   const localUserMacroProfiles = deps?.userMacroProfiles ?? userMacroProfiles
   const localGetEffectiveMacroProfile =
     deps?.getEffectiveMacroProfile ?? getEffectiveMacroProfile
 
   function macroTargetAt(day: Date): MacroNutrients | null {
     const targetDayWeight_ =
-      localWeightUseCases.effectiveAt(day)?.weight ?? null
+      localWeightUseCases().effectiveAt(day)?.weight ?? null
     const targetDayMacroProfile_ = localGetEffectiveMacroProfile(
       localUserMacroProfiles(),
       day,
@@ -56,6 +58,7 @@ export function createMacroTargetUseCases(deps?: {
 /**
  * Backward-compatible shim: preserve the previous top-level export while
  * allowing DI consumers to call `createMacroTargetUseCases` directly.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
 export const macroTargetUseCases = createMacroTargetUseCases()
 export type MacroTargetUseCases = ReturnType<typeof createMacroTargetUseCases>

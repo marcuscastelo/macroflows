@@ -1,6 +1,6 @@
 import {
+  createMacroProfileCrudService,
   type MacroProfileCrudService,
-  macroProfileCrudService,
 } from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
 import { cache } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import {
@@ -15,12 +15,12 @@ import { logging } from '~/shared/utils/logging'
  * @param deps.crudService - provider for the macro profile CRUD service
  * @param deps.cache - cache object used to keep local profiles in sync
  */
-export function createMacroProfileUseCases(deps: {
-  crudService: () => MacroProfileCrudService
-  cache: typeof cache
+export function createMacroProfileUseCases(deps?: {
+  crudService?: () => MacroProfileCrudService
+  cache?: typeof cache
 }) {
-  const svc = deps.crudService()
-  const localCache = deps.cache
+  const svc = deps?.crudService?.() ?? createMacroProfileCrudService()
+  const localCache = () => deps?.cache ?? cache
 
   return {
     async fetchUserMacroProfiles(
@@ -28,11 +28,11 @@ export function createMacroProfileUseCases(deps: {
     ): Promise<readonly MacroProfile[]> {
       try {
         const profiles = await svc.fetchUserMacroProfiles(userId)
-        localCache.upsertManyToCache(profiles)
+        localCache().upsertManyToCache(profiles)
         return profiles
       } catch (error) {
         logging.error('MacroProfile fetch error:', error)
-        localCache.removeFromCache({ by: 'user_id', value: userId })
+        localCache().removeFromCache({ by: 'user_id', value: userId })
         return []
       }
     },
@@ -43,7 +43,7 @@ export function createMacroProfileUseCases(deps: {
       try {
         const profile = await svc.insertMacroProfile(newMacroProfile)
         if (profile !== null) {
-          localCache.upsertToCache(profile)
+          localCache().upsertToCache(profile)
         }
         return profile
       } catch (error) {
@@ -62,7 +62,7 @@ export function createMacroProfileUseCases(deps: {
           newMacroProfile,
         )
         if (profile !== null) {
-          localCache.upsertToCache(profile)
+          localCache().upsertToCache(profile)
         }
         return profile
       } catch (error) {
@@ -76,7 +76,7 @@ export function createMacroProfileUseCases(deps: {
     ): Promise<void> {
       try {
         await svc.deleteMacroProfile(macroProfileId)
-        localCache.removeFromCache({ by: 'id', value: macroProfileId })
+        localCache().removeFromCache({ by: 'id', value: macroProfileId })
       } catch (error) {
         logging.error('MacroProfile delete error:', error)
       }
@@ -87,10 +87,8 @@ export function createMacroProfileUseCases(deps: {
 /**
  * Backward-compatible default instance (shim) used by legacy consumers.
  * Keeps existing imports working while migrating to the container.
+ * TODO: Remove DI shims and use proper container/use-case injection.
  */
-export const macroProfileUseCases = createMacroProfileUseCases({
-  crudService: () => macroProfileCrudService,
-  cache,
-})
+export const macroProfileUseCases = createMacroProfileUseCases()
 
 export type MacroProfileUseCases = ReturnType<typeof createMacroProfileUseCases>

@@ -1,6 +1,6 @@
 import { type JSXElement, Show } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useCases } from '~/di/useCases'
 import { CopyButton } from '~/sections/common/components/CopyButton'
 import { PasteIcon } from '~/sections/common/components/icons/PasteIcon'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
@@ -34,7 +34,9 @@ export function ClipboardActionButtons(
           aria-label="Copy to clipboard"
         />
       </Show>
-      <Show when={props.canPaste && clipboardUseCases.entryCount() > 0}>
+      <Show
+        when={props.canPaste && useCases.clipboardUseCases().entryCount() > 0}
+      >
         <button
           type="button"
           class={CLIPBOARD_ACTION_BUTTON_STYLES}

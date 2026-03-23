@@ -1,4 +1,4 @@
-import { dayUseCases as defaultDayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { type DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
@@ -23,32 +23,31 @@ import { logging } from '~/shared/utils/logging'
  * - `isOverflow({ item, originalItem? })` => record of boolean getters for carbs/protein/fat
  * - `getAvailableMacros({ dayDiet, originalItem? })` => MacroNutrients reflecting available macros
  */
-export function createMacroOverflow(deps?: {
-  dayUseCases?: typeof defaultDayUseCases
+export function createMacroOverflow(deps: {
+  dayUseCases: DayUseCases
   macroTargetUseCases?: typeof defaultMacroTargetUseCases
   stringToDate?: typeof stringToDate
   DayDietExt?: typeof DayDietExt
   ItemExt?: typeof ItemExt
   createMacroNutrients?: typeof createMacroNutrients
 }) {
-  const localDayUseCases = deps?.dayUseCases ?? defaultDayUseCases
   const localMacroTargetUseCases =
-    deps?.macroTargetUseCases ?? defaultMacroTargetUseCases
-  const localStringToDate = deps?.stringToDate ?? stringToDate
-  const localDayDietExt = deps?.DayDietExt ?? DayDietExt
-  const localItemExt = deps?.ItemExt ?? ItemExt
+    deps.macroTargetUseCases ?? defaultMacroTargetUseCases
+  const localStringToDate = deps.stringToDate ?? stringToDate
+  const localDayDietExt = deps.DayDietExt ?? DayDietExt
+  const localItemExt = deps.ItemExt ?? ItemExt
   const localCreateMacroNutrients =
-    deps?.createMacroNutrients ?? createMacroNutrients
+    deps.createMacroNutrients ?? createMacroNutrients
 
   function getContext() {
-    const currentDayDiet_ = localDayUseCases.currentDayDiet()
+    const currentDayDiet_ = deps.dayUseCases.currentDayDiet()
     if (currentDayDiet_ === null) {
       logging.warn('No current day diet available for overflow check')
       return null
     }
 
     const macroTarget_ = localMacroTargetUseCases.macroTargetAt(
-      localStringToDate(localDayUseCases.targetDay()),
+      localStringToDate(deps.dayUseCases.targetDay()),
     )
     if (macroTarget_ === null) {
       logging.warn('No macro target set for the day')
@@ -144,15 +143,5 @@ export function createMacroOverflow(deps?: {
     getAvailableMacros,
   }
 }
-
-/**
- * Backward-compatible shim: preserve the previous top-level export while
- * allowing DI consumers to call `createMacroOverflow` directly to inject deps.
- */
-export const macroOverflowUseCases = createMacroOverflow()
-
-// Legacy named exports kept for backward compatibility while migration proceeds.
-export const isOverflow = macroOverflowUseCases.isOverflow
-export const getAvailableMacros = macroOverflowUseCases.getAvailableMacros
 
 export type MacroOverflowUseCases = ReturnType<typeof createMacroOverflow>

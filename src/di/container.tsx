@@ -1,27 +1,13 @@
 import { createContext, type JSXElement, useContext } from 'solid-js'
 
-import { createAuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import {
+  type AuthUseCases,
+  createAuthUseCases,
+} from '~/modules/auth/application/usecases/authUseCases'
 import { createUserUseCases } from '~/modules/user/application/usecases/userUseCases'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
-
-/**
- * Minimal interfaces for commonly-used use-cases.
- * Keep these small and extend as consumers need more functionality.
- */
-export type AuthUseCases = {
-  /**
-   * Initialize authentication lifecycle (listeners, session restore, etc).
-   * Should be safe to call multiple times.
-   */
-  initializeAuth: () => void
-
-  /**
-   * Optional helper used for guest detection in legacy flows.
-   */
-  currentUserIdOrGuestId?: () => string | null
-
-  [key: string]: unknown
-}
+import { createWeightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 
 export type UserUseCases = {
   [key: string]: unknown
@@ -29,8 +15,15 @@ export type UserUseCases = {
 
 export type GuestUseCases = {
   hasAcceptedGuestTerms?: () => boolean
+  isGuestMode?: () => boolean
   [key: string]: unknown
 }
+
+/**
+ * Type representing weight-related use-cases.
+ * Derived from the factory return type for consistency.
+ */
+export type WeightUseCases = ReturnType<typeof createWeightUseCases>
 
 /**
  * Central DI container shape used by UI layer.
@@ -44,6 +37,12 @@ export type Container = {
   authUseCases: AuthUseCases
   userUseCases: UserUseCases
   guestUseCases: GuestUseCases
+
+  /**
+   * Weight-related use-cases (CRUD, cache, realtime).
+   * Access via `useContainer().weightUseCases` in UI components.
+   */
+  weightUseCases?: WeightUseCases
 
   /**
    * Optional lifecycle hook for realtime or other infra that must be started
@@ -75,10 +74,20 @@ export function createContainer(
     userUseCases: () => defaultUserUseCases,
   })
 
+  // Default weight use-cases - provide auth dependencies from the defaults above
+  const defaultWeightUseCases = createWeightUseCases({
+    authDeps: {
+      getCurrentUserIdOrGuestId: () =>
+        defaultAuthUseCases.currentUserIdOrGuestId(),
+      isGuestMode: () => false, // Default container assumes non-guest mode
+    },
+  })
+
   const base: Container = {
     authUseCases: defaultAuthUseCases,
     userUseCases: defaultUserUseCases,
     guestUseCases: {},
+    weightUseCases: defaultWeightUseCases,
     initializeWeightRealtime: undefined,
   }
 
@@ -149,7 +158,25 @@ export function createTestContainer(
     initializeAuth: () => {
       /* no-op */
     },
-    currentUserIdOrGuestId: () => null,
+    currentUserIdOrGuestId: () => GUEST_USER_ID,
+
+    getCurrentUser: () => null,
+
+    isAuthenticated: () => false,
+
+    isAuthLoading: () => false,
+
+    loadInitialSession: async () => {
+      /* no-op */
+    },
+
+    signIn: async (_options) => {
+      /* no-op */
+    },
+
+    signOut: async (_options) => {
+      /* no-op */
+    },
   }
 
   return createContainer({

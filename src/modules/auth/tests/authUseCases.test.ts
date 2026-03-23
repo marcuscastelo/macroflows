@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useCases } from '~/di/useCases'
+import { createTestContainer } from '~/di/container'
 import { type AuthStore } from '~/modules/auth/application/store/authStore'
 import { type AuthGateway } from '~/modules/auth/domain/authGateway'
 import { createAuthGatewayMock } from '~/modules/auth/tests/utils/mockAuthGateway'
@@ -127,8 +127,9 @@ describe('authUseCases facade', () => {
 })
 
 describe('authUseCases singleton behavior', () => {
+  const testContainer = createTestContainer()
   it('should export authUseCases object with expected methods', async () => {
-    const authUseCases = useCases.authUseCases()
+    const authUseCases = testContainer.authUseCases
     expect(authUseCases).toBeDefined()
     expect(typeof authUseCases.isAuthLoading).toBe('function')
     expect(typeof authUseCases.isAuthenticated).toBe('function')
@@ -140,14 +141,14 @@ describe('authUseCases singleton behavior', () => {
   })
 
   it('state queries should return initial loading state', async () => {
-    const authUseCases = useCases.authUseCases()
+    const authUseCases = testContainer.authUseCases
     // The singleton initializes with loading: true, authenticated: false
     expect(typeof authUseCases.isAuthLoading()).toBe('boolean')
     expect(typeof authUseCases.isAuthenticated()).toBe('boolean')
   })
 
   it('getCurrentUser should return null or user object', async () => {
-    const authUseCases = useCases.authUseCases()
+    const authUseCases = testContainer.authUseCases
     const user = authUseCases.getCurrentUser()
     expect(user === null || typeof user === 'object').toBe(true)
   })
