@@ -1,48 +1,83 @@
-import { createResource, createSignal } from 'solid-js'
+import { createResource, createRoot, createSignal } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import {
-  fetchFoods,
-  fetchFoodsByName,
+  createFoodCrud,
+  type FoodCrud,
 } from '~/modules/diet/food/application/usecases/foodCrud'
+import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import {
-  fetchUserRecipeByName,
-  fetchUserRecipes,
+  createRecipeCrud,
+  type RecipeCrud,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
+import {
+  createRecentFoodCrud,
+  type RecentFoodCrud,
+} from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
-// userUseCases will be accessed via the DI container to avoid init order issues
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
-export const [templateSearch, setTemplateSearch] = createSignal<string>('')
-export const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)
-export const [templateSearchTab, setTemplateSearchTab] =
-  createSignal<TemplateSearchTab>('hidden')
-export const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
+export function createTemplateSearchState(deps: {
+  getCurrentUserIdOrGuestId: () => string | undefined
+  getFavoriteFoods: () => number[]
+  recentFoodCrud?: RecentFoodCrud
+  foodCrud?: FoodCrud
+  recipeCrud?: RecipeCrud
+}) {
+  return createRoot(() => {
+    const recentFoodCrud = deps.recentFoodCrud ?? createRecentFoodCrud()
+    const foodCrud =
+      deps.foodCrud ??
+      createFoodCrud({ repository: () => createSupabaseFoodRepository() })
+    const recipeCrud =
+      deps.recipeCrud ??
+      createRecipeCrud({
+        repository: () => createRecipeRepository(),
+      })
 
-const getFavoriteFoods = () =>
-  useCases.userUseCases().currentUser()?.favorite_foods ?? []
+    const [templateSearch, setTemplateSearch] = createSignal<string>('')
+    const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)
+    const [templateSearchTab, setTemplateSearchTab] =
+      createSignal<TemplateSearchTab>('hidden')
+    const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
 
-export const [templates, { refetch: refetchTemplates }] = createResource(
-  () => ({
-    tab: debouncedTab(),
-    search: debouncedSearch(),
-    userId: useCases.authUseCases().currentUserIdOrGuestId(),
-  }),
-  (signals) => {
-    return fetchTemplatesByTabLogic(
-      signals.tab,
-      signals.search,
-      signals.userId,
-      {
-        fetchUserRecipes,
-        fetchUserRecipeByName,
-        fetchUserRecentFoods,
-        fetchFoods,
-        fetchFoodsByName,
-        getFavoriteFoods,
+    const [templates, { refetch: refetchTemplates }] = createResource(
+      () => ({
+        tab: debouncedTab(),
+        search: debouncedSearch(),
+        userId: deps.getCurrentUserIdOrGuestId(),
+      }),
+      (signals) => {
+        return fetchTemplatesByTabLogic(
+          signals.tab,
+          signals.search,
+          signals.userId,
+          {
+            fetchUserRecipes: (userId) => recipeCrud.fetchUserRecipes(userId),
+            fetchUserRecipeByName: (userId, name) =>
+              recipeCrud.fetchUserRecipeByName(userId, name),
+            fetchUserRecentFoods: recentFoodCrud.fetchUserRecentFoods,
+            fetchFoods: (params) => foodCrud.fetchFoods(params),
+            fetchFoodsByName: (name, params) =>
+              foodCrud.fetchFoodsByName(name, params),
+            getFavoriteFoods: deps.getFavoriteFoods,
+          },
+        )
       },
     )
-  },
-)
+
+    return {
+      templateSearch,
+      setTemplateSearch,
+      debouncedSearch,
+      templateSearchTab,
+      setTemplateSearchTab,
+      debouncedTab,
+      templates,
+      refetchTemplates,
+    }
+  })
+}
+
+export type TemplateSearchState = ReturnType<typeof createTemplateSearchState>

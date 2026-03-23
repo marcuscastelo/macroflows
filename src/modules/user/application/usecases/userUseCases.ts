@@ -9,6 +9,11 @@ export type UserDI = {
   repository: () => UserRepository
 }
 
+/**
+ * Factory that returns user-related use-cases.
+ * Dependencies are injected via the `repository` function to allow swapping
+ * implementations (e.g. guest vs supabase) in the container or tests.
+ */
 export function createUserUseCases({ repository }: UserDI) {
   const userStore = createUserStore()
 
@@ -76,3 +81,9 @@ export function createUserUseCases({ repository }: UserDI) {
     },
   }
 }
+
+/**
+ * Public type for the concrete use-cases returned by the factory.
+ * Useful for typing containers and consumers.
+ */
+export type UserUseCases = ReturnType<typeof createUserUseCases>

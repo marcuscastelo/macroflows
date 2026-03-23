@@ -133,7 +133,7 @@ async function upsertFood(newFood: NewFood): Promise<Food> {
 async function fetchFoodsByName(
   name: Required<Food>['name'],
   params: FoodSearchParams = {},
-) {
+): Promise<readonly Food[]> {
   const { userId, isFavoritesSearch, limit = 50 } = params
 
   try {
@@ -172,7 +172,9 @@ async function fetchFoodsByName(
   }
 }
 
-async function fetchFoods(params: FoodSearchParams = {}) {
+async function fetchFoods(
+  params: FoodSearchParams = {},
+): Promise<readonly Food[]> {
   return await internalCachedSearchFoods({ field: '', value: '' }, params)
 }
 

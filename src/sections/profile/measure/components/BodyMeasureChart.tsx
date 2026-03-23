@@ -2,13 +2,12 @@ import type { ApexOptions } from 'apexcharts'
 import { type Accessor, createMemo, Suspense } from 'solid-js'
 
 import ptBrLocale from '~/assets/locales/apex/pt-br.json'
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   groupMeasuresByDay,
   processMeasuresByDay,
 } from '~/modules/measure/application/measureUtils'
 import type { BodyMeasure } from '~/modules/measure/domain/measure'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { Chart } from '~/sections/common/components/charts/Chart'
 
 type DayAverage = {
@@ -36,13 +35,14 @@ export type BodyMeasureChartProps = {
  * @returns SolidJS component
  */
 export function BodyMeasureChart(props: BodyMeasureChartProps) {
+  const useCases = useContainer()
   const measuresByDay = createMemo(() => groupMeasuresByDay(props.measures()))
   const userUseCases = useCases.userUseCases()
 
   const data = createMemo(() =>
     processMeasuresByDay(
       measuresByDay(),
-      weightUseCases.weights(),
+      useCases.weightUseCases().weights(),
       userUseCases.currentUser()?.gender ?? 'female',
     ),
   )

@@ -7,11 +7,11 @@ type CacheKey =
   | { by: 'id'; value: MacroProfile['id'] }
   | { by: 'user_id'; value: User['uuid'] }
 
-const [cachedProfiles, setCachedProfiles] = createSignal<
-  readonly MacroProfile[]
->([])
-
 export function createMacroProfileCacheStore() {
+  const [cachedProfiles, setCachedProfiles] = createSignal<
+    readonly MacroProfile[]
+  >([])
+
   return {
     getCache: () => cachedProfiles(),
 

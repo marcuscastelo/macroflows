@@ -1,5 +1,6 @@
 import { type Accessor } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
@@ -7,12 +8,14 @@ import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProf
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
 
 export function MacroEvolution() {
+  const useCases = useContainer()
+  const weightUseCases = useCases.weightUseCases()
+
   return (
     <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE}`}>
       <h5 class={'mx-auto mb-5 text-center text-3xl font-bold'}>

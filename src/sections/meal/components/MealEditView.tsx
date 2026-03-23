@@ -1,6 +1,6 @@
 import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -80,6 +80,7 @@ export function MealEditViewHeader(props: {
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
+  const useCases = useContainer()
   const { meal } = useMealContext()
 
   const onPaste = (data: ClipboardPayload) => {
@@ -106,7 +107,9 @@ export function MealEditViewHeader(props: {
       class="flex"
       tabindex={0}
       onPaste={() =>
-        clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+        useCases
+          .clipboardUseCases()
+          .confirmPaste(clipboardPayloadSchema, onPaste)
       }
     >
       <div class="my-2">
@@ -118,9 +121,11 @@ export function MealEditViewHeader(props: {
           canCopy={meal().items.length > 0}
           canPaste={true}
           canClear={meal().items.length > 0}
-          onCopy={() => clipboardUseCases.copy(meal())}
+          onCopy={() => useCases.clipboardUseCases().copy(meal())}
           onPaste={() =>
-            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+            useCases
+              .clipboardUseCases()
+              .confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={onClearItems}
         />
@@ -134,6 +139,7 @@ export function MealEditViewContent(props: {
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
+  const useCases = useContainer()
   const { meal } = useMealContext()
 
   logging.debug('meal.value:', meal())
@@ -148,7 +154,7 @@ export function MealEditViewContent(props: {
       handlers={{
         onEdit: props.onEditItem,
         onCopy: (item) => {
-          clipboardUseCases.copy(item)
+          useCases.clipboardUseCases().copy(item)
         },
         onDelete: (item) => {
           openDeleteConfirmModal({

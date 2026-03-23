@@ -14,63 +14,46 @@ import {
 } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 
-const clipboardStore = createRoot(() => {
-  // Default to RAM-only (no persistence)
-  const store = createClipboardStore({
-    maxEntries: 20,
-    persistence: createNoOpPersistence(),
-  })
-  // Clean expired entries every hour and refresh signal
-  setInterval(
-    () => {
-      store.cleanExpired()
-    },
-    60 * 60 * 1000,
-  )
+/**
+ * Factory that creates clipboard use-cases.
+ *
+ * Allows injecting a pre-created store and toast helpers for DI and testing.
+ * Defaults keep the original behaviour (in-memory store + toast functions).
+ */
+export function createClipboardUseCases(deps?: {
+  clipboardStore?: ReturnType<typeof createClipboardStore>
+  createClipboardStore?: typeof createClipboardStore
+  createNoOpPersistence?: typeof createNoOpPersistence
+  showSuccess?: typeof showSuccess
+  showError?: typeof showError
+}) {
+  const localCreateClipboardStore =
+    deps?.createClipboardStore ?? createClipboardStore
+  const localCreateNoOpPersistence =
+    deps?.createNoOpPersistence ?? createNoOpPersistence
+  const _showSuccess = deps?.showSuccess ?? showSuccess
+  const _showError = deps?.showError ?? showError
 
-  return store
-})
+  const clipboardStore =
+    deps?.clipboardStore ??
+    createRoot(() => {
+      // Default to RAM-only (no persistence)
+      const store = localCreateClipboardStore({
+        maxEntries: 20,
+        persistence: localCreateNoOpPersistence(),
+      })
+      // Clean expired entries every hour and refresh signal
+      setInterval(
+        () => {
+          store.cleanExpired()
+        },
+        60 * 60 * 1000,
+      )
 
-export const clipboardUseCases = {
-  copy(payload: ClipboardPayload): void {
-    clipboardStore.copy(payload)
-    showSuccess('Conteúdo copiado para a área de transferência.')
-  },
+      return store
+    })
 
-  confirmPaste<T extends ClipboardPayload>(
-    acceptedClipboardSchema: z.ZodType<T>,
-    onPasteConfirmed: (data: T) => void,
-  ) {
-    const parsed = clipboardUseCases.fetchLatestParsing(acceptedClipboardSchema)
-    if (parsed === null) {
-      showError('A área de transferência está vazia ou o conteúdo é inválido.')
-      return
-    }
-
-    openPasteConfirmModal(parsed, onPasteConfirmed)
-  },
-
-  remove(id: string): void {
-    clipboardStore.remove(id)
-  },
-
-  togglePin(id: string): void {
-    clipboardStore.togglePin(id)
-  },
-
-  entries(): ClipboardEntry[] {
-    return clipboardStore.entries()
-  },
-
-  entryCount(): number {
-    return clipboardStore.entries().length
-  },
-
-  fetchLatest(): ClipboardEntry | null {
-    return clipboardStore.read()
-  },
-
-  fetchLatestParsing<T extends ClipboardPayload>(
+  function fetchLatestParsing<T extends ClipboardPayload>(
     acceptedClipboardSchema: z.ZodType<T>,
   ): T | null {
     const data = clipboardStore.read()
@@ -84,14 +67,66 @@ export const clipboardUseCases = {
       logging.warn('Clipboard data did not match accepted schema', {
         errors: safeParseResult.error,
       })
-      showError('O conteúdo da área de transferência não é compatível.')
+      _showError('O conteúdo da área de transferência não é compatível.')
       return null
     }
 
     return safeParseResult.data satisfies T
-  },
+  }
 
-  clear(): void {
-    clipboardStore.clear()
-  },
+  return {
+    copy(payload: ClipboardPayload): void {
+      clipboardStore.copy(payload)
+      _showSuccess('Conteúdo copiado para a área de transferência.')
+    },
+
+    confirmPaste<T extends ClipboardPayload>(
+      acceptedClipboardSchema: z.ZodType<T>,
+      onPasteConfirmed: (data: T) => void,
+    ) {
+      const parsed = fetchLatestParsing(acceptedClipboardSchema)
+      if (parsed === null) {
+        _showError(
+          'A área de transferência está vazia ou o conteúdo é inválido.',
+        )
+        return
+      }
+
+      openPasteConfirmModal(parsed, onPasteConfirmed)
+    },
+
+    remove(id: string): void {
+      clipboardStore.remove(id)
+    },
+
+    togglePin(id: string): void {
+      clipboardStore.togglePin(id)
+    },
+
+    entries(): ClipboardEntry[] {
+      return clipboardStore.entries()
+    },
+
+    entryCount(): number {
+      return clipboardStore.entries().length
+    },
+
+    fetchLatest(): ClipboardEntry | null {
+      return clipboardStore.read()
+    },
+
+    fetchLatestParsing<T extends ClipboardPayload>(
+      acceptedClipboardSchema: z.ZodType<T>,
+    ): T | null {
+      return fetchLatestParsing(acceptedClipboardSchema)
+    },
+
+    clear(): void {
+      clipboardStore.clear()
+    },
+  }
 }
+
+// Export the factory type for DI/testing consumers (do not re-export the function which
+// is already exported above to avoid duplicate export errors)
+export type ClipboardUseCases = ReturnType<typeof createClipboardUseCases>

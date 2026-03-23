@@ -1,11 +1,6 @@
 import { For, Show, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
-import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
-import {
-  bodyMeasures,
-  refetchBodyMeasures,
-} from '~/modules/measure/application/usecases/measureState'
+import { useContainer } from '~/di/container'
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
@@ -15,6 +10,9 @@ import { BodyMeasureChart } from '~/sections/profile/measure/components/BodyMeas
 import { BodyMeasureView } from '~/sections/profile/measure/components/BodyMeasureView'
 
 export function BodyMeasuresEvolution() {
+  const useCases = useContainer()
+  const measureCrud = useCases.measureCrud()
+  const measureState = useCases.measureState()
   const heightField = useFloatField()
   const waistField = useFloatField()
   const hipField = useFloatField()
@@ -34,7 +32,9 @@ export function BodyMeasuresEvolution() {
     }
 
     const newBodyMeasure = createNewBodyMeasure(bodyMeasureProps)
-    void insertBodyMeasure(newBodyMeasure).then(refetchBodyMeasures)
+    void measureCrud
+      .insertBodyMeasure(newBodyMeasure)
+      .then(measureState.refetchBodyMeasures)
   }
 
   return (
@@ -77,7 +77,7 @@ export function BodyMeasuresEvolution() {
             </div>
           }
         >
-          <Show when={bodyMeasures()}>
+          <Show when={measureState.bodyMeasures()}>
             {(measures) => (
               <>
                 <BodyMeasureChart measures={measures} />
@@ -89,7 +89,7 @@ export function BodyMeasuresEvolution() {
                     {(bodyMeasure) => (
                       <BodyMeasureView
                         measure={bodyMeasure}
-                        onRefetchBodyMeasures={refetchBodyMeasures}
+                        onRefetchBodyMeasures={measureState.refetchBodyMeasures}
                       />
                     )}
                   </For>

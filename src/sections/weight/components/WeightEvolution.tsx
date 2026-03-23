@@ -1,6 +1,6 @@
 import { For, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import {
@@ -8,8 +8,6 @@ import {
   WEIGHT_CHART_OPTIONS,
   weightChartType,
 } from '~/modules/weight/application/chart/weightChartSettings'
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -24,8 +22,12 @@ import { WeightView } from '~/sections/weight/components/WeightView'
  * @returns SolidJS component
  */
 export function WeightEvolution() {
+  const useCases = useContainer()
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const authUseCases = useCases.authUseCases()
+  const userUseCases = useCases.userUseCases()
+  const weightUseCases = useCases.weightUseCases()
+  const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
     <>
@@ -48,6 +50,10 @@ export function WeightEvolution() {
             <WeightChart
               weights={weightUseCases.weights}
               desiredWeight={weightChartUseCases.desiredWeight()}
+              calculateWeightProgress={
+                weightChartUseCases.calculateWeightProgress
+              }
+              diet={userUseCases.currentUser()?.diet ?? 'cut'}
               type={weightChartType()}
             />
           </Suspense>

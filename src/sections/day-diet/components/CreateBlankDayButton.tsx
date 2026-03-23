@@ -1,10 +1,14 @@
 import { Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
-import { createBlankDay } from '~/modules/diet/day-diet/application/usecases/createBlankDay'
+import { useContainer } from '~/di/container'
+import { createCreateBlankDay } from '~/modules/diet/day-diet/application/usecases/createBlankDay'
 import { Button } from '~/sections/common/components/buttons/Button'
 
 export function CreateBlankDayButton(props: { selectedDay: string }) {
+  const useCases = useContainer()
+  const createBlankDay = createCreateBlankDay({
+    dayUseCases: () => useCases.dayUseCases(),
+  })
   const userUseCases = useCases.userUseCases()
   return (
     <Show

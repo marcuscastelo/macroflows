@@ -1,14 +1,38 @@
-import { createResource } from 'solid-js'
+import { createResource, createRoot } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
-import { fetchUserBodyMeasures } from '~/modules/measure/application/usecases/measureCrud'
+import { createMeasureCrud } from '~/modules/measure/application/usecases/measureCrud'
 import { initializeMeasureRealtime } from '~/modules/measure/infrastructure/supabase/realtime'
 
-export const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
-  () => useCases.authUseCases().currentUserIdOrGuestId(),
-  fetchUserBodyMeasures,
-  { initialValue: [], ssrLoadFrom: 'initial' },
-)
+export function createMeasureState(deps: {
+  getCurrentUserIdOrGuestId: () => string
+  fetchUserBodyMeasures?: ReturnType<
+    typeof createMeasureCrud
+  >['fetchUserBodyMeasures']
+  initializeMeasureRealtime?: (deps: {
+    refetchBodyMeasures: () => void
+  }) => void
+}) {
+  const localFetch =
+    deps.fetchUserBodyMeasures ?? createMeasureCrud().fetchUserBodyMeasures
+  const localInitializeRealtime =
+    deps.initializeMeasureRealtime ?? initializeMeasureRealtime
 
-// Initialize realtime subscription
-initializeMeasureRealtime()
+  return createRoot(() => {
+    const [bodyMeasures, { refetch: refetchBodyMeasures }] = createResource(
+      () => deps.getCurrentUserIdOrGuestId(),
+      localFetch,
+      { initialValue: [], ssrLoadFrom: 'initial' },
+    )
+
+    void localInitializeRealtime({
+      refetchBodyMeasures: () => void refetchBodyMeasures(),
+    })
+
+    return {
+      bodyMeasures,
+      refetchBodyMeasures,
+    }
+  })
+}
+
+export type MeasureState = ReturnType<typeof createMeasureState>

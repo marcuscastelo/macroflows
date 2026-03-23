@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   showError,
   showSuccess,
@@ -11,6 +11,7 @@ import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 export function AuthSettings() {
+  const useCases = useContainer()
   // Privacy setting state (example: allow data sharing)
   const [allowDataSharing, setAllowDataSharing] = createSignal(false)
   const authUseCases = useCases.authUseCases()

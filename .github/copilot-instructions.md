@@ -114,6 +114,17 @@ reportedBy: <agent-name.vXX>
 - When a wrapper or an exported helper exists, import that wrapper instead of reaching into internals.
 - If the project adopts absolute import aliases (for example `~/<fullpath>`), document the required `tsconfig` / bundler configuration.
 - Exceptions for import style (e.g., dependency injection patterns, test utilities, or framework constraints) should be documented and justified.
+- Avoid runtime indirection patterns that rely on top-level side effects to defer wiring or module loading. Specifically:
+  - Do not use `Proxy` objects at module scope as a mechanism to lazily resolve or mutate dependencies.
+  - Do not mutate or depend on `globalThis` (or other global singletons) from module initialization to perform deferred DI or to hide wiring.
+  - Do not use `setTimeout`/`setInterval` at the root (module) level to schedule deferred initialization or to "wait" for other modules.
+  These techniques create implicit global state, non-deterministic module behavior, harder-to-debug startup ordering problems, and brittle tests and bundling results.
+- Prefer explicit, deterministic alternatives for deferred initialization and lazy loading:
+  - Use factory/initializer functions (for example `createApp()` or `initServices()`) that perform wiring in a single, well-documented startup location.
+  - Use an explicit DI container or providers that are initialized during bootstrap rather than relying on hidden side effects.
+  - Use dynamic `import()` inside a function when true code-splitting / lazy-loading is required.
+  - If a proxy-like indirection is necessary, scope it to a function/local context and document why it cannot be expressed via explicit factories.
+- Document any justified exception with the rationale, test coverage that demonstrates predictable behavior, and a clear migration path away from implicit global or timer-based wiring.
 
 Examples:
 - Preferred static import: `import { Button } from '~components/ui/Button'`

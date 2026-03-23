@@ -1,11 +1,11 @@
 import { A } from '@solidjs/router'
 import { createMemo, Show } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
@@ -15,9 +15,12 @@ export type DayMacrosProps = {
 }
 
 export default function DayMacros(props: DayMacrosProps) {
+  const useCases = useContainer()
   const macros = createMemo(() => DayDietExt.calcDayMacros(props.dayDiet))
   const macroTarget = createMemo(() =>
-    macroTargetUseCases.macroTargetAt(stringToDate(props.dayDiet.target_day)),
+    useCases
+      .macroTargetUseCases()
+      .macroTargetAt(stringToDate(props.dayDiet.target_day)),
   )
 
   return (

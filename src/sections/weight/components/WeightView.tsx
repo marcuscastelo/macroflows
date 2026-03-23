@@ -1,7 +1,7 @@
 import { createMemo, createSignal, onMount, Show } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { showError } from '~/modules/toast/application/toastManager'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
 import { CapsuleContent } from '~/sections/common/components/capsule/CapsuleContent'
@@ -31,6 +31,7 @@ export type WeightViewProps = {
  * @returns SolidJS component
  */
 export function WeightView(props: WeightViewProps) {
+  const useCases = useContainer()
   const [lazyDate, setLazyDate] = createSignal(false)
   const targetTimestampSignal = () => props.weight.target_timestamp
   const dateField = useDateField(targetTimestampSignal)
@@ -51,7 +52,7 @@ export function WeightView(props: WeightViewProps) {
       showError('Digite uma data')
       return
     }
-    void weightUseCases.updateWeight(props.weight.id, {
+    void useCases.weightUseCases().updateWeight(props.weight.id, {
       ...props.weight,
       weight: weightValue,
       target_timestamp: dateValue,
@@ -125,7 +126,7 @@ export function WeightView(props: WeightViewProps) {
                 itemName: `peso de ${props.weight.weight}kg`,
                 itemType: 'registro',
                 onConfirm: () => {
-                  void weightUseCases.deleteWeight(props.weight.id)
+                  void useCases.weightUseCases().deleteWeight(props.weight.id)
                 },
               })
             }}

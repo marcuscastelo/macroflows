@@ -1,8 +1,8 @@
-import { onMount, Suspense } from 'solid-js'
+import { createMemo, onMount, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
-import { isOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -13,19 +13,10 @@ import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import {
-  fetchRecentFoodByUserTypeAndReferenceId,
-  insertRecentFood,
-  updateRecentFood,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
-import {
-  debouncedSearch,
-  refetchTemplates,
-  setTemplateSearchTab,
-  templates,
-  templateSearchTab,
-} from '~/modules/template-search/application/usecases/templateSearchState'
+
+const recentFoodCrud = createRecentFoodCrud()
 import {
   loadTabPreference,
   saveTabPreference,
@@ -50,6 +41,16 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
+// Create macro overflow instance lazily to avoid circular initialization
+// during SSR/prerender. Use a memo so the factory is reused.
+const getMacroOverflow = (deps: Parameters<typeof createMacroOverflow>[0]) => {
+  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
+    createMacroOverflow(deps),
+  )
+
+  return memo
+}
+
 export type TemplateSearchModalProps = {
   targetName: string
   onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
@@ -58,6 +59,7 @@ export type TemplateSearchModalProps = {
 }
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
+  const useCases = useContainer()
   const handleTemplateSelected = (template: Template) => {
     const initialQuantity = isTemplateRecipe(template)
       ? getRecipePreparedQuantity(template)
@@ -105,11 +107,12 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       } else {
         const { type, referenceId } = recentFoodRef
 
-        const recentFood = await fetchRecentFoodByUserTypeAndReferenceId(
-          userId,
-          type,
-          referenceId,
-        )
+        const recentFood =
+          await recentFoodCrud.fetchRecentFoodByUserTypeAndReferenceId(
+            userId,
+            type,
+            referenceId,
+          )
 
         if (
           recentFood !== null &&
@@ -131,9 +134,9 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
         })
 
         if (recentFood !== null) {
-          await updateRecentFood(recentFood.id, recentFoodInput)
+          await recentFoodCrud.updateRecentFood(recentFood.id, recentFoodInput)
         } else {
-          await insertRecentFood(recentFoodInput)
+          await recentFoodCrud.insertRecentFood(recentFoodInput)
         }
       }
 
@@ -161,7 +164,10 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = isOverflow({
+    const overflowResults = getMacroOverflow({
+      dayUseCases: useCases.dayUseCases(),
+      macroTargetUseCases: useCases.macroTargetUseCases(),
+    })().isOverflow({
       item: originalAddedItem,
     })
 
@@ -245,13 +251,14 @@ export function TemplateSearch(props: {
   onTemplateSelected: (template: Template) => void
   onEANModal: () => void
 }) {
+  const templateSearchState = useContainer().templateSearchState()
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   // Load persisted tab preference on mount (only once)
   onMount(() => {
     const persistedTab = loadTabPreference()
-    setTemplateSearchTab(persistedTab)
+    templateSearchState.setTemplateSearchTab(persistedTab)
   })
 
   // Wrapper that persists tab changes to localStorage
@@ -263,10 +270,10 @@ export function TemplateSearch(props: {
     // Compute the new value based on whether it's a function or direct value
     const newTab =
       typeof tabOrUpdater === 'function'
-        ? tabOrUpdater(templateSearchTab())
+        ? tabOrUpdater(templateSearchState.templateSearchTab())
         : tabOrUpdater
 
-    setTemplateSearchTab(newTab)
+    templateSearchState.setTemplateSearchTab(newTab)
     saveTabPreference(newTab)
   }
 
@@ -283,7 +290,10 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
+      <TemplateSearchTabs
+        tab={templateSearchState.templateSearchTab}
+        setTab={handleSetTab}
+      />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense
@@ -294,10 +304,10 @@ export function TemplateSearch(props: {
         }
       >
         <TemplateSearchResults
-          search={debouncedSearch()}
-          filteredTemplates={() => templates() ?? []}
+          search={templateSearchState.debouncedSearch()}
+          filteredTemplates={() => templateSearchState.templates() ?? []}
           onTemplateSelected={props.onTemplateSelected}
-          refetch={refetchTemplates}
+          refetch={templateSearchState.refetchTemplates}
         />
       </Suspense>
     </>

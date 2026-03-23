@@ -20,14 +20,14 @@ import { clipboardUseCases } from '~/modules/clipboard/application/clipboardUseC
 
 // Copy to clipboard
 const item = createUnifiedItem(...)
-clipboardUseCases.copy(item)
+useCases.clipboardUseCases().copy(item)
 
 // Read from clipboard
-const latest = clipboardUseCases.read()
-const all = clipboardUseCases.readAll()
+const latest = useCases.clipboardUseCases().read()
+const all = useCases.clipboardUseCases().readAll()
 
 // Clear clipboard
-clipboardUseCases.clear() // Clears all unpinned entries
+useCases.clipboardUseCases().clear() // Clears all unpinned entries
 ```
 
 ### Using in Components

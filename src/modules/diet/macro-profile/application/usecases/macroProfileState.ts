@@ -1,80 +1,107 @@
-import { createEffect, createRoot, untrack } from 'solid-js'
+import { createEffect, createRoot, createSignal, untrack } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import { createMacroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
-import { macroProfileStateStore } from '~/modules/diet/macro-profile/application/store/macroProfileStateStore'
-import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
+import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   createDefaultMacroProfile,
   getLatestMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
+import { type User } from '~/modules/user/domain/user'
+import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { logging } from '~/shared/utils/logging'
 
-export const selectedUserId = macroProfileStateStore.selectedUserId
-export const setSelectedUserId = macroProfileStateStore.setSelectedUserId
+export type MacroProfileCache = ReturnType<typeof createMacroProfileCacheStore>
 
-export const cache = createRoot(() => {
-  const authUseCases = useCases.authUseCases()
-  const cache = createMacroProfileCacheStore()
-  initializeMacroProfileRealtime({
-    onInsert: (profile) => {
-      cache.upsertToCache(profile)
-    },
-    onUpdate: (profile) => {
-      cache.upsertToCache(profile)
-    },
-    onDelete: (profile) => {
-      cache.removeFromCache({ by: 'id', value: profile.id })
-    },
-  })
+export function createMacroProfileState(deps: {
+  getCurrentUserIdOrGuestId: () => User['uuid']
+  fetchUserMacroProfiles: (
+    userId: User['uuid'],
+  ) => Promise<readonly MacroProfile[]>
+  cache?: MacroProfileCache
+  initializeMacroProfileRealtime?: typeof initializeMacroProfileRealtime
+}) {
+  const localCache = deps.cache ?? createMacroProfileCacheStore()
+  const localInitializeRealtime =
+    deps.initializeMacroProfileRealtime ?? initializeMacroProfileRealtime
 
-  // When user changes, update selected user and clear cache if needed
-  createEffect(() => {
-    const userId = authUseCases.currentUserIdOrGuestId()
-    logging.debug(`User changed to ${userId}`)
+  return createRoot(() => {
+    const [selectedUserId, setSelectedUserId] = createSignal<
+      User['uuid'] | null
+    >(null)
 
-    const previousUserId = untrack(macroProfileStateStore.selectedUserId)
+    localInitializeRealtime({
+      onInsert: (profile: MacroProfile) => {
+        localCache.upsertToCache(profile)
+      },
+      onUpdate: (profile: MacroProfile) => {
+        localCache.upsertToCache(profile)
+      },
+      onDelete: (profile: MacroProfile) => {
+        localCache.removeFromCache({ by: 'id', value: profile.id })
+      },
+    })
 
-    if (previousUserId !== null && previousUserId !== userId) {
-      logging.debug(`Different user detected, clearing cache`)
-      cache.clearCache()
-    }
+    createEffect(() => {
+      const userId = deps.getCurrentUserIdOrGuestId()
+      logging.debug(`User changed to ${userId}`)
 
-    macroProfileStateStore.setSelectedUserId(userId)
-  })
+      const previousUserId = untrack(selectedUserId)
+      if (previousUserId !== null && previousUserId !== userId) {
+        logging.debug('Different user detected, clearing cache')
+        localCache.clearCache()
+      }
 
-  // When selected user changes, fetch their macro profiles
-  createEffect(() => {
-    const userId = macroProfileStateStore.selectedUserId()
-    if (userId !== null) {
+      setSelectedUserId(userId)
+    })
+
+    createEffect(() => {
+      const userId = selectedUserId()
+      if (userId === null) {
+        return
+      }
+
       logging.debug(`Fetching macro profiles for user ${userId}`)
-      void macroProfileUseCases.fetchUserMacroProfiles(userId)
+      void deps
+        .fetchUserMacroProfiles(userId)
+        .then((profiles) => {
+          localCache.upsertManyToCache(profiles)
+        })
+        .catch((error) => {
+          logging.error('MacroProfile state fetch error:', error)
+          localCache.removeFromCache({ by: 'user_id', value: userId })
+        })
+    })
+
+    const userMacroProfiles = () => {
+      const userId = selectedUserId() ?? GUEST_USER_ID
+      return localCache.getProfilesByUserId(userId)
+    }
+
+    const latestMacroProfile = () => {
+      const profiles = userMacroProfiles()
+      const latest = getLatestMacroProfile(profiles)
+      const userId = selectedUserId() ?? GUEST_USER_ID
+      if (latest === null) {
+        return createDefaultMacroProfile(userId)
+      }
+      return latest
+    }
+
+    const previousMacroProfile = () => {
+      const profiles = userMacroProfiles()
+      return getLatestMacroProfile(profiles, 1)
+    }
+
+    return {
+      selectedUserId,
+      setSelectedUserId,
+      cache: localCache,
+      userMacroProfiles,
+      latestMacroProfile,
+      previousMacroProfile,
     }
   })
-  return cache
-})
-
-export const userMacroProfiles = () => {
-  const authUseCases = useCases.authUseCases()
-  const userId = authUseCases.currentUserIdOrGuestId()
-  return cache.getProfilesByUserId(userId)
 }
 
-export const latestMacroProfile = () => {
-  const profiles = userMacroProfiles()
-  const latest = getLatestMacroProfile(profiles)
-  const authUseCases = useCases.authUseCases()
-  console.debug('Latest macro profile:', { latest })
-  console.debug('All profiles:', { profiles })
-  if (latest === null) {
-    const userId = authUseCases.currentUserIdOrGuestId()
-    return createDefaultMacroProfile(userId)
-  }
-  return latest
-}
-
-export const previousMacroProfile = () => {
-  const profiles = userMacroProfiles()
-  return getLatestMacroProfile(profiles, 1)
-}
+export type MacroProfileState = ReturnType<typeof createMacroProfileState>
