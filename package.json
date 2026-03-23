@@ -22,7 +22,7 @@
     "check": "run-p flint type-check test",
     "copilot:check": "pnpm run check 2>&1 && echo 'COPILOT: All checks passed!' || echo 'COPILOT: Some checks failed!'",
     "tw:build": "tailwindcss -c tailwind.config.cjs -i ./src/app.css -o ./src/tailwind-build-debug.css",
-    "supabase:gen-types": "echo '/* eslint-disable @typescript-eslint/no-redundant-type-constituents */' > src/shared/supabase/database.types.ts && yes | npx supabase gen types typescript --project-id vdkyfygjuqcxqyzzkfjo >> src/shared/supabase/database.types.ts && pnpm run fix"
+    "supabase:gen-types": "echo '/* eslint-disable @typescript-eslint/no-redundant-type-constituents */' > src/shared/supabase/database.types.ts && yes | npx supabase gen types typescript --project-id kremuphdcxwgceravqfh >> src/shared/supabase/database.types.ts && pnpm run fix"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
