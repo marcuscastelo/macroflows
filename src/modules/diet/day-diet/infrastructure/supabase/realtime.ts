@@ -6,6 +6,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 const SUPABASE_TABLE_DAYS = 'days'
+let dayDietRealtimeInitialized = false
 
 type DayDietRealtimeCallbacks = {
   onInsert: (newDayDiet: DayDiet) => void
@@ -14,17 +15,15 @@ type DayDietRealtimeCallbacks = {
 }
 
 export function createDayDietRealtimeService() {
-  let initialized = false
-
   function initializeDayDietRealtime(
     callbacks: DayDietRealtimeCallbacks,
   ): void {
-    if (initialized) {
+    if (dayDietRealtimeInitialized) {
       return
     }
 
     logging.debug(`Day diet realtime initialized!`)
-    initialized = true
+    dayDietRealtimeInitialized = true
     registerSubapabaseRealtimeCallback(
       SUPABASE_TABLE_DAYS,
       dayDietSchema,

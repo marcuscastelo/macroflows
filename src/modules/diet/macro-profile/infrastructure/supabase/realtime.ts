@@ -6,6 +6,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+let macroProfileRealtimeInitialized = false
 
 type MacroProfileRealtimeCallbacks = {
   onInsert: (profile: MacroProfile) => void
@@ -14,17 +15,15 @@ type MacroProfileRealtimeCallbacks = {
 }
 
 export function createMacroProfileRealtimeService() {
-  let initialized = false
-
   function initializeMacroProfileRealtime(
     callbacks: MacroProfileRealtimeCallbacks,
   ): void {
-    if (initialized) {
+    if (macroProfileRealtimeInitialized) {
       return
     }
 
     logging.debug(`Macro profile realtime initialized!`)
-    initialized = true
+    macroProfileRealtimeInitialized = true
     registerSubapabaseRealtimeCallback(
       SUPABASE_TABLE_MACRO_PROFILES,
       macroProfileSchema,

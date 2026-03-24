@@ -10,6 +10,15 @@ import { convertApi2Food } from '~/shared/utils/convertApi2Food'
 import { ORIGINAL_ERROR_SYMBOL } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
+/**
+ * Creates the API food import service used by food CRUD flows.
+ *
+ * Supports dependency injection for repository, cached-search updates, and
+ * user-facing error reporting so callers and tests can replace external IO.
+ *
+ * @param deps Optional dependency overrides for persistence and UI feedback.
+ * @returns An object with EAN and name-based import methods.
+ */
 export function createApiFoodImportService(deps?: {
   foodRepository?: FoodRepository
   cachedSearchCrud?: ReturnType<typeof createCachedSearchCrud>

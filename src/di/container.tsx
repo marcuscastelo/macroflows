@@ -163,15 +163,20 @@ function createModeAwareUserRepository(deps: {
   }
 }
 
+const sharedSentryService = createSentryService()
+
+function createAppTelemetry(): TelemetryModule {
+  return createTelemetry({
+    sentryService: sharedSentryService,
+  })
+}
+
 export function createContainer(
   overrides: Partial<ContainerInstances> = {},
 ): Readonly<Container> {
   return createRoot((dispose) => {
     const telemetryUseCases =
-      overrides.telemetryUseCases ??
-      createTelemetry({
-        sentryService: createSentryService(),
-      })
+      overrides.telemetryUseCases ?? createAppTelemetry()
 
     let guestUseCasesRef: GuestUseCases | null = overrides.guestUseCases ?? null
 
@@ -370,9 +375,7 @@ let bootstrapTelemetry: TelemetryModule | null = null
 
 function getBootstrapTelemetry() {
   if (bootstrapTelemetry === null) {
-    bootstrapTelemetry = createTelemetry({
-      sentryService: createSentryService(),
-    })
+    bootstrapTelemetry = createAppTelemetry()
   }
 
   return bootstrapTelemetry

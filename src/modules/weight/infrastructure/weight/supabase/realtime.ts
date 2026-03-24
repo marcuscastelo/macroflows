@@ -6,6 +6,7 @@ import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 const SUPABASE_TABLE_WEIGHTS = 'weights'
+let weightRealtimeInitialized = false
 
 type WeightRealtimeCallbacks = {
   onInsert: (weight: Weight) => void
@@ -14,15 +15,13 @@ type WeightRealtimeCallbacks = {
 }
 
 export function createWeightRealtimeService() {
-  let initialized = false
-
   function initializeWeightRealtime(callbacks: WeightRealtimeCallbacks): void {
-    if (initialized) {
+    if (weightRealtimeInitialized) {
       return
     }
 
     logging.debug(`Weight realtime initialized!`)
-    initialized = true
+    weightRealtimeInitialized = true
     registerSubapabaseRealtimeCallback(
       SUPABASE_TABLE_WEIGHTS,
       weightSchema,

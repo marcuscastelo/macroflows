@@ -80,6 +80,9 @@ async function wrapContextManagerClass(type: 'server' | 'client') {
   return SentryOTel.wrapContextManagerClass(AsyncLocalStorageContextManager)
 }
 
+let isSentryInitialized = false
+let sentryInitializationPromise: Promise<void> | null = null
+
 export function createSentryService(deps?: {
   createSentryConfig?: typeof createSentryConfig
   createClientIntegrations?: typeof createClientIntegrations
@@ -90,68 +93,78 @@ export function createSentryService(deps?: {
     deps?.createClientIntegrations ?? createClientIntegrations
   const localSetupSentryOTelIntegration =
     deps?.setupSentryOTelIntegration ?? setupSentryOTelIntegration
-  let isInitialized = false
 
   async function initializeSentry(type: 'server' | 'client') {
-    if (isInitialized) {
+    if (isSentryInitialized) {
       console.warn('Sentry already initialized')
       return
     }
 
-    try {
-      const config = localCreateSentryConfig()
-
-      // Only initialize if DSN is provided
-      if (config.dsn === undefined || config.dsn === '') {
-        console.warn('❌ Sentry DSN not provided - skipping initialization', {
-          VITE_SENTRY_DSN: String(import.meta.env.VITE_SENTRY_DSN),
-        })
-        return
-      }
-
-      console.log(
-        '🚀 Initializing Sentry with DSN:',
-        config.dsn.substring(0, 20) + '...',
-      )
-
-      Sentry.init({
-        dsn: config.dsn,
-        release: config.release,
-        tracesSampleRate: 1.0,
-
-        // SolidStart specific configuration
-        sendDefaultPii: true,
-        tracePropagationTargets: [
-          'localhost',
-          /^https:\/\/.*\.supabase\.co/,
-          /^https:\/\/.*\.macroflows\.app/,
-          /^https:\/\/.*\.macroflows.*\.app/,
-        ],
-
-        integrations:
-          type === 'client'
-            ? await localCreateClientIntegrations()
-            : [Sentry.consoleLoggingIntegration()],
-
-        // Session Replay configuration
-        replaysSessionSampleRate: 1.0,
-        replaysOnErrorSampleRate: 1.0,
-
-        // Set sample rate for profiling
-        profilesSampleRate: 1.0,
-
-        enableLogs: true,
-      })
-
-      if (config.useOTel) {
-        await localSetupSentryOTelIntegration(type)
-      }
-
-      isInitialized = true
-    } catch (error) {
-      console.error('Failed to initialize Sentry:', error)
-      // Don't throw - Sentry should not break the application
+    if (sentryInitializationPromise !== null) {
+      await sentryInitializationPromise
+      return
     }
+
+    sentryInitializationPromise = (async () => {
+      try {
+        const config = localCreateSentryConfig()
+
+        // Only initialize if DSN is provided
+        if (config.dsn === undefined || config.dsn === '') {
+          console.warn('❌ Sentry DSN not provided - skipping initialization', {
+            VITE_SENTRY_DSN: String(import.meta.env.VITE_SENTRY_DSN),
+          })
+          return
+        }
+
+        console.log(
+          '🚀 Initializing Sentry with DSN:',
+          config.dsn.substring(0, 20) + '...',
+        )
+
+        Sentry.init({
+          dsn: config.dsn,
+          release: config.release,
+          tracesSampleRate: 1.0,
+
+          // SolidStart specific configuration
+          sendDefaultPii: true,
+          tracePropagationTargets: [
+            'localhost',
+            /^https:\/\/.*\.supabase\.co/,
+            /^https:\/\/.*\.macroflows\.app/,
+            /^https:\/\/.*\.macroflows.*\.app/,
+          ],
+
+          integrations:
+            type === 'client'
+              ? await localCreateClientIntegrations()
+              : [Sentry.consoleLoggingIntegration()],
+
+          // Session Replay configuration
+          replaysSessionSampleRate: 1.0,
+          replaysOnErrorSampleRate: 1.0,
+
+          // Set sample rate for profiling
+          profilesSampleRate: 1.0,
+
+          enableLogs: true,
+        })
+
+        if (config.useOTel) {
+          await localSetupSentryOTelIntegration(type)
+        }
+
+        isSentryInitialized = true
+      } catch (error) {
+        console.error('Failed to initialize Sentry:', error)
+        // Don't throw - Sentry should not break the application
+      } finally {
+        sentryInitializationPromise = null
+      }
+    })()
+
+    await sentryInitializationPromise
   }
 
   return {
