@@ -24,7 +24,15 @@ describe('measure infrastructure module exports', () => {
     ])
   })
 
-  it('keeps realtime exports limited to the public initializer', () => {
-    expect(Object.keys(realtimeModule)).toEqual(['initializeMeasureRealtime'])
+  it('keeps realtime exports limited to the public factory', () => {
+    expect(Object.keys(realtimeModule)).toEqual([
+      'createMeasureRealtimeService',
+    ])
+  })
+
+  it('creates a realtime service with the public initializer', () => {
+    expect(Object.keys(realtimeModule.createMeasureRealtimeService())).toEqual([
+      'initializeMeasureRealtime',
+    ])
   })
 })
