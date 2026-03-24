@@ -1,13 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  type ClipboardStoreConfig,
-  createClipboardStore,
-} from '~/modules/clipboard/application/store/clipboardStore'
+import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import {
   type ClipboardEntry,
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { type ClipboardPersistence } from '~/modules/clipboard/domain/clipboardPersistence'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
@@ -17,8 +15,6 @@ import {
 } from '~/modules/diet/recipe/domain/recipe'
 
 describe('ClipboardStore', () => {
-  type ClipboardPersistence = NonNullable<ClipboardStoreConfig['persistence']>
-
   const mockPersistence: ClipboardPersistence = {
     save: vi.fn(),
     load: vi.fn((): ClipboardEntry[] => []),
