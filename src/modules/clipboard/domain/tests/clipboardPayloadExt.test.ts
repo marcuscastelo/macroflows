@@ -25,11 +25,14 @@ const createFoodItem = (id: number, name: string, quantity: number): Item =>
     },
   })
 
-const expectRegeneratedId = (actualId: number, expectedId: number): void => {
-  expect(actualId).toBe(expectedId)
+const expectRegeneratedId = (
+  actualId: number,
+  originalId: number,
+  randomValue: number,
+): void => {
+  expect(actualId).toBe(Math.round(randomValue * 1000000))
+  expect(actualId).not.toBe(originalId)
   expect(Number.isInteger(actualId)).toBe(true)
-  expect(actualId).toBeGreaterThanOrEqual(0)
-  expect(actualId).toBeLessThanOrEqual(1000000)
 }
 
 describe('ClipboardPayloadExt', () => {
@@ -46,7 +49,7 @@ describe('ClipboardPayloadExt', () => {
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(1)
-      expectRegeneratedId(extractedItems[0]!.id, 123456)
+      expectRegeneratedId(extractedItems[0]!.id, payload.id, 0.123456)
       expect(extractedItems[0]).toEqual({
         ...payload,
         id: 123456,
@@ -70,9 +73,8 @@ describe('ClipboardPayloadExt', () => {
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(2)
-      expectRegeneratedId(extractedItems[0]!.id, 111111)
-      expectRegeneratedId(extractedItems[1]!.id, 222222)
-      expect(new Set(extractedItems.map((item) => item.id)).size).toBe(2)
+      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id, 0.111111)
+      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id, 0.222222)
       expect(extractedItems).toEqual([
         { ...items[0], id: 111111 },
         { ...items[1], id: 222222 },
@@ -102,9 +104,8 @@ describe('ClipboardPayloadExt', () => {
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(2)
-      expectRegeneratedId(extractedItems[0]!.id, 333333)
-      expectRegeneratedId(extractedItems[1]!.id, 444444)
-      expect(new Set(extractedItems.map((item) => item.id)).size).toBe(2)
+      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id, 0.333333)
+      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id, 0.444444)
       expect(extractedItems).toEqual([
         { ...items[0], id: 333333 },
         { ...items[1], id: 444444 },
