@@ -36,6 +36,8 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
+const templateSearchTabPreference = createTemplateSearchTabPreference()
+
 export type TemplateSearchModalProps = {
   targetName: string
   onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
@@ -203,7 +205,6 @@ export function TemplateSearch(props: {
   onEANModal: () => void
 }) {
   const templateSearchState = useContainer().templateSearchState()
-  const templateSearchTabPreference = createTemplateSearchTabPreference()
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
