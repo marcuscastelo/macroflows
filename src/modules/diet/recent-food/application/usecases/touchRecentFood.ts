@@ -32,6 +32,7 @@ export async function touchRecentFood(recentFoodRef: RecentFoodReference) {
     }
   } else {
     // TODO: Remove client-side user check after implementing row-level security (RLS)
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1463
     if (currentRecentFood.user_id !== authUseCases.currentUserIdOrGuestId()) {
       throw new Error('BUG: recentFood fetched does not match current user')
     }

@@ -2,14 +2,8 @@ import {
   type ClipboardEntry,
   clipboardEntrySchema,
 } from '~/modules/clipboard/domain/clipboardEntry'
+import { type ClipboardPersistence } from '~/modules/clipboard/domain/clipboardPersistence'
 import { logging } from '~/shared/utils/logging'
-
-export type ClipboardPersistence = {
-  save: (entries: ClipboardEntry[]) => void
-  load: () => ClipboardEntry[]
-  cleanExpired: (entries: ClipboardEntry[]) => ClipboardEntry[]
-  clear: () => void
-}
 
 const STORAGE_KEY = 'macroflows_clipboard'
 

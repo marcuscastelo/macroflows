@@ -13,10 +13,7 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  loadTabPreference,
-  saveTabPreference,
-} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
+import { createTemplateSearchTabPreference } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import {
   showError,
   showSuccess,
@@ -38,6 +35,8 @@ import {
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
+
+const templateSearchTabPreference = createTemplateSearchTabPreference()
 
 export type TemplateSearchModalProps = {
   targetName: string
@@ -211,7 +210,7 @@ export function TemplateSearch(props: {
 
   // Load persisted tab preference on mount (only once)
   onMount(() => {
-    const persistedTab = loadTabPreference()
+    const persistedTab = templateSearchTabPreference.loadTabPreference()
     templateSearchState.setTemplateSearchTab(persistedTab)
   })
 
@@ -228,7 +227,7 @@ export function TemplateSearch(props: {
         : tabOrUpdater
 
     templateSearchState.setTemplateSearchTab(newTab)
-    saveTabPreference(newTab)
+    templateSearchTabPreference.saveTabPreference(newTab)
   }
 
   return (
