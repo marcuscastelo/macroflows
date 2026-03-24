@@ -6,11 +6,11 @@ import {
   type Template,
 } from '~/modules/diet/template/domain/template'
 import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-
-const recentFoodCrud = createRecentFoodCrud()
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { logging } from '~/shared/utils/logging'
+
+const recentFoodCrud = createRecentFoodCrud()
 
 type RemoveFromRecentButtonProps = {
   template: Template
@@ -21,13 +21,13 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
   const useCases = useContainer()
   const authUseCases = useCases.authUseCases()
   const templateSearchState = useCases.templateSearchState()
+
   const handleClick = (e: MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
     const templateType = isTemplateFood(props.template) ? 'food' : 'recipe'
     const templateId = props.template.id
-
     const userId = authUseCases.currentUserIdOrGuestId()
 
     void showPromise(

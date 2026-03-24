@@ -1,11 +1,17 @@
-import { recentFoodSchema } from '~/modules/recent-food/domain/recentFood'
-import { recentFoodCacheStore } from '~/modules/recent-food/infrastructure/signals/recentFoodCacheStore'
-import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/recent-food/infrastructure/supabase/constants'
+import {
+  type RecentFood,
+  recentFoodSchema,
+} from '~/modules/diet/recent-food/domain/recentFood'
+import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/diet/recent-food/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
 let initialized = false
-export function initializeRecentFoodRealtime() {
+export function initializeRecentFoodRealtime(callbacks: {
+  onInsert: (data: RecentFood) => void
+  onUpdate: (data: RecentFood) => void
+  onDelete: (data: RecentFood) => void
+}) {
   if (initialized) {
     return
   }
@@ -21,24 +27,21 @@ export function initializeRecentFoodRealtime() {
       switch (event.eventType) {
         case 'INSERT': {
           if (event.new !== undefined) {
-            recentFoodCacheStore.upsertToCache(event.new)
+            callbacks.onInsert(event.new)
           }
           break
         }
 
         case 'UPDATE': {
           if (event.new) {
-            recentFoodCacheStore.upsertToCache(event.new)
+            callbacks.onUpdate(event.new)
           }
           break
         }
 
         case 'DELETE': {
           if (event.old) {
-            recentFoodCacheStore.removeFromCache({
-              by: 'id',
-              value: event.old.id,
-            })
+            callbacks.onDelete(event.old)
           }
           break
         }

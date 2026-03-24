@@ -48,23 +48,17 @@ export function createTemplateSearchState(deps: {
         search: debouncedSearch(),
         userId: deps.getCurrentUserIdOrGuestId(),
       }),
-      (signals) => {
-        return fetchTemplatesByTabLogic(
-          signals.tab,
-          signals.search,
-          signals.userId,
-          {
-            fetchUserRecipes: (userId) => recipeCrud.fetchUserRecipes(userId),
-            fetchUserRecipeByName: (userId, name) =>
-              recipeCrud.fetchUserRecipeByName(userId, name),
-            fetchUserRecentFoods: recentFoodCrud.fetchUserRecentFoods,
-            fetchFoods: (params) => foodCrud.fetchFoods(params),
-            fetchFoodsByName: (name, params) =>
-              foodCrud.fetchFoodsByName(name, params),
-            getFavoriteFoods: deps.getFavoriteFoods,
-          },
-        )
-      },
+      (signals) =>
+        fetchTemplatesByTabLogic(signals.tab, signals.search, signals.userId, {
+          fetchUserRecipes: (userId) => recipeCrud.fetchUserRecipes(userId),
+          fetchUserRecipeByName: (userId, name) =>
+            recipeCrud.fetchUserRecipeByName(userId, name),
+          fetchUserRecentFoodsAsTemplates: recentFoodCrud.fetchUserRecentFoods,
+          fetchFoods: (params) => foodCrud.fetchFoods(params),
+          fetchFoodsByName: (name, params) =>
+            foodCrud.fetchFoodsByName(name, params),
+          getFavoriteFoods: deps.getFavoriteFoods,
+        }),
     )
 
     return {

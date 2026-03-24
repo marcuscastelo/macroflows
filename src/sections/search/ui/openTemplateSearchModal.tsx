@@ -1,8 +1,3 @@
-/**
- * Template search modal helper.
- * Opens the TemplateSearchModal using the modal system.
- */
-
 import {
   TemplateSearchModal,
   type TemplateSearchModalProps,

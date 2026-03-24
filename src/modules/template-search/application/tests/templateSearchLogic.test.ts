@@ -44,7 +44,9 @@ describe('fetchTemplatesByTabLogic', () => {
     deps = {
       fetchUserRecipes: vi.fn().mockResolvedValue([mockRecipe]),
       fetchUserRecipeByName: vi.fn().mockResolvedValue([mockRecipe]),
-      fetchUserRecentFoods: vi.fn().mockResolvedValue([mockFood, mockRecipe]),
+      fetchUserRecentFoodsAsTemplates: vi
+        .fn()
+        .mockResolvedValue([mockFood, mockRecipe]),
       fetchFoods: vi.fn().mockResolvedValue([mockFood]),
       fetchFoodsByName: vi.fn().mockResolvedValue([mockFood]),
       getFavoriteFoods: () => [1],
@@ -80,7 +82,10 @@ describe('fetchTemplatesByTabLogic', () => {
     )
     expect(result).toEqual([mockFood, mockRecipe])
     // Verify that fetchUserRecentFoods was called with correct parameters
-    expect(deps.fetchUserRecentFoods).toHaveBeenCalledWith(userId, '')
+    expect(deps.fetchUserRecentFoodsAsTemplates).toHaveBeenCalledWith(
+      userId,
+      '',
+    )
   })
 
   it('fetches favorite foods for Favoritos tab', async () => {
@@ -105,7 +110,7 @@ describe('fetchTemplatesByTabLogic', () => {
 
   it('filters by search string in Recentes tab', async () => {
     // Mock the function to return only the food template for search "Banana"
-    deps.fetchUserRecentFoods = vi.fn().mockResolvedValue([mockFood])
+    deps.fetchUserRecentFoodsAsTemplates = vi.fn().mockResolvedValue([mockFood])
 
     const result = await fetchTemplatesByTabLogic(
       availableTabs.Recentes.id,
@@ -114,13 +119,16 @@ describe('fetchTemplatesByTabLogic', () => {
       deps,
     )
     expect(result).toEqual([mockFood])
-    expect(deps.fetchUserRecentFoods).toHaveBeenCalledWith(userId, 'Banana')
+    expect(deps.fetchUserRecentFoodsAsTemplates).toHaveBeenCalledWith(
+      userId,
+      'Banana',
+    )
   })
 
   it('filters by EAN in Recentes tab', async () => {
     // The EAN search should filter client-side since the database function only searches by name
     // Mock the function to return both templates, then expect client-side filtering to work
-    deps.fetchUserRecentFoods = vi
+    deps.fetchUserRecentFoodsAsTemplates = vi
       .fn()
       .mockResolvedValue([mockFood, mockRecipe])
 
@@ -131,7 +139,7 @@ describe('fetchTemplatesByTabLogic', () => {
       deps,
     )
     expect(result).toEqual([mockFood])
-    expect(deps.fetchUserRecentFoods).toHaveBeenCalledWith(
+    expect(deps.fetchUserRecentFoodsAsTemplates).toHaveBeenCalledWith(
       userId,
       mockFood.ean!,
     )

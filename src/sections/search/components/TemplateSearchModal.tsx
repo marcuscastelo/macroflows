@@ -1,8 +1,9 @@
-import { createMemo, onMount, Suspense } from 'solid-js'
+import { onMount, Suspense } from 'solid-js'
 
 import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -12,17 +13,14 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import { extractRecentFoodReference } from '~/modules/recent-food/application/usecases/extractRecentFoodReference'
-import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { createNewRecentFood } from '~/modules/recent-food/domain/recentFood'
-
-const recentFoodCrud = createRecentFoodCrud()
 import {
   loadTabPreference,
   saveTabPreference,
 } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
-import { showSuccess } from '~/modules/toast/application/toastManager'
-import { showError } from '~/modules/toast/application/toastManager'
+import {
+  showError,
+  showSuccess,
+} from '~/modules/toast/application/toastManager'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -41,16 +39,6 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
-// Create macro overflow instance lazily to avoid circular initialization
-// during SSR/prerender. Use a memo so the factory is reused.
-const getMacroOverflow = (deps: Parameters<typeof createMacroOverflow>[0]) => {
-  const memo = createMemo<ReturnType<typeof createMacroOverflow>>(() =>
-    createMacroOverflow(deps),
-  )
-
-  return memo
-}
-
 export type TemplateSearchModalProps = {
   targetName: string
   onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
@@ -60,6 +48,12 @@ export type TemplateSearchModalProps = {
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
   const useCases = useContainer()
+  const templateSearchState = useCases.templateSearchState()
+  const macroOverflow = createMacroOverflow({
+    dayUseCases: useCases.dayUseCases(),
+    macroTargetUseCases: useCases.macroTargetUseCases(),
+  })
+
   const handleTemplateSelected = (template: Template) => {
     const initialQuantity = isTemplateRecipe(template)
       ? getRecipePreparedQuantity(template)
@@ -90,55 +84,18 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
     originalAddedItem: Item,
     closeEditModal: () => void,
   ) => {
-    const authUseCases = useCases.authUseCases()
     const handleConfirm = async () => {
-      const userId = authUseCases.currentUserIdOrGuestId()
-
       props.onNewItem?.(newItem, originalAddedItem)
 
-      // Extract recent food reference from the item
-      const recentFoodRef = extractRecentFoodReference(originalAddedItem)
-      if (recentFoodRef === null) {
-        logging.warn(
-          'Cannot track recent food for item without trackable reference',
-          { originalAddedItem },
-        )
-        // Continue with the rest of the flow, just skip recent food tracking
-      } else {
-        const { type, referenceId } = recentFoodRef
-
-        const recentFood =
-          await recentFoodCrud.fetchRecentFoodByUserTypeAndReferenceId(
-            userId,
-            type,
-            referenceId,
+      void recentFoodUseCases
+        .touchRecentFoodForItem(originalAddedItem)
+        .then(() => templateSearchState.refetchTemplates())
+        .catch((err) => {
+          logging.error(
+            'TemplateSearchModal touchRecentFoodForItem error:',
+            err,
           )
-
-        if (
-          recentFood !== null &&
-          (recentFood.user_id !== authUseCases.currentUserIdOrGuestId() ||
-            recentFood.type !== type ||
-            recentFood.reference_id !== referenceId)
-        ) {
-          throw new Error(
-            'BUG: recentFood fetched does not match user/type/reference',
-          )
-        }
-
-        const recentFoodInput = createNewRecentFood({
-          user_id: userId,
-          type,
-          reference_id: referenceId,
-          last_used: new Date(),
-          times_used: (recentFood?.times_used ?? 0) + 1,
         })
-
-        if (recentFood !== null) {
-          await recentFoodCrud.updateRecentFood(recentFood.id, recentFoodInput)
-        } else {
-          await recentFoodCrud.insertRecentFood(recentFoodInput)
-        }
-      }
 
       const confirmModalId = openConfirmModal(
         'Deseja adicionar outro item ou finalizar a inclusão?',
@@ -164,10 +121,7 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
       )
     }
 
-    const overflowResults = getMacroOverflow({
-      dayUseCases: useCases.dayUseCases(),
-      macroTargetUseCases: useCases.macroTargetUseCases(),
-    })().isOverflow({
+    const overflowResults = macroOverflow.isOverflow({
       item: originalAddedItem,
     })
 
