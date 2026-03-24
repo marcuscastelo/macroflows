@@ -2,9 +2,10 @@ import {
   type BodyMeasure,
   bodyMeasureSchema,
 } from '~/modules/measure/domain/measure'
-import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+
+const SUPABASE_TABLE_BODY_MEASURES = 'body_measures'
 
 let initialized = false
 
@@ -12,7 +13,7 @@ let initialized = false
  * Sets up granular realtime subscription for body measure changes
  * @param onBodyMeasureChange - Callback for granular updates with event details
  */
-export function setupBodyMeasureRealtimeSubscription(
+function setupBodyMeasureRealtimeSubscription(
   onBodyMeasureChange: (event: {
     eventType: 'INSERT' | 'UPDATE' | 'DELETE'
     old?: BodyMeasure
@@ -26,6 +27,12 @@ export function setupBodyMeasureRealtimeSubscription(
   )
 }
 
+/**
+ * Initializes the body measure realtime subscription once per session.
+ *
+ * @param deps - Dependencies used to react to realtime body measure changes.
+ * @returns Nothing.
+ */
 export function initializeMeasureRealtime(deps: {
   refetchBodyMeasures: () => void
 }): void {
@@ -34,21 +41,17 @@ export function initializeMeasureRealtime(deps: {
   }
   logging.debug(`Measure realtime initialized!`)
   initialized = true
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_BODY_MEASURES,
-    bodyMeasureSchema,
-    (event) => {
-      logging.debug(`Event:`, event)
+  setupBodyMeasureRealtimeSubscription((event) => {
+    logging.debug(`Event:`, event)
 
-      switch (event.eventType) {
-        case 'INSERT':
-        case 'UPDATE':
-        case 'DELETE': {
-          // For measures, we simply refetch since we don't have complex caching
-          deps.refetchBodyMeasures()
-          break
-        }
+    switch (event.eventType) {
+      case 'INSERT':
+      case 'UPDATE':
+      case 'DELETE': {
+        // For measures, we simply refetch since we don't have complex caching
+        deps.refetchBodyMeasures()
+        break
       }
-    },
-  )
+    }
+  })
 }
