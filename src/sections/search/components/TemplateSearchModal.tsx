@@ -13,10 +13,7 @@ import {
 import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
-import {
-  loadTabPreference,
-  saveTabPreference,
-} from '~/modules/template-search/infrastructure/templateSearchTabPreference'
+import { createTemplateSearchTabPreference } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
 import {
   showError,
   showSuccess,
@@ -206,12 +203,13 @@ export function TemplateSearch(props: {
   onEANModal: () => void
 }) {
   const templateSearchState = useContainer().templateSearchState()
+  const templateSearchTabPreference = createTemplateSearchTabPreference()
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   // Load persisted tab preference on mount (only once)
   onMount(() => {
-    const persistedTab = loadTabPreference()
+    const persistedTab = templateSearchTabPreference.loadTabPreference()
     templateSearchState.setTemplateSearchTab(persistedTab)
   })
 
@@ -228,7 +226,7 @@ export function TemplateSearch(props: {
         : tabOrUpdater
 
     templateSearchState.setTemplateSearchTab(newTab)
-    saveTabPreference(newTab)
+    templateSearchTabPreference.saveTabPreference(newTab)
   }
 
   return (
