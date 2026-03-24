@@ -9,6 +9,11 @@ import {
 } from 'solid-js'
 
 import {
+  createCachedSearchCrud,
+  type CachedSearchCrud,
+} from '~/modules/search/application/usecases/cachedSearchCrud'
+import { createCachedSearchRepository } from '~/modules/search/infrastructure/cachedSearchRepository'
+import {
   type AuthUseCases,
   createAuthUseCases,
 } from '~/modules/auth/application/usecases/authUseCases'
@@ -25,7 +30,10 @@ import {
   createCopyDayOperations,
 } from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
 import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
-import { createFoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
+import {
+  createFoodCrud,
+  type FoodCrud,
+} from '~/modules/diet/food/application/usecases/foodCrud'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { createMacroProfileCrudService } from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
 import { createMacroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
@@ -47,11 +55,19 @@ import {
   type MealUseCases,
 } from '~/modules/diet/meal/application/meal'
 import {
+  createRecentFoodUseCases,
+  type RecentFoodUseCases,
+} from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
+import {
   createRecipeCrud,
   type RecipeCrud,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { type Template } from '~/modules/diet/template/domain/template'
+import {
+  createRecipeItemUseCases,
+  type RecipeItemUseCases,
+} from '~/modules/diet/item/application/recipeItemUseCases'
 import {
   createMeasureCrud,
   type MeasureCrud,
@@ -61,6 +77,7 @@ import {
   type MeasureState,
 } from '~/modules/measure/application/usecases/measureState'
 import { type BodyMeasure } from '~/modules/measure/domain/measure'
+import { createMeasureRepository } from '~/modules/measure/infrastructure/measureRepository'
 import {
   createTelemetry,
   type TelemetryModule,
@@ -71,6 +88,7 @@ import {
   type ProfileModule,
 } from '~/modules/profile/application/profile'
 import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
 import {
   createTemplateSearchState,
   type TemplateSearchState,
@@ -84,6 +102,11 @@ import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
 import {
+  createWeightChartSettings,
+  type WeightChartSettings,
+} from '~/modules/weight/application/chart/weightChartSettings'
+import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
+import {
   createWeightChartUseCases,
   type WeightChartUseCases,
 } from '~/modules/weight/application/chart/weightChartUseCases'
@@ -91,6 +114,8 @@ import {
   createWeightUseCases,
   type WeightUseCases,
 } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
+import { createWeightRepository } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightRepository'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import {
   createGuestUseCases,
@@ -102,6 +127,7 @@ type ContainerInstances = {
   clipboardUseCases: ClipboardUseCases
   copyDayOperations: CopyDayOperations
   dayUseCases: DayUseCases
+  foodCrud: FoodCrud
   guestUseCases: GuestUseCases
   macroProfileState: MacroProfileState
   macroProfileUseCases: MacroProfileUseCases
@@ -110,10 +136,13 @@ type ContainerInstances = {
   measureCrud: MeasureCrud
   measureState: MeasureState
   profileUseCases: ProfileModule
+  recentFoodUseCases: RecentFoodUseCases
   recipeCrud: RecipeCrud
+  recipeItemUseCases: RecipeItemUseCases
   templateSearchState: TemplateSearchState
   telemetryUseCases: TelemetryModule
   userUseCases: UserUseCases
+  weightChartSettings: WeightChartSettings
   weightChartUseCases: WeightChartUseCases
   weightUseCases: WeightUseCases
 }
@@ -123,6 +152,7 @@ export type Container = {
   clipboardUseCases: () => ClipboardUseCases
   copyDayOperations: () => CopyDayOperations
   dayUseCases: () => DayUseCases
+  foodCrud: () => FoodCrud
   guestUseCases: () => GuestUseCases
   macroProfileState: () => MacroProfileState
   macroProfileUseCases: () => MacroProfileUseCases
@@ -131,10 +161,13 @@ export type Container = {
   measureCrud: () => MeasureCrud
   measureState: () => MeasureState
   profileUseCases: () => ProfileModule
+  recentFoodUseCases: () => RecentFoodUseCases
   recipeCrud: () => RecipeCrud
+  recipeItemUseCases: () => RecipeItemUseCases
   templateSearchState: () => TemplateSearchState
   telemetryUseCases: () => TelemetryModule
   userUseCases: () => UserUseCases
+  weightChartSettings: () => WeightChartSettings
   weightChartUseCases: () => WeightChartUseCases
   weightUseCases: () => WeightUseCases
   initialize: () => void
@@ -203,10 +236,22 @@ export function createContainer(
       })
     guestUseCasesRef = guestUseCases
 
+    const recipeRepository = createRecipeRepository()
+    const cachedSearchRepository = createCachedSearchRepository()
+    const foodRepository = createSupabaseFoodRepository()
+    const recentFoodRepository = createRecentFoodRepository()
+    const measureRepository = createMeasureRepository()
+    const weightCacheRepository = createLocalStorageWeightCacheRepository()
+    const weightRepository = createWeightRepository({
+      isGuestMode: () => guestUseCases.isGuestMode(),
+    })
+    const weightChartPreferenceRepository =
+      createLocalStorageWeightChartPreferenceRepository()
+
     const recipeCrud =
       overrides.recipeCrud ??
       createRecipeCrud({
-        repository: () => createRecipeRepository(),
+        repository: () => recipeRepository,
       })
 
     const macroProfileCache = createMacroProfileCacheStore()
@@ -214,12 +259,12 @@ export function createContainer(
       isGuestMode: () => guestUseCases.isGuestMode(),
     })
     const macroProfileCrudService = createMacroProfileCrudService({
-      repository: () => macroProfileRepository,
+      repository: macroProfileRepository,
     })
     const macroProfileUseCases =
       overrides.macroProfileUseCases ??
       createMacroProfileUseCases({
-        crudService: () => macroProfileCrudService,
+        crudService: macroProfileCrudService,
         cache: macroProfileCache,
       })
     const macroProfileState =
@@ -257,6 +302,14 @@ export function createContainer(
             authUseCases.currentUserIdOrGuestId(),
           isGuestMode: () => guestUseCases.isGuestMode(),
         },
+        weightCacheRepository,
+        weightRepository,
+      })
+
+    const weightChartSettings =
+      overrides.weightChartSettings ??
+      createWeightChartSettings({
+        repository: weightChartPreferenceRepository,
       })
 
     const weightChartUseCases =
@@ -286,7 +339,11 @@ export function createContainer(
         dayUseCases: () => dayUseCases,
       })
 
-    const measureCrud = overrides.measureCrud ?? createMeasureCrud()
+    const measureCrud =
+      overrides.measureCrud ??
+      createMeasureCrud({
+        measureRepository,
+      })
     const measureState =
       overrides.measureState ??
       createMeasureState({
@@ -295,10 +352,29 @@ export function createContainer(
           measureCrud.fetchUserBodyMeasures(userId),
       })
 
-    const recentFoodCrud = createRecentFoodCrud()
-    const foodCrud = createFoodCrud({
-      repository: () => createSupabaseFoodRepository(),
+    const recentFoodCrud = createRecentFoodCrud({
+      recentFoodRepository,
     })
+    const recentFoodUseCases =
+      overrides.recentFoodUseCases ??
+      createRecentFoodUseCases({
+        getCurrentUserIdOrGuestId: () => authUseCases.currentUserIdOrGuestId(),
+        recentFoodCrud,
+      })
+    const cachedSearchCrud: CachedSearchCrud = createCachedSearchCrud({
+      repository: cachedSearchRepository,
+    })
+    const foodCrud =
+      overrides.foodCrud ??
+      createFoodCrud({
+        repository: foodRepository,
+        cachedSearchCrud,
+      })
+    const recipeItemUseCases =
+      overrides.recipeItemUseCases ??
+      createRecipeItemUseCases({
+        fetchRecipeById: (recipeId) => recipeCrud.fetchRecipeById(recipeId),
+      })
     const templateSearchState =
       overrides.templateSearchState ??
       createTemplateSearchState({
@@ -316,11 +392,14 @@ export function createContainer(
       userUseCases: () => userUseCases,
       guestUseCases: () => guestUseCases,
       dayUseCases: () => dayUseCases,
+      foodCrud: () => foodCrud,
       clipboardUseCases: () => clipboardUseCases,
       profileUseCases: () => profileUseCases,
       weightUseCases: () => weightUseCases,
+      weightChartSettings: () => weightChartSettings,
       weightChartUseCases: () => weightChartUseCases,
       recipeCrud: () => recipeCrud,
+      recipeItemUseCases: () => recipeItemUseCases,
       macroProfileUseCases: () => macroProfileUseCases,
       macroProfileState: () => macroProfileState,
       macroTargetUseCases: () => macroTargetUseCases,
@@ -329,6 +408,7 @@ export function createContainer(
       templateSearchState: () => templateSearchState,
       measureCrud: () => measureCrud,
       measureState: () => measureState,
+      recentFoodUseCases: () => recentFoodUseCases,
       initialize: () => {
         guestUseCases.initializeGuestMode()
         authUseCases.initializeAuth()
@@ -447,6 +527,13 @@ export function createTestContainer(
     refetchBodyMeasures: () => undefined,
   }
 
+  const weightChartSettings: WeightChartSettings = {
+    weightChartType: () => 'all',
+    setWeightChartType: () => {
+      /* no-op */
+    },
+  }
+
   const templateSearchState: TemplateSearchState = {
     templateSearch: () => '',
     setTemplateSearch: () => {
@@ -467,6 +554,7 @@ export function createTestContainer(
     guestUseCases,
     measureState,
     templateSearchState,
+    weightChartSettings,
     ...overrides,
   })
 }

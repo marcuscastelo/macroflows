@@ -3,7 +3,6 @@ import {
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
-import { createMacroProfileRepository } from '~/modules/diet/macro-profile/infrastructure/macroProfileRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 
@@ -11,12 +10,10 @@ import { type User } from '~/modules/user/domain/user'
  * Factory that returns macro profile CRUD service with injected dependencies.
  * Allows swapping repository implementations for tests or alternate runtimes.
  */
-export function createMacroProfileCrudService(
-  deps: {
-    repository?: () => MacroProfileRepository
-  } = {},
-) {
-  const repository = deps.repository?.() ?? createMacroProfileRepository()
+export function createMacroProfileCrudService(deps: {
+  repository: MacroProfileRepository
+}) {
+  const repository = deps.repository
 
   return {
     async fetchUserMacroProfiles(

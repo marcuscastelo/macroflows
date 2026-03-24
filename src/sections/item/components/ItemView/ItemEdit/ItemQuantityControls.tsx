@@ -6,7 +6,7 @@ import {
   untrack,
 } from 'solid-js'
 
-import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
+import { useContainer } from '~/di/container'
 import { ItemExt } from '~/modules/diet/item/domain/ext/itemExt'
 import {
   isFoodItem,
@@ -31,6 +31,7 @@ export type ItemQuantityControlsProps = {
 }
 
 export function ItemQuantityControls(props: ItemQuantityControlsProps) {
+  const recipeItemUseCases = useContainer().recipeItemUseCases()
   const recipeResource = recipeItemUseCases.createRecipeResource(() =>
     props.itemDraft(),
   )

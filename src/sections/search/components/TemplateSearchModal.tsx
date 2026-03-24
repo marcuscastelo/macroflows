@@ -3,7 +3,6 @@ import { onMount, Suspense } from 'solid-js'
 import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
 import {
@@ -47,6 +46,7 @@ export type TemplateSearchModalProps = {
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
   const useCases = useContainer()
+  const recentFoodUseCases = useCases.recentFoodUseCases()
   const templateSearchState = useCases.templateSearchState()
   const macroOverflow = createMacroOverflow({
     dayUseCases: useCases.dayUseCases(),

@@ -3,10 +3,9 @@ import axios from 'axios'
 import { type ApiFood } from '~/modules/diet/food/domain/apiFood'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { type CachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
-import { convertApi2Food } from '~/shared/utils/convertApi2Food'
+import { convertApi2Food } from '~/modules/diet/food/infrastructure/api/application/convertApi2Food'
 import { ORIGINAL_ERROR_SYMBOL } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
@@ -19,14 +18,14 @@ import { logging } from '~/shared/utils/logging'
  * @param deps Optional dependency overrides for persistence and UI feedback.
  * @returns An object with EAN and name-based import methods.
  */
-export function createApiFoodImportService(deps?: {
-  foodRepository?: FoodRepository
-  cachedSearchCrud?: ReturnType<typeof createCachedSearchCrud>
+export function createApiFoodImportService(deps: {
+  foodRepository: FoodRepository
+  cachedSearchCrud: CachedSearchCrud
   showError?: typeof showError
 }) {
-  const foodRepository = deps?.foodRepository ?? createSupabaseFoodRepository()
-  const cachedSearchCrud = deps?.cachedSearchCrud ?? createCachedSearchCrud()
-  const localShowError = deps?.showError ?? showError
+  const foodRepository = deps.foodRepository
+  const cachedSearchCrud = deps.cachedSearchCrud
+  const localShowError = deps.showError ?? showError
 
   async function importFoodFromApiByEan(
     ean: Food['ean'],

@@ -14,7 +14,7 @@ export function convertApi2Food(food: ApiFood): NewFood {
       type: 'api',
       id: food.id.toString(),
     },
-    ean: food.ean === '' ? null : food.ean, // Convert EAN to null if not provided
+    ean: food.ean === '' ? null : food.ean,
     macros: createMacroNutrients({
       carbsInMg: food.carboidratos * 100000,
       proteinInMg: food.proteinas * 100000,

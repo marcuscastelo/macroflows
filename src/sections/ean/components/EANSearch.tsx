@@ -7,14 +7,7 @@ import {
 } from 'solid-js'
 
 import { useContainer } from '~/di/container'
-import { createFoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-
-// Create food CRUD instance for this module
-const foodCrud = createFoodCrud({
-  repository: () => createSupabaseFoodRepository(),
-})
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
@@ -30,6 +23,7 @@ export type EANSearchProps = {
 
 export function EANSearch(props: EANSearchProps) {
   const useCases = useContainer()
+  const foodCrud = useCases.foodCrud()
   const [loading, setLoading] = createSignal(false)
 
   const EAN_LENGTH = 13

@@ -12,7 +12,6 @@ import {
   type RecipeCrud,
 } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import type { Recipe } from '~/modules/diet/recipe/domain/recipe'
-import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { showError } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'
 
@@ -98,10 +97,4 @@ export function createRecipeItemUseCases(deps: {
   }
 }
 
-const defaultRecipeCrud = createRecipeCrud({
-  repository: () => createRecipeRepository(),
-})
-
-export const recipeItemUseCases = createRecipeItemUseCases({
-  fetchRecipeById: (recipeId) => defaultRecipeCrud.fetchRecipeById(recipeId),
-})
+export type RecipeItemUseCases = ReturnType<typeof createRecipeItemUseCases>

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createTouchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
 import {
   createNewRecentFood,
@@ -28,25 +29,6 @@ const {
   mockUpdateRecentFood:
     vi.fn<(id: number, input: NewRecentFood) => Promise<RecentFood | null>>(),
 }))
-
-vi.mock('~/di/useCases', () => ({
-  useCases: {
-    authUseCases: () => ({
-      currentUserIdOrGuestId: mockCurrentUserIdOrGuestId,
-    }),
-  },
-}))
-
-vi.mock('~/modules/diet/recent-food/application/usecases/deps', () => ({
-  recentFoodCrudService: {
-    fetchRecentFoodByUserTypeAndReferenceId:
-      mockFetchRecentFoodByUserTypeAndReferenceId,
-    insertRecentFood: mockInsertRecentFood,
-    updateRecentFood: mockUpdateRecentFood,
-  },
-}))
-
-import { touchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 
 function createReference(
   overrides: Partial<RecentFoodReference> = {},
@@ -77,6 +59,16 @@ function createStoredRecentFood(
 }
 
 describe('touchRecentFood', () => {
+  const touchRecentFood = createTouchRecentFood({
+    getCurrentUserIdOrGuestId: mockCurrentUserIdOrGuestId,
+    recentFoodCrud: {
+      fetchRecentFoodByUserTypeAndReferenceId:
+        mockFetchRecentFoodByUserTypeAndReferenceId,
+      insertRecentFood: mockInsertRecentFood,
+      updateRecentFood: mockUpdateRecentFood,
+    },
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     mockCurrentUserIdOrGuestId.mockReturnValue('user-1')

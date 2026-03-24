@@ -8,10 +8,10 @@ import {
   type Weight,
   weightSchema,
 } from '~/modules/weight/domain/weight/weight'
+import { type WeightCacheRepository } from '~/modules/weight/domain/weight/weightCacheRepository'
+import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
-import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { createWeightRealtimeService } from '~/modules/weight/infrastructure/weight/supabase/realtime'
-import { createWeightRepository } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightRepository'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -36,8 +36,8 @@ export type WeightUseCasesDeps = {
 export function createWeightUseCases(deps: {
   /** Granular auth/guest dependencies (required) */
   authDeps: WeightUseCasesDeps
-  createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
-  createWeightRepository?: typeof createWeightRepository
+  weightCacheRepository: WeightCacheRepository
+  weightRepository: WeightRepository
   createWeightCacheStore?: typeof createWeightCacheStore
   createWeightRealtimeService?: typeof createWeightRealtimeService
   createWeightCrudService?: typeof createWeightCrudService
@@ -45,18 +45,14 @@ export function createWeightUseCases(deps: {
 }) {
   const {
     authDeps,
-    createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
-    createWeightRepository: injectedCreateWeightRepository,
+    weightCacheRepository,
+    weightRepository,
     createWeightCacheStore: injectedCreateWeightCacheStore,
     createWeightRealtimeService: injectedCreateWeightRealtimeService,
     createWeightCrudService: injectedCreateWeightCrudService,
     parseWithStack: injectedParseWithStack,
   } = deps
 
-  const localCreateLocalStorage =
-    injectedCreateLocalStorage ?? createLocalStorageWeightCacheRepository
-  const localCreateWeightRepository =
-    injectedCreateWeightRepository ?? createWeightRepository
   const localCreateWeightCacheStore =
     injectedCreateWeightCacheStore ?? createWeightCacheStore
   const localCreateWeightRealtimeService =
@@ -66,11 +62,7 @@ export function createWeightUseCases(deps: {
   const localParseWithStack = injectedParseWithStack ?? parseWithStack
 
   return createRoot(() => {
-    const storageRepository = localCreateLocalStorage()
     const cache = localCreateWeightCacheStore()
-    const weightRepository = localCreateWeightRepository({
-      isGuestMode: authDeps.isGuestMode,
-    })
     const realtimeService = localCreateWeightRealtimeService()
     let realtimeInitialized = false
 
@@ -97,14 +89,14 @@ export function createWeightUseCases(deps: {
     const weightCrudService = () =>
       localCreateWeightCrudService({
         weightRepository,
-        weightCacheRepository: storageRepository,
+        weightCacheRepository,
       })
 
     // Internal fetch implementation
     async function fetchUserWeights(userId: User['uuid']) {
       try {
         const weights = await weightRepository.fetchUserWeights(userId)
-        storageRepository.setCachedWeights(userId, weights)
+        weightCacheRepository.setCachedWeights(userId, weights)
         cache.setWeights(weights)
         return weights
       } catch (error) {
@@ -125,7 +117,7 @@ export function createWeightUseCases(deps: {
 
       const cachedWeights = localParseWithStack(
         weightSchema.array(),
-        storageRepository.getCachedWeights(userId),
+        weightCacheRepository.getCachedWeights(userId),
       )
       if (cachedWeights.length > 0) {
         cache.setWeights(cachedWeights)

@@ -2,8 +2,8 @@ import {
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/diet/recent-food/domain/recentFood'
+import { type RecentFoodRepository } from '~/modules/diet/recent-food/domain/recentFoodRepository'
 import type { Template } from '~/modules/diet/template/domain/template'
-import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import env from '~/shared/config/env'
@@ -13,13 +13,12 @@ import env from '~/shared/config/env'
  *
  * Allows injecting a repository and `showPromise` helper for DI and testing.
  */
-export function createRecentFoodCrud(deps?: {
-  recentFoodRepository?: ReturnType<typeof createRecentFoodRepository>
+export function createRecentFoodCrud(deps: {
+  recentFoodRepository: RecentFoodRepository
   showPromise?: typeof showPromise
 }) {
-  const recentFoodRepository =
-    deps?.recentFoodRepository ?? createRecentFoodRepository()
-  const _showPromise = deps?.showPromise ?? showPromise
+  const recentFoodRepository = deps.recentFoodRepository
+  const _showPromise = deps.showPromise ?? showPromise
 
   async function fetchRecentFoodByUserTypeAndReferenceId(
     userId: User['uuid'],

@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 
-import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
+import { type WeightChartPreferenceRepository } from '~/modules/weight/domain/chart/weightChartPreferenceRepository'
 
 /**
  * Valid weight chart type values
@@ -34,49 +34,46 @@ export const WEIGHT_CHART_OPTIONS = [
   { value: 'all', label: 'Todo o período' },
 ] as const
 
-const storageRepository = createLocalStorageWeightChartPreferenceRepository()
+export function createWeightChartSettings(deps: {
+  repository: WeightChartPreferenceRepository
+}) {
+  /**
+   * Gets the stored chart type from localStorage or returns default
+   */
+  function getStoredChartType(): WeightChartType {
+    if (typeof window === 'undefined') {
+      return 'all'
+    }
 
-/**
- * Gets the stored chart type from localStorage or returns default
- */
-function getStoredChartType(): WeightChartType {
-  if (typeof window === 'undefined') {
+    const stored = deps.repository.getChartType()
+
+    if (stored !== null && isWeightChartType(stored)) {
+      return stored
+    }
+
     return 'all'
   }
 
-  const stored = storageRepository.getChartType()
-
-  if (stored !== null && isWeightChartType(stored)) {
-    return stored
+  /**
+   * Stores the chart type to localStorage
+   */
+  function storeChartType(chartType: WeightChartType): void {
+    if (typeof window !== 'undefined') {
+      deps.repository.setChartType(chartType)
+    }
   }
 
-  return 'all'
-}
+  const [weightChartType, setWeightChartType] =
+    createSignal<WeightChartType>(getStoredChartType())
 
-/**
- * Stores the chart type to localStorage
- */
-function storeChartType(chartType: WeightChartType): void {
-  if (typeof window !== 'undefined') {
-    storageRepository.setChartType(chartType)
+  createEffect(() => {
+    storeChartType(weightChartType())
+  })
+
+  return {
+    weightChartType,
+    setWeightChartType,
   }
 }
 
-/**
- * Reactive chart type signal with localStorage persistence
- */
-const [chartType, setChartType] =
-  createSignal<WeightChartType>(getStoredChartType())
-
-/**
- * Effect to persist chart type changes to localStorage
- */
-createEffect(() => {
-  storeChartType(chartType())
-})
-
-/**
- * Exported chart type accessor and setter
- */
-export const weightChartType = chartType
-export const setWeightChartType = setChartType
+export type WeightChartSettings = ReturnType<typeof createWeightChartSettings>

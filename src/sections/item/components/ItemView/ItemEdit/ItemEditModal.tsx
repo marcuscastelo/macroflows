@@ -9,7 +9,6 @@ import {
 } from 'solid-js'
 
 import { useContainer } from '~/di/container'
-import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { ParentItemExt } from '~/modules/diet/item/domain/ext/parentItemExt'
 import { RecipeItemExt } from '~/modules/diet/item/domain/ext/recipeItemExt'
 import { canApplyItem } from '~/modules/diet/item/domain/itemValidation'
@@ -52,6 +51,7 @@ export type ItemEditModalProps = {
 export const ItemEditModal = (_props: ItemEditModalProps) => {
   const useCases = useContainer()
   const recipeCrud = useCases.recipeCrud()
+  const recipeItemUseCases = useCases.recipeItemUseCases()
   logging.debug('[ItemEditModal] called', _props)
   const props = mergeProps({ targetNameColor: 'text-green-500' }, _props)
 

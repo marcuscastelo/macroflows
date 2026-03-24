@@ -1,19 +1,16 @@
 import { createResource, createRoot } from 'solid-js'
 
-import { createMeasureCrud } from '~/modules/measure/application/usecases/measureCrud'
+import { type BodyMeasure } from '~/modules/measure/domain/measure'
 import { createMeasureRealtimeService } from '~/modules/measure/infrastructure/supabase/realtime'
 
 const measureRealtimeService = createMeasureRealtimeService()
 
 export function createMeasureState(deps: {
   getCurrentUserIdOrGuestId: () => string
-  fetchUserBodyMeasures?: ReturnType<
-    typeof createMeasureCrud
-  >['fetchUserBodyMeasures']
+  fetchUserBodyMeasures: (userId: string) => Promise<readonly BodyMeasure[]>
   initializeMeasureRealtime?: typeof measureRealtimeService.initializeMeasureRealtime
 }) {
-  const localFetch =
-    deps.fetchUserBodyMeasures ?? createMeasureCrud().fetchUserBodyMeasures
+  const localFetch = deps.fetchUserBodyMeasures
   const localInitializeRealtime =
     deps.initializeMeasureRealtime ??
     measureRealtimeService.initializeMeasureRealtime

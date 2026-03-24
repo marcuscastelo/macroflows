@@ -17,7 +17,6 @@ import {
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { createDayDietRealtimeService } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
@@ -33,7 +32,7 @@ import { logging } from '~/shared/utils/logging'
  */
 export function createDayUseCases(deps: {
   authUseCases: () => AuthUseCases
-  dayRepository?: DayRepository
+  dayRepository: DayRepository
   createDayDietRealtimeService?: typeof createDayDietRealtimeService
 }) {
   return createRoot(() => {
@@ -45,7 +44,7 @@ export function createDayUseCases(deps: {
       deps.createDayDietRealtimeService ?? createDayDietRealtimeService
     )()
 
-    const dayRepository = deps.dayRepository ?? createDayDietRepository()
+    const dayRepository = deps.dayRepository
 
     // NOTE: intentionally avoid importing `useCases` here to prevent circular
     // dependency during module initialization. The DI container will call

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createTouchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
 import {
   createFoodItem,
   type Item,
@@ -26,21 +27,11 @@ vi.mock(
   }),
 )
 
-vi.mock(
-  '~/modules/diet/recent-food/application/usecases/touchRecentFood',
-  () => ({
-    touchRecentFood: mockTouchRecentFood,
-  }),
-)
-
 vi.mock('~/shared/utils/logging', () => ({
   logging: {
     warn: mockLoggingWarn,
   },
 }))
-
-import { touchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
-
 function createReference(
   overrides: Partial<RecentFoodReference> = {},
 ): RecentFoodReference {
@@ -52,6 +43,10 @@ function createReference(
 }
 
 describe('touchRecentFoodForItem', () => {
+  const touchRecentFoodForItem = createTouchRecentFoodForItem({
+    touchRecentFood: mockTouchRecentFood,
+  })
+
   const item = createFoodItem({
     id: 1,
     name: 'Test item',
