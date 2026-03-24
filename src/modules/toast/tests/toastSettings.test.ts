@@ -21,6 +21,8 @@ const DEFAULTS = {
 }
 
 const STORAGE_KEY = 'macroflows:toast-settings'
+const FIRST_STORAGE_KEY = 'macroflows:toast-settings:first'
+const SECOND_STORAGE_KEY = 'macroflows:toast-settings:second'
 
 let localStorageMock: Record<string, string> = {}
 
@@ -62,14 +64,28 @@ describe('toastSettings', () => {
     expect(getToastSettings().showBackgroundSuccess).toBe(true)
   })
 
-  it('createToastSettingsStore returns isolated stores', () => {
-    const firstStore = createToastSettingsStore()
-    const secondStore = createToastSettingsStore()
+  it('createToastSettingsStore keeps persistence isolated per storage key', () => {
+    const firstStore = createToastSettingsStore({
+      storageKey: FIRST_STORAGE_KEY,
+    })
+    const secondStore = createToastSettingsStore({
+      storageKey: SECOND_STORAGE_KEY,
+    })
+
+    expect(localStorageMock[FIRST_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
+    expect(localStorageMock[SECOND_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
 
     firstStore.updateToastSettings({ showBackgroundSuccess: true })
 
     expect(firstStore.getToastSettings().showBackgroundSuccess).toBe(true)
     expect(secondStore.getToastSettings()).toEqual(DEFAULTS)
+    expect(localStorageMock[FIRST_STORAGE_KEY]).toBe(
+      JSON.stringify({
+        ...DEFAULTS,
+        showBackgroundSuccess: true,
+      }),
+    )
+    expect(localStorageMock[SECOND_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
   })
 
   it('resetToastSettings restores defaults', () => {

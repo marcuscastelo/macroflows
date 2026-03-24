@@ -1,7 +1,5 @@
-import {
-  createToastSettingsStore,
-  type ToastSettings,
-} from '~/modules/toast/infrastructure/toastSettings'
+import { type ToastSettings } from '~/modules/toast/domain/toastSettings'
+import { createToastSettingsStore } from '~/modules/toast/infrastructure/toastSettings'
 
 const toastSettingsStore = createToastSettingsStore()
 
