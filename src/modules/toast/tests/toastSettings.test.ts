@@ -4,12 +4,12 @@ vi.mock('~/shared/config/env', () => ({
   isDevelopment: vi.fn(() => false),
 }))
 
-import { createToastSettingsStore } from '~/modules/toast/infrastructure/toastSettings'
 import {
   getToastSettings,
   resetToastSettings,
   updateToastSettings,
 } from '~/modules/toast/application/toastSettings'
+import { createToastSettingsStore } from '~/modules/toast/infrastructure/toastSettings'
 
 const DEFAULTS = {
   showBackgroundSuccess: false,
