@@ -3,14 +3,24 @@ import {
   createNormalizedSearch,
 } from '~/modules/search/domain/cachedSearch'
 import { type CachedSearchGateway } from '~/modules/search/domain/searchGateway'
-import { SUPABASE_TABLE_CACHED_SEARCHES } from '~/modules/search/infrastructure/supabase/constants'
-import { createSupabaseCachedSearchMapper } from '~/modules/search/infrastructure/supabase/supabaseCachedSearchMapper'
+import { type Database } from '~/shared/supabase/database.types'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
-export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
-  const mapper = createSupabaseCachedSearchMapper()
+const SUPABASE_TABLE_CACHED_SEARCHES = 'cached_searches'
 
+type InsertCachedSearchDTO =
+  Database['public']['Tables']['cached_searches']['Insert']
+
+function toInsertDTO(
+  domainData: ReturnType<typeof createNewCachedSearch>,
+): InsertCachedSearchDTO {
+  return {
+    search: domainData.search,
+  }
+}
+
+export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
   return {
     async isSearchCached(searchQuery: string): Promise<boolean> {
       try {
@@ -47,7 +57,7 @@ export function createSupabaseCachedSearchGateway(): CachedSearchGateway {
           return
         }
 
-        const insertData = mapper.toInsertDTO(
+        const insertData = toInsertDTO(
           createNewCachedSearch({
             search: normalizedSearch,
           }),

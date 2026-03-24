@@ -2,9 +2,10 @@ import {
   type Weight,
   weightSchema,
 } from '~/modules/weight/domain/weight/weight'
-import { SUPABASE_TABLE_WEIGHTS } from '~/modules/weight/infrastructure/weight/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+
+const SUPABASE_TABLE_WEIGHTS = 'weights'
 
 type WeightRealtimeCallbacks = {
   onInsert: (weight: Weight) => void

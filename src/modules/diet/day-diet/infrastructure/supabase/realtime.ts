@@ -2,9 +2,10 @@ import {
   type DayDiet,
   dayDietSchema,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { SUPABASE_TABLE_DAYS } from '~/modules/diet/day-diet/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+
+const SUPABASE_TABLE_DAYS = 'days'
 
 type DayDietRealtimeCallbacks = {
   onInsert: (newDayDiet: DayDiet) => void

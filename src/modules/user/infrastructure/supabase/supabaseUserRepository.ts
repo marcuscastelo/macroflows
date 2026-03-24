@@ -1,9 +1,53 @@
 import { type NewUser, type User } from '~/modules/user/domain/user'
+import { userSchema } from '~/modules/user/domain/user'
 import { type UserRepository } from '~/modules/user/domain/userRepository'
-import { SUPABASE_TABLE_USERS } from '~/modules/user/infrastructure/supabase/constants'
-import { subapaseUserMapper } from '~/modules/user/infrastructure/supabase/supabaseUserMapper'
+import { type Database } from '~/shared/supabase/database.types'
 import { supabase } from '~/shared/supabase/supabase'
 import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
+
+const SUPABASE_TABLE_USERS = 'users'
+
+type InsertUserDTO = Database['public']['Tables']['users']['Insert']
+type UpdateUserDTO = Database['public']['Tables']['users']['Update']
+type UserDTO = Database['public']['Tables']['users']['Row']
+
+function toInsertDTO(newUser: NewUser): InsertUserDTO {
+  return {
+    name: newUser.name,
+    favorite_foods: newUser.favorite_foods,
+    diet: newUser.diet,
+    birthdate: newUser.birthdate,
+    gender: newUser.gender,
+    desired_weight: newUser.desired_weight,
+    uuid: newUser.uuid,
+  }
+}
+
+function toUpdateDTO(newUser: NewUser): UpdateUserDTO {
+  return {
+    name: newUser.name,
+    favorite_foods: newUser.favorite_foods,
+    diet: newUser.diet,
+    birthdate: newUser.birthdate,
+    gender: newUser.gender,
+    desired_weight: newUser.desired_weight,
+    uuid: newUser.uuid,
+  }
+}
+
+function toDomain(dto: UserDTO): User {
+  return parseWithStack(userSchema, {
+    id: dto.id,
+    name: dto.name,
+    favorite_foods: dto.favorite_foods ?? [],
+    diet: dto.diet,
+    birthdate: dto.birthdate,
+    gender: dto.gender,
+    desired_weight: dto.desired_weight,
+    uuid: dto.uuid,
+  })
+}
 
 export function createSupabaseUserRepository(): UserRepository {
   return {
@@ -24,13 +68,13 @@ const fetchUser = async (userId: User['uuid']): Promise<User | null> => {
     throw wrapErrorWithStack(error)
   }
 
-  const users = data.map(subapaseUserMapper.toDomain)
+  const users = data.map(toDomain)
 
   return users[0] ?? null
 }
 
 const insertUser = async (newUser: NewUser): Promise<User | null> => {
-  const createDTO = subapaseUserMapper.toInsertDTO(newUser)
+  const createDTO = toInsertDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
@@ -41,7 +85,7 @@ const insertUser = async (newUser: NewUser): Promise<User | null> => {
     throw wrapErrorWithStack(error)
   }
 
-  const users = data.map(subapaseUserMapper.toDomain)
+  const users = data.map(toDomain)
 
   return users[0] ?? null
 }
@@ -50,7 +94,7 @@ const updateUser = async (
   userId: User['uuid'],
   newUser: NewUser,
 ): Promise<User | null> => {
-  const updateDTO = subapaseUserMapper.toUpdateDTO(newUser)
+  const updateDTO = toUpdateDTO(newUser)
 
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_USERS)
@@ -62,7 +106,7 @@ const updateUser = async (
     throw wrapErrorWithStack(error)
   }
 
-  const users = data.map(subapaseUserMapper.toDomain)
+  const users = data.map(toDomain)
 
   return users[0] ?? null
 }

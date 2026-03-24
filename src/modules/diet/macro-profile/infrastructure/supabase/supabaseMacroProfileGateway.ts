@@ -1,13 +1,41 @@
 import {
   type MacroProfile,
+  macroProfileSchema,
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { type MacroProfileGateway } from '~/modules/diet/macro-profile/domain/macroProfileGateway'
-import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
-import { supabaseMacroProfileMapper } from '~/modules/diet/macro-profile/infrastructure/supabase/supabaseMacroProfileMapper'
 import { type User } from '~/modules/user/domain/user'
+import { type Database } from '~/shared/supabase/database.types'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
+
+const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
+
+type InsertMacroProfileDTO =
+  Database['public']['Tables']['macro_profiles']['Insert']
+type MacroProfileDTO = Database['public']['Tables']['macro_profiles']['Row']
+
+function toInsertDTO(newMacroProfile: NewMacroProfile): InsertMacroProfileDTO {
+  return {
+    user_id: newMacroProfile.user_id,
+    target_day: newMacroProfile.target_day.toISOString(),
+    gramsPerKgCarbs: newMacroProfile.gramsPerKgCarbs,
+    gramsPerKgProtein: newMacroProfile.gramsPerKgProtein,
+    gramsPerKgFat: newMacroProfile.gramsPerKgFat,
+  }
+}
+
+function toDomain(dto: MacroProfileDTO): MacroProfile {
+  return parseWithStack(macroProfileSchema, {
+    id: dto.id,
+    user_id: dto.user_id,
+    target_day: new Date(dto.target_day ?? ''),
+    gramsPerKgCarbs: dto.gramsPerKgCarbs,
+    gramsPerKgProtein: dto.gramsPerKgProtein,
+    gramsPerKgFat: dto.gramsPerKgFat,
+  })
+}
 
 export function createSupabaseMacroProfileGateway(): MacroProfileGateway {
   return {
@@ -32,13 +60,13 @@ async function fetchUserMacroProfiles(
     throw error
   }
 
-  return data.map(supabaseMacroProfileMapper.toDomain)
+  return data.map(toDomain)
 }
 
 async function insertMacroProfile(
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  const createDTO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
+  const createDTO = toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .insert(createDTO)
@@ -50,14 +78,14 @@ async function insertMacroProfile(
     throw error
   }
 
-  return supabaseMacroProfileMapper.toDomain(data)
+  return toDomain(data)
 }
 
 async function updateMacroProfile(
   profileId: MacroProfile['id'],
   newMacroProfile: NewMacroProfile,
 ): Promise<MacroProfile | null> {
-  const updateDTO = supabaseMacroProfileMapper.toInsertDTO(newMacroProfile)
+  const updateDTO = toInsertDTO(newMacroProfile)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_MACRO_PROFILES)
     .update(updateDTO)
@@ -70,7 +98,7 @@ async function updateMacroProfile(
     throw error
   }
 
-  return supabaseMacroProfileMapper.toDomain(data)
+  return toDomain(data)
 }
 
 async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {

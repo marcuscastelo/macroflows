@@ -1,8 +1,84 @@
 import * as Sentry from '@sentry/solidstart'
 
-import { createClientIntegrations } from '~/modules/observability/infrastructure/sentry/clientIntegrations'
-import { createSentryConfig } from '~/modules/observability/infrastructure/sentry/config'
-import { setupSentryOTelIntegration } from '~/modules/observability/infrastructure/sentry/otelIntegration'
+import { APP_VERSION } from '~/app-version'
+
+type SentryConfig = {
+  dsn?: string
+  release: string
+  useOTel: boolean
+}
+
+function createSentryConfig(): SentryConfig {
+  const release = `macroflows@${APP_VERSION}`
+
+  return {
+    dsn:
+      typeof import.meta.env.VITE_SENTRY_DSN === 'string'
+        ? import.meta.env.VITE_SENTRY_DSN
+        : undefined,
+    release,
+    useOTel: false,
+  }
+}
+
+async function createClientIntegrations() {
+  const { solidRouterBrowserTracingIntegration } =
+    await import('@sentry/solidstart/solidrouter')
+
+  return [
+    solidRouterBrowserTracingIntegration(),
+    Sentry.browserTracingIntegration({
+      traceFetch: true,
+      traceXHR: true,
+    }),
+    Sentry.browserProfilingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: false,
+      maskAllInputs: false,
+    }),
+    Sentry.consoleLoggingIntegration(),
+  ]
+}
+
+async function setupSentryOTelIntegration(type: 'server' | 'client') {
+  const client = Sentry.getClient()
+  if (client === undefined) {
+    console.warn('Sentry OTel Fatal Error: Sentry client is undefined')
+    return
+  }
+
+  const { context, propagation, trace } = await import('@opentelemetry/api')
+  const { BasicTracerProvider } = await import('@opentelemetry/sdk-trace-base')
+  const SentryOTel = await import('@sentry/opentelemetry')
+
+  SentryOTel.setupEventContextTrace(client)
+
+  const provider = new BasicTracerProvider({
+    sampler: new SentryOTel.SentrySampler(client),
+    spanProcessors: [new SentryOTel.SentrySpanProcessor()],
+  })
+
+  const SentryContextManager = await wrapContextManagerClass(type)
+
+  trace.setGlobalTracerProvider(provider)
+  propagation.setGlobalPropagator(new SentryOTel.SentryPropagator())
+  context.setGlobalContextManager(new SentryContextManager())
+
+  SentryOTel.setOpenTelemetryContextAsyncContextStrategy()
+}
+
+async function wrapContextManagerClass(type: 'server' | 'client') {
+  const SentryOTel = await import('@sentry/opentelemetry')
+
+  if (type === 'client') {
+    const { ZoneContextManager } = await import('@opentelemetry/context-zone')
+    return SentryOTel.wrapContextManagerClass(ZoneContextManager)
+  }
+
+  const { AsyncLocalStorageContextManager } =
+    await import('@opentelemetry/context-async-hooks')
+  return SentryOTel.wrapContextManagerClass(AsyncLocalStorageContextManager)
+}
 
 export function createSentryService(deps?: {
   createSentryConfig?: typeof createSentryConfig

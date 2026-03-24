@@ -2,9 +2,10 @@ import {
   type MacroProfile,
   macroProfileSchema,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { SUPABASE_TABLE_MACRO_PROFILES } from '~/modules/diet/macro-profile/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+
+const SUPABASE_TABLE_MACRO_PROFILES = 'macro_profiles'
 
 type MacroProfileRealtimeCallbacks = {
   onInsert: (profile: MacroProfile) => void

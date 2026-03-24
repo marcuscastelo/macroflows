@@ -10,11 +10,8 @@ import {
   EXTERNAL_API_HOST,
   EXTERNAL_API_REFERER,
 } from '~/modules/diet/api/constants/apiSecrets'
-import { type ApiFoodRepository } from '~/modules/diet/food/infrastructure/api/domain/apiFoodRepository'
-import {
-  type ApiFood,
-  apiFoodSchema,
-} from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
+import { type ApiFood, apiFoodSchema } from '~/modules/diet/food/domain/apiFood'
+import { type ApiFoodRepository } from '~/modules/diet/food/domain/apiFoodRepository'
 import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 import { logging } from '~/shared/utils/logging'

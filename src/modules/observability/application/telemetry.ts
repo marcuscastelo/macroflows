@@ -1,7 +1,7 @@
-import { type createSentryService } from '~/modules/observability/infrastructure/sentry/sentry'
-
 export type TelemetryDeps = {
-  sentryService: ReturnType<typeof createSentryService>
+  sentryService: {
+    initializeSentry: (type: 'server' | 'client') => Promise<void> | void
+  }
 }
 
 export function createTelemetry(deps: TelemetryDeps) {

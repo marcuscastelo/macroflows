@@ -1,8 +1,8 @@
 import axios from 'axios'
 
+import { type ApiFood } from '~/modules/diet/food/domain/apiFood'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
-import { type ApiFood } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
 import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
@@ -132,5 +132,3 @@ export function createApiFoodImportService(deps?: {
     importFoodsFromApiByName,
   }
 }
-
-export type ApiFoodImportService = ReturnType<typeof createApiFoodImportService>
