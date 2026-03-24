@@ -18,7 +18,7 @@ export function getToastSettings(): ToastSettings {
  * Updates the current toast settings in the default runtime store.
  *
  * @param updates Partial toast settings to apply.
- * @returns Nothing.
+ * @returns void.
  */
 export function updateToastSettings(updates: Partial<ToastSettings>): void {
   toastSettingsStore.updateToastSettings(updates)
@@ -27,7 +27,7 @@ export function updateToastSettings(updates: Partial<ToastSettings>): void {
 /**
  * Resets the current toast settings in the default runtime store.
  *
- * @returns Nothing.
+ * @returns void.
  */
 export function resetToastSettings(): void {
   toastSettingsStore.resetToastSettings()
