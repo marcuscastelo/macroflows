@@ -529,8 +529,10 @@ The project adopts an explicit, manual Dependency Injection (DI) pattern for all
 
 ### How It Works
 - **Dependencies are always passed as arguments** to orchestration functions (e.g., logic, use cases), never imported or instantiated directly inside them.
-- **Repositories and fetchers** are created at the application layer and injected into logic functions.
-- **No direct infrastructure imports** in logic modules: all dependencies must be provided from the outside.
+- **Concrete repositories and repository-backed local/localStorage adapters** are created only in the app container or in tests.
+- **Application factories accept ready collaborators** such as repositories, CRUD services, or resource fetchers; they do not construct infrastructure defaults internally.
+- **UI components consume container-owned modules** through `useContainer()` instead of creating use-cases at module scope.
+- **No direct infrastructure imports** in logic modules: all infrastructure-facing dependencies must be provided from the outside.
 
 ### Example: Search Module
 
