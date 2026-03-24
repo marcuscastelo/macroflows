@@ -7,8 +7,9 @@ vi.mock('~/modules/clipboard/ui/PasteConfirmModal', () => ({
 import { createClipboardStore } from '~/modules/clipboard/application/store/clipboardStore'
 import { createClipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
 import { openPasteConfirmModal } from '~/modules/clipboard/ui/PasteConfirmModal'
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createItem, itemSchema } from '~/modules/diet/item/schema/itemSchema'
+import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
 
 describe('clipboardUseCases.confirmPaste', () => {
   const showError = vi.fn()
@@ -48,7 +49,10 @@ describe('clipboardUseCases.confirmPaste', () => {
     useCases.confirmPaste(itemSchema, onPasteConfirmed)
 
     expect(openPasteConfirmModal).toHaveBeenCalledTimes(1)
-    expect(openPasteConfirmModal).toHaveBeenCalledWith(payload, onPasteConfirmed)
+    expect(openPasteConfirmModal).toHaveBeenCalledWith(
+      payload,
+      onPasteConfirmed,
+    )
     expect(showError).not.toHaveBeenCalled()
   })
 
@@ -101,15 +105,14 @@ describe('clipboardUseCases.confirmPaste', () => {
       showError,
     })
 
-    clipboardStore.copy({
-      id: 999,
-      name: 'Broken clipboard payload',
-      quantity: 1,
-      reference: {
-        type: 'food',
-        id: 1,
-      },
-    } as unknown as Parameters<typeof clipboardStore.copy>[0])
+    clipboardStore.copy(
+      promoteMeal(
+        createNewMeal({ name: 'Meal clipboard payload', items: [] }),
+        {
+          id: 999,
+        },
+      ),
+    )
 
     useCases.confirmPaste(itemSchema, onPasteConfirmed)
 
