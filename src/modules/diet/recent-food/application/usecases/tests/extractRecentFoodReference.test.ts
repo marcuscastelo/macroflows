@@ -188,7 +188,7 @@ describe('extractRecentFoodReferenceFromItem', () => {
       })
     })
 
-    it('should use first child when group has multiple children', () => {
+    it('should extract all trackable children when group has multiple children', () => {
       const foodChild1 = createFoodItem({
         id: 30,
         name: 'First Food',
@@ -221,12 +221,16 @@ describe('extractRecentFoodReferenceFromItem', () => {
         },
       })
 
-      const [result] = extractRecentFoodReferenceFromItem(groupItem)
-
-      expect(result).toEqual({
-        type: 'food',
-        referenceId: 3001, // First child's reference
-      })
+      expect(extractRecentFoodReferenceFromItem(groupItem)).toEqual([
+        {
+          type: 'food',
+          referenceId: 3001,
+        },
+        {
+          type: 'food',
+          referenceId: 3002,
+        },
+      ])
     })
 
     it('should return undefined for GroupItem with empty children', () => {

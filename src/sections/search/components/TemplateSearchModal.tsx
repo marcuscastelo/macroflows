@@ -14,17 +14,13 @@ import { type Template } from '~/modules/diet/template/domain/template'
 import { isTemplateRecipe } from '~/modules/diet/template/domain/template'
 import { type TemplateItem } from '~/modules/diet/template-item/domain/templateItem'
 import {
-  debouncedSearch,
-  refetchTemplates,
-  setTemplateSearchTab,
-  templates,
-  templateSearchTab,
-} from '~/modules/template-search/application/usecases/templateSearchState'
-import {
   loadTabPreference,
   saveTabPreference,
 } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
-import { showError, showSuccess } from '~/modules/toast/application/toastManager'
+import {
+  showError,
+  showSuccess,
+} from '~/modules/toast/application/toastManager'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -52,6 +48,7 @@ export type TemplateSearchModalProps = {
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
   const useCases = useContainer()
+  const templateSearchState = useCases.templateSearchState()
   const macroOverflow = createMacroOverflow({
     dayUseCases: useCases.dayUseCases(),
     macroTargetUseCases: useCases.macroTargetUseCases(),
@@ -92,7 +89,13 @@ export function TemplateSearchModal(props: TemplateSearchModalProps) {
 
       void recentFoodUseCases
         .touchRecentFoodForItem(originalAddedItem)
-        .then(refetchTemplates)
+        .then(() => templateSearchState.refetchTemplates())
+        .catch((err) => {
+          logging.error(
+            'TemplateSearchModal touchRecentFoodForItem error:',
+            err,
+          )
+        })
 
       const confirmModalId = openConfirmModal(
         'Deseja adicionar outro item ou finalizar a inclusão?',
@@ -202,13 +205,14 @@ export function TemplateSearch(props: {
   onTemplateSelected: (template: Template) => void
   onEANModal: () => void
 }) {
+  const templateSearchState = useContainer().templateSearchState()
   // TODO: Determine if user is on desktop or mobile to set autofocus
   const isDesktop = false
 
   // Load persisted tab preference on mount (only once)
   onMount(() => {
     const persistedTab = loadTabPreference()
-    setTemplateSearchTab(persistedTab)
+    templateSearchState.setTemplateSearchTab(persistedTab)
   })
 
   // Wrapper that persists tab changes to localStorage
@@ -220,10 +224,10 @@ export function TemplateSearch(props: {
     // Compute the new value based on whether it's a function or direct value
     const newTab =
       typeof tabOrUpdater === 'function'
-        ? tabOrUpdater(templateSearchTab())
+        ? tabOrUpdater(templateSearchState.templateSearchTab())
         : tabOrUpdater
 
-    setTemplateSearchTab(newTab)
+    templateSearchState.setTemplateSearchTab(newTab)
     saveTabPreference(newTab)
   }
 
@@ -240,7 +244,10 @@ export function TemplateSearch(props: {
         />
       </div>
 
-      <TemplateSearchTabs tab={templateSearchTab} setTab={handleSetTab} />
+      <TemplateSearchTabs
+        tab={templateSearchState.templateSearchTab}
+        setTab={handleSetTab}
+      />
       <TemplateSearchBar isDesktop={isDesktop} />
 
       <Suspense
@@ -251,10 +258,10 @@ export function TemplateSearch(props: {
         }
       >
         <TemplateSearchResults
-          search={debouncedSearch()}
-          filteredTemplates={() => templates() ?? []}
+          search={templateSearchState.debouncedSearch()}
+          filteredTemplates={() => templateSearchState.templates() ?? []}
           onTemplateSelected={props.onTemplateSelected}
-          refetch={refetchTemplates}
+          refetch={templateSearchState.refetchTemplates}
         />
       </Suspense>
     </>

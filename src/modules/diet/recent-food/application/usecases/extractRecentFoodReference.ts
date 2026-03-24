@@ -22,10 +22,10 @@ export type RecentFoodReference = {
  *
  * For FoodItem: returns the food reference directly
  * For RecipeItem: returns the recipe reference directly
- * For GroupItem: returns the reference of the first trackable child (food or recipe)
+ * For GroupItem: returns references for all trackable children (foods and recipes)
  *
  * @param item - The item to extract reference from
- * @returns The recent food reference, or null if the item cannot be tracked
+ * @returns An array of recent food references, or an empty array if the item cannot be tracked
  */
 export function extractRecentFoodReferenceFromItem(
   item: Item,

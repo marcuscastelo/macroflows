@@ -12,10 +12,7 @@ import {
   type RecentFood,
 } from '~/modules/diet/recent-food/domain/recentFood'
 import { type Template } from '~/modules/diet/template/domain/template'
-import {
-  showError,
-  showPromise,
-} from '~/modules/toast/application/toastManager'
+import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
 
@@ -40,7 +37,6 @@ export const recentFoodUseCases = {
         userId,
         search,
       })
-      showError(error, {}, 'Não foi possível carregar alimentos recentes.')
       return []
     }
   },
@@ -80,11 +76,20 @@ export const recentFoodUseCases = {
     referenceId: number,
   ): Promise<boolean> => {
     return await showPromise(
-      recentFoodCrudService.deleteRecentFoodByReference(
-        userId,
-        type,
-        referenceId,
-      ),
+      (async () => {
+        const didDelete =
+          await recentFoodCrudService.deleteRecentFoodByReference(
+            userId,
+            type,
+            referenceId,
+          )
+
+        if (!didDelete) {
+          throw new Error('Failed to delete recent food record')
+        }
+
+        return didDelete
+      })(),
       {
         loading: 'Removendo alimento dos recentes...',
         success: 'Alimento removido dos recentes com sucesso',
@@ -94,14 +99,18 @@ export const recentFoodUseCases = {
     )
   },
 
-  async deleteRecentFoodOfTemplate(template: Template) {
+  async deleteRecentFoodOfTemplate(template: Template): Promise<boolean> {
     const [recentFoodReference, ...rest] =
       extractRecentFoodReferenceFromTemplate(template)
 
     const authUseCases = useCases.authUseCases()
 
     if (recentFoodReference === undefined) {
-      return
+      logging.warn(
+        'Cannot delete recent food - template has no trackable reference',
+        { template },
+      )
+      return false
     }
     if (rest.length > 0) {
       logging.warn(
@@ -113,7 +122,7 @@ export const recentFoodUseCases = {
       )
     }
 
-    await recentFoodUseCases.deleteRecentFoodByReference(
+    return await recentFoodUseCases.deleteRecentFoodByReference(
       authUseCases.currentUserIdOrGuestId(),
       recentFoodReference.type,
       recentFoodReference.referenceId,

@@ -34,7 +34,9 @@ function getUserRepository(mode: AppMode): UserRepository {
  * Weight use-cases are added separately to avoid circular dependency.
  */
 const coreContainer = createRoot(() => {
-  // TODO: Refactor global DI so that guestMode signal is not in the global DI container
+  // TODO: Refactor global DI so that guestMode signal is not in the global DI container.
+  // Keeping app mode inside the global container couples dependency resolution to reactive auth state,
+  // makes tests coordinate mutable global state, and reduces modularity between auth and feature wiring.
   // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1441
   const [mode, setMode] = createSignal<AppMode>('normal')
 

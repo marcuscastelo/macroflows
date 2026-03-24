@@ -1,4 +1,3 @@
-import { useCases } from '~/di/useCases'
 import { createResource, createRoot, createSignal } from 'solid-js'
 
 import {
@@ -76,21 +75,3 @@ export function createTemplateSearchState(deps: {
 }
 
 export type TemplateSearchState = ReturnType<typeof createTemplateSearchState>
-
-const _defaultTemplateSearchState = createTemplateSearchState({
-  getCurrentUserIdOrGuestId: () => useCases.authUseCases().currentUserIdOrGuestId(),
-  getFavoriteFoods: () =>
-    useCases.userUseCases().currentUser()?.favorite_foods ?? [],
-})
-
-export const templateSearch = _defaultTemplateSearchState.templateSearch
-export const setTemplateSearch = _defaultTemplateSearchState.setTemplateSearch
-export const debouncedSearch = _defaultTemplateSearchState.debouncedSearch
-export const templateSearchTab = _defaultTemplateSearchState.templateSearchTab
-export const setTemplateSearchTab =
-  _defaultTemplateSearchState.setTemplateSearchTab
-export const debouncedTab = _defaultTemplateSearchState.debouncedTab
-export const templates = _defaultTemplateSearchState.templates
-export const refetchTemplates = _defaultTemplateSearchState.refetchTemplates
-
-export { _defaultTemplateSearchState as templateSearchState }
