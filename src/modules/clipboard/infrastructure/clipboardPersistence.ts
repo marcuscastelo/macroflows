@@ -4,7 +4,7 @@ import {
 } from '~/modules/clipboard/domain/clipboardEntry'
 import { logging } from '~/shared/utils/logging'
 
-export type ClipboardPersistence = {
+type ClipboardPersistence = {
   save: (entries: ClipboardEntry[]) => void
   load: () => ClipboardEntry[]
   cleanExpired: (entries: ClipboardEntry[]) => ClipboardEntry[]

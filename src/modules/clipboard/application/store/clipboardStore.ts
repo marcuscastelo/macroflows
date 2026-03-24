@@ -5,7 +5,13 @@ import {
   type ClipboardPayload,
   createClipboardEntry,
 } from '~/modules/clipboard/domain/clipboardEntry'
-import { type ClipboardPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
+
+type ClipboardPersistence = {
+  save: (entries: ClipboardEntry[]) => void
+  load: () => ClipboardEntry[]
+  cleanExpired: (entries: ClipboardEntry[]) => ClipboardEntry[]
+  clear: () => void
+}
 
 export type ClipboardStoreConfig = {
   maxEntries?: number
