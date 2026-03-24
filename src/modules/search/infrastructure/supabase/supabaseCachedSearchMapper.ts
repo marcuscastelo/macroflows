@@ -10,16 +10,26 @@ type CachedSearchDTO = Database['public']['Tables']['cached_searches']['Row']
 type InsertCachedSearchDTO =
   Database['public']['Tables']['cached_searches']['Insert']
 
-export const supabaseCachedSearchMapper = {
-  toDomain: (supabaseData: CachedSearchDTO): CachedSearch => {
-    return parseWithStack(cachedSearchSchema, {
-      search: supabaseData.search,
-    })
-  },
+function toDomain(supabaseData: CachedSearchDTO): CachedSearch {
+  return parseWithStack(cachedSearchSchema, {
+    search: supabaseData.search,
+  })
+}
 
-  toInsertDTO: (domainData: NewCachedSearch): InsertCachedSearchDTO => {
-    return {
-      search: domainData.search,
-    }
-  },
+function toInsertDTO(domainData: NewCachedSearch): InsertCachedSearchDTO {
+  return {
+    search: domainData.search,
+  }
+}
+
+/**
+ * Factory for the Supabase cached-search mapper.
+ *
+ * @returns Cached-search mapping helpers for Supabase DTOs.
+ */
+export function createSupabaseCachedSearchMapper() {
+  return {
+    toDomain,
+    toInsertDTO,
+  }
 }
