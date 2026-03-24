@@ -2,7 +2,7 @@ import type { ApexOptions } from 'apexcharts'
 import { type Accessor, createMemo, Suspense } from 'solid-js'
 
 import ptBrLocale from '~/assets/locales/apex/pt-br.json'
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   groupMeasuresByDay,
   processMeasuresByDay,
@@ -35,6 +35,7 @@ export type BodyMeasureChartProps = {
  * @returns SolidJS component
  */
 export function BodyMeasureChart(props: BodyMeasureChartProps) {
+  const useCases = useContainer()
   const measuresByDay = createMemo(() => groupMeasuresByDay(props.measures()))
   const userUseCases = useCases.userUseCases()
 

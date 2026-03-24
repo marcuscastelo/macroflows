@@ -2,9 +2,9 @@
  * Toast Manager (DI-friendly)
  *
  * This file exposes a factory `createToastManager()` that returns the toast API,
- * and keeps a backward-compatible shim that exports the original functions.
+ * plus top-level helpers for the default runtime behavior.
  *
- * The factory allows injecting overrides (for testing or container wiring).
+ * The factory allows injecting overrides for testing or alternate wiring.
  */
 
 import {
@@ -308,11 +308,11 @@ export function createToastManager(deps?: {
 }
 
 /**
- * Backward-compatible wrappers that call a fresh manager on each invocation.
+ * Default runtime helpers.
  *
- * We call `createToastManager()` at call time (not at module initialization)
- * so test-time spies/mocks that replace the underlying helpers (like
- * `registerToast` / `killToast`) are respected by the manager.
+ * We call `createToastManager()` at call time instead of holding a module
+ * singleton so test-time spies/mocks that replace the underlying helpers
+ * (like `registerToast` / `killToast`) are respected.
  */
 export function show(
   message: string,

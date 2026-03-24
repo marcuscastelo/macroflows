@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
+/** biome-ignore-all lint/style/useConsistentTypeDefinitions: <explanation> */
 export type Json =
   | string
   | number

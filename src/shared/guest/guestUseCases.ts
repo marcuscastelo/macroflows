@@ -1,5 +1,3 @@
-import { onMount } from 'solid-js'
-
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { resetGuestDatabase } from '~/shared/guest/guestDatabase'
 import { createGuestDI, type GuestDI } from '~/shared/guest/guestDI'
@@ -15,7 +13,12 @@ type GuestTermValue = {
 export function createGuestUseCases(di: GuestDI) {
   const { guestStore, authUseCases } = createGuestDI(di)
 
-  onMount(() => {
+  function initializeGuestMode() {
+    if (typeof localStorage === 'undefined') {
+      guestStore.setAcceptedGuestTerms(false)
+      return
+    }
+
     const item = localStorage.getItem(GUEST_TERMS_KEY)
     const accepted = item !== null ? jsonParseWithStack(item) : false
     if (typeof accepted === 'boolean') {
@@ -40,9 +43,13 @@ export function createGuestUseCases(di: GuestDI) {
       return
     }
     guestStore.setAcceptedGuestTerms(false)
-  })
+  }
 
   const guestUseCases = {
+    initializeGuestMode,
+    setGuestModeEnabled: (enabled: boolean) => {
+      guestStore.setGuestModeEnabled(enabled)
+    },
     isGuestMode: () =>
       guestStore.guestModeEnabled() && guestUseCases.hasAcceptedGuestTerms(),
     hasAcceptedGuestTerms: () => {
@@ -112,3 +119,5 @@ export function createGuestUseCases(di: GuestDI) {
 
   return guestUseCases
 }
+
+export type GuestUseCases = ReturnType<typeof createGuestUseCases>

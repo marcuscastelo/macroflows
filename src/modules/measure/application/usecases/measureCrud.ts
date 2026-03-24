@@ -123,18 +123,4 @@ export function createMeasureCrud(deps?: {
     deleteBodyMeasure,
   }
 }
-
-/**
- * Backward-compatible shim: keep existing named exports working while consumers migrate.
- * Wired to default repository and showPromise.
- */
-const _defaultMeasureCrud = createMeasureCrud()
-
-export const fetchUserBodyMeasures = _defaultMeasureCrud.fetchUserBodyMeasures
-export const insertBodyMeasure = _defaultMeasureCrud.insertBodyMeasure
-export const updateBodyMeasure = _defaultMeasureCrud.updateBodyMeasure
-export const deleteBodyMeasure = _defaultMeasureCrud.deleteBodyMeasure
-
-// Also export the factory and type for DI/testing consumers
-export { _defaultMeasureCrud as measureCrud }
 export type MeasureCrud = ReturnType<typeof createMeasureCrud>

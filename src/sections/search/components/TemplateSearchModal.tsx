@@ -1,9 +1,8 @@
 import { onMount, Suspense } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { recentFoodUseCases } from '~/modules/diet/recent-food/application/usecases/recentFoodUseCases'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { createItemFromTemplate } from '~/modules/diet/template/application/createGroupFromTemplate'
@@ -25,8 +24,7 @@ import {
   loadTabPreference,
   saveTabPreference,
 } from '~/modules/template-search/infrastructure/templateSearchTabPreference'
-import { showSuccess } from '~/modules/toast/application/toastManager'
-import { showError } from '~/modules/toast/application/toastManager'
+import { showError, showSuccess } from '~/modules/toast/application/toastManager'
 import { EANButton } from '~/sections/common/components/EANButton'
 import { PageLoading } from '~/sections/common/components/PageLoading'
 import { EANInsertModal } from '~/sections/ean/components/EANInsertModal'
@@ -45,12 +43,6 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
-// Create macro overflow instance for this module
-const macroOverflow = createMacroOverflow({
-  dayUseCases,
-  macroTargetUseCases,
-})
-
 export type TemplateSearchModalProps = {
   targetName: string
   onNewItem?: (item: Item, originalAddedItem: TemplateItem) => void
@@ -59,6 +51,12 @@ export type TemplateSearchModalProps = {
 }
 
 export function TemplateSearchModal(props: TemplateSearchModalProps) {
+  const useCases = useContainer()
+  const macroOverflow = createMacroOverflow({
+    dayUseCases: useCases.dayUseCases(),
+    macroTargetUseCases: useCases.macroTargetUseCases(),
+  })
+
   const handleTemplateSelected = (template: Template) => {
     const initialQuantity = isTemplateRecipe(template)
       ? getRecipePreparedQuantity(template)

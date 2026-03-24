@@ -1,6 +1,6 @@
 import { type Accessor, createEffect, type JSXElement } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -80,6 +80,7 @@ export function MealEditViewHeader(props: {
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
+  const useCases = useContainer()
   const { meal } = useMealContext()
 
   const onPaste = (data: ClipboardPayload) => {
@@ -138,6 +139,7 @@ export function MealEditViewContent(props: {
   onUpdateMeal: (meal: Meal) => void
   mode?: 'edit' | 'read-only' | 'summary'
 }) {
+  const useCases = useContainer()
   const { meal } = useMealContext()
 
   logging.debug('meal.value:', meal())

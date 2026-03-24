@@ -5,7 +5,7 @@ import {
   importFoodFromApiByEan,
   importFoodsFromApiByName,
 } from '~/modules/diet/food/infrastructure/api/application/apiFood'
-import { isSearchCached } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { formatError } from '~/shared/formatError'
@@ -18,6 +18,7 @@ import { logging } from '~/shared/utils/logging'
  */
 export function createFoodCrud(deps: { repository: () => FoodRepository }) {
   const foodRepository = deps.repository()
+  const cachedSearchCrud = createCachedSearchCrud()
 
   return {
     async fetchFoods(params: FoodSearchParams = {}): Promise<readonly Food[]> {
@@ -35,7 +36,7 @@ export function createFoodCrud(deps: { repository: () => FoodRepository }) {
       params: FoodSearchParams = {},
     ): Promise<readonly Food[]> {
       try {
-        const isCached = await isSearchCached(name)
+        const isCached = await cachedSearchCrud.isSearchCached(name)
 
         if (!isCached) {
           await showPromise(

@@ -1,7 +1,7 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { GuestGuard } from '~/modules/auth/ui/guards/GuestGuard'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -9,6 +9,7 @@ import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { logging } from '~/shared/utils/logging'
 
 export default function LoginPage() {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const [isSigningIn, setIsSigningIn] = createSignal(false)
   const authUseCases = useCases.authUseCases()

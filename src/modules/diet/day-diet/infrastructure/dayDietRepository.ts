@@ -1,4 +1,3 @@
-import { useCases } from '~/di/useCases'
 import {
   type DayDiet,
   type NewDayDiet,
@@ -12,56 +11,43 @@ import { type User } from '~/modules/user/domain/user'
 const supabaseGateway = createSupabaseDayGateway()
 const guestGateway = createGuestDayGateway()
 
-function getGateway(): DayGateway {
-  const guestUseCases = useCases.guestUseCases()
-  return guestUseCases.isGuestMode() ? guestGateway : supabaseGateway
-}
+export function createDayDietRepository(deps?: {
+  isGuestMode?: () => boolean
+  guestDayGateway?: DayGateway
+  supabaseDayGateway?: DayGateway
+}): DayRepository {
+  const isGuestMode = deps?.isGuestMode ?? (() => false)
+  const localGuestGateway = deps?.guestDayGateway ?? guestGateway
+  const localSupabaseGateway = deps?.supabaseDayGateway ?? supabaseGateway
 
-export function createDayDietRepository(): DayRepository {
+  function getGateway(): DayGateway {
+    return isGuestMode() ? localGuestGateway : localSupabaseGateway
+  }
+
   return {
-    fetchDayDietById,
-    fetchDayDietByUserIdAndTargetDay,
-    fetchDayDietsByUserIdBeforeDate,
-    insertDayDiet,
-    updateDayDietById,
-    deleteDayDietById,
+    fetchDayDietById: async (dayId: DayDiet['id']) =>
+      await getGateway().fetchDayDietById(dayId),
+    fetchDayDietByUserIdAndTargetDay: async (
+      userId: User['uuid'],
+      targetDay: string,
+    ) => await getGateway().fetchDayDietByUserIdAndTargetDay(userId, targetDay),
+    fetchDayDietsByUserIdBeforeDate: async (
+      userId: User['uuid'],
+      beforeDay: string,
+      limit: number = 30,
+    ) =>
+      await getGateway().fetchDayDietsByUserIdBeforeDate(
+        userId,
+        beforeDay,
+        limit,
+      ),
+    insertDayDiet: async (dayDiet: NewDayDiet) =>
+      await getGateway().insertDayDiet(dayDiet),
+    updateDayDietById: async (dayId: DayDiet['id'], dayDiet: NewDayDiet) =>
+      await getGateway().updateDayDietById(dayId, dayDiet),
+    deleteDayDietById: async (dayId: DayDiet['id']) =>
+      await getGateway().deleteDayDietById(dayId),
   }
 }
 
-async function fetchDayDietById(dayId: DayDiet['id']): Promise<DayDiet | null> {
-  return await getGateway().fetchDayDietById(dayId)
-}
-
-async function fetchDayDietByUserIdAndTargetDay(
-  userId: User['uuid'],
-  targetDay: string,
-): Promise<DayDiet | null> {
-  return await getGateway().fetchDayDietByUserIdAndTargetDay(userId, targetDay)
-}
-
-async function fetchDayDietsByUserIdBeforeDate(
-  userId: User['uuid'],
-  beforeDay: string,
-  limit: number = 30,
-): Promise<readonly DayDiet[]> {
-  return await getGateway().fetchDayDietsByUserIdBeforeDate(
-    userId,
-    beforeDay,
-    limit,
-  )
-}
-
-async function insertDayDiet(dayDiet: NewDayDiet): Promise<DayDiet | null> {
-  return await getGateway().insertDayDiet(dayDiet)
-}
-
-async function updateDayDietById(
-  dayId: DayDiet['id'],
-  dayDiet: NewDayDiet,
-): Promise<DayDiet | null> {
-  return await getGateway().updateDayDietById(dayId, dayDiet)
-}
-
-async function deleteDayDietById(dayId: DayDiet['id']): Promise<void> {
-  return await getGateway().deleteDayDietById(dayId)
-}
+export type { DayRepository }

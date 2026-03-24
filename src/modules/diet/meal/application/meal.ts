@@ -1,7 +1,4 @@
-import {
-  type DayUseCases,
-  dayUseCases,
-} from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { type DayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
 import { demoteNewDayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOperations'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
@@ -43,12 +40,4 @@ export function createMealUseCases(deps: { dayUseCases: DayUseCases }) {
   }
 }
 
-/**
- * Backward-compatible shim: keep `updateMeal` function export working.
- */
-export const mealUseCases = createMealUseCases({
-  dayUseCases,
-})
-
-export const updateMeal = (mealId: Meal['id'], newMeal: Meal) =>
-  mealUseCases.updateMeal(mealId, newMeal)
+export type MealUseCases = ReturnType<typeof createMealUseCases>

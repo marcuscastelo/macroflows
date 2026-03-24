@@ -1,4 +1,4 @@
-import { createEffect, createRoot, onMount } from 'solid-js'
+import { createEffect, createRoot } from 'solid-js'
 
 import { type User } from '~/modules/user/domain/user'
 import { createWeightCacheStore } from '~/modules/weight/application/weight/store/weightCacheStore'
@@ -9,10 +9,9 @@ import {
   weightSchema,
 } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
-import { createGuestWeightRepository } from '~/modules/weight/infrastructure/weight/guest/guestWeightRepository'
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
-import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
+import { createWeightRepository } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightRepository'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
@@ -32,14 +31,13 @@ export type WeightUseCasesDeps = {
  *
  * Accepts optional overrides for repositories, store creators and utilities so
  * DI wiring or testing with fakes is possible. When no overrides are provided,
- * the current module defaults are used (keeps backward-compatible behavior).
+ * the current module defaults are used.
  */
 export function createWeightUseCases(deps: {
   /** Granular auth/guest dependencies (required) */
   authDeps: WeightUseCasesDeps
   createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
-  createSupabaseWeightGateway?: typeof createSupabaseWeightGateway
-  createGuestWeightRepository?: typeof createGuestWeightRepository
+  createWeightRepository?: typeof createWeightRepository
   createWeightCacheStore?: typeof createWeightCacheStore
   initializeWeightRealtime?: typeof initializeWeightRealtime
   createWeightCrudService?: typeof createWeightCrudService
@@ -48,8 +46,7 @@ export function createWeightUseCases(deps: {
   const {
     authDeps,
     createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
-    createSupabaseWeightGateway: injectedCreateSupabase,
-    createGuestWeightRepository: injectedCreateGuest,
+    createWeightRepository: injectedCreateWeightRepository,
     createWeightCacheStore: injectedCreateWeightCacheStore,
     initializeWeightRealtime: injectedInitializeRealtime,
     createWeightCrudService: injectedCreateWeightCrudService,
@@ -58,9 +55,8 @@ export function createWeightUseCases(deps: {
 
   const localCreateLocalStorage =
     injectedCreateLocalStorage ?? createLocalStorageWeightCacheRepository
-  const localCreateSupabase =
-    injectedCreateSupabase ?? createSupabaseWeightGateway
-  const localCreateGuest = injectedCreateGuest ?? createGuestWeightRepository
+  const localCreateWeightRepository =
+    injectedCreateWeightRepository ?? createWeightRepository
   const localCreateWeightCacheStore =
     injectedCreateWeightCacheStore ?? createWeightCacheStore
   const localInitializeRealtime =
@@ -71,44 +67,42 @@ export function createWeightUseCases(deps: {
 
   return createRoot(() => {
     const storageRepository = localCreateLocalStorage()
-    const supabaseWeightRepository = localCreateSupabase()
-    const guestWeightRepository = localCreateGuest()
-
     const cache = localCreateWeightCacheStore()
-
-    // Initialize realtime listeners (kept inside the factory root)
-    localInitializeRealtime({
-      onInsert: (weight: Weight) => {
-        cache.upsertToCache(weight)
-      },
-      onUpdate: (weight: Weight) => {
-        cache.upsertToCache(weight)
-      },
-      onDelete: (weight: Weight) => {
-        cache.removeFromCache({ by: 'id', value: weight.id })
-      },
+    const weightRepository = localCreateWeightRepository({
+      isGuestMode: authDeps.isGuestMode,
     })
+    let realtimeInitialized = false
 
-    // Helper: pick the right repo according to guest mode
-    function getWeightRepository():
-      | typeof supabaseWeightRepository
-      | typeof guestWeightRepository {
-      return authDeps.isGuestMode()
-        ? guestWeightRepository
-        : supabaseWeightRepository
+    function initializeRealtime() {
+      if (realtimeInitialized) {
+        return
+      }
+      realtimeInitialized = true
+
+      localInitializeRealtime({
+        onInsert: (weight: Weight) => {
+          cache.upsertToCache(weight)
+        },
+        onUpdate: (weight: Weight) => {
+          cache.upsertToCache(weight)
+        },
+        onDelete: (weight: Weight) => {
+          cache.removeFromCache({ by: 'id', value: weight.id })
+        },
+      })
     }
 
     // CRUD operations service factory
     const weightCrudService = () =>
       localCreateWeightCrudService({
-        weightRepository: getWeightRepository(),
+        weightRepository,
         weightCacheRepository: storageRepository,
       })
 
     // Internal fetch implementation
     async function fetchUserWeights(userId: User['uuid']) {
       try {
-        const weights = await getWeightRepository().fetchUserWeights(userId)
+        const weights = await weightRepository.fetchUserWeights(userId)
         storageRepository.setCachedWeights(userId, weights)
         cache.setWeights(weights)
         return weights
@@ -123,12 +117,6 @@ export function createWeightUseCases(deps: {
       const userId = authDeps.getCurrentUserIdOrGuestId()
       void fetchUserWeights(userId)
     }
-
-    // Lifecycle: on mount and effect to keep cache in sync
-    onMount(() => {
-      const userId = authDeps.getCurrentUserIdOrGuestId()
-      void fetchUserWeights(userId)
-    })
 
     createEffect(() => {
       const userId = authDeps.getCurrentUserIdOrGuestId()
@@ -163,6 +151,7 @@ export function createWeightUseCases(deps: {
           .deleteWeight(id)
           .then(() => cache.removeFromCache({ by: 'id', value: id })),
       refetchUserWeights,
+      initializeRealtime,
     }
 
     return obj

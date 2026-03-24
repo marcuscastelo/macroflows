@@ -1,4 +1,4 @@
-import { useCases } from '~/di/useCases'
+import { type WeightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
 import { type WeightChartOHLC } from '~/modules/weight/application/chart/weightChartUtils'
 import { type GroupedWeightsByPeriod } from '~/modules/weight/domain/chart/weightEvolutionDomain'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
@@ -13,6 +13,8 @@ export function WeightChartTooltip({
   w,
   polishedData,
   weightsByPeriod,
+  calculateWeightProgress,
+  diet,
 }: {
   dataPointIndex: number
   w: unknown
@@ -21,6 +23,8 @@ export function WeightChartTooltip({
     desiredWeight: number
   } & WeightChartOHLC)[]
   weightsByPeriod: GroupedWeightsByPeriod
+  calculateWeightProgress: WeightChartUseCases['calculateWeightProgress']
+  diet: 'cut' | 'normo' | 'bulk'
 }): string {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const chartW = w as {
@@ -79,23 +83,11 @@ export function WeightChartTooltip({
         periodKey !== undefined && Array.isArray(weightsByPeriod[periodKey])
           ? weightsByPeriod[periodKey]
           : []
-      let diet: 'cut' | 'normo' | 'bulk' = 'cut'
-      if (
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        typeof (window as unknown as { currentUser?: { diet?: string } }) !==
-          'undefined' &&
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        typeof (window as unknown as { currentUser?: { diet?: string } })
-          .currentUser?.diet === 'string'
-      ) {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const d = (window as unknown as { currentUser?: { diet?: string } })
-          .currentUser?.diet
-        if (d === 'cut' || d === 'normo' || d === 'bulk') diet = d
-      }
-      const progressResult = useCases
-        .weightChartUseCases()
-        .calculateWeightProgress(periodWeights, desired, diet)
+      const progressResult = calculateWeightProgress(
+        periodWeights,
+        desired,
+        diet,
+      )
       if (progressResult && progressResult.type === 'progress') {
         progress = progressResult.progress.toFixed(2) + '%'
       } else if (progressResult && progressResult.type === 'exceeded') {

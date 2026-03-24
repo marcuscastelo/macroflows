@@ -1,6 +1,6 @@
 import { For, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
 import {
@@ -22,8 +22,12 @@ import { WeightView } from '~/sections/weight/components/WeightView'
  * @returns SolidJS component
  */
 export function WeightEvolution() {
+  const useCases = useContainer()
   const weightField = useFloatField(undefined, { maxValue: 200 })
   const authUseCases = useCases.authUseCases()
+  const userUseCases = useCases.userUseCases()
+  const weightUseCases = useCases.weightUseCases()
+  const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
     <>
@@ -39,15 +43,17 @@ export function WeightEvolution() {
             />
           </div>
           <WeightProgress
-            weightProgress={useCases.weightChartUseCases().weightProgress()}
-            weightProgressText={
-              useCases.weightChartUseCases().weightProgressText
-            }
+            weightProgress={weightChartUseCases.weightProgress()}
+            weightProgressText={weightChartUseCases.weightProgressText}
           />
           <Suspense fallback={<ChartLoadingPlaceholder />}>
             <WeightChart
-              weights={() => useCases.weightUseCases().weights()}
-              desiredWeight={useCases.weightChartUseCases().desiredWeight()}
+              weights={weightUseCases.weights}
+              desiredWeight={weightChartUseCases.desiredWeight()}
+              calculateWeightProgress={
+                weightChartUseCases.calculateWeightProgress
+              }
+              diet={userUseCases.currentUser()?.diet ?? 'cut'}
               type={weightChartType()}
             />
           </Suspense>
@@ -67,8 +73,7 @@ export function WeightEvolution() {
                 return
               }
 
-              useCases
-                .weightUseCases()
+              weightUseCases
                 .insertWeight(
                   createNewWeight({
                     user_id: authUseCases.currentUserIdOrGuestId(),
@@ -87,9 +92,7 @@ export function WeightEvolution() {
         <div class="mx-5 lg:mx-20 pb-10">
           <Suspense fallback={<div>Carregando pesos...</div>}>
             <For
-              each={[...useCases.weightUseCases().weights()]
-                .reverse()
-                .slice(0, 10)}
+              each={[...weightUseCases.weights()].reverse().slice(0, 10)}
               fallback={<>Não há pesos registrados</>}
             >
               {(weight) => <WeightView weight={weight} />}

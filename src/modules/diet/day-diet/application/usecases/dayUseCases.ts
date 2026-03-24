@@ -7,7 +7,6 @@ import {
   untrack,
 } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
 import { type AuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
@@ -17,7 +16,10 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
+import {
+  createDayDietRepository,
+  type DayRepository,
+} from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
 import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
@@ -29,16 +31,23 @@ import { logging } from '~/shared/utils/logging'
  *
  * This returns a stable object created inside a `createRoot` to keep internal
  * signals and stores properly isolated. Consumers should inject or call the
- * factory (via the backward-compatible shim below) to obtain the use-cases.
+ * factory to obtain the use-cases.
  */
-export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
+export function createDayUseCases(deps: {
+  authUseCases: () => AuthUseCases
+  dayRepository?: DayRepository
+}) {
   return createRoot(() => {
     const authUseCases = () => deps.authUseCases()
     const dayChangeStore = createDayChangeStore()
     const dayStateStore = createDayStateStore()
     const dayCacheStore = createDayCacheStore()
 
-    const dayRepository = createDayDietRepository()
+    const dayRepository = deps.dayRepository ?? createDayDietRepository()
+
+    // NOTE: intentionally avoid importing `useCases` here to prevent circular
+    // dependency during module initialization. The DI container will call
+    // `initializeDayUseCases` to provide the auth use-cases provider when ready.
 
     const runTargetDayReset = () => {
       logging.debug(`Effect - Reset to today!`)
@@ -238,17 +247,5 @@ export function createDayUseCases(deps: { authUseCases: () => AuthUseCases }) {
     return obj
   })
 }
-
-/**
- * Backward-compatible shim kept for legacy consumers.
- * Consumers may continue to import `dayUseCases` while migration proceeds.
- *
- * Export the concrete instance (not a provider function) so test spies and
- * legacy consumers that reference methods directly (e.g. `dayUseCases.insertDayDiet`)
- * work as expected.
- */
-export const dayUseCases = createDayUseCases({
-  authUseCases: () => useCases.authUseCases(),
-})
 
 export type DayUseCases = ReturnType<typeof createDayUseCases>

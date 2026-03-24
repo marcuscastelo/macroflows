@@ -1,5 +1,4 @@
-import { RemoveFromRecentButton } from '~/modules/diet/recent-food/ui/RemoveFromRecentButton'
-import { deleteRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { useContainer } from '~/di/container'
 import { getRecipePreparedQuantity } from '~/modules/diet/recipe/domain/recipeOperations'
 import { templateToItem } from '~/modules/diet/template/application/templateToItem'
 import {
@@ -7,6 +6,7 @@ import {
   isTemplateRecipe,
   type Template,
 } from '~/modules/diet/template/domain/template'
+import { RemoveFromRecentButton } from '~/sections/common/components/buttons/RemoveFromRecentButton'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { openDeleteConfirmModal } from '~/shared/modal/ui/DeleteConfirmModal'
@@ -17,6 +17,8 @@ export function TemplateSearchResultItem(props: {
   onTemplateSelected: (template: Template) => void
   refetch: (info?: unknown) => unknown
 }) {
+  const recipeCrud = useContainer().recipeCrud()
+
   const displayQuantity = () => {
     if (isTemplateFood(props.template)) {
       return 100 // 100 grams for food templates
@@ -45,7 +47,7 @@ export function TemplateSearchResultItem(props: {
                 itemType: 'receita',
                 onConfirm: () => {
                   const refetch = props.refetch
-                  void deleteRecipe(props.template.id).then(() => {
+                  void recipeCrud.deleteRecipe(props.template.id).then(() => {
                     refetch()
                   })
                 },

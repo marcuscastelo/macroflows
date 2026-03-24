@@ -1,7 +1,4 @@
-import {
-  deleteBodyMeasure,
-  updateBodyMeasure,
-} from '~/modules/measure/application/usecases/measureCrud'
+import { useContainer } from '~/di/container'
 import {
   type BodyMeasure,
   createNewBodyMeasure,
@@ -34,6 +31,7 @@ export function BodyMeasureView(props: {
   measure: BodyMeasure
   onRefetchBodyMeasures: () => unknown
 }) {
+  const measureCrud = useContainer().measureCrud()
   const dateField = useDateField(() => props.measure.target_timestamp, {
     fallback: () => new Date(),
   })
@@ -67,17 +65,18 @@ export function BodyMeasureView(props: {
     const afterUpdate = () => {
       props.onRefetchBodyMeasures()
     }
-    updateBodyMeasure(
-      props.measure.id,
-      createNewBodyMeasure({
-        ...props.measure,
-        height,
-        waist,
-        hip,
-        neck,
-        target_timestamp: date,
-      }),
-    )
+    measureCrud
+      .updateBodyMeasure(
+        props.measure.id,
+        createNewBodyMeasure({
+          ...props.measure,
+          height,
+          waist,
+          hip,
+          neck,
+          target_timestamp: date,
+        }),
+      )
       .then(afterUpdate)
       .catch((error) => {
         logging.error('BodyMeasureView measure update error:', error)
@@ -97,7 +96,8 @@ export function BodyMeasureView(props: {
           const afterDelete = () => {
             props.onRefetchBodyMeasures()
           }
-          deleteBodyMeasure(measureId)
+          measureCrud
+            .deleteBodyMeasure(measureId)
             .then(afterDelete)
             .catch((error) => {
               logging.error('BodyMeasureView measure delete error:', error, {

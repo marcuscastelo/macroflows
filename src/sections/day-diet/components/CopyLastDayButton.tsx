@@ -1,11 +1,6 @@
 import { type Accessor, Suspense } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
-import {
-  copyDay,
-  useCopyDayUseCase,
-} from '~/modules/diet/day-diet/application/usecases/useCopyDayOperations'
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
@@ -25,7 +20,9 @@ export function CopyLastDayButton(props: {
   dayDiet: Accessor<DayDiet | undefined>
   selectedDay: string
 }) {
+  const useCases = useContainer()
   const authUseCases = useCases.authUseCases()
+  const copyDayOperations = useCases.copyDayOperations()
   const {
     previousDays,
     handleStartCopying,
@@ -34,18 +31,18 @@ export function CopyLastDayButton(props: {
     copyingDay,
     fetchPreviousDays,
     resetState,
-  } = useCopyDayUseCase()
+  } = copyDayOperations.useCopyDayUseCase()
 
   const handleCopy = async (day: string) => {
     handleStartCopying(day)
     try {
-      await copyDay({
+      await copyDayOperations.copyDay({
         fromDay: day,
         toDay: props.selectedDay,
         previousDays: previousDays.latest ?? [],
         existingDay: [
           ...(previousDays.latest ?? []),
-          dayUseCases.currentDayDiet(),
+          useCases.dayUseCases().currentDayDiet(),
         ]
           .filter((d): d is DayDiet => d !== null)
           .find((d) => d.target_day === props.selectedDay),

@@ -1,6 +1,6 @@
 import { createMemo, createSignal, onMount, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { showError } from '~/modules/toast/application/toastManager'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { Capsule } from '~/sections/common/components/capsule/Capsule'
@@ -31,6 +31,7 @@ export type WeightViewProps = {
  * @returns SolidJS component
  */
 export function WeightView(props: WeightViewProps) {
+  const useCases = useContainer()
   const [lazyDate, setLazyDate] = createSignal(false)
   const targetTimestampSignal = () => props.weight.target_timestamp
   const dateField = useDateField(targetTimestampSignal)

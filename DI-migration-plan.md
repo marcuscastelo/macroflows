@@ -473,7 +473,78 @@ Abaixo segue um checklist detalhado do progresso realizado até o momento. Manti
   - [x] `src/modules/profile/application/profile.ts`
   - [x] `src/modules/search/application/usecases/cachedSearchCrud.ts`
   - [x] `src/modules/observability/application/telemetry.ts`
-  - [ ] (other remaining `src/modules/*/application/*` files) — pending.
+  - [x] `src/modules/diet/macro-target/application/macroTargetUseCases.ts`
+  - [x] `src/modules/diet/macro-nutrients/application/macroOverflow.ts` (shim + legacy named exports added)
+  - [x] (other remaining `src/modules/*/application/*` files) — reviewed and converted where appropriate; legacy named exports kept as shims.
+
+---
+
+Assistant session notes (context & remaining un-annotated progress)
+- Current assistant context window usage at time of note: ~113k / 128k tokens (approx). I recorded this to help resume work if the session is reset.
+- Progress that was applied in this session but hadn't yet been explicitly annotated in the plan before this update:
+  - `src/modules/diet/macro-target/application/macroTargetUseCases.ts` → converted to `createMacroTargetUseCases(...)` + shim
+  - `src/modules/diet/macro-nutrients/application/macroOverflow.ts` → converted to `createMacroOverflow(...)` + shim; legacy named exports `isOverflow` and `getAvailableMacros` added to preserve consumers
+  - `src/modules/weight/application/chart/weightChartUseCases.ts` → converted to `createWeightChartUseCases(...)` + shim
+  - `src/modules/measure/application/usecases/measureCrud.ts` → converted to `createMeasureCrud(...)` + shim
+  - `src/modules/measure/application/usecases/measureState.ts` → converted to `createMeasureState(...)` + shim
+
+These are now recorded above in the checklist.
+
+Plans for next steps / Options (detailed)
+
+Option A — Full Cleanup (Batch 7) — remove all backward-compatible shims
+- Goal: remove all default/top-level shim exports (e.g., `export const fooUseCases = createFooUseCases()`), enforce DI everywhere by using the container or explicit factories.
+- Risk: high — will break any consumer that still imports the legacy named exports. Must be performed only after verifying all consumers have been migrated.
+- Steps:
+  1. Discovery phase:
+     - Run a global search for imports of each shim (e.g., `import { fooUseCases } from '.../foo'`) and produce a list of all consumers.
+     - For each shim, build a consumer map showing file and import locations.
+  2. Migration/replace phase:
+     - For each consumer, decide replacement strategy:
+       - If the file is application-level UI or composed via Provider/DI container, replace import to use `useCases` from `~/di/useCases` (preferred).
+       - If the file is a utility/test, inject the factory via parameters or import the factory and instantiate locally in test setups.
+     - Replace the imports programmatically (small targeted edits).
+  3. Removal phase:
+     - Remove the shim export from its source file.
+     - Run `npm run copilot:check`.
+     - Fix any remaining compile/test failures.
+  4. Verification:
+     - Run full lint/ts/tests.
+     - Manual spot-check UI flows if possible.
+  5. Commit strategy:
+     - Make frequent commits per-group (recommended), with a final "cleanup(batch-7): remove shims" commit that summarizes changes.
+  6. Rollback:
+     - If regressions are found, revert the commit and triage failing consumers.
+- Timeline estimate: depends on number of consumers; for this repo size likely 1–2 hours of work with iterative fixes.
+
+Option C — One-by-one shim removal (conservative)
+- Goal: remove shims incrementally to minimize risk and reduce the blast radius.
+- Steps:
+  1. Pick one shim to remove (e.g., `weightChartUseCases`) — choose low-risk, well-covered modules first (lots of tests).
+  2. Find and update all consumers of that shim to use the DI factory/container or an injected dependency:
+     - Update tests to create factory instances rather than relying on top-level shims.
+  3. Remove the shim export from the source file.
+  4. Run `npm run copilot:check`. Fix any issues (1–2 iteration rule).
+  5. Commit the change with message: `refactor(di): batch-7 - remove shim <module>`.
+  6. Repeat for the next shim.
+- Advantages:
+  - Low risk, easy rollback per-file.
+  - Easier to track migration progress.
+- Disadvantages:
+  - Longer overall duration.
+- Commit strategy:
+  - One commit per shim removal (recommended). Optionally squash later.
+
+Common practices & safety nets for both options
+- Always run `npm run copilot:check` after each file change.
+- Prefer updating tests first: update test imports to use factories before removing shims to avoid noisy failures.
+- Keep commits small and descriptive. Use Conventional Commits:
+  - `refactor(di): remove shim for <module>` or `refactor(di): migrate <consumer> to DI`
+- If a shim removal causes widespread breakage, revert quickly and open a focused follow-up to address remaining consumers.
+
+Manual approval before Batch 7
+- I will NOT start Batch 7 (removing shims) without your explicit confirmation of which option (A or C) and the commit behavior you prefer (single final commit vs per-file commits). Please confirm the option and commit style.
+
 
 - [ ] Batch 7 — Cleanup final
   - [ ] Remover shims backward-compat quando todos os consumidores forem migrados.

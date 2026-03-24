@@ -1,13 +1,14 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { showSuccess } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 
 type OnboardingStep = 'welcome' | 'features' | 'privacy' | 'complete'
 
 export function OnboardingFlow() {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = createSignal<OnboardingStep>('welcome')
 

@@ -1,6 +1,6 @@
 import { type Accessor, createSignal, Show } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { type User } from '~/modules/user/domain/user'
 import { UserInitialFallback } from '~/sections/common/components/icons/UserInitialFallback'
 
@@ -9,6 +9,7 @@ export function UserIcon(props: {
   userName: Accessor<string>
   class?: string
 }) {
+  const useCases = useContainer()
   const authUseCases = useCases.authUseCases()
   const [errored, setErrored] = createSignal(false)
   return (

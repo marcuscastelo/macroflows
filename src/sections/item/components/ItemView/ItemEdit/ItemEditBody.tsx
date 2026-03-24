@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useContainer } from '~/di/container'
 import {
   isItemNameValid,
   MAX_ITEM_NAME_LENGTH,
@@ -14,7 +14,6 @@ import {
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'
@@ -22,12 +21,6 @@ import { ItemQuantityControls } from '~/sections/item/components/ItemView/ItemEd
 import { ItemQuantityShortcuts } from '~/sections/item/components/ItemView/ItemEdit/ItemQuantityShortcuts'
 import { ItemFavorite } from '~/sections/item/components/UnifiedItemFavorite'
 import { logging } from '~/shared/utils/logging'
-
-// Create macro overflow instance for this module
-const macroOverflowUseCases = createMacroOverflow({
-  dayUseCases,
-  macroTargetUseCases,
-})
 
 export type ItemEditBodyProps = {
   canApply: boolean
@@ -50,6 +43,12 @@ export type ItemEditBodyProps = {
 }
 
 export function ItemEditBody(props: ItemEditBodyProps) {
+  const useCases = useContainer()
+  const macroOverflowUseCases = createMacroOverflow({
+    dayUseCases: useCases.dayUseCases(),
+    macroTargetUseCases: useCases.macroTargetUseCases(),
+  })
+
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[ItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
@@ -111,7 +110,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         when={
           !isGroupItem(props.itemDraft()) &&
           props.viewMode !== 'group' &&
-          dayUseCases.currentDayDiet()
+          useCases.dayUseCases().currentDayDiet()
         }
       >
         {(currentDayDiet) => (

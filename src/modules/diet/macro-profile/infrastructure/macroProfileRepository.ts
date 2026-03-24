@@ -1,4 +1,3 @@
-import { useCases } from '~/di/useCases'
 import {
   type MacroProfile,
   type NewMacroProfile,
@@ -12,39 +11,31 @@ import { type User } from '~/modules/user/domain/user'
 const supabaseGateway = createSupabaseMacroProfileGateway()
 const guestGateway = createGuestMacroProfileGateway()
 
-function getGateway(): MacroProfileGateway {
-  const guestUseCases = useCases.guestUseCases()
-  return guestUseCases.isGuestMode() ? guestGateway : supabaseGateway
-}
+export function createMacroProfileRepository(deps?: {
+  isGuestMode?: () => boolean
+  guestMacroProfileGateway?: MacroProfileGateway
+  supabaseMacroProfileGateway?: MacroProfileGateway
+}): MacroProfileRepository {
+  const isGuestMode = deps?.isGuestMode ?? (() => false)
+  const localGuestGateway = deps?.guestMacroProfileGateway ?? guestGateway
+  const localSupabaseGateway =
+    deps?.supabaseMacroProfileGateway ?? supabaseGateway
 
-export function createMacroProfileRepository(): MacroProfileRepository {
-  return {
-    fetchUserMacroProfiles,
-    insertMacroProfile,
-    updateMacroProfile,
-    deleteMacroProfile,
+  function getGateway(): MacroProfileGateway {
+    return isGuestMode() ? localGuestGateway : localSupabaseGateway
   }
-}
 
-async function fetchUserMacroProfiles(
-  userId: User['uuid'],
-): Promise<readonly MacroProfile[]> {
-  return await getGateway().fetchUserMacroProfiles(userId)
-}
-
-async function insertMacroProfile(
-  newMacroProfile: NewMacroProfile,
-): Promise<MacroProfile | null> {
-  return await getGateway().insertMacroProfile(newMacroProfile)
-}
-
-async function updateMacroProfile(
-  macroProfileId: MacroProfile['id'],
-  newMacroProfile: NewMacroProfile,
-): Promise<MacroProfile | null> {
-  return await getGateway().updateMacroProfile(macroProfileId, newMacroProfile)
-}
-
-async function deleteMacroProfile(id: MacroProfile['id']): Promise<void> {
-  await getGateway().deleteMacroProfile(id)
+  return {
+    fetchUserMacroProfiles: async (userId: User['uuid']) =>
+      await getGateway().fetchUserMacroProfiles(userId),
+    insertMacroProfile: async (newMacroProfile: NewMacroProfile) =>
+      await getGateway().insertMacroProfile(newMacroProfile),
+    updateMacroProfile: async (
+      macroProfileId: MacroProfile['id'],
+      newMacroProfile: NewMacroProfile,
+    ) => await getGateway().updateMacroProfile(macroProfileId, newMacroProfile),
+    deleteMacroProfile: async (id: MacroProfile['id']) => {
+      await getGateway().deleteMacroProfile(id)
+    },
+  }
 }

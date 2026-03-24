@@ -6,7 +6,7 @@ import {
   Show,
 } from 'solid-js'
 
-import { useCases } from '~/di/useCases'
+import { useContainer } from '~/di/container'
 import { createFoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
@@ -29,6 +29,7 @@ export type EANSearchProps = {
 }
 
 export function EANSearch(props: EANSearchProps) {
+  const useCases = useContainer()
   const [loading, setLoading] = createSignal(false)
 
   const EAN_LENGTH = 13

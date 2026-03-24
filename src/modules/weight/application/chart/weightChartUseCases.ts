@@ -1,4 +1,4 @@
-import { type WeightUseCases } from '~/di/useCases'
+import { type WeightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 
@@ -257,8 +257,5 @@ export function createWeightChartUseCases(deps: WeightChartDeps) {
     weightProgressText,
   }
 }
-
-// Note: Shim removed - all consumers should use the centralized DI container.
-// Import via `useCases.weightChartUseCases()` from '~/di/useCases'.
 
 export type WeightChartUseCases = ReturnType<typeof createWeightChartUseCases>
