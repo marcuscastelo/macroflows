@@ -66,6 +66,14 @@ Macroflows é um sistema de rastreamento nutricional focado em tipagem forte, in
 
 Por enquanto, está focado em ser um projeto pessoal para acompanhar minha própria nutrição, mas talvez no futuro se torne um produto SaaS.
 
+## Documentação do projeto
+
+- Ponto de entrada padrão para agentes em todo o repositório: [AGENTS.md](./AGENTS.md)
+- Mapa da arquitetura padrão: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- Regras canônicas de dependência e propriedade: [docs/BOUNDARIES.md](./docs/BOUNDARIES.md)
+- Governança da documentação canônica: [docs/DOCS_GOVERNANCE.md](./docs/DOCS_GOVERNANCE.md)
+- Índice ADR: [docs/adr/README.md](./docs/adr/README.md)
+
 ---
 
 ## Funcionalidades
