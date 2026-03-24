@@ -1,8 +1,8 @@
-import type { Template } from '~/modules/diet/template/domain/template'
 import {
   type NewRecentFood,
   type RecentFood,
 } from '~/modules/diet/recent-food/domain/recentFood'
+import type { Template } from '~/modules/diet/template/domain/template'
 import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
