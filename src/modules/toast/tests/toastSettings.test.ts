@@ -4,17 +4,12 @@ vi.mock('~/shared/config/env', () => ({
   isDevelopment: vi.fn(() => false),
 }))
 
+import { createToastSettingsStore } from '~/modules/toast/infrastructure/toastSettings'
 import {
   getToastSettings,
   resetToastSettings,
-  setAutoDismissErrors,
-  setDefaultDuration,
-  setGroupSimilarToasts,
-  setShowBackgroundLoading,
-  setShowBackgroundSuccess,
-  setShowDetailedErrors,
   updateToastSettings,
-} from '~/modules/toast/infrastructure/toastSettings'
+} from '~/modules/toast/application/toastSettings'
 
 const DEFAULTS = {
   showBackgroundSuccess: false,
@@ -67,19 +62,14 @@ describe('toastSettings', () => {
     expect(getToastSettings().showBackgroundSuccess).toBe(true)
   })
 
-  it('setters update only their value', () => {
-    setShowBackgroundSuccess(true)
-    expect(getToastSettings().showBackgroundSuccess).toBe(true)
-    setShowBackgroundLoading(true)
-    expect(getToastSettings().showBackgroundLoading).toBe(true)
-    setAutoDismissErrors(true)
-    expect(getToastSettings().autoDismissErrors).toBe(true)
-    setDefaultDuration(9999)
-    expect(getToastSettings().defaultDuration).toBe(9999)
-    setGroupSimilarToasts(false)
-    expect(getToastSettings().groupSimilarToasts).toBe(false)
-    setShowDetailedErrors(false)
-    expect(getToastSettings().showDetailedErrors).toBe(false)
+  it('createToastSettingsStore returns isolated stores', () => {
+    const firstStore = createToastSettingsStore()
+    const secondStore = createToastSettingsStore()
+
+    firstStore.updateToastSettings({ showBackgroundSuccess: true })
+
+    expect(firstStore.getToastSettings().showBackgroundSuccess).toBe(true)
+    expect(secondStore.getToastSettings()).toEqual(DEFAULTS)
   })
 
   it('resetToastSettings restores defaults', () => {
@@ -97,7 +87,7 @@ describe('toastSettings', () => {
     vi.resetModules()
     setMockLocalStorage()
     const toastSettingsModule =
-      await import('~/modules/toast/infrastructure/toastSettings')
+      await import('~/modules/toast/application/toastSettings')
     expect(toastSettingsModule.getToastSettings().showBackgroundSuccess).toBe(
       true,
     )
@@ -109,7 +99,7 @@ describe('toastSettings', () => {
     vi.resetModules()
     setMockLocalStorage()
     const toastSettingsModule =
-      await import('~/modules/toast/infrastructure/toastSettings')
+      await import('~/modules/toast/application/toastSettings')
     expect(toastSettingsModule.getToastSettings()).toEqual(DEFAULTS)
   })
 })

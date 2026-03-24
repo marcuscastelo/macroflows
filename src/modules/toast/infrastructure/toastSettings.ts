@@ -5,7 +5,7 @@
  * Settings are persisted in local storage.
  */
 
-import { createEffect, createSignal } from 'solid-js'
+import { createEffect, createRoot, createSignal } from 'solid-js'
 
 import { jsonParseWithStack } from '~/shared/utils/jsonParseWithStack'
 
@@ -69,63 +69,35 @@ function loadSettings(): ToastSettings {
   return { ...DEFAULT_SETTINGS }
 }
 
-// Create reactive signal for settings
-const [settings, setSettings] = createSignal<ToastSettings>(loadSettings())
-
-// Persist settings to local storage when they change
-createEffect(() => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
-})
-
 /**
- * Gets the current toast settings.
- * @returns The current ToastSettings object.
+ * Factory that creates a toast settings store backed by localStorage.
+ *
+ * @returns A store with read, update, and reset operations for toast settings.
  */
-export function getToastSettings(): ToastSettings {
-  return settings()
+export function createToastSettingsStore() {
+  return createRoot(() => {
+    const [settings, setSettings] = createSignal<ToastSettings>(loadSettings())
+
+    createEffect(() => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings()))
+    })
+
+    function getToastSettings(): ToastSettings {
+      return settings()
+    }
+
+    function updateToastSettings(updates: Partial<ToastSettings>): void {
+      setSettings((current) => ({ ...current, ...updates }))
+    }
+
+    function resetToastSettings(): void {
+      setSettings({ ...DEFAULT_SETTINGS })
+    }
+
+    return {
+      getToastSettings,
+      updateToastSettings,
+      resetToastSettings,
+    }
+  })
 }
-
-/**
- * Updates toast settings.
- * @param updates Partial settings to update.
- */
-export function updateToastSettings(updates: Partial<ToastSettings>): void {
-  setSettings((current) => ({ ...current, ...updates }))
-}
-
-/**
- * Resets toast settings to defaults.
- */
-export function resetToastSettings(): void {
-  setSettings({ ...DEFAULT_SETTINGS })
-}
-
-/**
- * Helper functions for specific settings
- */
-
-export function setShowBackgroundSuccess(value: boolean): void {
-  updateToastSettings({ showBackgroundSuccess: value })
-}
-
-export function setShowBackgroundLoading(value: boolean): void {
-  updateToastSettings({ showBackgroundLoading: value })
-}
-
-export function setAutoDismissErrors(value: boolean): void {
-  updateToastSettings({ autoDismissErrors: value })
-}
-
-export function setDefaultDuration(value: number): void {
-  updateToastSettings({ defaultDuration: value })
-}
-
-export function setGroupSimilarToasts(value: boolean): void {
-  updateToastSettings({ groupSimilarToasts: value })
-}
-
-export function setShowDetailedErrors(value: boolean): void {
-  updateToastSettings({ showDetailedErrors: value })
-}
-
-// Add JSDoc for all exported types and functions for better maintainability
