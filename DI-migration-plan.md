@@ -1,5 +1,8 @@
 # DI Migration Plan — macroflows
 
+> Doc status: supporting.
+> This document preserves migration history and implementation context. It is not a source of truth; use `./AGENTS.md` and the canonical docs instead.
+
 Status: Draft (complete, actionable plan for externalizing DI across `src/**/application/**`)
 
 This document contains a step-by-step migration plan, batch list with files, templates, commands, commit/PR guidance, verification checklist, and troubleshooting notes. Save this file and use it as your source of truth when you reset the conversation and implement the changes.

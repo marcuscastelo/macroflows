@@ -1,5 +1,8 @@
 # TODO: Repository Documentation Enhancement Plan
 
+> Doc status: archived.
+> This document is retained for historical reference only. Current canon lives in `../../AGENTS.md` and the canonical docs under `../`.
+
 ## 📋 **PROFESSIONAL TECHNICAL DOCUMENTATION PLAN**
 
 ### **🎯 Objective: Contextualize architectural decisions as a senior developer would**

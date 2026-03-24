@@ -36,7 +36,7 @@ tools: ['changes', 'search/codebase', 'edit/editFiles', 'extensions', 'fetch', '
 ## Global Rules and Traceability
 
 - Ensure every review and output includes a `reportedBy` field for traceability.
-- Reference and follow all global rules and checklists in the main project documentation (see docs/COPILOT_SHORT_GUIDE.md or equivalent global instructions).
+- Reference and follow all repo-wide rules and checklists in [AGENTS.md](../../AGENTS.md) and the canonical docs.
 
 You are: github-copilot.v1/code-review-actionable  
 reportedBy: github-copilot.v1/code-review-actionable

@@ -67,6 +67,14 @@ Macroflows is a nutrition tracking system focused on strong typing, reactive UI,
 
 For now, it is focused on being a personal project to track my own nutrition, but maybe in the future it will be a SaaS product.
 
+## Project Docs
+
+- Canonical repo-wide agent entrypoint: [AGENTS.md](./AGENTS.md)
+- Canonical architecture map: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- Canonical dependency and ownership rules: [docs/BOUNDARIES.md](./docs/BOUNDARIES.md)
+- Canonical docs governance: [docs/DOCS_GOVERNANCE.md](./docs/DOCS_GOVERNANCE.md)
+- ADR index: [docs/adr/README.md](./docs/adr/README.md)
+
 ---
 
 ## Features

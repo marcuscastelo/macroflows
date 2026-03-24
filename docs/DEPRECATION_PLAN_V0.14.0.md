@@ -1,5 +1,8 @@
 # Legacy Entity Migration and Removal Plan (Item/ItemGroup) - v0.14.0
 
+> Doc status: supporting.
+> This document preserves migration history and implementation context. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 _Created: June 18, 2025_  
 _Status: Implementation ready_  
 _Author: AI Assistant based on Phases 1, 2, and 3 implementation_
