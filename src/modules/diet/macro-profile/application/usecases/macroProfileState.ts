@@ -6,7 +6,7 @@ import {
   createDefaultMacroProfile,
   getLatestMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
-import { initializeMacroProfileRealtime } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
+import { createMacroProfileRealtimeService } from '~/modules/diet/macro-profile/infrastructure/supabase/realtime'
 import { type User } from '~/modules/user/domain/user'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
 import { logging } from '~/shared/utils/logging'
@@ -19,18 +19,19 @@ export function createMacroProfileState(deps: {
     userId: User['uuid'],
   ) => Promise<readonly MacroProfile[]>
   cache?: MacroProfileCache
-  initializeMacroProfileRealtime?: typeof initializeMacroProfileRealtime
+  createMacroProfileRealtimeService?: typeof createMacroProfileRealtimeService
 }) {
   const localCache = deps.cache ?? createMacroProfileCacheStore()
-  const localInitializeRealtime =
-    deps.initializeMacroProfileRealtime ?? initializeMacroProfileRealtime
+  const localCreateMacroProfileRealtimeService =
+    deps.createMacroProfileRealtimeService ?? createMacroProfileRealtimeService
 
   return createRoot(() => {
+    const realtimeService = localCreateMacroProfileRealtimeService()
     const [selectedUserId, setSelectedUserId] = createSignal<
       User['uuid'] | null
     >(null)
 
-    localInitializeRealtime({
+    realtimeService.initializeMacroProfileRealtime({
       onInsert: (profile: MacroProfile) => {
         localCache.upsertToCache(profile)
       },

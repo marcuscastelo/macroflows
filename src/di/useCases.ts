@@ -6,20 +6,11 @@ import { createUserUseCases } from '~/modules/user/application/usecases/userUseC
 import { type UserRepository } from '~/modules/user/domain/userRepository'
 import { createGuestUserRepository } from '~/modules/user/infrastructure/guest/guestUserRepository'
 import { createSupabaseUserRepository } from '~/modules/user/infrastructure/supabase/supabaseUserRepository'
-import {
-  createWeightChartUseCases,
-  type WeightChartUseCases,
-} from '~/modules/weight/application/chart/weightChartUseCases'
-import {
-  createWeightUseCases,
-  type WeightUseCases,
-} from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { createWeightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
+import { createWeightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { createGuestUseCases } from '~/shared/guest/guestUseCases'
 
-export type AppMode = 'guest' | 'normal'
-
-// Re-export use-case types for consumers
-export type { WeightChartUseCases, WeightUseCases }
+type AppMode = 'guest' | 'normal'
 
 // TODO: Refactor global DI so that we don't need to switch repositories like this
 // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1440

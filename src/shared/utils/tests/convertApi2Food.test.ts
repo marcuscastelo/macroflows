@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { apiFoodSchema } from '~/modules/diet/food/infrastructure/api/domain/apiFoodSchema'
+import { apiFoodSchema } from '~/modules/diet/food/domain/apiFood'
 import { convertApi2Food } from '~/shared/utils/convertApi2Food'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 

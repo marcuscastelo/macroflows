@@ -1,8 +1,8 @@
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
-import { recipeCacheStore } from '~/modules/diet/recipe/infrastructure/signals/recipeCacheStore'
-import { SUPABASE_TABLE_RECIPES } from '~/modules/diet/recipe/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
+
+const SUPABASE_TABLE_RECIPES = 'recipes'
 
 export function createRecipeRealtimeService() {
   let initialized = false
@@ -36,32 +36,6 @@ export function createRecipeRealtimeService() {
       recipeSchema,
       (event) => {
         logging.debug(`Event:`, event)
-
-        switch (event.eventType) {
-          case 'INSERT': {
-            if (event.new !== undefined) {
-              recipeCacheStore.upsertToCache(event.new)
-            }
-            break
-          }
-
-          case 'UPDATE': {
-            if (event.new) {
-              recipeCacheStore.upsertToCache(event.new)
-            }
-            break
-          }
-
-          case 'DELETE': {
-            if (event.old) {
-              recipeCacheStore.removeFromCache({
-                by: 'id',
-                value: event.old.id,
-              })
-            }
-            break
-          }
-        }
       },
     )
   }

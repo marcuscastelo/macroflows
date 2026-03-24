@@ -1,23 +1,29 @@
 import { z } from 'zod/v4'
 
 import { foodSchema } from '~/modules/diet/food/domain/food'
-import { supabaseItemMapper } from '~/modules/diet/item/infrastructure/supabase/supabaseItemMapper'
-import { supabaseMacroNutrientsMapper } from '~/modules/diet/macro-nutrients/infrastructure/supabase/supabaseMacroNutrientsMapper'
+import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
+import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import {
   type NewRecentFood,
   type RecentFood,
+  recentFoodSchema,
 } from '~/modules/diet/recent-food/domain/recentFood'
-import { SUPABASE_TABLE_RECENT_FOODS } from '~/modules/diet/recent-food/infrastructure/supabase/constants'
-import { supabaseRecentFoodMapper } from '~/modules/diet/recent-food/infrastructure/supabase/supabaseRecentFoodMapper'
 import { recipeSchema } from '~/modules/diet/recipe/domain/recipe'
 import { type Template } from '~/modules/diet/template/domain/template'
 import { type User } from '~/modules/user/domain/user'
-import { type Json } from '~/shared/supabase/database.types'
+import { type Database, type Json } from '~/shared/supabase/database.types'
 import { supabase } from '~/shared/supabase/supabase'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 import { removeDiacritics } from '~/shared/utils/removeDiacritics'
 
-// Schema for the enhanced database function response
+const SUPABASE_TABLE_RECENT_FOODS = 'recent_foods'
+
+type RecentFoodDTO = Database['public']['Tables']['recent_foods']['Row']
+type UpdateRecentFoodDTO =
+  Database['public']['Tables']['recent_foods']['Update']
+type InsertRecentFoodDTO =
+  Database['public']['Tables']['recent_foods']['Insert']
+
 const enhancedRecentFoodRowSchema = z
   .object({
     recent_food_id: z.number(),
@@ -37,7 +43,160 @@ const enhancedRecentFoodRowSchema = z
   })
   .strip()
 
-// Helper function to safely get recipe fields
+function macrosToDomain(macrosDTO: Json) {
+  if (
+    macrosDTO === null ||
+    !(typeof macrosDTO === 'object') ||
+    !('carbs' in macrosDTO) ||
+    !('protein' in macrosDTO) ||
+    !('fat' in macrosDTO) ||
+    typeof macrosDTO.carbs !== 'number' ||
+    typeof macrosDTO.protein !== 'number' ||
+    typeof macrosDTO.fat !== 'number'
+  ) {
+    throw new Error(
+      'macrosDTO is missing macros field: ' + JSON.stringify(macrosDTO),
+    )
+  }
+
+  return createMacroNutrients({
+    carbsInMg: macrosDTO.carbs * 1000,
+    proteinInMg: macrosDTO.protein * 1000,
+    fatInMg: macrosDTO.fat * 1000,
+  })
+}
+
+function itemToDomain(itemDTO: Json): Item {
+  if (
+    itemDTO === null ||
+    !(typeof itemDTO === 'object') ||
+    !('id' in itemDTO) ||
+    !('name' in itemDTO) ||
+    !('quantity' in itemDTO) ||
+    !('reference' in itemDTO) ||
+    typeof itemDTO.id !== 'number' ||
+    typeof itemDTO.name !== 'string' ||
+    typeof itemDTO.quantity !== 'number' ||
+    typeof itemDTO.reference !== 'object' ||
+    itemDTO.reference === null ||
+    Array.isArray(itemDTO.reference) ||
+    !('type' in itemDTO.reference)
+  ) {
+    throw new Error(
+      'Item DTO is missing required fields: ' + JSON.stringify(itemDTO),
+    )
+  }
+
+  const referenceType = itemDTO.reference.type
+  if (
+    referenceType === 'food' &&
+    (!('id' in itemDTO.reference) ||
+      typeof itemDTO.reference.id !== 'number' ||
+      !('macros' in itemDTO.reference) ||
+      typeof itemDTO.reference.macros !== 'object' ||
+      itemDTO.reference.macros === null)
+  ) {
+    throw new Error(
+      'Food Item DTO reference is missing required fields: ' +
+        JSON.stringify(itemDTO.reference),
+    )
+  } else if (
+    referenceType === 'recipe' &&
+    (!('id' in itemDTO.reference) ||
+      typeof itemDTO.reference.id !== 'number' ||
+      !('children' in itemDTO.reference) ||
+      !Array.isArray(itemDTO.reference.children))
+  ) {
+    throw new Error(
+      'Recipe Item DTO reference is missing required fields: ' +
+        JSON.stringify(itemDTO.reference),
+    )
+  } else if (
+    referenceType === 'group' &&
+    (!('children' in itemDTO.reference) ||
+      !Array.isArray(itemDTO.reference.children))
+  ) {
+    throw new Error(
+      'Group Item DTO reference is missing required fields: ' +
+        JSON.stringify(itemDTO.reference),
+    )
+  }
+
+  if (
+    referenceType !== 'food' &&
+    referenceType !== 'recipe' &&
+    referenceType !== 'group'
+  ) {
+    throw new Error(
+      'Item DTO reference has invalid type: ' +
+        JSON.stringify(itemDTO.reference),
+    )
+  }
+
+  if (referenceType === 'food') {
+    if (
+      itemDTO.reference.macros === null ||
+      typeof itemDTO.reference.macros !== 'object'
+    ) {
+      throw new Error(
+        'Food Item DTO reference macros is invalid: ' +
+          JSON.stringify(itemDTO.reference.macros),
+      )
+    }
+
+    return parseWithStack(itemSchema, {
+      id: itemDTO.id,
+      name: itemDTO.name,
+      quantity: itemDTO.quantity,
+      reference: {
+        type: 'food',
+        id: itemDTO.reference.id,
+        macros: macrosToDomain(itemDTO.reference.macros),
+      },
+      __type: 'UnifiedItem',
+    })
+  }
+
+  if (
+    itemDTO.reference.children === null ||
+    !Array.isArray(itemDTO.reference.children)
+  ) {
+    throw new Error(
+      'Item DTO reference children is invalid: ' +
+        JSON.stringify(itemDTO.reference.children),
+    )
+  }
+
+  const children: Item[] = itemDTO.reference.children.map((childDTO: Json) =>
+    itemToDomain(childDTO),
+  )
+
+  if (referenceType === 'recipe') {
+    return parseWithStack(itemSchema, {
+      id: itemDTO.id,
+      name: itemDTO.name,
+      quantity: itemDTO.quantity,
+      reference: {
+        type: 'recipe',
+        id: itemDTO.reference.id,
+        children,
+      },
+      __type: 'UnifiedItem' as const,
+    })
+  }
+
+  return parseWithStack(itemSchema, {
+    id: itemDTO.id,
+    name: itemDTO.name,
+    quantity: itemDTO.quantity,
+    reference: {
+      type: 'group',
+      children,
+    },
+    __type: 'UnifiedItem' as const,
+  })
+}
+
 function getRecipeFields(row: z.infer<typeof enhancedRecentFoodRowSchema>) {
   if (row.type !== 'recipe') {
     throw new Error('Expected recipe type but got food')
@@ -53,7 +212,6 @@ function getRecipeFields(row: z.infer<typeof enhancedRecentFoodRowSchema>) {
   return { user_id, preparedMultiplier }
 }
 
-// Helper function to transform raw database data to Template objects
 function transformRowToTemplate(row: unknown): Template {
   const validatedRow = parseWithStack(enhancedRecentFoodRowSchema, row)
 
@@ -68,36 +226,66 @@ function transformRowToTemplate(row: unknown): Template {
       name: validatedRow.template_name,
       ean: validatedRow.template_ean,
       source: validatedRow.template_source,
-      macros: supabaseMacroNutrientsMapper.toDomain(macrosDTO),
+      macros: macrosToDomain(macrosDTO),
       __type: 'Food',
     })
-  } else {
-    const { user_id: user_id, preparedMultiplier } =
-      getRecipeFields(validatedRow)
-    const items = Array.isArray(validatedRow.template_items)
-      ? (() => {
-          const itemsDTO = parseWithStack(
-            z.array(z.any()),
-            validatedRow.template_items,
-          )
-          return itemsDTO.map((item: Json) => supabaseItemMapper.toDomain(item))
-        })()
-      : (() => {
-          throw new Error(
-            'Recent food recipe template items is not an array: ' +
-              JSON.stringify(validatedRow.template_items),
-          )
-        })()
-
-    return parseWithStack(recipeSchema, {
-      id: validatedRow.template_id,
-      name: validatedRow.template_name,
-      user_id,
-      items,
-      prepared_multiplier: preparedMultiplier,
-      __type: 'Recipe',
-    })
   }
+
+  const { user_id, preparedMultiplier } = getRecipeFields(validatedRow)
+  const items = Array.isArray(validatedRow.template_items)
+    ? (() => {
+        const itemsDTO = parseWithStack(
+          z.array(z.any()),
+          validatedRow.template_items,
+        )
+        return itemsDTO.map((item: Json) => itemToDomain(item))
+      })()
+    : (() => {
+        throw new Error(
+          'Recent food recipe template items is not an array: ' +
+            JSON.stringify(validatedRow.template_items),
+        )
+      })()
+
+  return parseWithStack(recipeSchema, {
+    id: validatedRow.template_id,
+    name: validatedRow.template_name,
+    user_id,
+    items,
+    prepared_multiplier: preparedMultiplier,
+    __type: 'Recipe',
+  })
+}
+
+function toUpdateDTO(recentFood: NewRecentFood): UpdateRecentFoodDTO {
+  return {
+    last_used: recentFood.last_used.toISOString(),
+    reference_id: recentFood.reference_id,
+    times_used: recentFood.times_used,
+    user_id: recentFood.user_id,
+    type: recentFood.type,
+  }
+}
+
+function toInsertDTO(recentFood: NewRecentFood): InsertRecentFoodDTO {
+  return {
+    last_used: recentFood.last_used.toISOString(),
+    reference_id: recentFood.reference_id,
+    times_used: recentFood.times_used,
+    user_id: recentFood.user_id,
+    type: recentFood.type,
+  }
+}
+
+function toDomain(recentFoodDTO: RecentFoodDTO): RecentFood {
+  return parseWithStack(recentFoodSchema, {
+    id: recentFoodDTO.id,
+    reference_id: recentFoodDTO.reference_id,
+    times_used: recentFoodDTO.times_used,
+    last_used: new Date(recentFoodDTO.last_used),
+    user_id: recentFoodDTO.user_id,
+    type: recentFoodDTO.type,
+  })
 }
 
 export function createSupabaseRecentFoodGateway() {
@@ -109,10 +297,6 @@ export function createSupabaseRecentFoodGateway() {
     deleteByReference,
   }
 }
-
-export type RecentFoodGateway = ReturnType<
-  typeof createSupabaseRecentFoodGateway
->
 
 async function fetchByUserTypeAndReferenceId(
   userId: User['uuid'],
@@ -129,7 +313,7 @@ async function fetchByUserTypeAndReferenceId(
 
   if (error !== null) throw error
 
-  return supabaseRecentFoodMapper.toDomain(data)
+  return toDomain(data)
 }
 
 async function fetchUserRecentFoodsAsTemplates(
@@ -146,6 +330,7 @@ async function fetchUserRecentFoodsAsTemplates(
     p_search_term: normalizedSearch ?? undefined,
     p_limit: limit,
   })
+
   if (response.error !== null) throw response.error
 
   const validatedData = parseWithStack(
@@ -157,29 +342,31 @@ async function fetchUserRecentFoodsAsTemplates(
 }
 
 async function insert(input: NewRecentFood): Promise<RecentFood | null> {
-  const insertData = supabaseRecentFoodMapper.toInsertDTO(input)
+  const insertData = toInsertDTO(input)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_RECENT_FOODS)
     .insert(insertData)
     .select()
     .single()
+
   if (error !== null) throw error
-  return supabaseRecentFoodMapper.toDomain(data)
+  return toDomain(data)
 }
 
 async function update(
   id: number,
   input: NewRecentFood,
 ): Promise<RecentFood | null> {
-  const updateData = supabaseRecentFoodMapper.toUpdateDTO(input)
+  const updateData = toUpdateDTO(input)
   const { data, error } = await supabase
     .from(SUPABASE_TABLE_RECENT_FOODS)
     .update(updateData)
     .eq('id', id)
     .select()
     .single()
+
   if (error !== null) throw error
-  return supabaseRecentFoodMapper.toDomain(data)
+  return toDomain(data)
 }
 
 async function deleteByReference(
@@ -193,6 +380,7 @@ async function deleteByReference(
     .eq('user_id', userId)
     .eq('type', type)
     .eq('reference_id', referenceId)
+
   if (error !== null) throw error
   return true
 }

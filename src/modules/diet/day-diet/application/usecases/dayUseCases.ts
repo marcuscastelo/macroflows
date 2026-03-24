@@ -16,11 +16,9 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import {
-  createDayDietRepository,
-  type DayRepository,
-} from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
-import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
+import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
+import { createDayDietRealtimeService } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
@@ -36,12 +34,16 @@ import { logging } from '~/shared/utils/logging'
 export function createDayUseCases(deps: {
   authUseCases: () => AuthUseCases
   dayRepository?: DayRepository
+  createDayDietRealtimeService?: typeof createDayDietRealtimeService
 }) {
   return createRoot(() => {
     const authUseCases = () => deps.authUseCases()
     const dayChangeStore = createDayChangeStore()
     const dayStateStore = createDayStateStore()
     const dayCacheStore = createDayCacheStore()
+    const realtimeService = (
+      deps.createDayDietRealtimeService ?? createDayDietRealtimeService
+    )()
 
     const dayRepository = deps.dayRepository ?? createDayDietRepository()
 
@@ -55,7 +57,7 @@ export function createDayUseCases(deps: {
       dayStateStore.setTargetDay(today)
     }
 
-    initializeDayDietRealtime({
+    realtimeService.initializeDayDietRealtime({
       onInsert(newDayDiet) {
         dayCacheStore.upsertToCache(newDayDiet)
       },

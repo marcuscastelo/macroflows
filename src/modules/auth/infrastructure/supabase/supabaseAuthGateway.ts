@@ -1,4 +1,4 @@
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 
 import type {
   AuthSession,
@@ -10,7 +10,51 @@ import type { AuthGateway } from '~/modules/auth/domain/authGateway'
 import { supabase } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
-import { supabaseAuthMapper } from './supabaseAuthMapper'
+function mapUserToDomain(user: User | null): AuthUser | null {
+  if (user === null) return null
+
+  return {
+    id: user.id,
+    email: user.email ?? 'unknown@example.com',
+    emailConfirmedAt: user.email_confirmed_at ?? undefined,
+    lastSignInAt: user.last_sign_in_at ?? undefined,
+    createdAt:
+      user.created_at !== '' ? user.created_at : new Date().toISOString(),
+    updatedAt:
+      user.updated_at !== undefined && user.updated_at !== ''
+        ? user.updated_at
+        : new Date().toISOString(),
+    userMetadata: user.user_metadata,
+    appMetadata: user.app_metadata,
+  }
+}
+
+function mapSessionToDomain(session: Session | null): AuthSession | null {
+  if (session === null) return null
+
+  return {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_at: session.expires_at ?? 0,
+    token_type: session.token_type,
+    user: {
+      id: session.user.id,
+      email: session.user.email ?? '',
+      email_confirmed_at: session.user.email_confirmed_at ?? undefined,
+      last_sign_in_at: session.user.last_sign_in_at ?? undefined,
+      created_at:
+        session.user.created_at !== ''
+          ? session.user.created_at
+          : new Date().toISOString(),
+      updated_at:
+        session.user.updated_at !== undefined && session.user.updated_at !== ''
+          ? session.user.updated_at
+          : new Date().toISOString(),
+      user_metadata: session.user.user_metadata,
+      app_metadata: session.user.app_metadata,
+    },
+  }
+}
 
 export function createSupabaseAuthGateway(): AuthGateway {
   return {
@@ -23,7 +67,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
           throw new Error('Failed to get session', { cause: error })
         }
 
-        return supabaseAuthMapper.mapSessionToDomain(data.session)
+        return mapSessionToDomain(data.session)
       } catch (error) {
         logging.error('SupabaseAuthRepository getSession error:', error)
         throw error
@@ -38,7 +82,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
           throw new Error('Failed to get user', { cause: error })
         }
 
-        return supabaseAuthMapper.mapUserToDomain(data.user)
+        return mapUserToDomain(data.user)
       } catch (error) {
         logging.error('SupabaseAuthRepository getUser error:', error)
         throw error
@@ -101,7 +145,7 @@ export function createSupabaseAuthGateway(): AuthGateway {
           data: { subscription },
         } = supabase.auth.onAuthStateChange(
           (event: AuthChangeEvent, session: Session | null) => {
-            callback(event, supabaseAuthMapper.mapSessionToDomain(session))
+            callback(event, mapSessionToDomain(session))
           },
         )
 

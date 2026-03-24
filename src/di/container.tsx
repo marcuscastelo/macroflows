@@ -65,7 +65,7 @@ import {
   createTelemetry,
   type TelemetryModule,
 } from '~/modules/observability/application/telemetry'
-import { initializeSentry } from '~/modules/observability/infrastructure/sentry/sentry'
+import { createSentryService } from '~/modules/observability/infrastructure/sentry/sentry'
 import {
   createProfile,
   type ProfileModule,
@@ -163,15 +163,20 @@ function createModeAwareUserRepository(deps: {
   }
 }
 
+const sharedSentryService = createSentryService()
+
+function createAppTelemetry(): TelemetryModule {
+  return createTelemetry({
+    sentryService: sharedSentryService,
+  })
+}
+
 export function createContainer(
   overrides: Partial<ContainerInstances> = {},
 ): Readonly<Container> {
   return createRoot((dispose) => {
     const telemetryUseCases =
-      overrides.telemetryUseCases ??
-      createTelemetry({
-        initializeSentry,
-      })
+      overrides.telemetryUseCases ?? createAppTelemetry()
 
     let guestUseCasesRef: GuestUseCases | null = overrides.guestUseCases ?? null
 
@@ -370,9 +375,7 @@ let bootstrapTelemetry: TelemetryModule | null = null
 
 function getBootstrapTelemetry() {
   if (bootstrapTelemetry === null) {
-    bootstrapTelemetry = createTelemetry({
-      initializeSentry,
-    })
+    bootstrapTelemetry = createAppTelemetry()
   }
 
   return bootstrapTelemetry
