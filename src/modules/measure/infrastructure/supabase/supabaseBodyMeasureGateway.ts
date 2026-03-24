@@ -3,13 +3,20 @@ import {
   type NewBodyMeasure,
 } from '~/modules/measure/domain/measure'
 import { type BodyMeasureGateway } from '~/modules/measure/domain/measureGateway'
-import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
-import { supabaseBodyMeasureMapper } from '~/modules/measure/infrastructure/supabase/supabaseMeasureMapper'
+import { createSupabaseBodyMeasureMapper } from '~/modules/measure/infrastructure/supabase/supabaseMeasureMapper'
 import { type User } from '~/modules/user/domain/user'
 import { supabase } from '~/shared/supabase/supabase'
 import { wrapErrorWithStack } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
+const SUPABASE_TABLE_BODY_MEASURES = 'body_measures'
+const supabaseBodyMeasureMapper = createSupabaseBodyMeasureMapper()
+
+/**
+ * Creates the Supabase gateway used to persist body measures.
+ *
+ * @returns Gateway implementation for body measure persistence operations.
+ */
 export function createSupabaseBodyMeasureGateway(): BodyMeasureGateway {
   return {
     fetchUserBodyMeasures,

@@ -2,42 +2,47 @@ import {
   type BodyMeasure,
   bodyMeasureSchema,
 } from '~/modules/measure/domain/measure'
-import { SUPABASE_TABLE_BODY_MEASURES } from '~/modules/measure/infrastructure/supabase/constants'
 import { registerSubapabaseRealtimeCallback } from '~/shared/supabase/supabase'
 import { logging } from '~/shared/utils/logging'
 
-let initialized = false
+const SUPABASE_TABLE_BODY_MEASURES = 'body_measures'
 
-/**
- * Sets up granular realtime subscription for body measure changes
- * @param onBodyMeasureChange - Callback for granular updates with event details
- */
-export function setupBodyMeasureRealtimeSubscription(
-  onBodyMeasureChange: (event: {
-    eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-    old?: BodyMeasure
-    new?: BodyMeasure
-  }) => void,
-): void {
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_BODY_MEASURES,
-    bodyMeasureSchema,
-    onBodyMeasureChange,
-  )
-}
+export function createMeasureRealtimeService() {
+  let initialized = false
 
-export function initializeMeasureRealtime(deps: {
-  refetchBodyMeasures: () => void
-}): void {
-  if (initialized) {
-    return
+  /**
+   * Sets up granular realtime subscription for body measure changes
+   * @param onBodyMeasureChange - Callback for granular updates with event details
+   */
+  function setupBodyMeasureRealtimeSubscription(
+    onBodyMeasureChange: (event: {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+      old?: BodyMeasure
+      new?: BodyMeasure
+    }) => void,
+  ): void {
+    registerSubapabaseRealtimeCallback(
+      SUPABASE_TABLE_BODY_MEASURES,
+      bodyMeasureSchema,
+      onBodyMeasureChange,
+    )
   }
-  logging.debug(`Measure realtime initialized!`)
-  initialized = true
-  registerSubapabaseRealtimeCallback(
-    SUPABASE_TABLE_BODY_MEASURES,
-    bodyMeasureSchema,
-    (event) => {
+
+  /**
+   * Initializes the body measure realtime subscription once per session.
+   *
+   * @param deps - Dependencies used to react to realtime body measure changes.
+   * @returns Nothing.
+   */
+  function initializeMeasureRealtime(deps: {
+    refetchBodyMeasures: () => void
+  }): void {
+    if (initialized) {
+      return
+    }
+    logging.debug(`Measure realtime initialized!`)
+    initialized = true
+    setupBodyMeasureRealtimeSubscription((event) => {
       logging.debug(`Event:`, event)
 
       switch (event.eventType) {
@@ -49,6 +54,10 @@ export function initializeMeasureRealtime(deps: {
           break
         }
       }
-    },
-  )
+    })
+  }
+
+  return {
+    initializeMeasureRealtime,
+  }
 }

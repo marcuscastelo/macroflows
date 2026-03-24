@@ -9,6 +9,11 @@ import { logging } from '~/shared/utils/logging'
 
 const supabaseGateway = createSupabaseBodyMeasureGateway()
 
+/**
+ * Creates the measure repository backed by the Supabase gateway.
+ *
+ * @returns Repository implementation for measure CRUD operations.
+ */
 export function createMeasureRepository(): BodyMeasureRepository {
   return {
     fetchUserBodyMeasures,
@@ -18,7 +23,7 @@ export function createMeasureRepository(): BodyMeasureRepository {
   }
 }
 
-export async function fetchUserBodyMeasures(
+async function fetchUserBodyMeasures(
   userId: User['uuid'],
 ): Promise<readonly BodyMeasure[]> {
   try {
@@ -29,7 +34,7 @@ export async function fetchUserBodyMeasures(
   }
 }
 
-export async function insertBodyMeasure(
+async function insertBodyMeasure(
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
   try {
@@ -40,7 +45,7 @@ export async function insertBodyMeasure(
   }
 }
 
-export async function updateBodyMeasure(
+async function updateBodyMeasure(
   bodyMeasureId: BodyMeasure['id'],
   newBodyMeasure: NewBodyMeasure,
 ): Promise<BodyMeasure | null> {
@@ -55,7 +60,7 @@ export async function updateBodyMeasure(
   }
 }
 
-export async function deleteBodyMeasure(
+async function deleteBodyMeasure(
   bodyMeasureId: BodyMeasure['id'],
 ): Promise<void> {
   try {

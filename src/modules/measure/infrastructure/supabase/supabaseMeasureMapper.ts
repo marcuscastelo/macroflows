@@ -6,10 +6,9 @@ import {
 import { type Database } from '~/shared/supabase/database.types'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
-export type InsertBodyMeasureDTO =
+type InsertBodyMeasureDTO =
   Database['public']['Tables']['body_measures']['Insert']
-export type BodyMeasureDTO =
-  Database['public']['Tables']['body_measures']['Row']
+type BodyMeasureDTO = Database['public']['Tables']['body_measures']['Row']
 
 // Conversion functions
 function toInsertDTO(newBodyMeasure: NewBodyMeasure): InsertBodyMeasureDTO {
@@ -35,7 +34,15 @@ function toDomain(dto: BodyMeasureDTO): BodyMeasure {
   })
 }
 
-export const supabaseBodyMeasureMapper = {
-  toDomain,
-  toInsertDTO,
+/**
+ * Creates the mapper responsible for converting body measure data
+ * between Supabase DTOs and domain entities.
+ *
+ * @returns Mapper functions for reading and writing body measure records.
+ */
+export function createSupabaseBodyMeasureMapper() {
+  return {
+    toDomain,
+    toInsertDTO,
+  }
 }
