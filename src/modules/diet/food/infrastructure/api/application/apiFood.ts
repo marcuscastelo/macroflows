@@ -12,10 +12,12 @@ import { logging } from '~/shared/utils/logging'
 /**
  * Creates the API food import service used by food CRUD flows.
  *
- * Supports dependency injection for repository, cached-search updates, and
- * user-facing error reporting so callers and tests can replace external IO.
+ * Requires injected persistence collaborators for food upserts and cached-search
+ * updates. Only `showError` remains optional for callers/tests that need to
+ * replace user-facing feedback while keeping the IO dependencies explicit.
  *
- * @param deps Optional dependency overrides for persistence and UI feedback.
+ * @param deps Required repository and cached-search dependencies plus an
+ * optional `showError` override for UI feedback.
  * @returns An object with EAN and name-based import methods.
  */
 export function createApiFoodImportService(deps: {

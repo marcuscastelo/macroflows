@@ -1,10 +1,10 @@
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { extractRecentFoodReferenceFromItem } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
-import { type createTouchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
+import { type TouchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 import { logging } from '~/shared/utils/logging'
 
 export function createTouchRecentFoodForItem(deps: {
-  touchRecentFood: ReturnType<typeof createTouchRecentFood>
+  touchRecentFood: TouchRecentFood
 }) {
   return async function touchRecentFoodForItem(item: Item) {
     const recentFoodReferences = extractRecentFoodReferenceFromItem(item)

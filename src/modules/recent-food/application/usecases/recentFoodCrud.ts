@@ -79,8 +79,22 @@ export function createRecentFoodCrud(deps: {
     type: RecentFood['type'],
     referenceId: number,
   ): Promise<boolean> {
+    const deletePromise = (async () => {
+      const didDelete = await recentFoodRepository.deleteByReference(
+        userId,
+        type,
+        referenceId,
+      )
+
+      if (!didDelete) {
+        throw new Error('Failed to delete recent food record')
+      }
+
+      return didDelete
+    })()
+
     return await _showPromise(
-      recentFoodRepository.deleteByReference(userId, type, referenceId),
+      deletePromise,
       {
         loading: 'Removendo alimento recente...',
         success: 'Alimento recente removido com sucesso',

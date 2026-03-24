@@ -29,9 +29,9 @@ export type WeightUseCasesDeps = {
 /**
  * Factory that creates weight-related use-cases.
  *
- * Accepts optional overrides for repositories, store creators and utilities so
- * DI wiring or testing with fakes is possible. When no overrides are provided,
- * the current module defaults are used.
+ * Requires the repository-backed dependencies assembled in the DI container,
+ * while still allowing optional overrides for stores, realtime wiring, CRUD
+ * service creation, and parsing helpers in tests.
  */
 export function createWeightUseCases(deps: {
   /** Granular auth/guest dependencies (required) */

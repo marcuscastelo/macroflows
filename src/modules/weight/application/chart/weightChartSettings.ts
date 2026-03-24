@@ -5,7 +5,15 @@ import { type WeightChartPreferenceRepository } from '~/modules/weight/domain/ch
 /**
  * Valid weight chart type values
  */
-const validWeightChartTypes = ['7d', '14d', '30d', '6m', '1y', 'all'] as const
+const validWeightChartTypes = [
+  '7d',
+  '14d',
+  '30d',
+  '3m',
+  '6m',
+  '1y',
+  'all',
+] as const
 
 /**
  * Chart type options for weight evolution visualization

@@ -64,3 +64,5 @@ export function createTouchRecentFood(deps: {
     }
   }
 }
+
+export type TouchRecentFood = ReturnType<typeof createTouchRecentFood>
