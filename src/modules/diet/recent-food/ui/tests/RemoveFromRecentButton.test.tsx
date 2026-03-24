@@ -79,9 +79,7 @@ describe('RemoveFromRecentButton Logic', () => {
   })
 
   it('extracts the recipe reference payload used by the container-backed use case', async () => {
-    const templateType = isTemplateFood(mockRecipeTemplate)
-      ? 'food'
-      : 'recipe'
+    const templateType = isTemplateFood(mockRecipeTemplate) ? 'food' : 'recipe'
     const templateId = mockRecipeTemplate.id
 
     await mockDeleteRecentFoodByReference(mockUserId, templateType, templateId)

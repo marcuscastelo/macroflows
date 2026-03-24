@@ -1,12 +1,8 @@
 import { createResource, createRoot, createSignal } from 'solid-js'
 
 import { type FoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
-import {
-  type RecipeCrud,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import {
-  type RecentFoodCrud,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { type RecipeCrud } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { type RecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'

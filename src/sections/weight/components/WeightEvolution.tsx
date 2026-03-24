@@ -3,9 +3,7 @@ import { For, Suspense } from 'solid-js'
 import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  WEIGHT_CHART_OPTIONS,
-} from '~/modules/weight/application/chart/weightChartSettings'
+import { WEIGHT_CHART_OPTIONS } from '~/modules/weight/application/chart/weightChartSettings'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'

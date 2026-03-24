@@ -1,9 +1,9 @@
-import { type RecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
 import {
   createNewRecentFood,
   type NewRecentFood,
 } from '~/modules/diet/recent-food/domain/recentFood'
+import { type RecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { type User } from '~/modules/user/domain/user'
 
 export function createTouchRecentFood(deps: {

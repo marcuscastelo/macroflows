@@ -28,11 +28,7 @@ export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
     const userId = authUseCases.currentUserIdOrGuestId()
 
     void recentFoodUseCases
-      .deleteRecentFoodByReference(
-        userId,
-        templateType,
-        templateId,
-      )
+      .deleteRecentFoodByReference(userId, templateType, templateId)
       .then(props.refetch)
       .catch((err) => {
         logging.error('RemoveFromRecentButton error:', err)

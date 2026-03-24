@@ -57,10 +57,7 @@ export function createRecentFoodUseCases(deps: {
       recentFoodId: number,
       recentFoodInput: NewRecentFood,
     ): Promise<RecentFood | null> =>
-      await deps.recentFoodCrud.updateRecentFood(
-        recentFoodId,
-        recentFoodInput,
-      ),
+      await deps.recentFoodCrud.updateRecentFood(recentFoodId, recentFoodInput),
 
     deleteRecentFoodByReference: async (
       userId: User['uuid'],

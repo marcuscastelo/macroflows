@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createTouchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { createTouchRecentFood } from '~/modules/diet/recent-food/application/usecases/touchRecentFood'
 import {
   createNewRecentFood,
   type NewRecentFood,

@@ -7,10 +7,7 @@ import {
   type Item,
   type RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import {
-  createRecipeCrud,
-  type RecipeCrud,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { type RecipeCrud } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import type { Recipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
 import { logging } from '~/shared/utils/logging'

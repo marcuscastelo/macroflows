@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createTouchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
 import {
   createFoodItem,
   type Item,
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { createTouchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
 
 const {
   mockExtractRecentFoodReferenceFromItem,

@@ -9,11 +9,6 @@ import {
 } from 'solid-js'
 
 import {
-  createCachedSearchCrud,
-  type CachedSearchCrud,
-} from '~/modules/search/application/usecases/cachedSearchCrud'
-import { createCachedSearchRepository } from '~/modules/search/infrastructure/cachedSearchRepository'
-import {
   type AuthUseCases,
   createAuthUseCases,
 } from '~/modules/auth/application/usecases/authUseCases'
@@ -35,6 +30,10 @@ import {
   type FoodCrud,
 } from '~/modules/diet/food/application/usecases/foodCrud'
 import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
+import {
+  createRecipeItemUseCases,
+  type RecipeItemUseCases,
+} from '~/modules/diet/item/application/recipeItemUseCases'
 import { createMacroProfileCrudService } from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
 import { createMacroProfileCacheStore } from '~/modules/diet/macro-profile/application/store/macroProfileCacheStore'
 import {
@@ -65,10 +64,6 @@ import {
 import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
 import { type Template } from '~/modules/diet/template/domain/template'
 import {
-  createRecipeItemUseCases,
-  type RecipeItemUseCases,
-} from '~/modules/diet/item/application/recipeItemUseCases'
-import {
   createMeasureCrud,
   type MeasureCrud,
 } from '~/modules/measure/application/usecases/measureCrud'
@@ -90,6 +85,11 @@ import {
 import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { createRecentFoodRepository } from '~/modules/recent-food/infrastructure/recentFoodRepository'
 import {
+  type CachedSearchCrud,
+  createCachedSearchCrud,
+} from '~/modules/search/application/usecases/cachedSearchCrud'
+import { createCachedSearchRepository } from '~/modules/search/infrastructure/cachedSearchRepository'
+import {
   createTemplateSearchState,
   type TemplateSearchState,
 } from '~/modules/template-search/application/usecases/templateSearchState'
@@ -105,7 +105,6 @@ import {
   createWeightChartSettings,
   type WeightChartSettings,
 } from '~/modules/weight/application/chart/weightChartSettings'
-import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
 import {
   createWeightChartUseCases,
   type WeightChartUseCases,
@@ -114,6 +113,7 @@ import {
   createWeightUseCases,
   type WeightUseCases,
 } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { createLocalStorageWeightChartPreferenceRepository } from '~/modules/weight/infrastructure/chart/localStorage/localStorageWeightChartPreferenceRepository'
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
 import { createWeightRepository } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightRepository'
 import { GUEST_USER_ID } from '~/shared/guest/guestConstants'
