@@ -1,10 +1,7 @@
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodSearchParams } from '~/modules/diet/food/domain/foodRepository'
 import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
-import {
-  importFoodFromApiByEan,
-  importFoodsFromApiByName,
-} from '~/modules/diet/food/infrastructure/api/application/apiFood'
+import { createApiFoodImportService } from '~/modules/diet/food/infrastructure/api/application/apiFood'
 import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
@@ -16,9 +13,17 @@ import { logging } from '~/shared/utils/logging'
  * Factory that returns food-related use-cases with injected dependencies.
  * Allows replacing the repository implementation (e.g. for guest mode or tests).
  */
-export function createFoodCrud(deps: { repository: () => FoodRepository }) {
+export function createFoodCrud(deps: {
+  repository: () => FoodRepository
+  createApiFoodImportService?: typeof createApiFoodImportService
+}) {
   const foodRepository = deps.repository()
+  const localCreateApiFoodImportService =
+    deps.createApiFoodImportService ?? createApiFoodImportService
   const cachedSearchCrud = createCachedSearchCrud()
+  const apiFoodImportService = localCreateApiFoodImportService({
+    foodRepository,
+  })
 
   return {
     async fetchFoods(params: FoodSearchParams = {}): Promise<readonly Food[]> {
@@ -40,7 +45,7 @@ export function createFoodCrud(deps: { repository: () => FoodRepository }) {
 
         if (!isCached) {
           await showPromise(
-            importFoodsFromApiByName(name),
+            apiFoodImportService.importFoodsFromApiByName(name),
             {
               loading: 'Importando alimentos...',
               success: 'Alimentos importados com sucesso',
@@ -75,7 +80,7 @@ export function createFoodCrud(deps: { repository: () => FoodRepository }) {
     ): Promise<Food | null> {
       try {
         await showPromise(
-          importFoodFromApiByEan(ean),
+          apiFoodImportService.importFoodFromApiByEan(ean),
           {
             loading: 'Importando alimento...',
             success: 'Alimento importado com sucesso',

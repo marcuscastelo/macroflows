@@ -3,66 +3,82 @@ import * as Sentry from '@sentry/solidstart'
 import { createClientIntegrations } from '~/modules/observability/infrastructure/sentry/clientIntegrations'
 import { createSentryConfig } from '~/modules/observability/infrastructure/sentry/config'
 import { setupSentryOTelIntegration } from '~/modules/observability/infrastructure/sentry/otelIntegration'
-let isInitialized = false
 
-export async function initializeSentry(type: 'server' | 'client') {
-  if (isInitialized) {
-    console.warn('Sentry already initialized')
-    return
-  }
+export function createSentryService(deps?: {
+  createSentryConfig?: typeof createSentryConfig
+  createClientIntegrations?: typeof createClientIntegrations
+  setupSentryOTelIntegration?: typeof setupSentryOTelIntegration
+}) {
+  const localCreateSentryConfig = deps?.createSentryConfig ?? createSentryConfig
+  const localCreateClientIntegrations =
+    deps?.createClientIntegrations ?? createClientIntegrations
+  const localSetupSentryOTelIntegration =
+    deps?.setupSentryOTelIntegration ?? setupSentryOTelIntegration
+  let isInitialized = false
 
-  try {
-    const config = createSentryConfig()
-
-    // Only initialize if DSN is provided
-    if (config.dsn === undefined || config.dsn === '') {
-      console.warn('❌ Sentry DSN not provided - skipping initialization', {
-        VITE_SENTRY_DSN: String(import.meta.env.VITE_SENTRY_DSN),
-      })
+  async function initializeSentry(type: 'server' | 'client') {
+    if (isInitialized) {
+      console.warn('Sentry already initialized')
       return
     }
 
-    console.log(
-      '🚀 Initializing Sentry with DSN:',
-      config.dsn.substring(0, 20) + '...',
-    )
+    try {
+      const config = localCreateSentryConfig()
 
-    Sentry.init({
-      dsn: config.dsn,
-      release: config.release,
-      tracesSampleRate: 1.0,
+      // Only initialize if DSN is provided
+      if (config.dsn === undefined || config.dsn === '') {
+        console.warn('❌ Sentry DSN not provided - skipping initialization', {
+          VITE_SENTRY_DSN: String(import.meta.env.VITE_SENTRY_DSN),
+        })
+        return
+      }
 
-      // SolidStart specific configuration
-      sendDefaultPii: true,
-      tracePropagationTargets: [
-        'localhost',
-        /^https:\/\/.*\.supabase\.co/,
-        /^https:\/\/.*\.macroflows\.app/,
-        /^https:\/\/.*\.macroflows.*\.app/,
-      ],
+      console.log(
+        '🚀 Initializing Sentry with DSN:',
+        config.dsn.substring(0, 20) + '...',
+      )
 
-      integrations:
-        type === 'client'
-          ? await createClientIntegrations()
-          : [Sentry.consoleLoggingIntegration()],
+      Sentry.init({
+        dsn: config.dsn,
+        release: config.release,
+        tracesSampleRate: 1.0,
 
-      // Session Replay configuration
-      replaysSessionSampleRate: 1.0,
-      replaysOnErrorSampleRate: 1.0,
+        // SolidStart specific configuration
+        sendDefaultPii: true,
+        tracePropagationTargets: [
+          'localhost',
+          /^https:\/\/.*\.supabase\.co/,
+          /^https:\/\/.*\.macroflows\.app/,
+          /^https:\/\/.*\.macroflows.*\.app/,
+        ],
 
-      // Set sample rate for profiling
-      profilesSampleRate: 1.0,
+        integrations:
+          type === 'client'
+            ? await localCreateClientIntegrations()
+            : [Sentry.consoleLoggingIntegration()],
 
-      enableLogs: true,
-    })
+        // Session Replay configuration
+        replaysSessionSampleRate: 1.0,
+        replaysOnErrorSampleRate: 1.0,
 
-    if (config.useOTel) {
-      await setupSentryOTelIntegration(type)
+        // Set sample rate for profiling
+        profilesSampleRate: 1.0,
+
+        enableLogs: true,
+      })
+
+      if (config.useOTel) {
+        await localSetupSentryOTelIntegration(type)
+      }
+
+      isInitialized = true
+    } catch (error) {
+      console.error('Failed to initialize Sentry:', error)
+      // Don't throw - Sentry should not break the application
     }
+  }
 
-    isInitialized = true
-  } catch (error) {
-    console.error('Failed to initialize Sentry:', error)
-    // Don't throw - Sentry should not break the application
+  return {
+    initializeSentry,
   }
 }

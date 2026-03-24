@@ -49,5 +49,3 @@ export function createDayDietRepository(deps?: {
       await getGateway().deleteDayDietById(dayId),
   }
 }
-
-export type { DayRepository }

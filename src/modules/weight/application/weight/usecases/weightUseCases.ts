@@ -10,7 +10,7 @@ import {
 } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { createLocalStorageWeightCacheRepository } from '~/modules/weight/infrastructure/weight/localStorage/localStorageWeightCacheRepository'
-import { initializeWeightRealtime } from '~/modules/weight/infrastructure/weight/supabase/realtime'
+import { createWeightRealtimeService } from '~/modules/weight/infrastructure/weight/supabase/realtime'
 import { createWeightRepository } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightRepository'
 import { logging } from '~/shared/utils/logging'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
@@ -39,7 +39,7 @@ export function createWeightUseCases(deps: {
   createLocalStorageWeightCacheRepository?: typeof createLocalStorageWeightCacheRepository
   createWeightRepository?: typeof createWeightRepository
   createWeightCacheStore?: typeof createWeightCacheStore
-  initializeWeightRealtime?: typeof initializeWeightRealtime
+  createWeightRealtimeService?: typeof createWeightRealtimeService
   createWeightCrudService?: typeof createWeightCrudService
   parseWithStack?: typeof parseWithStack
 }) {
@@ -48,7 +48,7 @@ export function createWeightUseCases(deps: {
     createLocalStorageWeightCacheRepository: injectedCreateLocalStorage,
     createWeightRepository: injectedCreateWeightRepository,
     createWeightCacheStore: injectedCreateWeightCacheStore,
-    initializeWeightRealtime: injectedInitializeRealtime,
+    createWeightRealtimeService: injectedCreateWeightRealtimeService,
     createWeightCrudService: injectedCreateWeightCrudService,
     parseWithStack: injectedParseWithStack,
   } = deps
@@ -59,8 +59,8 @@ export function createWeightUseCases(deps: {
     injectedCreateWeightRepository ?? createWeightRepository
   const localCreateWeightCacheStore =
     injectedCreateWeightCacheStore ?? createWeightCacheStore
-  const localInitializeRealtime =
-    injectedInitializeRealtime ?? initializeWeightRealtime
+  const localCreateWeightRealtimeService =
+    injectedCreateWeightRealtimeService ?? createWeightRealtimeService
   const localCreateWeightCrudService =
     injectedCreateWeightCrudService ?? createWeightCrudService
   const localParseWithStack = injectedParseWithStack ?? parseWithStack
@@ -71,6 +71,7 @@ export function createWeightUseCases(deps: {
     const weightRepository = localCreateWeightRepository({
       isGuestMode: authDeps.isGuestMode,
     })
+    const realtimeService = localCreateWeightRealtimeService()
     let realtimeInitialized = false
 
     function initializeRealtime() {
@@ -79,7 +80,7 @@ export function createWeightUseCases(deps: {
       }
       realtimeInitialized = true
 
-      localInitializeRealtime({
+      realtimeService.initializeWeightRealtime({
         onInsert: (weight: Weight) => {
           cache.upsertToCache(weight)
         },
