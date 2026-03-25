@@ -1,1 +1,0 @@
-uvx --from git+https://github.com/oraios/serena serena-mcp-server --context agent --transport stdio --enable-web-dashboard false --project $(pwd)
