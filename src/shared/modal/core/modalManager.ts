@@ -7,11 +7,12 @@ import type {
   ModalState,
 } from '~/shared/modal/types/modalTypes'
 import { logging } from '~/shared/utils/logging'
+import { generateUuid } from '~/shared/utils/uniqueId'
 
 export const [modals, setModals] = createSignal<ModalState[]>([])
 
 function generateModalId(): ModalId {
-  return `modal-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+  return `modal-${generateUuid()}`
 }
 
 function performClose(id: ModalId, modal: ModalState): void {

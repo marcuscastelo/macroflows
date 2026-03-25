@@ -9,16 +9,13 @@ import {
   isMealExportPayload,
   isRecipeExportPayload,
 } from '~/modules/import-export/domain/exportPayload'
+import { generateNumericId } from '~/shared/utils/uniqueId'
 
 /**
  * Generates a unique ID for imported data to avoid collisions.
- * Uses timestamp + random component for uniqueness.
  */
 export function generateUniqueId(): number {
-  // Use last 9 digits of timestamp + 3 random digits
-  const timestamp = Date.now() % 1_000_000_000
-  const random = Math.floor(Math.random() * 1000)
-  return timestamp * 1000 + random
+  return generateNumericId()
 }
 
 /**

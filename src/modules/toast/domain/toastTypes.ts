@@ -1,3 +1,5 @@
+import { generateUuid } from '~/shared/utils/uniqueId'
+
 /**
  * Toast System Configuration
  *
@@ -157,7 +159,7 @@ export function createToastItem(
   options: ToastItem['options'],
 ): ToastItem {
   return {
-    id: `toast_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+    id: `toast_${generateUuid()}`,
     message,
     options,
     timestamp: Date.now(),
