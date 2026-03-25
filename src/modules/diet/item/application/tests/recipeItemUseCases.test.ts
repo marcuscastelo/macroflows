@@ -26,7 +26,7 @@ vi.mock('~/modules/toast/application/toastManager', () => ({
 }))
 
 // Import the module under test
-import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
+import { createRecipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
 import { type RecipeItem } from '~/modules/diet/item/schema/itemSchema'
 import {
   createNewRecipe,
@@ -35,6 +35,10 @@ import {
 import { showError } from '~/modules/toast/application/toastManager'
 // Import the mocked modules to spy on them
 import { logging } from '~/shared/utils/logging'
+
+const recipeItemUseCases = createRecipeItemUseCases({
+  fetchRecipeById: vi.fn().mockResolvedValue(null),
+})
 
 describe('recipeItemUseCases', () => {
   describe('withEditedQuantity', () => {

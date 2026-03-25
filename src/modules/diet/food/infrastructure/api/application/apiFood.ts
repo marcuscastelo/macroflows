@@ -3,30 +3,31 @@ import axios from 'axios'
 import { type ApiFood } from '~/modules/diet/food/domain/apiFood'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { convertApi2Food } from '~/modules/diet/food/infrastructure/api/application/convertApi2Food'
+import { type CachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showError } from '~/modules/toast/application/toastManager'
-import { convertApi2Food } from '~/shared/utils/convertApi2Food'
 import { ORIGINAL_ERROR_SYMBOL } from '~/shared/utils/errorUtils'
 import { logging } from '~/shared/utils/logging'
 
 /**
  * Creates the API food import service used by food CRUD flows.
  *
- * Supports dependency injection for repository, cached-search updates, and
- * user-facing error reporting so callers and tests can replace external IO.
+ * Requires injected persistence collaborators for food upserts and cached-search
+ * updates. Only `showError` remains optional for callers/tests that need to
+ * replace user-facing feedback while keeping the IO dependencies explicit.
  *
- * @param deps Optional dependency overrides for persistence and UI feedback.
+ * @param deps Required repository and cached-search dependencies plus an
+ * optional `showError` override for UI feedback.
  * @returns An object with EAN and name-based import methods.
  */
-export function createApiFoodImportService(deps?: {
-  foodRepository?: FoodRepository
-  cachedSearchCrud?: ReturnType<typeof createCachedSearchCrud>
+export function createApiFoodImportService(deps: {
+  foodRepository: FoodRepository
+  cachedSearchCrud: CachedSearchCrud
   showError?: typeof showError
 }) {
-  const foodRepository = deps?.foodRepository ?? createSupabaseFoodRepository()
-  const cachedSearchCrud = deps?.cachedSearchCrud ?? createCachedSearchCrud()
-  const localShowError = deps?.showError ?? showError
+  const foodRepository = deps.foodRepository
+  const cachedSearchCrud = deps.cachedSearchCrud
+  const localShowError = deps.showError ?? showError
 
   async function importFoodFromApiByEan(
     ean: Food['ean'],

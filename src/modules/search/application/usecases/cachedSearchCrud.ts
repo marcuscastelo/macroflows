@@ -1,20 +1,18 @@
-import { createCachedSearchRepository } from '~/modules/search/infrastructure/cachedSearchRepository'
+import { type CachedSearchRepository } from '~/modules/search/domain/searchRepository'
 
 /**
  * Factory that creates cached-search CRUD use-cases.
  *
- * Allows injecting an alternative repository factory for DI and testing.
+ * Requires a ready cached-search repository so application wiring stays in the
+ * DI container while tests can provide fakes directly.
  *
- * @param deps Optional dependency overrides.
+ * @param deps Required cached-search repository dependency.
  * @returns An object with cached-search helper functions.
  */
-export function createCachedSearchCrud(deps?: {
-  createCachedSearchRepository?: typeof createCachedSearchRepository
+export function createCachedSearchCrud(deps: {
+  repository: CachedSearchRepository
 }) {
-  const localCreateCachedSearchRepository =
-    deps?.createCachedSearchRepository ?? createCachedSearchRepository
-
-  const repository = localCreateCachedSearchRepository()
+  const repository = deps.repository
 
   /**
    * Checks whether a given search query result is already cached.

@@ -6,6 +6,7 @@ import {
 } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { type RecentFoodReference } from '~/modules/diet/recent-food/application/usecases/extractRecentFoodReference'
+import { createTouchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
 
 const {
   mockExtractRecentFoodReferenceFromItem,
@@ -26,21 +27,11 @@ vi.mock(
   }),
 )
 
-vi.mock(
-  '~/modules/diet/recent-food/application/usecases/touchRecentFood',
-  () => ({
-    touchRecentFood: mockTouchRecentFood,
-  }),
-)
-
 vi.mock('~/shared/utils/logging', () => ({
   logging: {
     warn: mockLoggingWarn,
   },
 }))
-
-import { touchRecentFoodForItem } from '~/modules/diet/recent-food/application/usecases/touchRecentFoodForItem'
-
 function createReference(
   overrides: Partial<RecentFoodReference> = {},
 ): RecentFoodReference {
@@ -52,6 +43,10 @@ function createReference(
 }
 
 describe('touchRecentFoodForItem', () => {
+  const touchRecentFoodForItem = createTouchRecentFoodForItem({
+    touchRecentFood: mockTouchRecentFood,
+  })
+
   const item = createFoodItem({
     id: 1,
     name: 'Test item',

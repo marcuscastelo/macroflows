@@ -3,11 +3,7 @@ import { For, Suspense } from 'solid-js'
 import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import {
-  setWeightChartType,
-  WEIGHT_CHART_OPTIONS,
-  weightChartType,
-} from '~/modules/weight/application/chart/weightChartSettings'
+import { WEIGHT_CHART_OPTIONS } from '~/modules/weight/application/chart/weightChartSettings'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -27,6 +23,7 @@ export function WeightEvolution() {
   const authUseCases = useCases.authUseCases()
   const userUseCases = useCases.userUseCases()
   const weightUseCases = useCases.weightUseCases()
+  const weightChartSettings = useCases.weightChartSettings()
   const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
@@ -37,8 +34,8 @@ export function WeightEvolution() {
             <span class="text-2xl font-bold">Gráfico de evolução do peso</span>
             <ComboBox
               options={WEIGHT_CHART_OPTIONS}
-              value={weightChartType()}
-              onChange={setWeightChartType}
+              value={weightChartSettings.weightChartType()}
+              onChange={weightChartSettings.setWeightChartType}
               class="w-48"
             />
           </div>
@@ -54,7 +51,7 @@ export function WeightEvolution() {
                 weightChartUseCases.calculateWeightProgress
               }
               diet={userUseCases.currentUser()?.diet ?? 'cut'}
-              type={weightChartType()}
+              type={weightChartSettings.weightChartType()}
             />
           </Suspense>
           <FloatInput

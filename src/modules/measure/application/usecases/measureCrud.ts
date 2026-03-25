@@ -3,7 +3,6 @@ import {
   type NewBodyMeasure,
 } from '~/modules/measure/domain/measure'
 import { type BodyMeasureRepository } from '~/modules/measure/domain/measureRepository'
-import { createMeasureRepository } from '~/modules/measure/infrastructure/measureRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 import { logging } from '~/shared/utils/logging'
@@ -13,12 +12,12 @@ import { logging } from '~/shared/utils/logging'
  *
  * Allows injecting a repository and `showPromise` helper for DI and testing.
  */
-export function createMeasureCrud(deps?: {
-  measureRepository?: BodyMeasureRepository
+export function createMeasureCrud(deps: {
+  measureRepository: BodyMeasureRepository
   showPromise?: typeof showPromise
 }) {
-  const measureRepository = deps?.measureRepository ?? createMeasureRepository()
-  const _showPromise = deps?.showPromise ?? showPromise
+  const measureRepository = deps.measureRepository
+  const _showPromise = deps.showPromise ?? showPromise
 
   /**
    * Fetches all body measures for a user.

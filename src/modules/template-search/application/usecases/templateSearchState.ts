@@ -1,19 +1,8 @@
 import { createResource, createRoot, createSignal } from 'solid-js'
 
-import {
-  createFoodCrud,
-  type FoodCrud,
-} from '~/modules/diet/food/application/usecases/foodCrud'
-import { createSupabaseFoodRepository } from '~/modules/diet/food/infrastructure/api/infrastructure/supabase/supabaseFoodRepository'
-import {
-  createRecipeCrud,
-  type RecipeCrud,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { createRecipeRepository } from '~/modules/diet/recipe/infrastructure/recipeRepository'
-import {
-  createRecentFoodCrud,
-  type RecentFoodCrud,
-} from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { type FoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
+import { type RecipeCrud } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { type RecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/template-search/application/templateSearchLogic'
 import { type TemplateSearchTab } from '~/sections/search/components/TemplateSearchTabs'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
@@ -21,20 +10,14 @@ import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 export function createTemplateSearchState(deps: {
   getCurrentUserIdOrGuestId: () => string | undefined
   getFavoriteFoods: () => number[]
-  recentFoodCrud?: RecentFoodCrud
-  foodCrud?: FoodCrud
-  recipeCrud?: RecipeCrud
+  recentFoodCrud: RecentFoodCrud
+  foodCrud: FoodCrud
+  recipeCrud: RecipeCrud
 }) {
   return createRoot(() => {
-    const recentFoodCrud = deps.recentFoodCrud ?? createRecentFoodCrud()
-    const foodCrud =
-      deps.foodCrud ??
-      createFoodCrud({ repository: () => createSupabaseFoodRepository() })
-    const recipeCrud =
-      deps.recipeCrud ??
-      createRecipeCrud({
-        repository: () => createRecipeRepository(),
-      })
+    const recentFoodCrud = deps.recentFoodCrud
+    const foodCrud = deps.foodCrud
+    const recipeCrud = deps.recipeCrud
 
     const [templateSearch, setTemplateSearch] = createSignal<string>('')
     const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)

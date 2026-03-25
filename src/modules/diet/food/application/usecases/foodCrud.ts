@@ -2,7 +2,7 @@ import { type Food } from '~/modules/diet/food/domain/food'
 import { type FoodSearchParams } from '~/modules/diet/food/domain/foodRepository'
 import { type FoodRepository } from '~/modules/diet/food/domain/foodRepository'
 import { createApiFoodImportService } from '~/modules/diet/food/infrastructure/api/application/apiFood'
-import { createCachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
+import { type CachedSearchCrud } from '~/modules/search/application/usecases/cachedSearchCrud'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { setBackendOutage } from '~/shared/error/backendOutageSignal'
 import { formatError } from '~/shared/formatError'
@@ -14,15 +14,17 @@ import { logging } from '~/shared/utils/logging'
  * Allows replacing the repository implementation (e.g. for guest mode or tests).
  */
 export function createFoodCrud(deps: {
-  repository: () => FoodRepository
+  repository: FoodRepository
+  cachedSearchCrud: CachedSearchCrud
   createApiFoodImportService?: typeof createApiFoodImportService
 }) {
-  const foodRepository = deps.repository()
+  const foodRepository = deps.repository
   const localCreateApiFoodImportService =
     deps.createApiFoodImportService ?? createApiFoodImportService
-  const cachedSearchCrud = createCachedSearchCrud()
+  const cachedSearchCrud = deps.cachedSearchCrud
   const apiFoodImportService = localCreateApiFoodImportService({
     foodRepository,
+    cachedSearchCrud,
   })
 
   return {

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createNewFood,
@@ -11,25 +11,18 @@ import {
   promoteRecipe,
   type Recipe,
 } from '~/modules/diet/recipe/domain/recipe'
-import {
-  isTemplateFood,
-  type Template,
-} from '~/modules/diet/template/domain/template'
+import { isTemplateFood } from '~/modules/diet/template/domain/template'
+import { logging } from '~/shared/utils/logging'
 
-// Mock the modules
-vi.mock('~/modules/recent-food/application/usecases/recentFoodCrud', () => ({
-  createRecentFoodCrud: vi.fn(),
-}))
-
-vi.mock(
-  '~/modules/template-search/application/usecases/templateSearchState',
-  () => ({
-    createTemplateSearchState: vi.fn(),
-  }),
-)
-
-vi.mock('~/modules/toast/application/toastManager', () => ({
-  showPromise: vi.fn(),
+const { mockDeleteRecentFoodByReference } = vi.hoisted(() => ({
+  mockDeleteRecentFoodByReference:
+    vi.fn<
+      (
+        userId: string,
+        type: 'food' | 'recipe',
+        referenceId: number,
+      ) => Promise<boolean>
+    >(),
 }))
 
 vi.mock('~/shared/utils/logging', () => ({
@@ -41,17 +34,7 @@ vi.mock('~/shared/utils/logging', () => ({
   },
 }))
 
-// Import the mocked modules
-import { createRecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { showPromise } from '~/modules/toast/application/toastManager'
-import { logging } from '~/shared/utils/logging'
-
-const mockRecentFoodCrud = vi.mocked(createRecentFoodCrud)
-const mockShowPromise = vi.mocked(showPromise)
-const mockLogging = vi.mocked(logging)
-
 describe('RemoveFromRecentButton Logic', () => {
-  const mockRefetch = vi.fn()
   const mockUserId = '42'
 
   const mockFoodTemplate: Food = promoteNewFoodToFood(
@@ -79,172 +62,50 @@ describe('RemoveFromRecentButton Logic', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockShowPromise.mockImplementation((promise) => promise)
-    mockRecentFoodCrud.mockReturnValue({
-      deleteRecentFoodByReference: vi.fn().mockResolvedValue(true),
-      fetchRecentFoodByUserTypeAndReferenceId: vi.fn(),
-      fetchUserRecentFoods: vi.fn(),
-      insertRecentFood: vi.fn(),
-      updateRecentFood: vi.fn(),
-    })
+    mockDeleteRecentFoodByReference.mockResolvedValue(true)
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
+  it('extracts the food reference payload used by the container-backed use case', async () => {
+    const templateType = isTemplateFood(mockFoodTemplate) ? 'food' : 'recipe'
+    const templateId = mockFoodTemplate.id
+
+    await mockDeleteRecentFoodByReference(mockUserId, templateType, templateId)
+
+    expect(mockDeleteRecentFoodByReference).toHaveBeenCalledWith(
+      mockUserId,
+      'food',
+      mockFoodTemplate.id,
+    )
   })
 
-  describe('Template Type Detection', () => {
-    it('correctly identifies food templates', () => {
-      expect(isTemplateFood(mockFoodTemplate)).toBe(true)
-      expect(isTemplateFood(mockRecipeTemplate)).toBe(false)
-    })
+  it('extracts the recipe reference payload used by the container-backed use case', async () => {
+    const templateType = isTemplateFood(mockRecipeTemplate) ? 'food' : 'recipe'
+    const templateId = mockRecipeTemplate.id
 
-    it('correctly identifies recipe templates', () => {
-      expect(isTemplateFood(mockRecipeTemplate)).toBe(false)
-      expect(!isTemplateFood(mockRecipeTemplate)).toBe(true)
-    })
+    await mockDeleteRecentFoodByReference(mockUserId, templateType, templateId)
+
+    expect(mockDeleteRecentFoodByReference).toHaveBeenCalledWith(
+      mockUserId,
+      'recipe',
+      mockRecipeTemplate.id,
+    )
   })
 
-  describe('Food Template Handling Logic', () => {
-    it('extracts correct type and id from food template', () => {
-      const templateType = isTemplateFood(mockFoodTemplate) ? 'food' : 'recipe'
-      const templateId = mockFoodTemplate.id
+  it('logs removal failures from the container-backed use case', async () => {
+    const error = new Error('API Error')
+    mockDeleteRecentFoodByReference.mockRejectedValueOnce(error)
 
-      expect(templateType).toBe('food')
-      expect(templateId).toBe(mockFoodTemplate.id)
-    })
-  })
-
-  describe('Recipe Template Handling Logic', () => {
-    it('extracts correct type and id from recipe template', () => {
-      const templateType = isTemplateFood(mockRecipeTemplate)
-        ? 'food'
-        : 'recipe'
-      const templateId = mockRecipeTemplate.id
-
-      expect(templateType).toBe('recipe')
-      expect(templateId).toBe(mockRecipeTemplate.id)
-    })
-  })
-
-  describe('API Integration Logic', () => {
-    it('calls deleteRecentFoodByReference with correct parameters for food template', async () => {
-      const templateType = isTemplateFood(mockFoodTemplate) ? 'food' : 'recipe'
-      const templateId = mockFoodTemplate.id
-
-      const recentFoodCrud = mockRecentFoodCrud()
-
-      await recentFoodCrud.deleteRecentFoodByReference(
-        mockUserId,
-        templateType,
-        templateId,
-      )
-
-      expect(recentFoodCrud.deleteRecentFoodByReference).toHaveBeenCalledWith(
-        mockUserId,
-        'food',
-        mockFoodTemplate.id,
-      )
+    await mockDeleteRecentFoodByReference(
+      mockUserId,
+      'food',
+      mockFoodTemplate.id,
+    ).catch((err) => {
+      logging.error('RemoveFromRecentButton error:', err)
     })
 
-    it('calls deleteRecentFoodByReference with correct parameters for recipe template', async () => {
-      const templateType = isTemplateFood(mockRecipeTemplate)
-        ? 'food'
-        : 'recipe'
-      const templateId = mockRecipeTemplate.id
-
-      const recentFoodCrud = mockRecentFoodCrud()
-
-      await recentFoodCrud.deleteRecentFoodByReference(
-        mockUserId,
-        templateType,
-        templateId,
-      )
-
-      expect(recentFoodCrud.deleteRecentFoodByReference).toHaveBeenCalledWith(
-        mockUserId,
-        'recipe',
-        mockRecipeTemplate.id,
-      )
-    })
-  })
-
-  describe('Toast Promise Integration', () => {
-    it('configures showPromise with correct parameters', async () => {
-      const recentFoodCrud = mockRecentFoodCrud()
-      const promise = recentFoodCrud.deleteRecentFoodByReference(
-        mockUserId,
-        'food',
-        mockFoodTemplate.id,
-      )
-
-      await showPromise(promise, {
-        loading: 'Removendo item da lista de recentes...',
-        success: 'Item removido da lista de recentes com sucesso!',
-        error: (err: unknown) => {
-          mockLogging.error('RemoveFromRecentButton error:', err)
-          return 'Erro ao remover item da lista de recentes.'
-        },
-      })
-
-      expect(mockShowPromise).toHaveBeenCalledWith(
-        expect.any(Promise),
-        expect.objectContaining({
-          loading: 'Removendo item da lista de recentes...',
-          success: 'Item removido da lista de recentes com sucesso!',
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          error: expect.any(Function),
-        }),
-      )
-    })
-  })
-
-  describe('Error Handling Logic', () => {
-    it('handles API errors correctly', () => {
-      const mockError = new Error('API Error')
-
-      // Create error handler function like in the component
-      const errorHandler = (err: unknown) => {
-        mockLogging.error('RemoveFromRecentButton error:', err)
-        return 'Erro ao remover item da lista de recentes.'
-      }
-
-      const errorMessage = errorHandler(mockError)
-
-      expect(mockLogging.error).toHaveBeenCalledWith(
-        'RemoveFromRecentButton error:',
-        mockError,
-      )
-      expect(errorMessage).toBe('Erro ao remover item da lista de recentes.')
-    })
-  })
-
-  describe('Component Props Interface', () => {
-    it('supports both food and recipe templates', () => {
-      const templates: Template[] = [mockFoodTemplate, mockRecipeTemplate]
-
-      templates.forEach((template) => {
-        const props = {
-          template,
-          refetch: mockRefetch,
-        }
-
-        expect(props.template).toBeDefined()
-        expect(isTemplateFood(props.template) ? 'Food' : 'Recipe').toMatch(
-          /^(Food|Recipe)$/,
-        )
-        expect(props.template.id).toBeTypeOf('number')
-        expect(props.refetch).toBeTypeOf('function')
-      })
-    })
-  })
-
-  describe('Tab Visibility Logic', () => {
-    it('respects debouncedTab state for component visibility', () => {
-      const visibleTabs = ['recent', 'all'] as const
-
-      expect(visibleTabs[0]).toBe('recent')
-      expect(visibleTabs[1]).toBe('all')
-    })
+    expect(logging.error).toHaveBeenCalledWith(
+      'RemoveFromRecentButton error:',
+      error,
+    )
   })
 })

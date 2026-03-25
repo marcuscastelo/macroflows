@@ -1,7 +1,4 @@
-import {
-  createMacroProfileCrudService,
-  type MacroProfileCrudService,
-} from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
+import { type MacroProfileCrudService } from '~/modules/diet/macro-profile/application/service/macroProfileCrudService'
 import { type MacroProfileCache } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
 import {
   type MacroProfile,
@@ -15,12 +12,12 @@ import { logging } from '~/shared/utils/logging'
  * @param deps.crudService - provider for the macro profile CRUD service
  * @param deps.cache - cache object used to keep local profiles in sync
  */
-export function createMacroProfileUseCases(deps?: {
-  crudService?: () => MacroProfileCrudService
+export function createMacroProfileUseCases(deps: {
+  crudService: MacroProfileCrudService
   cache?: MacroProfileCache
 }) {
-  const svc = deps?.crudService?.() ?? createMacroProfileCrudService()
-  const localCache = deps?.cache
+  const svc = deps.crudService
+  const localCache = deps.cache
 
   return {
     async fetchUserMacroProfiles(

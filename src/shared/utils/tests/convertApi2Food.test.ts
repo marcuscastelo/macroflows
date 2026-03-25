@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { apiFoodSchema } from '~/modules/diet/food/domain/apiFood'
-import { convertApi2Food } from '~/shared/utils/convertApi2Food'
+import { convertApi2Food } from '~/modules/diet/food/infrastructure/api/application/convertApi2Food'
 import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 const baseApiFood = {

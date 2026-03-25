@@ -1,6 +1,6 @@
 import { type Accessor, Show } from 'solid-js'
 
-import { recipeItemUseCases } from '~/modules/diet/item/application/recipeItemUseCases'
+import { useContainer } from '~/di/container'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { getItemTypeDisplay } from '~/sections/item/utils/unifiedItemDisplayUtils'
 
@@ -9,6 +9,7 @@ export type ItemViewNameProps = {
 }
 
 export function ItemViewName(props: ItemViewNameProps) {
+  const recipeItemUseCases = useContainer().recipeItemUseCases()
   const typeDisplay = () => getItemTypeDisplay(props.item())
 
   const recipeResource = recipeItemUseCases.createRecipeResource(() =>
