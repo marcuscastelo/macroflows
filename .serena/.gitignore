@@ -1,0 +1,4 @@
+/cache
+/project.local.yml
+# Ignore project.yml to allow multi-worktree support without conflicts. Each worktree can have its own project.yml file.
+/project.yml 
