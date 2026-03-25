@@ -1,5 +1,8 @@
 # Diet Domain Audit
 
+> Doc status: supporting.
+> This document preserves audit history and implementation context. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 _Last updated: 2025-06-07_
 
 ## Overview

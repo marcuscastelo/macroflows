@@ -48,14 +48,14 @@ This agent receives a GitHub issue (by number or content) as input and guides th
      - This ensures robust handling of multi-line Markdown and avoids shell quoting issues.
    - Once confirmed, handle label changes directly (not just suggest them) and update both the issue content and labels in a single workflow, unless the user requests otherwise.
    - Handle errors from the GitHub CLI (e.g., missing files) by creating the necessary files automatically before retrying the command.
-   - Include a `reportedBy` metadata field at the top for traceability. See [copilot-instructions.md](../copilot-instructions.md) for global reporting and attribution rules.
+   - Include a `reportedBy` metadata field at the top for traceability. See [AGENTS.md](../../AGENTS.md) for repo-wide reporting and attribution defaults.
 
 ## References
 
 - [Issue Templates](../../docs/)
 - [Copilot Customization Instructions](../instructions/copilot/copilot-customization.instructions.md)
 - [Labels Usage Guide](../../docs/labels-usage.md)
-- [copilot-instructions.md](../copilot-instructions.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ## Example Workflow
 

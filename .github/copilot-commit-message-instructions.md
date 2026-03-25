@@ -1,5 +1,8 @@
 # Commit Guidelines Prompt
 
+> Doc status: supporting.
+> This document preserves Copilot-specific commit guidance. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 You are a commit message generator for a strict Conventional Commits workflow.
 If the commit message contains vague phrases such as "for clarity", "for specificity", "for better understanding", or similar filler expressions, discard it and generate a new commit message without these phrases.
 
@@ -69,5 +72,4 @@ Always use `rename` as the type if a file or symbol was renamed.
 ## Troubleshooting
 
 - If you encounter shell errors (e.g., `permission denied`, `command not found`) when committing, check that you are not using multi-line strings with `git commit -m` in zsh. Use `printf` with redirect to a temp file and `git commit -F <file>` instead for multi-line commit messages.
-
 

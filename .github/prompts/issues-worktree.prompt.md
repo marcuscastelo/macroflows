@@ -51,9 +51,9 @@ This agent receives a list of GitHub issue numbers, fetches their content using 
 - [Refine GitHub Issue Prompt](refine-github-issue.prompt.md)
 - [Copilot Customization Instructions](../instructions/copilot/copilot-customization.instructions.md)
 - [Labels Usage Guide](../../docs/labels-usage.md)
-- [copilot-instructions.md](../copilot-instructions.md)
+- [AGENTS.md](../../AGENTS.md)
 - See `docs/` for required issue templates and structure.
-- See [./refine-prompt.prompt.md](./refine-prompt.prompt.md) and [copilot-instructions.md](../copilot-instructions.md) for global rules and checklists.
+- See [./refine-prompt.prompt.md](./refine-prompt.prompt.md) and [AGENTS.md](../../AGENTS.md) for repo-wide rules and checklists.
 
 ---
 

@@ -1,5 +1,8 @@
 # Architecture Audit – Summary
 
+> Doc status: supporting.
+> This document preserves audit history and improvement notes. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 _Last updated: 2025-07-08_
 
 This document provides a high-level overview of the current state of the codebase architecture, focusing on Domain-Driven Design (DDD), modularity, and separation of concerns. For detailed findings and recommendations, see the linked area-specific audits below.
