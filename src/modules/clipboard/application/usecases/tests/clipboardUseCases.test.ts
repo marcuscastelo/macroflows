@@ -10,6 +10,7 @@ import { openPasteConfirmModal } from '~/modules/clipboard/ui/PasteConfirmModal'
 import { createItem, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
+import { parseWithStack } from '~/shared/utils/parseWithStack'
 
 describe('clipboardUseCases.confirmPaste', () => {
   const showError = vi.fn()
@@ -38,6 +39,7 @@ describe('clipboardUseCases.confirmPaste', () => {
   it('opens the paste confirmation modal with the parsed payload', () => {
     const clipboardStore = createClipboardStore()
     const payload = createValidItemPayload()
+    const parsedPayload = parseWithStack(itemSchema, payload)
     const onPasteConfirmed = vi.fn()
     const useCases = createClipboardUseCases({
       clipboardStore,
@@ -50,7 +52,7 @@ describe('clipboardUseCases.confirmPaste', () => {
 
     expect(openPasteConfirmModal).toHaveBeenCalledTimes(1)
     expect(openPasteConfirmModal).toHaveBeenCalledWith(
-      payload,
+      parsedPayload,
       onPasteConfirmed,
     )
     expect(showError).not.toHaveBeenCalled()
@@ -69,14 +71,19 @@ describe('clipboardUseCases.confirmPaste', () => {
 
     useCases.confirmPaste(itemSchema, onPasteConfirmed)
 
-    const modalHandler = vi.mocked(openPasteConfirmModal).mock.calls[0]?.[1]
+    const modalCall = vi.mocked(openPasteConfirmModal).mock.calls[0]
 
-    expect(modalHandler).toBeDefined()
+    expect(modalCall).toBeDefined()
+    if (!modalCall) {
+      throw new Error('Expected openPasteConfirmModal to be called')
+    }
 
-    modalHandler?.(payload)
+    const [modalPayload, modalHandler] = modalCall
+
+    modalHandler(modalPayload)
 
     expect(onPasteConfirmed).toHaveBeenCalledTimes(1)
-    expect(onPasteConfirmed).toHaveBeenCalledWith(payload)
+    expect(onPasteConfirmed).toHaveBeenCalledWith(modalPayload)
   })
 
   it('shows an error and does not open the modal when the clipboard is empty', () => {
