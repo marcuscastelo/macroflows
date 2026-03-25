@@ -1,17 +1,17 @@
 # GitHub Copilot Setup Validation
 
-This document validates that the macroflows repository follows GitHub Copilot coding agent best practices.
+> Doc status: supporting.
+> This document records a Copilot-specific setup snapshot. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
+This document validates a Copilot-oriented workspace setup for Macroflows. The current repo-wide source of truth lives in `../AGENTS.md`, while `.github/copilot-instructions.md` now acts as a thin Copilot transport pointer.
 
 ## ✅ Completed Setup Checklist
 
 ### Core Configuration Files
 
-- [x] **`.github/copilot-instructions.md`** - Main instruction file with frontmatter (`applyTo: "**"`)
-  - Contains comprehensive coding standards for TypeScript, SolidJS, and Clean Architecture
-  - Includes project-specific rules (barrel file ban, import conventions)
-  - Defines error handling patterns for Domain and Application layers
-  - Specifies testing, validation, and commit message requirements
-  - References label usage and search feature requirements
+- [x] **`.github/copilot-instructions.md`** - Copilot transport pointer with frontmatter (`applyTo: "**"`)
+  - Points Copilot to the canonical policy in `AGENTS.md`
+  - Preserves automatic discovery without owning repo policy
 
 - [x] **`.github/copilot-commit-message-instructions.md`** - Commit message generation guidelines
   - Enforces Conventional Commits standard
@@ -126,7 +126,7 @@ While the current setup is comprehensive and follows best practices, here are po
 
 The macroflows repository successfully implements GitHub Copilot coding agent best practices:
 
-1. ✅ Main instruction file exists and is comprehensive
+1. ✅ Copilot transport pointer exists and forwards to canonical docs
 2. ✅ Commit message generation is properly configured
 3. ✅ Scoped instruction files are available
 4. ✅ Extensive prompt library exists (28 prompts)

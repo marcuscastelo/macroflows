@@ -1,5 +1,8 @@
 # 🧭 SolidJS Frontend Architecture Guide
 
+> Doc status: supporting.
+> This document preserves useful examples and historical guidance. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 This guide defines the project's standard architecture to ensure consistency, scalability, and maintainability. Follow the sections below to understand how to structure, name, and build each part of the application.
 
 ---

@@ -1,5 +1,8 @@
 reportedBy: recipe-migration-agent.v1
 
+> Doc status: supporting.
+> This document preserves migration history and implementation context. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 # Recipe Entity Migration Audit: Legacy Item[] → UnifiedItem[]
 
 This document provides a comprehensive audit of all Recipe entity usages that need to be migrated from using legacy Item[] to UnifiedItem[] in-memory, while maintaining Item[] compatibility for database persistence.

@@ -1,5 +1,8 @@
 # Domain Layer Audit – High-Level Review
 
+> Doc status: supporting.
+> This document preserves audit history and implementation context. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
 _Last updated: 2025-07-08_
 
 ## General Assessment
