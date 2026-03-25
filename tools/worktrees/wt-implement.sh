@@ -81,6 +81,13 @@ if ! slug="$(wt_resolve_slug "$prd_path" "$slug")"; then
   exit 1
 fi
 
+# Determine repo root and prepend repository name to slug (e.g., macroflows-feature)
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+repo_name="$(basename "$repo_root")"
+if [ -n "$repo_name" ] && [ "${slug#${repo_name}-}" = "$slug" ]; then
+  slug="${repo_name}-${slug}"
+fi
+
 if ! branch_name="$(wt_build_branch_name "$branch_prefix" "$slug")"; then
   exit 1
 fi

@@ -187,6 +187,12 @@ if [ -z "$slug" ]; then
   fi
 fi
 
+# Prepend repository name to slug (e.g., macroflows-issue10)
+repo_name="$(basename "$repo_root")"
+if [ -n "$repo_name" ] && [ "${slug#${repo_name}-}" = "$slug" ]; then
+  slug="${repo_name}-${slug}"
+fi
+
 worktree_path="$(wt_join_path "$wt_root" "$slug")"
 
 wt_info "wt-create scaffold initialized."
