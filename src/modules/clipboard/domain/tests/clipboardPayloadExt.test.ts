@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { ClipboardPayloadExt } from '~/modules/clipboard/domain/clipboardPayloadExt'
 import { createItem, type Item } from '~/modules/diet/item/schema/itemSchema'
@@ -25,34 +25,23 @@ const createFoodItem = (id: number, name: string, quantity: number): Item =>
     },
   })
 
-const expectRegeneratedId = (
-  actualId: number,
-  originalId: number,
-  randomValue: number,
-): void => {
-  expect(actualId).toBe(Math.round(randomValue * 1000000))
+const expectRegeneratedId = (actualId: number, originalId: number): void => {
   expect(actualId).not.toBe(originalId)
-  expect(Number.isInteger(actualId)).toBe(true)
+  expect(Number.isSafeInteger(actualId)).toBe(true)
 }
 
 describe('ClipboardPayloadExt', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('extractItems', () => {
     it('extracts a single item and regenerates its id while preserving content', () => {
       const payload = createFoodItem(10, 'Banana', 150)
 
-      vi.spyOn(Math, 'random').mockReturnValueOnce(0.123456)
-
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(1)
-      expectRegeneratedId(extractedItems[0]!.id, payload.id, 0.123456)
+      expectRegeneratedId(extractedItems[0]!.id, payload.id)
       expect(extractedItems[0]).toEqual({
         ...payload,
-        id: 123456,
+        id: extractedItems[0]!.id,
       })
       expect(payload.id).toBe(10)
     })
@@ -66,18 +55,17 @@ describe('ClipboardPayloadExt', () => {
         id: 1,
       })
 
-      vi.spyOn(Math, 'random')
-        .mockReturnValueOnce(0.111111)
-        .mockReturnValueOnce(0.222222)
-
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(2)
-      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id, 0.111111)
-      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id, 0.222222)
+      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id)
+      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id)
+      expect(new Set(extractedItems.map((item) => item.id)).size).toBe(
+        extractedItems.length,
+      )
       expect(extractedItems).toEqual([
-        { ...items[0], id: 111111 },
-        { ...items[1], id: 222222 },
+        { ...items[0], id: extractedItems[0]!.id },
+        { ...items[1], id: extractedItems[1]!.id },
       ])
       expect(payload.items).toEqual(items)
     })
@@ -97,18 +85,17 @@ describe('ClipboardPayloadExt', () => {
         { id: 2 },
       )
 
-      vi.spyOn(Math, 'random')
-        .mockReturnValueOnce(0.333333)
-        .mockReturnValueOnce(0.444444)
-
       const extractedItems = ClipboardPayloadExt.extractItems(payload)
 
       expect(extractedItems).toHaveLength(2)
-      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id, 0.333333)
-      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id, 0.444444)
+      expectRegeneratedId(extractedItems[0]!.id, items[0]!.id)
+      expectRegeneratedId(extractedItems[1]!.id, items[1]!.id)
+      expect(new Set(extractedItems.map((item) => item.id)).size).toBe(
+        extractedItems.length,
+      )
       expect(extractedItems).toEqual([
-        { ...items[0], id: 333333 },
-        { ...items[1], id: 444444 },
+        { ...items[0], id: extractedItems[0]!.id },
+        { ...items[1], id: extractedItems[1]!.id },
       ])
       expect(payload.items).toEqual(items)
     })

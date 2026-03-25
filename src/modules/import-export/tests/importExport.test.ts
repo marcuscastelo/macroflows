@@ -23,11 +23,12 @@ import { EXPORT_SCHEMA_VERSION } from '~/modules/import-export/domain/exportPayl
 describe('Import/Export Module', () => {
   describe('ID Regeneration', () => {
     it('should generate unique IDs', () => {
-      const id1 = generateUniqueId()
-      const id2 = generateUniqueId()
-      expect(id1).not.toBe(id2)
-      expect(typeof id1).toBe('number')
-      expect(typeof id2).toBe('number')
+      const generatedIds = Array.from({ length: 100_000 }, () =>
+        generateUniqueId(),
+      )
+
+      expect(new Set(generatedIds).size).toBe(generatedIds.length)
+      expect(generatedIds.every((id) => Number.isSafeInteger(id))).toBe(true)
     })
 
     it('should regenerate meal IDs', () => {

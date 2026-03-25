@@ -1,12 +1,14 @@
 // TODO: remove id utils and find a way to generate ids in the database
 
+import { generateNumericId } from '~/shared/utils/uniqueId'
+
 type Identifiable = { id: number }
 
 /**
  * @deprecated Probably should be done by database
  */
 export function generateId(): number {
-  return Math.round(Math.random() * 1000000)
+  return generateNumericId()
 }
 
 /**

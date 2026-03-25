@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 import { type Item, itemSchema } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal, mealSchema } from '~/modules/diet/meal/domain/meal'
 import { type Recipe, recipeSchema } from '~/modules/diet/recipe/domain/recipe'
+import { generateUuid } from '~/shared/utils/uniqueId'
 
 export const clipboardPayloadSchema = z.union([
   itemSchema,
@@ -38,7 +39,7 @@ export function createClipboardEntry(
   options?: { pinned?: boolean },
 ): ClipboardEntry {
   return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+    id: generateUuid(),
     payload,
     createdAt: Date.now(),
     pinned: options?.pinned ?? false,
