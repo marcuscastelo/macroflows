@@ -1,4 +1,17 @@
+/**
+ * Reserve 29 bits for the per-runtime counter, which allows more than
+ * 500 million unique numeric IDs before exhaustion while keeping the final
+ * value inside JavaScript's safe integer range once combined with the
+ * runtime prefix.
+ */
 const NUMERIC_ID_COUNTER_LIMIT = 2 ** 29
+
+/**
+ * Reserve the remaining 24 safe-integer bits for a cryptographically-random
+ * runtime prefix so separate execution contexts are unlikely to share the same
+ * numeric ID space. Together with the counter bits above, this keeps
+ * `prefix * NUMERIC_ID_COUNTER_LIMIT + counter` below `Number.MAX_SAFE_INTEGER`.
+ */
 const NUMERIC_ID_PREFIX_LIMIT = 2 ** 24
 
 let numericIdCounter = 0
@@ -6,7 +19,9 @@ let numericIdPrefix: number | undefined
 
 function getCryptoApi(): Crypto {
   if (!('crypto' in globalThis)) {
-    throw new Error('Crypto API is required for ID generation')
+    throw new Error(
+      'Crypto API is required for ID generation. Use a modern browser or Node.js runtime with Web Crypto support.',
+    )
   }
 
   return globalThis.crypto
@@ -14,7 +29,14 @@ function getCryptoApi(): Crypto {
 
 function createNumericIdPrefix(): number {
   const values = new Uint32Array(1)
-  getCryptoApi().getRandomValues(values)
+  const maxUnbiasedValue =
+    Math.floor(2 ** 32 / NUMERIC_ID_PREFIX_LIMIT) * NUMERIC_ID_PREFIX_LIMIT
+
+  do {
+    // Reject the top incomplete range so the modulo result stays uniform across
+    // the full prefix space instead of favoring lower values.
+    getCryptoApi().getRandomValues(values)
+  } while (values[0]! >= maxUnbiasedValue)
 
   return values[0]! % NUMERIC_ID_PREFIX_LIMIT
 }
@@ -55,7 +77,9 @@ export function generateUuid(): string {
  */
 export function generateNumericId(): number {
   if (numericIdCounter >= NUMERIC_ID_COUNTER_LIMIT) {
-    throw new Error('Numeric ID counter exhausted')
+    throw new Error(
+      'Numeric ID counter exhausted after more than 500 million IDs in one runtime. Restart the application to reset the local counter.',
+    )
   }
 
   if (numericIdPrefix === undefined) {
