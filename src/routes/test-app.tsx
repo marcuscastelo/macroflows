@@ -1,7 +1,6 @@
 import { createEffect, createSignal, Show, untrack } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useContainer } from '~/di/container'
 import {
   createNewDayDiet,
   type DayDiet,
@@ -34,6 +33,8 @@ import { generateId } from '~/shared/utils/idUtils'
 import { logging } from '~/shared/utils/logging'
 
 function GoogleLoginButton() {
+  const useCases = useContainer()
+  const authUseCases = useCases.authUseCases()
   const handleLogin = async () => {
     try {
       await authUseCases.signIn({
@@ -54,6 +55,8 @@ function GoogleLoginButton() {
 }
 
 function LogoutButton() {
+  const useCases = useContainer()
+  const authUseCases = useCases.authUseCases()
   const handleLogout = async () => {
     try {
       await authUseCases.signOut()
@@ -70,6 +73,8 @@ function LogoutButton() {
 }
 
 function UserInfo() {
+  const useCases = useContainer()
+  const authUseCases = useCases.authUseCases()
   return (
     <Show when={authUseCases.isAuthenticated()} fallback="not auth">
       <div class="p-4 border rounded-md">
@@ -81,6 +86,15 @@ function UserInfo() {
 }
 
 export default function TestApp() {
+  return (
+    <Providers>
+      <TestAppContent />
+    </Providers>
+  )
+}
+
+function TestAppContent() {
+  const useCases = useContainer()
   const [_, setItemEditModalVisible] = createSignal(false)
 
   const [item1] = createSignal<Item>(
@@ -92,9 +106,9 @@ export default function TestApp() {
         type: 'food',
         id: 31606,
         macros: createMacroNutrients({
-          carbs: 10,
-          protein: 12,
-          fat: 10,
+          carbsInGrams: 10,
+          proteinInGrams: 12,
+          fatInGrams: 10,
         }),
       },
     }),
@@ -161,70 +175,69 @@ export default function TestApp() {
   // const [food, setFood] = createSignal<Food | null>(null)
   return (
     <>
-      <Providers>
-        <DayMacros
-          dayDiet={
-            dayUseCases.currentDayDiet() ??
-            promoteDayDiet(
-              createNewDayDiet({
-                meals: [],
-                user_id: '3',
-                target_day: '2023-11-02',
-              }),
-              { id: 1 },
-            )
-          }
-        />
-        {/* Auth */}
-        <details open>
-          <summary class="text-lg cursor-pointer select-none">Auth</summary>
-          <div class="pl-4 flex flex-col gap-2">
-            <GoogleLoginButton />
-            <UserInfo />
-          </div>
-        </details>
+      <DayMacros
+        dayDiet={
+          useCases.dayUseCases().currentDayDiet() ??
+          promoteDayDiet(
+            createNewDayDiet({
+              meals: [],
+              user_id: '3',
+              target_day: '2023-11-02',
+            }),
+            { id: 1 },
+          )
+        }
+      />
+      {/* Auth */}
+      <details open>
+        <summary class="text-lg cursor-pointer select-none">Auth</summary>
+        <div class="pl-4 flex flex-col gap-2">
+          <GoogleLoginButton />
+          <UserInfo />
+        </div>
+      </details>
 
-        {/* Modals */}
-        <details open>
-          <summary class="text-lg cursor-pointer select-none">Modals</summary>
-          <div class="pl-4 flex flex-col gap-2">
-            {' '}
-            <TestModal />
-            <TestConfirmModal />
-            <button
-              class="btn cursor-pointer uppercase"
-              onClick={() => {
-                openTemplateSearchModal({
-                  targetName: 'Test Meal',
-                  onNewItem: (newItem) => {
-                    logging.debug('New item from TemplateSearchModal:', newItem)
-                    showSuccess('Item adicionado: ' + newItem.name)
-                  },
-                  title: 'Adicionar item ao Test Meal',
-                })
-              }}
-            >
-              Open Template Search Modal
-            </button>
-            <button
-              class="btn cursor-pointer uppercase"
-              onClick={() => {
-                setItemEditModalVisible(true)
-              }}
-            >
-              setItemEditModalVisible
-            </button>
-          </div>
-        </details>
+      {/* Modals */}
+      <details open>
+        <summary class="text-lg cursor-pointer select-none">Modals</summary>
+        <div class="pl-4 flex flex-col gap-2">
+          {' '}
+          <TestModal />
+          <TestConfirmModal />
+          <button
+            class="btn cursor-pointer uppercase"
+            onClick={() => {
+              openTemplateSearchModal({
+                targetName: 'Test Meal',
+                onNewItem: (newItem) => {
+                  logging.debug('New item from TemplateSearchModal:', newItem)
+                  showSuccess('Item adicionado: ' + newItem.name)
+                },
+                title: 'Adicionar item ao Test Meal',
+              })
+            }}
+          >
+            Open Template Search Modal
+          </button>
+          <button
+            class="btn cursor-pointer uppercase"
+            onClick={() => {
+              setItemEditModalVisible(true)
+            }}
+          >
+            setItemEditModalVisible
+          </button>
+        </div>
+      </details>
 
-        {/* Item Group & List */}
-        <details>
-          <summary class="text-lg cursor-pointer select-none">
-            Item Group & List
-          </summary>
-          <div class="pl-4 flex flex-col gap-2">
-            <h1>ItemListView (legacy test)</h1>
-            {/* <ItemListView
+      {/* Item Group & List */}
+      <details>
+        <summary class="text-lg cursor-pointer select-none">
+          Item Group & List
+        </summary>
+        <div class="pl-4 flex flex-col gap-2">
+          <h1>ItemListView (legacy test)</h1>
+          {/* <ItemListView
               items={() => group().items.map(itemToItem)}
               mode="edit"
               handlers={{
@@ -232,81 +245,78 @@ export default function TestApp() {
                   setItemEditModalVisible(true)
                 },
               }}
-            /> */}
-            <h1>ItemView (ItemGroup test)</h1>
-            <ItemView
-              item={item2}
-              handlers={{
-                onEdit: () => {
-                  setItemEditModalVisible(true)
-                },
-                onCopy: (item) => {
-                  logging.debug('Copy item:', item)
-                },
-              }}
-            />
-          </div>
-        </details>
+          /> */}
+          <h1>ItemView (ItemGroup test)</h1>
+          <ItemView
+            item={item2}
+            handlers={{
+              onEdit: () => {
+                setItemEditModalVisible(true)
+              },
+              onCopy: (item) => {
+                logging.debug('Copy item:', item)
+              },
+            }}
+          />
+        </div>
+      </details>
 
-        {/* Datepicker */}
-        <details>
-          <summary class="text-lg cursor-pointer select-none">
-            Datepicker
-          </summary>
-          <div class="pl-4 flex flex-col gap-2">
-            <Datepicker
-              asSingle={true}
-              useRange={false}
-              readOnly={true}
-              displayFormat="DD/MM/YYYY"
-              value={{
-                startDate: dayUseCases.targetDay(),
-                endDate: dayUseCases.targetDay(),
-              }}
-              onChange={(value: DateValueType) => {
-                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                dayUseCases.setTargetDay(value?.startDate as string)
-              }}
-            />
-          </div>
-        </details>
+      {/* Datepicker */}
+      <details>
+        <summary class="text-lg cursor-pointer select-none">Datepicker</summary>
+        <div class="pl-4 flex flex-col gap-2">
+          <Datepicker
+            asSingle={true}
+            useRange={false}
+            readOnly={true}
+            displayFormat="DD/MM/YYYY"
+            value={{
+              startDate: useCases.dayUseCases().targetDay(),
+              endDate: useCases.dayUseCases().targetDay(),
+            }}
+            onChange={(value: DateValueType) => {
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              useCases.dayUseCases().setTargetDay(value?.startDate as string)
+            }}
+          />
+        </div>
+      </details>
 
-        {/* Toasts */}
-        <details>
-          <summary class="text-lg cursor-pointer select-none">Toasts</summary>
-          <div class="pl-4 flex flex-col gap-2 items-center justify-center mx-auto min-h-[20vh] max-w-[33vw]">
-            <ToastTest />
-          </div>
-        </details>
+      {/* Toasts */}
+      <details>
+        <summary class="text-lg cursor-pointer select-none">Toasts</summary>
+        <div class="pl-4 flex flex-col gap-2 items-center justify-center mx-auto min-h-[20vh] max-w-[33vw]">
+          <ToastTest />
+        </div>
+      </details>
 
-        {/* Outros */}
-        <details>
-          <summary class="text-lg cursor-pointer select-none">Outros</summary>
-          <div
-            class="pl-4 flex flex-col gap-2 items-center justify-center mx-auto"
-            style={{ 'min-height': '33vh', 'max-width': '33vw' }}
-          >
-            <EANIcon />
-            <TestChart />
-            <TestField />
-            <DayMacros
-              dayDiet={
-                dayUseCases.currentDayDiet() ??
-                promoteDayDiet(
-                  createNewDayDiet({
-                    meals: [],
-                    user_id: '3',
-                    target_day: '2023-11-02',
-                  }),
-                  { id: 1 },
-                )
-              }
-            />
-            <LoadingRing />
-            <PageLoading message="Carregando bugigangas" />
-          </div>
-        </details>
-      </Providers>
+      {/* Outros */}
+      <details>
+        <summary class="text-lg cursor-pointer select-none">Outros</summary>
+        <div
+          class="pl-4 flex flex-col gap-2 items-center justify-center mx-auto"
+          style={{ 'min-height': '33vh', 'max-width': '33vw' }}
+        >
+          <EANIcon />
+          <TestChart />
+          <TestField />
+          <DayMacros
+            dayDiet={
+              useCases.dayUseCases().currentDayDiet() ??
+              promoteDayDiet(
+                createNewDayDiet({
+                  meals: [],
+                  user_id: '3',
+                  target_day: '2023-11-02',
+                }),
+                { id: 1 },
+              )
+            }
+          />
+          <LoadingRing />
+          <PageLoading message="Carregando bugigangas" />
+        </div>
+      </details>
     </>
   )
 }

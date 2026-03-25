@@ -7,6 +7,7 @@ import {
   untrack,
 } from 'solid-js'
 
+import { type AuthUseCases } from '~/modules/auth/application/usecases/authUseCases'
 import { startDayChangeDetectionWorker } from '~/modules/diet/day-diet/application/services/dayChange'
 import { createDayCacheStore } from '~/modules/diet/day-diet/application/store/dayCacheStore'
 import { createDayChangeStore } from '~/modules/diet/day-diet/application/store/dayChangeStore'
@@ -15,212 +16,237 @@ import {
   type DayDiet,
   type NewDayDiet,
 } from '~/modules/diet/day-diet/domain/dayDiet'
-import { createDayDietRepository } from '~/modules/diet/day-diet/infrastructure/dayDietRepository'
-import { initializeDayDietRealtime } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
+import { type DayRepository } from '~/modules/diet/day-diet/domain/dayDietRepository'
+import { createDayDietRealtimeService } from '~/modules/diet/day-diet/infrastructure/supabase/realtime'
 import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { type User } from '~/modules/user/domain/user'
 import { getTodayYYYYMMDD } from '~/shared/utils/date/dateUtils'
 import { logging } from '~/shared/utils/logging'
 
-export const dayUseCases = createRoot(() => {
-  const dayChangeStore = createDayChangeStore()
-  const dayStateStore = createDayStateStore()
-  const dayCacheStore = createDayCacheStore()
+/**
+ * Factory that creates the day-use-cases object.
+ *
+ * This returns a stable object created inside a `createRoot` to keep internal
+ * signals and stores properly isolated. Consumers should inject or call the
+ * factory to obtain the use-cases.
+ */
+export function createDayUseCases(deps: {
+  authUseCases: () => AuthUseCases
+  dayRepository: DayRepository
+  createDayDietRealtimeService?: typeof createDayDietRealtimeService
+}) {
+  return createRoot(() => {
+    const authUseCases = () => deps.authUseCases()
+    const dayChangeStore = createDayChangeStore()
+    const dayStateStore = createDayStateStore()
+    const dayCacheStore = createDayCacheStore()
+    const realtimeService = (
+      deps.createDayDietRealtimeService ?? createDayDietRealtimeService
+    )()
 
-  const dayRepository = createDayDietRepository()
+    const dayRepository = deps.dayRepository
 
-  const runTargetDayReset = () => {
-    logging.debug(`Effect - Reset to today!`)
-    const today = getTodayYYYYMMDD()
-    dayStateStore.setTargetDay(today)
-  }
+    // NOTE: intentionally avoid importing `useCases` here to prevent circular
+    // dependency during module initialization. The DI container will call
+    // `initializeDayUseCases` to provide the auth use-cases provider when ready.
 
-  initializeDayDietRealtime({
-    onInsert(newDayDiet) {
-      dayCacheStore.upsertToCache(newDayDiet)
-    },
-    onUpdate(newDayDiet) {
-      dayCacheStore.upsertToCache(newDayDiet)
-    },
-    onDelete(oldDayDiet) {
-      dayCacheStore.removeFromCache({
-        by: 'target_day',
-        value: oldDayDiet.target_day,
-      })
-    },
-  })
+    const runTargetDayReset = () => {
+      logging.debug(`Effect - Reset to today!`)
+      const today = getTodayYYYYMMDD()
+      dayStateStore.setTargetDay(today)
+    }
 
-  onMount(() => {
-    const cleanup = startDayChangeDetectionWorker({
-      getTodayYYYYMMDD,
-      getPreviousToday: () => untrack(dayChangeStore.currentToday),
-      getCurrentTargetDay: () => untrack(dayStateStore.targetDay),
-      setCurrentToday: dayChangeStore.setCurrentToday,
-      setDayChangeData: dayChangeStore.setDayChangeData,
-    })
-
-    onCleanup(cleanup)
-  })
-
-  createEffect(() => {
-    const userId = currentUserId()
-    const currentTargetDay = dayStateStore.targetDay()
-
-    dayCacheStore.runCacheManagement({
-      userId,
-      currentTargetDay,
-      currentDayDiet: obj.currentDayDiet,
-      fetchDayDietByUserIdAndTargetDay: obj.fetchDayDietByUserIdAndTargetDay,
-    })
-  })
-
-  createEffect(() => {
-    const userId = currentUserId()
-    logging.debug(`User changed to ${userId}, resetting target day`)
-    runTargetDayReset()
-  })
-
-  const obj = {
-    currentToday: dayChangeStore.currentToday,
-    dayChangeData: dayChangeStore.dayChangeData,
-    dismissDayChangeModal: () => dayChangeStore.setDayChangeData(null),
-    acceptDayChange: () => {
-      const changeData = dayChangeStore.dayChangeData()
-      if (changeData) {
-        batch(() => {
-          dayCacheStore.clearCache()
-          dayStateStore.setTargetDay(changeData.newDay)
-          dayChangeStore.setDayChangeData(null)
+    realtimeService.initializeDayDietRealtime({
+      onInsert(newDayDiet) {
+        dayCacheStore.upsertToCache(newDayDiet)
+      },
+      onUpdate(newDayDiet) {
+        dayCacheStore.upsertToCache(newDayDiet)
+      },
+      onDelete(oldDayDiet) {
+        dayCacheStore.removeFromCache({
+          by: 'target_day',
+          value: oldDayDiet.target_day,
         })
-      }
-    },
-    targetDay: dayStateStore.targetDay,
-    setTargetDay: dayStateStore.setTargetDay,
-    currentDayDiet: () =>
-      dayCacheStore.createCacheItemSignal({
-        by: 'target_day',
-        value: dayStateStore.targetDay(),
-      }),
-    fetchDayDietById: async (dayId: DayDiet['id']) => {
-      try {
-        const dayDiet = await dayRepository.fetchDayDietById(dayId)
-        if (dayDiet === null) {
+      },
+    })
+
+    onMount(() => {
+      const cleanup = startDayChangeDetectionWorker({
+        getTodayYYYYMMDD,
+        getPreviousToday: () => untrack(dayChangeStore.currentToday),
+        getCurrentTargetDay: () => untrack(dayStateStore.targetDay),
+        setCurrentToday: dayChangeStore.setCurrentToday,
+        setDayChangeData: dayChangeStore.setDayChangeData,
+      })
+
+      onCleanup(cleanup)
+    })
+
+    const obj = {
+      currentToday: dayChangeStore.currentToday,
+      dayChangeData: dayChangeStore.dayChangeData,
+      dismissDayChangeModal: () => dayChangeStore.setDayChangeData(null),
+      acceptDayChange: () => {
+        const changeData = dayChangeStore.dayChangeData()
+        if (changeData) {
+          batch(() => {
+            dayCacheStore.clearCache()
+            dayStateStore.setTargetDay(changeData.newDay)
+            dayChangeStore.setDayChangeData(null)
+          })
+        }
+      },
+      targetDay: dayStateStore.targetDay,
+      setTargetDay: dayStateStore.setTargetDay,
+      currentDayDiet: () =>
+        dayCacheStore.createCacheItemSignal({
+          by: 'target_day',
+          value: dayStateStore.targetDay(),
+        }),
+      fetchDayDietById: async (dayId: DayDiet['id']) => {
+        try {
+          const dayDiet = await dayRepository.fetchDayDietById(dayId)
+          if (dayDiet === null) {
+            dayCacheStore.removeFromCache({ by: 'id', value: dayId })
+            return null
+          }
+          dayCacheStore.upsertToCache(dayDiet)
+          return dayDiet
+        } catch (error) {
+          logging.error('DayDiet fetch error:', error)
           dayCacheStore.removeFromCache({ by: 'id', value: dayId })
           return null
         }
-        dayCacheStore.upsertToCache(dayDiet)
-        return dayDiet
-      } catch (error) {
-        logging.error('DayDiet fetch error:', error)
-        dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-        return null
-      }
-    },
-    fetchDayDietByUserIdAndTargetDay: async (
-      userId: User['uuid'],
-      targetDay: string,
-    ) => {
-      try {
-        const dayDiet = await dayRepository.fetchDayDietByUserIdAndTargetDay(
-          userId,
-          targetDay,
-        )
-        if (dayDiet === null) {
+      },
+      fetchDayDietByUserIdAndTargetDay: async (
+        userId: User['uuid'],
+        targetDay: string,
+      ) => {
+        try {
+          const dayDiet = await dayRepository.fetchDayDietByUserIdAndTargetDay(
+            userId,
+            targetDay,
+          )
+          if (dayDiet === null) {
+            dayCacheStore.removeFromCache({
+              by: 'target_day',
+              value: targetDay,
+            })
+            return null
+          }
+          dayCacheStore.upsertToCache(dayDiet)
+          return dayDiet
+        } catch (error) {
+          logging.error('DayDiet fetch error:', error)
           dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
           return null
         }
-        dayCacheStore.upsertToCache(dayDiet)
-        return dayDiet
-      } catch (error) {
-        logging.error('DayDiet fetch error:', error)
-        dayCacheStore.removeFromCache({ by: 'target_day', value: targetDay })
-        return null
-      }
-    },
-    fetchDayDietsByUserIdBeforeDate: async (
-      userId: User['uuid'],
-      beforeDay: string,
-      limit: number = 30,
-    ) => {
-      try {
-        const previousDays =
-          await dayRepository.fetchDayDietsByUserIdBeforeDate(
-            userId,
-            beforeDay,
-            limit,
+      },
+      fetchDayDietsByUserIdBeforeDate: async (
+        userId: User['uuid'],
+        beforeDay: string,
+        limit: number = 30,
+      ) => {
+        try {
+          const previousDays =
+            await dayRepository.fetchDayDietsByUserIdBeforeDate(
+              userId,
+              beforeDay,
+              limit,
+            )
+          for (const day of previousDays) {
+            dayCacheStore.upsertToCache(day)
+          }
+          return previousDays
+        } catch (error) {
+          logging.error('DayDiet fetch error:', error)
+          return []
+        }
+      },
+      insertDayDiet: async (dayDiet: NewDayDiet) => {
+        try {
+          const insertedDayDiet = await showPromise(
+            dayRepository.insertDayDiet(dayDiet),
+            {
+              loading: 'Criando dia de dieta...',
+              success: 'Dia de dieta criado com sucesso',
+              error: 'Erro ao criar dia de dieta',
+            },
+            { context: 'user-action' },
           )
-        for (const day of previousDays) {
-          dayCacheStore.upsertToCache(day)
+          if (insertedDayDiet !== null) {
+            dayCacheStore.upsertToCache(insertedDayDiet)
+          }
+          return insertedDayDiet
+        } catch (error) {
+          logging.error('DayDiet insert error:', error)
+          return null
         }
-        return previousDays
-      } catch (error) {
-        logging.error('DayDiet fetch error:', error)
-        return []
-      }
-    },
-    insertDayDiet: async (dayDiet: NewDayDiet) => {
-      try {
-        const insertedDayDiet = await showPromise(
-          dayRepository.insertDayDiet(dayDiet),
-          {
-            loading: 'Criando dia de dieta...',
-            success: 'Dia de dieta criado com sucesso',
-            error: 'Erro ao criar dia de dieta',
-          },
-          { context: 'user-action' },
-        )
-        if (insertedDayDiet !== null) {
-          dayCacheStore.upsertToCache(insertedDayDiet)
+      },
+      updateDayDietById: async (dayId: DayDiet['id'], dayDiet: NewDayDiet) => {
+        try {
+          const updatedDayDiet = await showPromise(
+            dayRepository.updateDayDietById(dayId, dayDiet),
+            {
+              loading: 'Atualizando dieta...',
+              success: 'Dieta atualizada com sucesso',
+              error: 'Erro ao atualizar dieta',
+            },
+            { context: 'user-action' },
+          )
+          if (updatedDayDiet !== null) {
+            dayCacheStore.upsertToCache(updatedDayDiet)
+          }
+          return updatedDayDiet
+        } catch (error) {
+          logging.error('DayDiet update error:', error)
+          return null
         }
-        return insertedDayDiet
-      } catch (error) {
-        logging.error('DayDiet insert error:', error)
-        return null
-      }
-    },
-    updateDayDietById: async (dayId: DayDiet['id'], dayDiet: NewDayDiet) => {
-      try {
-        const updatedDayDiet = await showPromise(
-          dayRepository.updateDayDietById(dayId, dayDiet),
-          {
-            loading: 'Atualizando dieta...',
-            success: 'Dieta atualizada com sucesso',
-            error: 'Erro ao atualizar dieta',
-          },
-          { context: 'user-action' },
-        )
-        if (updatedDayDiet !== null) {
-          dayCacheStore.upsertToCache(updatedDayDiet)
+      },
+      deleteDayDietById: async (dayId: DayDiet['id']) => {
+        try {
+          await showPromise(
+            dayRepository.deleteDayDietById(dayId),
+            {
+              loading: 'Deletando dieta...',
+              success: 'Dieta deletada com sucesso',
+              error: 'Erro ao deletar dieta',
+            },
+            { context: 'user-action' },
+          )
+          dayCacheStore.removeFromCache({ by: 'id', value: dayId })
+        } catch (error) {
+          logging.error('DayDiet delete error:', error)
+          return null
         }
-        return updatedDayDiet
-      } catch (error) {
-        logging.error('DayDiet update error:', error)
-        return null
-      }
-    },
-    deleteDayDietById: async (dayId: DayDiet['id']) => {
-      try {
-        await showPromise(
-          dayRepository.deleteDayDietById(dayId),
-          {
-            loading: 'Deletando dieta...',
-            success: 'Dieta deletada com sucesso',
-            error: 'Erro ao deletar dieta',
-          },
-          { context: 'user-action' },
-        )
-        dayCacheStore.removeFromCache({ by: 'id', value: dayId })
-      } catch (error) {
-        logging.error('DayDiet delete error:', error)
-        return null
-      }
-    },
-  }
+      },
+    }
 
-  createEffect(() => {
-    logging.debug(`CurrentDayDiet:`, { currentDayDiet: obj.currentDayDiet() })
+    createEffect(() => {
+      const userId = authUseCases().currentUserIdOrGuestId()
+      const currentTargetDay = dayStateStore.targetDay()
+
+      dayCacheStore.runCacheManagement({
+        userId,
+        currentTargetDay,
+        currentDayDiet: obj.currentDayDiet,
+        fetchDayDietByUserIdAndTargetDay: obj.fetchDayDietByUserIdAndTargetDay,
+      })
+    })
+
+    createEffect(() => {
+      const userId = authUseCases().currentUserIdOrGuestId()
+      logging.debug(`User changed to ${userId}, resetting target day`)
+      runTargetDayReset()
+    })
+
+    createEffect(() => {
+      logging.debug(`CurrentDayDiet:`, { currentDayDiet: obj.currentDayDiet() })
+    })
+
+    return obj
   })
+}
 
-  return obj
-})
+export type DayUseCases = ReturnType<typeof createDayUseCases>

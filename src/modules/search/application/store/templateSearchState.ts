@@ -1,46 +1,60 @@
-import { createResource, createSignal } from 'solid-js'
+import { createResource, createRoot, createSignal } from 'solid-js'
 
-import {
-  fetchFoods,
-  fetchFoodsByName,
-} from '~/modules/diet/food/application/usecases/foodCrud'
-import {
-  fetchUserRecipeByName,
-  fetchUserRecipes,
-} from '~/modules/diet/recipe/application/usecases/recipeCrud'
-import { fetchUserRecentFoods } from '~/modules/recent-food/application/usecases/recentFoodCrud'
+import { type FoodCrud } from '~/modules/diet/food/application/usecases/foodCrud'
+import { type RecipeCrud } from '~/modules/diet/recipe/application/usecases/recipeCrud'
+import { type RecentFoodCrud } from '~/modules/recent-food/application/usecases/recentFoodCrud'
 import { fetchTemplatesByTabLogic } from '~/modules/search/application/usecases/templateSearchLogic'
 import { type TemplateSearchTab } from '~/modules/search/ui/TemplateSearchTabs'
-import { currentUser, currentUserId } from '~/modules/user/application/user'
 import { createDebouncedSignal } from '~/shared/utils/createDebouncedSignal'
 
-export const [templateSearch, setTemplateSearch] = createSignal<string>('')
-export const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)
-export const [templateSearchTab, setTemplateSearchTab] =
-  createSignal<TemplateSearchTab>('hidden')
-export const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
+export function createTemplateSearchState(deps: {
+  getCurrentUserIdOrGuestId: () => string | undefined
+  getFavoriteFoods: () => number[]
+  recentFoodCrud: RecentFoodCrud
+  foodCrud: FoodCrud
+  recipeCrud: RecipeCrud
+}) {
+  return createRoot(() => {
+    const recentFoodCrud = deps.recentFoodCrud
+    const foodCrud = deps.foodCrud
+    const recipeCrud = deps.recipeCrud
 
-const getFavoriteFoods = () => currentUser()?.favorite_foods ?? []
+    const [templateSearch, setTemplateSearch] = createSignal<string>('')
+    const [debouncedSearch] = createDebouncedSignal(templateSearch, 500)
+    const [templateSearchTab, setTemplateSearchTab] =
+      createSignal<TemplateSearchTab>('hidden')
+    const [debouncedTab] = createDebouncedSignal(templateSearchTab, 500)
 
-export const [templates, { refetch: refetchTemplates }] = createResource(
-  () => ({
-    tab: debouncedTab(),
-    search: debouncedSearch(),
-    userId: currentUserId(),
-  }),
-  (signals) => {
-    return fetchTemplatesByTabLogic(
-      signals.tab,
-      signals.search,
-      signals.userId,
-      {
-        fetchUserRecipes,
-        fetchUserRecipeByName,
-        fetchUserRecentFoods,
-        fetchFoods,
-        fetchFoodsByName,
-        getFavoriteFoods,
-      },
+    const [templates, { refetch: refetchTemplates }] = createResource(
+      () => ({
+        tab: debouncedTab(),
+        search: debouncedSearch(),
+        userId: deps.getCurrentUserIdOrGuestId(),
+      }),
+      (signals) =>
+        fetchTemplatesByTabLogic(signals.tab, signals.search, signals.userId, {
+          fetchUserRecipes: (userId) => recipeCrud.fetchUserRecipes(userId),
+          fetchUserRecipeByName: (userId, name) =>
+            recipeCrud.fetchUserRecipeByName(userId, name),
+          fetchUserRecentFoodsAsTemplates: recentFoodCrud.fetchUserRecentFoods,
+          fetchFoods: (params) => foodCrud.fetchFoods(params),
+          fetchFoodsByName: (name, params) =>
+            foodCrud.fetchFoodsByName(name, params),
+          getFavoriteFoods: deps.getFavoriteFoods,
+        }),
     )
-  },
-)
+
+    return {
+      templateSearch,
+      setTemplateSearch,
+      debouncedSearch,
+      templateSearchTab,
+      setTemplateSearchTab,
+      debouncedTab,
+      templates,
+      refetchTemplates,
+    }
+  })
+}
+
+export type TemplateSearchState = ReturnType<typeof createTemplateSearchState>

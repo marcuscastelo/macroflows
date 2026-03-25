@@ -1,13 +1,10 @@
 import { Show } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import {
   isTemplateFood,
   type Template,
 } from '~/modules/diet/template/domain/template'
-import { deleteRecentFoodByReference } from '~/modules/recent-food/application/usecases/recentFoodCrud'
-import { debouncedTab } from '~/modules/search/application/store/templateSearchState'
-import { showPromise } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { TrashIcon } from '~/sections/common/components/icons/TrashIcon'
 import { logging } from '~/shared/utils/logging'
 
@@ -17,32 +14,29 @@ type RemoveFromRecentButtonProps = {
 }
 
 export function RemoveFromRecentButton(props: RemoveFromRecentButtonProps) {
+  const useCases = useContainer()
+  const authUseCases = useCases.authUseCases()
+  const recentFoodUseCases = useCases.recentFoodUseCases()
+  const templateSearchState = useCases.templateSearchState()
+
   const handleClick = (e: MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
     const templateType = isTemplateFood(props.template) ? 'food' : 'recipe'
     const templateId = props.template.id
+    const userId = authUseCases.currentUserIdOrGuestId()
 
-    const userId = currentUserId()
-
-    void showPromise(
-      deleteRecentFoodByReference(userId, templateType, templateId),
-      {
-        loading: 'Removendo item da lista de recentes...',
-        success: 'Item removido da lista de recentes com sucesso!',
-        error: (err: unknown) => {
-          logging.error('RemoveFromRecentButton error:', err)
-          return 'Erro ao remover item da lista de recentes.'
-        },
-      },
-    )
+    void recentFoodUseCases
+      .deleteRecentFoodByReference(userId, templateType, templateId)
       .then(props.refetch)
-      .catch(() => {})
+      .catch((err) => {
+        logging.error('RemoveFromRecentButton error:', err)
+      })
   }
 
   return (
-    <Show when={debouncedTab() === 'recent'}>
+    <Show when={templateSearchState.debouncedTab() === 'recent'}>
       <button
         class="my-auto pt-2 pl-1 hover:animate-pulse"
         onClick={handleClick}

@@ -1,30 +1,52 @@
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { userMacroProfiles } from '~/modules/diet/macro-profile/application/usecases/macroProfileState'
+import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import type { WeightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { logging } from '~/shared/utils/logging'
 
-const macroTargetAt = (day: Date): MacroNutrients | null => {
-  const targetDayWeight_ = weightUseCases.effectiveAt(day)?.weight ?? null
-  const targetDayMacroProfile_ = getEffectiveMacroProfile(
-    userMacroProfiles(),
-    day,
-  )
+/**
+ * Factory that creates macro-target use-cases with injectable dependencies.
+ *
+ * Allows injecting `getEffectiveMacroProfile` for testing or alternate DI wiring.
+ */
+export function createMacroTargetUseCases(deps: {
+  weightUseCases: WeightUseCases
+  userMacroProfiles: () => readonly MacroProfile[]
+  getEffectiveMacroProfile?: typeof getEffectiveMacroProfile
+}) {
+  const localGetEffectiveMacroProfile =
+    deps.getEffectiveMacroProfile ?? getEffectiveMacroProfile
 
-  if (targetDayWeight_ === null) {
-    logging.debug(`Weight not found for day ${day.toISOString()}`)
-    return null
+  function macroTargetAt(day: Date): MacroNutrients | null {
+    const targetDayWeight_ =
+      deps.weightUseCases.effectiveAt(day)?.weight ?? null
+    const targetDayMacroProfile_ = localGetEffectiveMacroProfile(
+      deps.userMacroProfiles(),
+      day,
+    )
+
+    if (targetDayWeight_ === null) {
+      logging.warn('macroTargetUseCases: Weight not found for day', {
+        component: 'macroTargetUseCases',
+        day: day.toISOString(),
+      })
+      return null
+    }
+
+    if (targetDayMacroProfile_ === null) {
+      logging.warn('macroTargetUseCases: Macro profile not found for day', {
+        component: 'macroTargetUseCases',
+        day: day.toISOString(),
+      })
+      return null
+    }
+
+    return MacroTargetExt.forWeight(targetDayMacroProfile_, targetDayWeight_)
   }
 
-  if (targetDayMacroProfile_ === null) {
-    logging.warn(`Macro profile not found for day ${day.toISOString()}`)
-    return null
+  return {
+    macroTargetAt,
   }
-
-  return MacroTargetExt.forWeight(targetDayMacroProfile_, targetDayWeight_)
 }
-
-export const macroTargetUseCases = {
-  macroTargetAt,
-}
+export type MacroTargetUseCases = ReturnType<typeof createMacroTargetUseCases>

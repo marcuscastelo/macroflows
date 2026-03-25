@@ -1,11 +1,11 @@
 import { A } from '@solidjs/router'
 import { createMemo, Show } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
 import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
-import { macroTargetUseCases } from '~/modules/diet/macro-target/application/macroTargetUseCases'
 import { Progress } from '~/sections/common/components/Progress'
 import { stringToDate } from '~/shared/utils/date/dateUtils'
 
@@ -15,9 +15,12 @@ export type DayMacrosProps = {
 }
 
 export default function DayMacros(props: DayMacrosProps) {
+  const useCases = useContainer()
   const macros = createMemo(() => DayDietExt.calcDayMacros(props.dayDiet))
   const macroTarget = createMemo(() =>
-    macroTargetUseCases.macroTargetAt(stringToDate(props.dayDiet.target_day)),
+    useCases
+      .macroTargetUseCases()
+      .macroTargetAt(stringToDate(props.dayDiet.target_day)),
   )
 
   return (
@@ -95,6 +98,9 @@ function Macros(props: {
   targetMacros: MacroNutrients
   class?: string
 }) {
+  const macrosExt = () => MacroNutrientsExt.of(props.macros)
+  const targetMacrosExt = () => MacroNutrientsExt.of(props.targetMacros)
+
   return (
     <div class={`mx-2 ${props.class}`}>
       <Progress
@@ -102,27 +108,34 @@ function Macros(props: {
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="green"
-        textLabel={`Carboidrato (${props.macros.carbs.toFixed(2)}/${props.targetMacros.carbs.toFixed(2)}g)`}
+        textLabel={`Carboidrato (${macrosExt().carbsInGrams().toFixed(2)}/${targetMacrosExt().carbsInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.carbs) / props.targetMacros.carbs}
+        progress={
+          (100 * macrosExt().carbsInGrams()) / targetMacrosExt().carbsInGrams()
+        }
       />
       <Progress
         class=""
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="red"
-        textLabel={`Proteína (${props.macros.protein.toFixed(2)}/${props.targetMacros.protein.toFixed(2)}g)`}
+        textLabel={`Proteína (${macrosExt().proteinInGrams().toFixed(2)}/${targetMacrosExt().proteinInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.protein) / props.targetMacros.protein}
+        progress={
+          (100 * macrosExt().proteinInGrams()) /
+          targetMacrosExt().proteinInGrams()
+        }
       />
       <Progress
         class=""
         sizeClass="h-1.5"
         textLabelPosition="outside"
         color="yellow"
-        textLabel={`Gordura (${props.macros.fat.toFixed(2)}/${props.targetMacros.fat.toFixed(2)}g)`}
+        textLabel={`Gordura (${macrosExt().fatInGrams().toFixed(2)}/${targetMacrosExt().fatInGrams().toFixed(2)}g)`}
         showLabel={true}
-        progress={(100 * props.macros.fat) / props.targetMacros.fat}
+        progress={
+          (100 * macrosExt().fatInGrams()) / targetMacrosExt().fatInGrams()
+        }
       />
     </div>
   )

@@ -17,7 +17,7 @@ export type FetchTemplatesDeps = {
     userId: User['uuid'],
     name: string,
   ) => Promise<readonly Recipe[] | null>
-  fetchUserRecentFoods: (
+  fetchUserRecentFoodsAsTemplates: (
     userId: User['uuid'],
     search: string,
     opts?: { limit?: number },
@@ -54,7 +54,10 @@ export async function fetchTemplatesByTabLogic(
       if (userId === undefined) {
         return []
       }
-      const templates = await deps.fetchUserRecentFoods(userId, search)
+      const templates = await deps.fetchUserRecentFoodsAsTemplates(
+        userId,
+        search,
+      )
 
       // Apply additional client-side filtering if needed (for EAN search)
       if (lowerSearch !== '') {

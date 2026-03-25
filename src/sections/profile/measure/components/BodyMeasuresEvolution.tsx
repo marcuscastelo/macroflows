@@ -1,20 +1,18 @@
 import { For, Show, Suspense } from 'solid-js'
 
-import { insertBodyMeasure } from '~/modules/measure/application/usecases/measureCrud'
-import {
-  bodyMeasures,
-  refetchBodyMeasures,
-} from '~/modules/measure/application/usecases/measureState'
+import { useContainer } from '~/di/container'
 import { createNewBodyMeasure } from '~/modules/measure/domain/measure'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { MeasureField } from '~/sections/common/components/MeasureField'
 import { useFloatField } from '~/sections/common/hooks/useField'
 import { BodyMeasureChart } from '~/sections/profile/measure/components/BodyMeasureChart'
 import { BodyMeasureView } from '~/sections/profile/measure/components/BodyMeasureView'
 
 export function BodyMeasuresEvolution() {
+  const useCases = useContainer()
+  const measureCrud = useCases.measureCrud()
+  const measureState = useCases.measureState()
   const heightField = useFloatField()
   const waistField = useFloatField()
   const hipField = useFloatField()
@@ -34,7 +32,9 @@ export function BodyMeasuresEvolution() {
     }
 
     const newBodyMeasure = createNewBodyMeasure(bodyMeasureProps)
-    void insertBodyMeasure(newBodyMeasure).then(refetchBodyMeasures)
+    void measureCrud
+      .insertBodyMeasure(newBodyMeasure)
+      .then(measureState.refetchBodyMeasures)
   }
 
   return (
@@ -51,8 +51,10 @@ export function BodyMeasuresEvolution() {
 
           <button
             class="btn cursor-pointer uppercase btn-primary no-animation w-full"
+            type="button"
             onClick={() => {
-              const userId = currentUserId()
+              const authUseCases = useCases.authUseCases()
+              const userId = authUseCases.currentUserIdOrGuestId()
 
               handleAddMeasures({
                 user_id: userId,
@@ -75,7 +77,7 @@ export function BodyMeasuresEvolution() {
             </div>
           }
         >
-          <Show when={bodyMeasures()}>
+          <Show when={measureState.bodyMeasures()}>
             {(measures) => (
               <>
                 <BodyMeasureChart measures={measures} />
@@ -87,7 +89,7 @@ export function BodyMeasuresEvolution() {
                     {(bodyMeasure) => (
                       <BodyMeasureView
                         measure={bodyMeasure}
-                        onRefetchBodyMeasures={refetchBodyMeasures}
+                        onRefetchBodyMeasures={measureState.refetchBodyMeasures}
                       />
                     )}
                   </For>

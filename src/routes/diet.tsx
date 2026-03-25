@@ -1,6 +1,7 @@
 import { createEffect, createSignal, onCleanup, Show, Suspense } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useContainer } from '~/di/container'
+import { AuthGuard } from '~/modules/auth/ui/guards/AuthGuard'
 import { Alert } from '~/sections/common/components/Alert'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
 import { PageLoading } from '~/sections/common/components/PageLoading'
@@ -15,6 +16,7 @@ import {
 } from '~/shared/modal/helpers/modalHelpers'
 
 export default function DietPage() {
+  const useCases = useContainer()
   const [mode, setMode] = createSignal<'edit' | 'read-only' | 'summary'>('edit')
 
   function handleRequestEditMode() {
@@ -23,7 +25,8 @@ export default function DietPage() {
 
   createEffect(() => {
     setMode(
-      dayUseCases.targetDay() === dayUseCases.currentToday()
+      useCases.dayUseCases().targetDay() ===
+        useCases.dayUseCases().currentToday()
         ? 'edit'
         : 'read-only',
     )
@@ -31,15 +34,15 @@ export default function DietPage() {
 
   // Show day change modal when day changes
   createEffect(() => {
-    const changeData = dayUseCases.dayChangeData()
+    const changeData = useCases.dayUseCases().dayChangeData()
     if (changeData) {
       let modalId = openContentModal(
         (modalId) => (
           <DayChangeModal
             modalId={modalId}
-            newDay={dayUseCases.currentToday}
-            onGoToToday={dayUseCases.acceptDayChange}
-            onStayOnDay={dayUseCases.dismissDayChangeModal}
+            newDay={useCases.dayUseCases().currentToday}
+            onGoToToday={useCases.dayUseCases().acceptDayChange}
+            onStayOnDay={useCases.dayUseCases().dismissDayChangeModal}
           />
         ),
         {
@@ -56,33 +59,37 @@ export default function DietPage() {
   })
 
   return (
-    <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
-      <TopBar />
-      <Show when={dayUseCases.currentDayDiet()} fallback={<div />}>
-        {(currentDayDiet) => (
-          <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
+    <AuthGuard>
+      <Suspense fallback={<PageLoading message="Carregando dieta do dia..." />}>
+        <TopBar />
+        <Show when={useCases.dayUseCases().currentDayDiet()} fallback={<div />}>
+          {(currentDayDiet) => (
+            <DayMacros dayDiet={currentDayDiet()} class="mb-4" />
+          )}
+        </Show>
+        {mode() !== 'edit' && (
+          <Alert class="mt-2" color="yellow">
+            Mostrando refeições do dia {useCases.dayUseCases().targetDay()}!
+          </Alert>
         )}
-      </Show>
-      {mode() !== 'edit' && (
-        <Alert class="mt-2" color="yellow">
-          Mostrando refeições do dia {dayUseCases.targetDay()}!
-        </Alert>
-      )}
-      <Show
-        when={dayUseCases.currentDayDiet()}
-        fallback={<DayNotFound selectedDay={dayUseCases.targetDay()} />}
-      >
-        {(currentDayDiet) => (
-          <Suspense fallback={<LoadingRing />}>
-            <DayMeals
-              dayDiet={currentDayDiet()}
-              selectedDay={dayUseCases.targetDay()}
-              mode={mode()}
-              onRequestEditMode={handleRequestEditMode}
-            />
-          </Suspense>
-        )}
-      </Show>
-    </Suspense>
+        <Show
+          when={useCases.dayUseCases().currentDayDiet()}
+          fallback={
+            <DayNotFound selectedDay={useCases.dayUseCases().targetDay()} />
+          }
+        >
+          {(currentDayDiet) => (
+            <Suspense fallback={<LoadingRing />}>
+              <DayMeals
+                dayDiet={currentDayDiet()}
+                selectedDay={useCases.dayUseCases().targetDay()}
+                mode={mode()}
+                onRequestEditMode={handleRequestEditMode}
+              />
+            </Suspense>
+          )}
+        </Show>
+      </Suspense>
+    </AuthGuard>
   )
 }

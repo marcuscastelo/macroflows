@@ -1,9 +1,9 @@
 // @refresh reload
 import { createHandler, StartServer } from '@solidjs/start/server'
 
-import { initializeTelemetry } from '~/modules/observability/application/telemetry'
+import { initializeAppTelemetry } from '~/di/container'
 
-initializeTelemetry('server')
+initializeAppTelemetry('server')
 
 export default createHandler(() => (
   <StartServer

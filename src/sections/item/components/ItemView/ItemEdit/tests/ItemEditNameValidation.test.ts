@@ -11,13 +11,16 @@ import type {
   Item,
   RecipeItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import {
+  createMacroNutrients,
+  type MacroNutrientsRecord,
+} from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 const makeFoodItem = (
   id: number,
   name: string,
   quantity: number,
-  macros: { protein: number; carbs: number; fat: number },
+  macros: MacroNutrientsRecord,
 ): Item => ({
   id,
   name,
@@ -85,9 +88,9 @@ describe('ItemEdit Name Validation', () => {
 
   describe('canApplyItem', () => {
     const child = makeFoodItem(1, 'Flour', 100, {
-      protein: 5,
-      carbs: 70,
-      fat: 1,
+      proteinInMg: 5000,
+      carbsInMg: 70000,
+      fatInMg: 1000,
     })
 
     it('returns true for valid GroupItem with non-empty name', () => {
@@ -133,9 +136,9 @@ describe('ItemEdit Name Validation', () => {
     it('allows FoodItem with empty name (name derives from food)', () => {
       // FoodItem names derive from the referenced food, so we don't validate
       const food = makeFoodItem(1, '', 100, {
-        protein: 5,
-        carbs: 70,
-        fat: 1,
+        proteinInMg: 5000,
+        carbsInMg: 70000,
+        fatInMg: 1000,
       })
       expect(canApplyItem(food)).toBe(true)
     })
@@ -162,9 +165,9 @@ describe('ItemEdit Name Validation', () => {
   describe('Name Update Behavior', () => {
     it('updating name preserves other item properties', () => {
       const child = makeFoodItem(1, 'Flour', 100, {
-        protein: 5,
-        carbs: 70,
-        fat: 1,
+        proteinInMg: 5000,
+        carbsInMg: 70000,
+        fatInMg: 1000,
       })
       const original = makeGroupItem(10, 'Original', 200, [child])
       const updated = { ...original, name: 'Updated Name' }
@@ -177,9 +180,9 @@ describe('ItemEdit Name Validation', () => {
 
     it('name change does not affect children', () => {
       const child = makeFoodItem(1, 'Flour', 100, {
-        protein: 5,
-        carbs: 70,
-        fat: 1,
+        proteinInMg: 5000,
+        carbsInMg: 70000,
+        fatInMg: 1000,
       })
       const original = makeGroupItem(10, 'Original', 200, [child])
       const updated = { ...original, name: 'Updated Name' }

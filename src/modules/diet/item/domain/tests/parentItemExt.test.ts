@@ -15,7 +15,11 @@ describe('parentItemExt', () => {
     reference: {
       type: 'food',
       id: 100,
-      macros: createMacroNutrients({ protein: 1, carbs: 1, fat: 1 }),
+      macros: createMacroNutrients({
+        proteinInGrams: 1,
+        carbsInGrams: 1,
+        fatInGrams: 1,
+      }),
     },
   })
   const childB = createItem({
@@ -25,7 +29,11 @@ describe('parentItemExt', () => {
     reference: {
       type: 'food',
       id: 101,
-      macros: createMacroNutrients({ protein: 2, carbs: 2, fat: 2 }),
+      macros: createMacroNutrients({
+        proteinInGrams: 2,
+        carbsInGrams: 2,
+        fatInGrams: 2,
+      }),
     },
   })
   const baseGroup = createItem({
@@ -119,7 +127,11 @@ describe('parentItemExt', () => {
       reference: {
         type: 'food',
         id: 100,
-        macros: createMacroNutrients({ protein: 5, carbs: 25, fat: 1 }),
+        macros: createMacroNutrients({
+          proteinInGrams: 5,
+          carbsInGrams: 25,
+          fatInGrams: 1,
+        }),
       },
     })
     const cheese = createItem({
@@ -129,7 +141,11 @@ describe('parentItemExt', () => {
       reference: {
         type: 'food',
         id: 101,
-        macros: createMacroNutrients({ protein: 7, carbs: 1, fat: 9 }),
+        macros: createMacroNutrients({
+          proteinInGrams: 7,
+          carbsInGrams: 1,
+          fatInGrams: 9,
+        }),
       },
     })
 

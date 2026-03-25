@@ -7,14 +7,9 @@ vi.mock('~/shared/config/env', () => ({
 import {
   getToastSettings,
   resetToastSettings,
-  setAutoDismissErrors,
-  setDefaultDuration,
-  setGroupSimilarToasts,
-  setShowBackgroundLoading,
-  setShowBackgroundSuccess,
-  setShowDetailedErrors,
   updateToastSettings,
-} from '~/modules/toast/infrastructure/toastSettings'
+} from '~/modules/toast/application/toastSettings'
+import { createToastSettingsStore } from '~/modules/toast/infrastructure/toastSettings'
 
 const DEFAULTS = {
   showBackgroundSuccess: false,
@@ -26,6 +21,8 @@ const DEFAULTS = {
 }
 
 const STORAGE_KEY = 'macroflows:toast-settings'
+const FIRST_STORAGE_KEY = 'macroflows:toast-settings:first'
+const SECOND_STORAGE_KEY = 'macroflows:toast-settings:second'
 
 let localStorageMock: Record<string, string> = {}
 
@@ -67,19 +64,28 @@ describe('toastSettings', () => {
     expect(getToastSettings().showBackgroundSuccess).toBe(true)
   })
 
-  it('setters update only their value', () => {
-    setShowBackgroundSuccess(true)
-    expect(getToastSettings().showBackgroundSuccess).toBe(true)
-    setShowBackgroundLoading(true)
-    expect(getToastSettings().showBackgroundLoading).toBe(true)
-    setAutoDismissErrors(true)
-    expect(getToastSettings().autoDismissErrors).toBe(true)
-    setDefaultDuration(9999)
-    expect(getToastSettings().defaultDuration).toBe(9999)
-    setGroupSimilarToasts(false)
-    expect(getToastSettings().groupSimilarToasts).toBe(false)
-    setShowDetailedErrors(false)
-    expect(getToastSettings().showDetailedErrors).toBe(false)
+  it('createToastSettingsStore keeps persistence isolated per storage key', () => {
+    const firstStore = createToastSettingsStore({
+      storageKey: FIRST_STORAGE_KEY,
+    })
+    const secondStore = createToastSettingsStore({
+      storageKey: SECOND_STORAGE_KEY,
+    })
+
+    expect(localStorageMock[FIRST_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
+    expect(localStorageMock[SECOND_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
+
+    firstStore.updateToastSettings({ showBackgroundSuccess: true })
+
+    expect(firstStore.getToastSettings().showBackgroundSuccess).toBe(true)
+    expect(secondStore.getToastSettings()).toEqual(DEFAULTS)
+    expect(localStorageMock[FIRST_STORAGE_KEY]).toBe(
+      JSON.stringify({
+        ...DEFAULTS,
+        showBackgroundSuccess: true,
+      }),
+    )
+    expect(localStorageMock[SECOND_STORAGE_KEY]).toBe(JSON.stringify(DEFAULTS))
   })
 
   it('resetToastSettings restores defaults', () => {
@@ -97,7 +103,7 @@ describe('toastSettings', () => {
     vi.resetModules()
     setMockLocalStorage()
     const toastSettingsModule =
-      await import('~/modules/toast/infrastructure/toastSettings')
+      await import('~/modules/toast/application/toastSettings')
     expect(toastSettingsModule.getToastSettings().showBackgroundSuccess).toBe(
       true,
     )
@@ -109,7 +115,7 @@ describe('toastSettings', () => {
     vi.resetModules()
     setMockLocalStorage()
     const toastSettingsModule =
-      await import('~/modules/toast/infrastructure/toastSettings')
+      await import('~/modules/toast/application/toastSettings')
     expect(toastSettingsModule.getToastSettings()).toEqual(DEFAULTS)
   })
 })

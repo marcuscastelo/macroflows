@@ -31,9 +31,11 @@ describe('templateSearchTabPreference', () => {
 
   describe('loadTabPreference', () => {
     it('returns default tab when localStorage is empty', async () => {
-      const { loadTabPreference, DEFAULT_TAB } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(loadTabPreference()).toBe(DEFAULT_TAB)
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(tabPreference.loadTabPreference()).toBe(availableTabs.Todos.id)
     })
 
     it('returns persisted tab from localStorage', async () => {
@@ -41,9 +43,11 @@ describe('templateSearchTabPreference', () => {
       setMockLocalStorage()
       vi.resetModules()
 
-      const { loadTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(loadTabPreference()).toBe(availableTabs.Favoritos.id)
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(tabPreference.loadTabPreference()).toBe(availableTabs.Favoritos.id)
     })
 
     it('returns persisted Recentes tab from localStorage', async () => {
@@ -51,9 +55,11 @@ describe('templateSearchTabPreference', () => {
       setMockLocalStorage()
       vi.resetModules()
 
-      const { loadTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(loadTabPreference()).toBe(availableTabs.Recentes.id)
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(tabPreference.loadTabPreference()).toBe(availableTabs.Recentes.id)
     })
 
     it('returns persisted Receitas tab from localStorage', async () => {
@@ -61,9 +67,11 @@ describe('templateSearchTabPreference', () => {
       setMockLocalStorage()
       vi.resetModules()
 
-      const { loadTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(loadTabPreference()).toBe(availableTabs.Receitas.id)
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(tabPreference.loadTabPreference()).toBe(availableTabs.Receitas.id)
     })
 
     it('returns default tab for invalid stored value', async () => {
@@ -71,27 +79,31 @@ describe('templateSearchTabPreference', () => {
       setMockLocalStorage()
       vi.resetModules()
 
-      const { loadTabPreference, DEFAULT_TAB } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(loadTabPreference()).toBe(DEFAULT_TAB)
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(tabPreference.loadTabPreference()).toBe(availableTabs.Todos.id)
     })
   })
 
   describe('saveTabPreference', () => {
     it('saves tab preference to localStorage', async () => {
-      const { saveTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
+      const tabPreference = createTemplateSearchTabPreference()
 
-      saveTabPreference(availableTabs.Favoritos.id)
+      tabPreference.saveTabPreference(availableTabs.Favoritos.id)
 
       expect(localStorageMock[STORAGE_KEY]).toBe(availableTabs.Favoritos.id)
     })
 
     it('does not persist hidden tab state', async () => {
-      const { saveTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
+      const tabPreference = createTemplateSearchTabPreference()
 
-      saveTabPreference('hidden')
+      tabPreference.saveTabPreference('hidden')
 
       expect(localStorageMock[STORAGE_KEY]).toBeUndefined()
     })
@@ -101,10 +113,11 @@ describe('templateSearchTabPreference', () => {
       setMockLocalStorage()
       vi.resetModules()
 
-      const { saveTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
+      const tabPreference = createTemplateSearchTabPreference()
 
-      saveTabPreference(availableTabs.Recentes.id)
+      tabPreference.saveTabPreference(availableTabs.Recentes.id)
 
       expect(localStorageMock[STORAGE_KEY]).toBe(availableTabs.Recentes.id)
     })
@@ -112,27 +125,32 @@ describe('templateSearchTabPreference', () => {
 
   describe('round-trip persistence', () => {
     it('can save and load tab preference', async () => {
-      const { saveTabPreference } =
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
+      const tabPreference = createTemplateSearchTabPreference()
 
-      // Save a preference
-      saveTabPreference(availableTabs.Receitas.id)
+      tabPreference.saveTabPreference(availableTabs.Receitas.id)
 
-      // Re-import to get fresh module state
       vi.resetModules()
       const freshModule =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
+      const freshTabPreference = freshModule.createTemplateSearchTabPreference()
 
-      // Load should return the saved preference
-      expect(freshModule.loadTabPreference()).toBe(availableTabs.Receitas.id)
+      expect(freshTabPreference.loadTabPreference()).toBe(
+        availableTabs.Receitas.id,
+      )
     })
   })
 
-  describe('DEFAULT_TAB', () => {
-    it('is the Todos tab', async () => {
-      const { DEFAULT_TAB } =
+  describe('createTemplateSearchTabPreference', () => {
+    it('returns load and save methods', async () => {
+      const { createTemplateSearchTabPreference } =
         await import('~/modules/search/infrastructure/templateSearchTabPreference')
-      expect(DEFAULT_TAB).toBe(availableTabs.Todos.id)
+
+      const tabPreference = createTemplateSearchTabPreference()
+
+      expect(typeof tabPreference.loadTabPreference).toBe('function')
+      expect(typeof tabPreference.saveTabPreference).toBe('function')
     })
   })
 })

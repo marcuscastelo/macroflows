@@ -5,7 +5,7 @@ https://macroflows.vercel.app
 
 A modular, high-performance nutrition tracking platform built with SolidJS, strong typing, and clean architecture principles.
 
-![Version](https://img.shields.io/badge/version-0.14.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.15.0-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-2c4f7c?logo=solid&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
@@ -66,6 +66,14 @@ A modular, high-performance nutrition tracking platform built with SolidJS, stro
 Macroflows is a nutrition tracking system focused on strong typing, reactive UI, and modular domain-driven design. It follows clean architecture principles and integrates with modern backend and frontend tools.
 
 For now, it is focused on being a personal project to track my own nutrition, but maybe in the future it will be a SaaS product.
+
+## Project Docs
+
+- Canonical repo-wide agent entrypoint: [AGENTS.md](./AGENTS.md)
+- Canonical architecture map: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- Canonical dependency and ownership rules: [docs/BOUNDARIES.md](./docs/BOUNDARIES.md)
+- Canonical docs governance: [docs/DOCS_GOVERNANCE.md](./docs/DOCS_GOVERNANCE.md)
+- ADR index: [docs/adr/README.md](./docs/adr/README.md)
 
 ---
 

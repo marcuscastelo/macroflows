@@ -1,13 +1,9 @@
 import { createEffect, Show } from 'solid-js'
 
-import {
-  innerData,
-  setUnsavedFields,
-  type UnsavedFields,
-} from '~/modules/profile/application/profile'
+import { useContainer } from '~/di/container'
+import { type UnsavedFields } from '~/modules/profile/application/profile'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUser, updateUser } from '~/modules/user/application/user'
 import {
   demoteUserToNewUser,
   type User,
@@ -35,9 +31,11 @@ export const GENDER_TRANSLATION: Translation<User['gender']> = {
 }
 
 export function UserInfo() {
+  const useCases = useContainer()
+  const userUseCases = useCases.userUseCases()
   createEffect(() => {
-    const user_ = currentUser()
-    const innerData_ = innerData()
+    const user_ = userUseCases.currentUser()
+    const innerData_ = useCases.profileUseCases().innerData()
 
     if (user_ === null) {
       return
@@ -53,11 +51,14 @@ export function UserInfo() {
     }
 
     // TODO: Find a way to make Object.keys strongly typed
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1302
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const keys = Object.keys(innerData_) as (keyof UnsavedFields)[]
-    setUnsavedFields(
-      keys.reduce<UnsavedFields>(reduceFunc, {} satisfies UnsavedFields),
-    )
+    useCases
+      .profileUseCases()
+      .setUnsavedFields(
+        keys.reduce<UnsavedFields>(reduceFunc, {} satisfies UnsavedFields),
+      )
   })
 
   const convertDesiredWeight = (value: string) => Number(value)
@@ -80,7 +81,7 @@ export function UserInfo() {
     <>
       <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE} rounded-b-none pb-6`}>
         <h1 class={'mx-auto text-center text-3xl font-bold'}>
-          <Show when={currentUser()}>
+          <Show when={userUseCases.currentUser()}>
             {(user) => (
               <>
                 <UserIcon
@@ -110,14 +111,15 @@ export function UserInfo() {
         class={
           'btn-primary no-animation btn cursor-pointer uppercase w-full rounded-t-none'
         }
+        type="button"
         onClick={() => {
-          const user = innerData()
+          const user = useCases.profileUseCases().innerData()
           if (user === null) {
             return
           }
           // Convert User to NewUser for the update
           const newUser = demoteUserToNewUser(user)
-          updateUser(user.uuid, newUser).catch((error) => {
+          userUseCases.updateUser(user.uuid, newUser).catch((error) => {
             logging.error('UserInfo changeUser error:', error)
             showError(error, {}, 'Erro ao atualizar usuário')
           })

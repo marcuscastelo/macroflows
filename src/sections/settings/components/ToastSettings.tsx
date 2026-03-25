@@ -9,7 +9,7 @@ import {
   getToastSettings,
   resetToastSettings,
   updateToastSettings,
-} from '~/modules/toast/infrastructure/toastSettings'
+} from '~/modules/toast/application/toastSettings'
 
 export function ToastSettings() {
   const [settings, setSettings] = createSignal(getToastSettings())

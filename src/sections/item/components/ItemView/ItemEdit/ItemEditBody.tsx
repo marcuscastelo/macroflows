@@ -1,6 +1,6 @@
 import { type Accessor, type Setter, Show } from 'solid-js'
 
-import { dayUseCases } from '~/modules/diet/day-diet/application/usecases/dayUseCases'
+import { useContainer } from '~/di/container'
 import {
   isItemNameValid,
   MAX_ITEM_NAME_LENGTH,
@@ -13,7 +13,7 @@ import {
   type Item,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { macroOverflowUseCases } from '~/modules/diet/macro-nutrients/application/macroOverflow'
+import { createMacroOverflow } from '~/modules/diet/macro-nutrients/application/macroOverflow'
 import { type UseFieldReturn } from '~/sections/common/hooks/useField'
 import { ItemView } from '~/sections/item/components/ItemView'
 import { ItemChildrenEditor } from '~/sections/item/components/ItemView/ItemEdit/ItemChildrenEditor'
@@ -43,6 +43,12 @@ export type ItemEditBodyProps = {
 }
 
 export function ItemEditBody(props: ItemEditBodyProps) {
+  const useCases = useContainer()
+  const macroOverflowUseCases = createMacroOverflow({
+    dayUseCases: useCases.dayUseCases(),
+    macroTargetUseCases: useCases.macroTargetUseCases(),
+  })
+
   const handleQuantitySelect = (quantity: number) => {
     logging.debug('[ItemEditBody] shortcut quantity', { quantity })
     props.quantityField.setRawValue(quantity.toString())
@@ -63,8 +69,11 @@ export function ItemEditBody(props: ItemEditBodyProps) {
       {/* Name input for GroupItem and RecipeItem */}
       <Show when={isParentItem(props.itemDraft())}>
         <div class="mb-4">
-          <label class="block text-sm text-gray-400 mb-1">Nome do item</label>
+          <label for="item-name-input" class="block text-sm text-gray-400 mb-1">
+            Nome do item
+          </label>
           <input
+            id="item-name-input"
             class={`input w-full bg-gray-800 border-gray-600 text-white ${
               !isItemNameValid(props.itemDraft().name) ? 'border-red-500' : ''
             }`}
@@ -101,7 +110,7 @@ export function ItemEditBody(props: ItemEditBodyProps) {
         when={
           !isGroupItem(props.itemDraft()) &&
           props.viewMode !== 'group' &&
-          dayUseCases.currentDayDiet()
+          useCases.dayUseCases().currentDayDiet()
         }
       >
         {(currentDayDiet) => (

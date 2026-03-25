@@ -8,9 +8,8 @@ import {
 } from 'solid-js'
 
 import { APP_VERSION } from '~/app-version'
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useContainer } from '~/di/container'
 import { AuthUserDropdown } from '~/modules/auth/ui/AuthUserDropdown'
-import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import { useIntersectionObserver } from '~/shared/hooks/useIntersectionObserver'
@@ -19,6 +18,8 @@ import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
 export function BottomNavigation() {
+  const useCases = useContainer()
+  const authUseCases = useCases.authUseCases()
   const navigate = useNavigate()
   const location = useLocation()
   const pathname = () => location.pathname
@@ -125,6 +126,7 @@ export function BottomNavigation() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
+                      <title>Ícone de login</title>
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -135,7 +137,7 @@ export function BottomNavigation() {
                   }
                 >
                   <UserIcon
-                    userId={currentUserId}
+                    userId={authUseCases.currentUserIdOrGuestId}
                     userName={(): string => {
                       const authUser = authUseCases.getCurrentUser()
                       if (authUser !== null && authUser.email !== '') {

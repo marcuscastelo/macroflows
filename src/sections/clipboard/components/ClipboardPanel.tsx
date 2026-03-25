@@ -1,6 +1,6 @@
 import { For, type JSXElement, Show } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardEntry,
   isItemPayload,
@@ -146,6 +146,7 @@ function ClipboardEntryRow(props: {
  * Clipboard panel that displays recent clipboard entries
  */
 export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
+  const useCases = useContainer()
   return (
     <Show when={props.isOpen}>
       <div class="fixed top-0 right-0 h-full w-80 bg-gray-800 text-white shadow-lg z-50 flex flex-col">
@@ -177,19 +178,21 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         {/* Content */}
         <div class="flex-1 overflow-y-auto p-4">
           <Show
-            when={clipboardUseCases.entryCount() > 0}
+            when={useCases.clipboardUseCases().entryCount() > 0}
             fallback={
               <div class="text-center text-gray-500 py-8">
                 No items in clipboard
               </div>
             }
           >
-            <For each={clipboardUseCases.entries()}>
+            <For each={useCases.clipboardUseCases().entries()}>
               {(entry) => (
                 <ClipboardEntryRow
                   entry={entry}
-                  onRemove={(id) => clipboardUseCases.remove(id)}
-                  onTogglePin={(id) => clipboardUseCases.togglePin(id)}
+                  onRemove={(id) => useCases.clipboardUseCases().remove(id)}
+                  onTogglePin={(id) =>
+                    useCases.clipboardUseCases().togglePin(id)
+                  }
                   onPaste={props.onPaste}
                 />
               )}
@@ -198,12 +201,12 @@ export function ClipboardPanel(props: ClipboardPanelProps): JSXElement {
         </div>
 
         {/* Footer */}
-        <Show when={clipboardUseCases.entryCount() > 0}>
+        <Show when={useCases.clipboardUseCases().entryCount() > 0}>
           <div class="p-4 border-t border-gray-700">
             <Button
               type="button"
               class="btn btn-sm btn-error w-full"
-              onClick={() => clipboardUseCases.clear()}
+              onClick={() => useCases.clipboardUseCases().clear()}
             >
               Clear All Unpinned
             </Button>

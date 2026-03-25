@@ -1,4 +1,9 @@
-import { type Item } from '~/modules/diet/item/schema/itemSchema'
+import { isFoodItem, type Item } from '~/modules/diet/item/schema/itemSchema'
+import {
+  DEFAULT_TOLERANCE_MG,
+  Macros,
+} from '~/modules/diet/macro-nutrients/domain/macrosExt'
+import { logging } from '~/shared/utils/logging'
 
 function equals(
   originalItems: readonly Item[],
@@ -20,63 +25,91 @@ function equals(
     const original = sortedOriginal[i]!
     const current = sortedCurrent[i]!
 
+    const quantityMgDifference = Math.abs(
+      Math.round(original.quantity * 1000) -
+        Math.round(current.quantity * 1000),
+    )
+
     // Compare essential properties that indicate manual editing
     if (
       original.id !== current.id ||
       original.name !== current.name ||
-      original.quantity !== current.quantity ||
+      quantityMgDifference > DEFAULT_TOLERANCE_MG ||
       original.reference.type !== current.reference.type
     ) {
       return false
     }
 
     // For food items, compare macros
-    if (
-      original.reference.type === 'food' &&
-      current.reference.type === 'food'
-    ) {
+    if (isFoodItem(original) && isFoodItem(current)) {
       const originalMacros = original.reference.macros
       const currentMacros = current.reference.macros
 
-      if (
-        originalMacros.protein !== currentMacros.protein ||
-        originalMacros.carbs !== currentMacros.carbs ||
-        originalMacros.fat !== currentMacros.fat
-      ) {
+      if (!Macros.approxEqual(originalMacros, currentMacros)) {
         return false
       }
-    }
-
-    // For recipe and group items, recursively compare children
-    if (
-      (original.reference.type === 'recipe' &&
-        current.reference.type === 'recipe') ||
-      (original.reference.type === 'group' &&
-        current.reference.type === 'group')
-    ) {
+      continue
+    } else if (!isFoodItem(original) && !isFoodItem(current)) {
       if (!equals(original.reference.children, current.reference.children)) {
         return false
       }
+      continue
     }
+    throw new Error('Mismatched item types during comparison')
   }
 
   return true
 }
 
-// Normalize quantities so they sum to 1, preserving relative proportions
+// Normalize quantities so they sum to 100, preserving relative proportions
 function normalizedQuantitiesShallow(items: readonly Item[]): Item[] {
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
   if (totalQuantity === 0) {
-    return items.map((item) => ({ ...item, quantity: 1 / items.length }))
+    let normalizedItems = items.map((item) => ({
+      ...item,
+      quantity: Math.round(100 / items.length),
+    }))
+    const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+    if (sum !== 100) {
+      const difference = 100 - sum
+      const adjustPerItem = difference / normalizedItems.length
+      normalizedItems = normalizedItems.map((item) => ({
+        ...item,
+        quantity: item.quantity + adjustPerItem,
+      }))
+    }
+    return normalizedItems
   }
 
-  return items.map((item) => ({
+  let normalizedItems = items.map((item) => ({
     ...item,
-    quantity: item.quantity / totalQuantity,
+    quantity: Math.round((item.quantity / totalQuantity) * 100),
   }))
+
+  const sum = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum !== 100) {
+    const difference = 100 - sum
+    const adjustPerItem = difference / normalizedItems.length
+    normalizedItems = normalizedItems.map((item) => ({
+      ...item,
+      quantity: item.quantity + adjustPerItem,
+    }))
+  }
+
+  const sum2 = normalizedItems.reduce((sum, item) => sum + item.quantity, 0)
+  if (sum2 !== 100) {
+    logging.warn(
+      '[Items.normalizedQuantitiesShallow] Normalization adjustment failed to reach 100%',
+      { sum2, normalizedItems, items },
+    )
+  }
+
+  return normalizedItems
 }
 
 export const Items = {
-  equals,
-  normalizedQuantitiesShallow,
+  equals: (originalItems: readonly Item[], currentItems: readonly Item[]) =>
+    equals(originalItems, currentItems),
+  normalizedQuantitiesShallow: (items: readonly Item[]) =>
+    normalizedQuantitiesShallow(items),
 }

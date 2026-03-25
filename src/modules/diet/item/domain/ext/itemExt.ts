@@ -14,45 +14,87 @@ import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroEx
 import {
   createMacroNutrients,
   type MacroNutrients,
+  type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 function calcFoodItemMacros(item: FoodItem) {
+  const macrosExt = MacroNutrientsExt.of(item.reference.macros)
+
   // For food items, calculate proportionally from stored macros in reference
   return createMacroNutrients({
-    carbs: (item.reference.macros.carbs * item.quantity) / 100,
-    fat: (item.reference.macros.fat * item.quantity) / 100,
-    protein: (item.reference.macros.protein * item.quantity) / 100,
+    carbsInGrams: (macrosExt.carbsInGrams() * item.quantity) / 100,
+    fatInGrams: (macrosExt.fatInGrams() * item.quantity) / 100,
+    proteinInGrams: (macrosExt.proteinInGrams() * item.quantity) / 100,
   })
 }
 
-function calcItemContainerMacros(item: RecipeItem | GroupItem): MacroNutrients {
-  // For recipe and group items, sum the macros from children
-  // The quantity field represents the total prepared amount, not a scaling factor
+/**
+ * Calculates macros for a RecipeItem by summing its children's macros directly.
+ * The multiplier only affects the displayed mainQuantity, NOT the nutritional values.
+ * Nutrient values are determined by the raw ingredients (children).
+ */
+function calcRecipeItemMacros(item: RecipeItem): MacroNutrients {
+  // For recipe items, sum the macros from children directly.
+  // The multiplier only affects the displayed quantity (mainQuantity),
+  // not the nutritional content which is determined by the raw ingredients.
+  return item.reference.children.reduce(
+    (acc, child) => {
+      const childMacros = ItemExt.macros(child)
+      const accExt = MacroNutrientsExt.of(acc)
+      const childExt = MacroNutrientsExt.of(childMacros)
+      return createMacroNutrients({
+        carbsInGrams: accExt.carbsInGrams() + childExt.carbsInGrams(),
+        fatInGrams: accExt.fatInGrams() + childExt.fatInGrams(),
+        proteinInGrams: accExt.proteinInGrams() + childExt.proteinInGrams(),
+      })
+    },
+    createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
+  )
+}
+
+/**
+ * Calculates macros for a GroupItem by summing children's macros and scaling
+ * based on the group's quantity relative to children's total quantity.
+ * This allows users to scale a group up or down to adjust portion sizes.
+ */
+function calcGroupItemMacros(item: GroupItem): MacroNutrients {
+  // For group items, sum the macros from children and scale by quantity ratio
   const defaultQuantity = item.reference.children.reduce(
     (acc, child) => acc + child.quantity,
     0,
   )
 
   if (defaultQuantity === 0) {
-    return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+    return createMacroNutrients({
+      carbsInGrams: 0,
+      fatInGrams: 0,
+      proteinInGrams: 0,
+    })
   }
 
   const defaultMacros = item.reference.children.reduce(
     (acc, child) => {
       const childMacros = ItemExt.macros(child)
+      const accExt = MacroNutrientsExt.of(acc)
+      const childExt = MacroNutrientsExt.of(childMacros)
       return createMacroNutrients({
-        carbs: acc.carbs + childMacros.carbs,
-        fat: acc.fat + childMacros.fat,
-        protein: acc.protein + childMacros.protein,
+        carbsInGrams: accExt.carbsInGrams() + childExt.carbsInGrams(),
+        fatInGrams: accExt.fatInGrams() + childExt.fatInGrams(),
+        proteinInGrams: accExt.proteinInGrams() + childExt.proteinInGrams(),
       })
     },
-    createMacroNutrients({ carbs: 0, fat: 0, protein: 0 }),
+    createMacroNutrients({ carbsInGrams: 0, fatInGrams: 0, proteinInGrams: 0 }),
   )
 
+  const defaultMacrosExt = MacroNutrientsExt.of(defaultMacros)
+
   return createMacroNutrients({
-    carbs: (item.quantity / defaultQuantity) * defaultMacros.carbs,
-    fat: (item.quantity / defaultQuantity) * defaultMacros.fat,
-    protein: (item.quantity / defaultQuantity) * defaultMacros.protein,
+    carbsInGrams:
+      (item.quantity / defaultQuantity) * defaultMacrosExt.carbsInGrams(),
+    fatInGrams:
+      (item.quantity / defaultQuantity) * defaultMacrosExt.fatInGrams(),
+    proteinInGrams:
+      (item.quantity / defaultQuantity) * defaultMacrosExt.proteinInGrams(),
   })
 }
 
@@ -63,30 +105,44 @@ export const ItemExt = {
     const result = container.items.reduce(
       (acc, item) => {
         const itemMacros = ItemExt.macros(item)
-        acc.carbs += itemMacros.carbs
-        acc.fat += itemMacros.fat
-        acc.protein += itemMacros.protein
+        acc.carbsInMg += itemMacros.carbsInMg
+        acc.fatInMg += itemMacros.fatInMg
+        acc.proteinInMg += itemMacros.proteinInMg
         return acc
       },
-      { carbs: 0, fat: 0, protein: 0 },
+      {
+        carbsInMg: 0,
+        fatInMg: 0,
+        proteinInMg: 0,
+      } satisfies MacroNutrientsRecord,
     )
     return createMacroNutrients(result)
   },
 
   macros(item: Item | undefined): MacroNutrients {
     if (item === undefined) {
-      return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+      return createMacroNutrients({
+        carbsInGrams: 0,
+        fatInGrams: 0,
+        proteinInGrams: 0,
+      })
     }
 
     if (isFoodItem(item)) {
       return calcFoodItemMacros(item)
-    } else if (isRecipeItem(item) || isGroupItem(item)) {
-      return calcItemContainerMacros(item)
+    } else if (isRecipeItem(item)) {
+      return calcRecipeItemMacros(item)
+    } else if (isGroupItem(item)) {
+      return calcGroupItemMacros(item)
     }
 
     // Fallback for unknown types
     item satisfies never
-    return createMacroNutrients({ carbs: 0, fat: 0, protein: 0 })
+    return createMacroNutrients({
+      carbsInGrams: 0,
+      fatInGrams: 0,
+      proteinInGrams: 0,
+    })
   },
 
   of(item: Item) {

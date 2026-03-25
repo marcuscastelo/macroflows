@@ -1,15 +1,9 @@
 import { For, Suspense } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
-import {
-  setWeightChartType,
-  WEIGHT_CHART_OPTIONS,
-  weightChartType,
-} from '~/modules/weight/application/chart/weightChartSettings'
-import { weightChartUseCases } from '~/modules/weight/application/chart/weightChartUseCases'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
+import { WEIGHT_CHART_OPTIONS } from '~/modules/weight/application/chart/weightChartSettings'
 import { createNewWeight } from '~/modules/weight/domain/weight/weight'
 import { ChartLoadingPlaceholder } from '~/sections/common/components/ChartLoadingPlaceholder'
 import { ComboBox } from '~/sections/common/components/ComboBox'
@@ -24,7 +18,13 @@ import { WeightView } from '~/sections/weight/components/WeightView'
  * @returns SolidJS component
  */
 export function WeightEvolution() {
+  const useCases = useContainer()
   const weightField = useFloatField(undefined, { maxValue: 200 })
+  const authUseCases = useCases.authUseCases()
+  const userUseCases = useCases.userUseCases()
+  const weightUseCases = useCases.weightUseCases()
+  const weightChartSettings = useCases.weightChartSettings()
+  const weightChartUseCases = useCases.weightChartUseCases()
 
   return (
     <>
@@ -34,8 +34,8 @@ export function WeightEvolution() {
             <span class="text-2xl font-bold">Gráfico de evolução do peso</span>
             <ComboBox
               options={WEIGHT_CHART_OPTIONS}
-              value={weightChartType()}
-              onChange={setWeightChartType}
+              value={weightChartSettings.weightChartType()}
+              onChange={weightChartSettings.setWeightChartType}
               class="w-48"
             />
           </div>
@@ -47,7 +47,11 @@ export function WeightEvolution() {
             <WeightChart
               weights={weightUseCases.weights}
               desiredWeight={weightChartUseCases.desiredWeight()}
-              type={weightChartType()}
+              calculateWeightProgress={
+                weightChartUseCases.calculateWeightProgress
+              }
+              diet={userUseCases.currentUser()?.diet ?? 'cut'}
+              type={weightChartSettings.weightChartType()}
             />
           </Suspense>
           <FloatInput
@@ -57,6 +61,7 @@ export function WeightEvolution() {
             style={{ width: '100%' }}
           />
           <button
+            type="button"
             class="btn cursor-pointer uppercase btn-primary w-full focus:ring-2 focus:ring-blue-400 bg-blue-700 hover:bg-blue-800 border-none text-white"
             onClick={() => {
               const weight = weightField.value()
@@ -68,7 +73,7 @@ export function WeightEvolution() {
               weightUseCases
                 .insertWeight(
                   createNewWeight({
-                    user_id: currentUserId(),
+                    user_id: authUseCases.currentUserIdOrGuestId(),
                     weight,
                     target_timestamp: new Date(Date.now()),
                   }),

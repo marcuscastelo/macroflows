@@ -1,9 +1,8 @@
 import { useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useContainer } from '~/di/container'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { UserIcon } from '~/sections/common/components/icons/UserIcon'
 import {
@@ -14,7 +13,9 @@ import { logging } from '~/shared/utils/logging'
 import { vibrate } from '~/shared/utils/vibrate'
 
 export const AuthUserDropdown = (props: { modalId: string }) => {
+  const useCases = useContainer()
   const navigate = useNavigate()
+  const authUseCases = useCases.authUseCases()
 
   const handleSignOut = () => {
     vibrate(50)
@@ -62,7 +63,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
               <UserIcon
-                userId={currentUserId}
+                userId={authUseCases.currentUserIdOrGuestId}
                 userName={(): string => {
                   const authUser = authUseCases.getCurrentUser()
                   if (authUser !== null && authUser.email !== '') {
@@ -99,6 +100,7 @@ export const AuthUserDropdown = (props: { modalId: string }) => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>Sair da conta</title>
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"

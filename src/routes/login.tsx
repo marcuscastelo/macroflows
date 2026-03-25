@@ -1,18 +1,19 @@
 import { useNavigate } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 
-import { authUseCases } from '~/modules/auth/application/usecases/authUseCases'
+import { useContainer } from '~/di/container'
 import { GuestGuard } from '~/modules/auth/ui/guards/GuestGuard'
 import { showError } from '~/modules/toast/application/toastManager'
 import { Button } from '~/sections/common/components/buttons/Button'
 import { LoadingRing } from '~/sections/common/components/LoadingRing'
-import { guestUseCases } from '~/shared/guest/guestUseCases'
 import { logging } from '~/shared/utils/logging'
 
 export default function LoginPage() {
+  const useCases = useContainer()
   const navigate = useNavigate()
   const [isSigningIn, setIsSigningIn] = createSignal(false)
-
+  const authUseCases = useCases.authUseCases()
+  const guestUseCases = useCases.guestUseCases()
   const handleGoogleLogin = async () => {
     setIsSigningIn(true)
     try {

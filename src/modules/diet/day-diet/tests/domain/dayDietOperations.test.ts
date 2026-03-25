@@ -9,6 +9,7 @@ import { updateMealInDayDiet } from '~/modules/diet/day-diet/domain/dayDietOpera
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
+import { assertMealApproxEqual } from '~/shared/testing/assertions/approxEqual'
 
 function makeItem(id: number, name = 'Arroz') {
   return createItem({
@@ -18,7 +19,11 @@ function makeItem(id: number, name = 'Arroz') {
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbs: 10, protein: 2, fat: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
@@ -70,9 +75,9 @@ describe('dayDietOperations', () => {
       const updatedMeal1 = makeMeal(1, 'Almoço Atualizado', [baseItem])
       const result = updateMealInDayDiet(dayDietWithTwoMeals, 1, updatedMeal1)
 
-      expect(result.meals).toHaveLength(2)
-      expect(result.meals[0]?.name).toBe('Almoço Atualizado')
-      expect(result.meals[1]).toEqual(meal2)
+      // The first meal should be updated and the second meal should be preserved
+      assertMealApproxEqual(result.meals[0], updatedMeal1)
+      assertMealApproxEqual(result.meals[1], meal2)
     })
 
     it('should preserve other properties of the DayDiet', () => {

@@ -1,5 +1,6 @@
 import { type Accessor } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { DayDietExt } from '~/modules/diet/day-diet/domain/dayDietExt'
 import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
@@ -7,12 +8,14 @@ import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProf
 import { getEffectiveMacroProfile } from '~/modules/diet/macro-profile/domain/macroProfileOperations'
 import { MacroTargetExt } from '~/modules/diet/macro-target/domain/macroTargetExt'
 import { CARD_BACKGROUND_COLOR, CARD_STYLE } from '~/modules/theme/constants'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { type Weight } from '~/modules/weight/domain/weight/weight'
 import { WeightsExt } from '~/modules/weight/domain/weight/weightsExt'
 import { dateToDDMM } from '~/shared/utils/date/dateUtils'
 
 export function MacroEvolution() {
+  const useCases = useContainer()
+  const weightUseCases = useCases.weightUseCases()
+
   return (
     <div class={`${CARD_BACKGROUND_COLOR} ${CARD_STYLE}`}>
       <h5 class={'mx-auto mb-5 text-center text-3xl font-bold'}>
@@ -36,6 +39,8 @@ function _createChartData(
 ) {
   const data = days.map((day) => {
     const dayDate = new Date(day.target_day)
+    const dayMacros = DayDietExt.of(day).macros()
+    const dayCalories = dayMacros.calories()
 
     const currentWeight = WeightsExt.effectiveAt(weights, dayDate)
     const currentMacroProfile = getEffectiveMacroProfile(macroProfiles, dayDate)
@@ -47,25 +52,32 @@ function _createChartData(
           )
         : null
 
-    const dayMacros = DayDietExt.of(day).macros()
-    const dayCalories = dayMacros.calories()
+    if (macroTarget === null) {
+      return {
+        name: dateToDDMM(dayDate),
+        calories: dayCalories.toFixed(0),
+        protein: dayMacros.proteinInGrams().toFixed(0),
+        fat: dayMacros.fatInGrams().toFixed(0),
+        carbs: dayMacros.carbsInGrams().toFixed(0),
+      }
+    }
+
+    const macroTargetExt = MacroNutrientsExt.of(macroTarget)
+
     return {
       name: dateToDDMM(dayDate),
       calories: dayCalories.toFixed(0),
-      targetCalories:
-        macroTarget !== null
-          ? MacroNutrientsExt.totalCalories(macroTarget)
-          : undefined,
-      protein: dayMacros.protein().toFixed(0),
-      targetProtein: macroTarget?.protein.toFixed(0),
-      fat: dayMacros.fat().toFixed(0),
-      targetFat: macroTarget?.fat.toFixed(0),
-      carbs: dayMacros.carbs().toFixed(0),
-      targetCarbs: macroTarget?.carbs.toFixed(0),
+      targetCalories: macroTargetExt.calories(),
+      protein: dayMacros.proteinInGrams().toFixed(0),
+      targetProtein: macroTargetExt.proteinInGrams().toFixed(0),
+      fat: dayMacros.fatInGrams().toFixed(0),
+      targetFat: macroTargetExt.fatInGrams().toFixed(0),
+      carbs: dayMacros.carbsInGrams().toFixed(0),
+      targetCarbs: macroTargetExt.carbsInGrams().toFixed(0),
       targetGrams:
-        (macroTarget?.protein ?? NaN) +
-        (macroTarget?.carbs ?? NaN) +
-        (macroTarget?.fat ?? NaN),
+        macroTargetExt.proteinInGrams() +
+        macroTargetExt.carbsInGrams() +
+        macroTargetExt.fatInGrams(),
     }
   })
 

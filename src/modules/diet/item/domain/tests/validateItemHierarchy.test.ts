@@ -13,7 +13,11 @@ describe('validateItemHierarchy', () => {
     reference: {
       type: 'food',
       id: 10,
-      macros: createMacroNutrients({ protein: 20, carbs: 0, fat: 2 }),
+      macros: createMacroNutrients({
+        proteinInGrams: 20,
+        carbsInGrams: 0,
+        fatInGrams: 2,
+      }),
     },
   })
   const unifiedGroup: Item = createItem({

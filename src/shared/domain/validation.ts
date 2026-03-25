@@ -73,7 +73,9 @@ function createFieldValidationMessages(
         case validErrorCode: {
           // Use iss.path to get the field name automatically
           const fieldName =
-            iss.path && iss.path.length > 0 ? iss.path.join('.') : 'campo'
+            iss.path && iss.path.length > 0
+              ? iss.path.join('.')
+              : 'campo desconhecido'
           return createInvalidTypeMessage(
             fieldName,
             entityName,

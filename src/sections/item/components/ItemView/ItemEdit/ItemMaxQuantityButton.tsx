@@ -15,14 +15,15 @@ import {
   type MaxQuantityOptions,
   type MaxQuantityResult,
 } from '~/modules/diet/item/domain/maxQuantityCalculations'
-import { type MacroNutrientsRecord } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
+import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroExt'
+import { type MacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { cn } from '~/shared/cn'
 import { logging } from '~/shared/utils/logging'
 
 export type ItemMaxQuantityButtonProps = {
   currentValue: number
-  macroTargets: MacroNutrientsRecord
-  itemMacros: MacroNutrientsRecord
+  macroTargets: MacroNutrients
+  itemMacros: MacroNutrients
   onMaxSelected: (maxValue: number) => void
 }
 
@@ -367,7 +368,7 @@ export function ItemMaxQuantityButton(
 
 type PreviewPanelProps = {
   result: MaxQuantityResult
-  macroTargets: MacroNutrientsRecord
+  macroTargets: MacroNutrients
 }
 
 function PreviewPanel(props: PreviewPanelProps): JSX.Element {
@@ -383,12 +384,17 @@ function PreviewPanel(props: PreviewPanelProps): JSX.Element {
   const isOverLimit = (percentage: number): boolean =>
     props.result.ignoredOtherMacros && percentage > 100
 
+  const macroExt = () => MacroNutrientsExt.of(props.macroTargets)
+
   const carbPercentage = () =>
-    calcPercentage(props.result.preview.carbs, props.macroTargets.carbs)
+    calcPercentage(props.result.preview.carbsInGrams, macroExt().carbsInGrams())
   const proteinPercentage = () =>
-    calcPercentage(props.result.preview.protein, props.macroTargets.protein)
+    calcPercentage(
+      props.result.preview.proteinInGrams,
+      macroExt().proteinInGrams(),
+    )
   const fatPercentage = () =>
-    calcPercentage(props.result.preview.fat, props.macroTargets.fat)
+    calcPercentage(props.result.preview.fatInGrams, macroExt().fatInGrams())
 
   return (
     <div class="space-y-1">
@@ -403,21 +409,21 @@ function PreviewPanel(props: PreviewPanelProps): JSX.Element {
       <div class="grid grid-cols-3 gap-2 text-xs">
         <PreviewMacroItem
           label="C"
-          value={props.result.preview.carbs}
+          value={props.result.preview.carbsInGrams}
           percentage={carbPercentage()}
           color="text-yellow-400"
           isOverLimit={isOverLimit(carbPercentage())}
         />
         <PreviewMacroItem
           label="P"
-          value={props.result.preview.protein}
+          value={props.result.preview.proteinInGrams}
           percentage={proteinPercentage()}
           color="text-blue-400"
           isOverLimit={isOverLimit(proteinPercentage())}
         />
         <PreviewMacroItem
           label="G"
-          value={props.result.preview.fat}
+          value={props.result.preview.fatInGrams}
           percentage={fatPercentage()}
           color="text-red-400"
           isOverLimit={isOverLimit(fatPercentage())}

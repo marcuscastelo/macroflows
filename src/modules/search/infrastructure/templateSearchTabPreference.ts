@@ -12,10 +12,12 @@ import {
 
 const STORAGE_KEY = 'macroflows:template-search-tab'
 
-/**
- * Default tab to use when no preference is saved.
- */
-export const DEFAULT_TAB: TemplateSearchTab = availableTabs.Todos.id
+const DEFAULT_TAB: TemplateSearchTab = availableTabs.Todos.id
+
+type TemplateSearchTabPreference = {
+  loadTabPreference: () => TemplateSearchTab
+  saveTabPreference: (tab: TemplateSearchTab) => void
+}
 
 /**
  * Checks if a value is a valid TemplateSearchTab.
@@ -31,7 +33,7 @@ function isValidTab(value: string): value is TemplateSearchTab {
  * Loads the saved template search tab preference from localStorage.
  * @returns The saved tab preference, or the default tab if none is saved or invalid
  */
-export function loadTabPreference(): TemplateSearchTab {
+function loadTabPreference(): TemplateSearchTab {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored !== null && isValidTab(stored)) {
@@ -47,7 +49,7 @@ export function loadTabPreference(): TemplateSearchTab {
  * Saves the template search tab preference to localStorage.
  * @param tab - The tab to save
  */
-export function saveTabPreference(tab: TemplateSearchTab): void {
+function saveTabPreference(tab: TemplateSearchTab): void {
   try {
     // Don't persist the 'hidden' state
     if (tab !== 'hidden') {
@@ -55,5 +57,16 @@ export function saveTabPreference(tab: TemplateSearchTab): void {
     }
   } catch {
     // localStorage may not be available (SSR, private mode, etc.)
+  }
+}
+
+/**
+ * Creates a localStorage-backed template search tab preference adapter.
+ * @returns An adapter with methods to load and save the selected tab
+ */
+export function createTemplateSearchTabPreference(): TemplateSearchTabPreference {
+  return {
+    loadTabPreference,
+    saveTabPreference,
   }
 }

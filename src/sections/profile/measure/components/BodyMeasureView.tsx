@@ -1,7 +1,4 @@
-import {
-  deleteBodyMeasure,
-  updateBodyMeasure,
-} from '~/modules/measure/application/usecases/measureCrud'
+import { useContainer } from '~/di/container'
 import {
   type BodyMeasure,
   createNewBodyMeasure,
@@ -34,6 +31,7 @@ export function BodyMeasureView(props: {
   measure: BodyMeasure
   onRefetchBodyMeasures: () => unknown
 }) {
+  const measureCrud = useContainer().measureCrud()
   const dateField = useDateField(() => props.measure.target_timestamp, {
     fallback: () => new Date(),
   })
@@ -67,17 +65,18 @@ export function BodyMeasureView(props: {
     const afterUpdate = () => {
       props.onRefetchBodyMeasures()
     }
-    updateBodyMeasure(
-      props.measure.id,
-      createNewBodyMeasure({
-        ...props.measure,
-        height,
-        waist,
-        hip,
-        neck,
-        target_timestamp: date,
-      }),
-    )
+    measureCrud
+      .updateBodyMeasure(
+        props.measure.id,
+        createNewBodyMeasure({
+          ...props.measure,
+          height,
+          waist,
+          hip,
+          neck,
+          target_timestamp: date,
+        }),
+      )
       .then(afterUpdate)
       .catch((error) => {
         logging.error('BodyMeasureView measure update error:', error)
@@ -93,13 +92,23 @@ export function BodyMeasureView(props: {
         confirmText: 'Excluir',
         cancelText: 'Cancelar',
         onConfirm: () => {
+          const measureId = props.measure.id
           const afterDelete = () => {
             props.onRefetchBodyMeasures()
           }
-          deleteBodyMeasure(props.measure.id)
+          measureCrud
+            .deleteBodyMeasure(measureId)
             .then(afterDelete)
             .catch((error) => {
-              showError('Erro ao deletar: \n' + JSON.stringify(error, null, 2))
+              logging.error('BodyMeasureView measure delete error:', error, {
+                component: 'BodyMeasureView',
+                measureId,
+              })
+              showError(
+                error,
+                {},
+                `Erro ao excluir medida: ${formatError(error)}`,
+              )
             })
         },
       },

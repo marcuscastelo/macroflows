@@ -3,19 +3,19 @@
  * Provides UI for restoring a previous macro profile.
  */
 
-import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
+import { useContainer } from '~/di/container'
 import { type MacroProfile } from '~/modules/diet/macro-profile/domain/macroProfile'
 import {
   showError,
   showSuccess,
 } from '~/modules/toast/application/toastManager'
-import { weightUseCases } from '~/modules/weight/application/weight/usecases/weightUseCases'
 import { MacroTarget } from '~/sections/macro-nutrients/components/MacroTargets'
 import {
   closeModal,
   openContentModal,
 } from '~/shared/modal/helpers/modalHelpers'
 import { dateToYYYYMMDD } from '~/shared/utils/date/dateUtils'
+import { logging } from '~/shared/utils/logging'
 
 /**
  * Configuration for restore profile modals.
@@ -29,9 +29,11 @@ export type RestoreProfileModalConfig = {
 function RestoreProfileModalContent(props: {
   previousMacroProfile: MacroProfile
 }) {
+  const useCases = useContainer()
   const previousProfileWeight = () =>
-    weightUseCases.effectiveAt(props.previousMacroProfile.target_day)?.weight ??
-    weightUseCases.latest()?.weight ??
+    useCases.weightUseCases().effectiveAt(props.previousMacroProfile.target_day)
+      ?.weight ??
+    useCases.weightUseCases().latest()?.weight ??
     0
 
   return (
@@ -62,6 +64,8 @@ function RestoreProfileModalFooter(props: {
   onCancel?: () => void
   onClose: () => void
 }) {
+  const macroProfileUseCases = useContainer().macroProfileUseCases()
+
   const handleRestore = () => {
     const closeModal = props.onClose
     const profileId = props.currentProfile.id
@@ -74,6 +78,10 @@ function RestoreProfileModalFooter(props: {
         closeModal()
       })
       .catch((e) => {
+        logging.error('RestoreProfileModal restore error:', e, {
+          component: 'RestoreProfileModal',
+          profileId,
+        })
         showError(e, undefined, 'Erro ao restaurar perfil antigo')
       })
   }

@@ -16,6 +16,10 @@ describe('isWeightChartType', () => {
       expect(isWeightChartType('30d')).toBe(true)
     })
 
+    it('should return true for "3m"', () => {
+      expect(isWeightChartType('3m')).toBe(true)
+    })
+
     it('should return true for "6m"', () => {
       expect(isWeightChartType('6m')).toBe(true)
     })
@@ -36,10 +40,6 @@ describe('isWeightChartType', () => {
 
     it('should return false for invalid string', () => {
       expect(isWeightChartType('invalid')).toBe(false)
-    })
-
-    it('should return false for "3m" (not a valid type)', () => {
-      expect(isWeightChartType('3m')).toBe(false)
     })
 
     it('should return false for "2y"', () => {
@@ -63,7 +63,7 @@ describe('isWeightChartType', () => {
 
       if (isWeightChartType(unknownValue)) {
         // TypeScript should recognize this as WeightChartType
-        const chartType: '7d' | '14d' | '30d' | '6m' | '1y' | 'all' =
+        const chartType: '7d' | '14d' | '30d' | '3m' | '6m' | '1y' | 'all' =
           unknownValue
         expect(chartType).toBe('7d')
       } else {

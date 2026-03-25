@@ -1,6 +1,6 @@
 import { type Accessor, For, type Setter, Show } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
+import { useContainer } from '~/di/container'
 import {
   type ClipboardPayload,
   clipboardPayloadSchema,
@@ -17,10 +17,8 @@ import {
   type Item,
   type ParentItem,
 } from '~/modules/diet/item/schema/itemSchema'
-import { saveRecipe } from '~/modules/diet/recipe/application/usecases/recipeCrud'
 import { createNewRecipe } from '~/modules/diet/recipe/domain/recipe'
 import { showError } from '~/modules/toast/application/toastManager'
-import { currentUserId } from '~/modules/user/application/user'
 import { ClipboardActionButtons } from '~/sections/common/components/ClipboardActionButtons'
 import { ConvertToRecipeIcon } from '~/sections/common/components/icons/ConvertToRecipeIcon'
 import { ItemView } from '~/sections/item/components/ItemView'
@@ -36,6 +34,8 @@ export type ItemChildrenEditorProps = {
 }
 
 export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
+  const useCases = useContainer()
+  const recipeCrud = useCases.recipeCrud()
   const children = () => {
     const item = props.itemDraft()
     return isGroupItem(item) || isRecipeItem(item)
@@ -141,7 +141,8 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
     }
 
     try {
-      const userId = currentUserId()
+      const authUseCases = useCases.authUseCases()
+      const userId = authUseCases.currentUserIdOrGuestId()
 
       // Create new unified recipe directly from Item children
       const newUnifiedRecipe = createNewRecipe({
@@ -153,7 +154,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         user_id: userId,
       })
 
-      const insertedRecipe = await saveRecipe(newUnifiedRecipe)
+      const insertedRecipe = await recipeCrud.saveRecipe(newUnifiedRecipe)
 
       if (!insertedRecipe) {
         showError('Falha ao criar receita a partir do grupo')
@@ -192,10 +193,12 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
           canCopy={children().length > 0}
           canPaste={true}
           canClear={false} // We don't need clear functionality here
-          onCopy={() => clipboardUseCases.copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
+          onCopy={() => useCases.clipboardUseCases().copy(props.itemDraft())} // TODO: copy self vs children? (expandable?)
           // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1358
           onPaste={() =>
-            clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+            useCases
+              .clipboardUseCases()
+              .confirmPaste(clipboardPayloadSchema, onPaste)
           }
           onClear={() => {}} // Empty function since canClear is false
         />
@@ -205,7 +208,9 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
         class="mt-3 space-y-2"
         tabindex={0}
         onPaste={() =>
-          clipboardUseCases.confirmPaste(clipboardPayloadSchema, onPaste)
+          useCases
+            .clipboardUseCases()
+            .confirmPaste(clipboardPayloadSchema, onPaste)
         }
       >
         <For each={children()}>
@@ -218,7 +223,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               onEditChild={props.onEditChild}
               onCopyChild={(childToCopy) => {
                 // Copy the specific child item to clipboard
-                clipboardUseCases.copy(childToCopy)
+                useCases.clipboardUseCases().copy(childToCopy)
               }}
               onDeleteChild={(childToDelete) => {
                 // Remove the child from the group
@@ -247,6 +252,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
               <For each={[0.5, 1, 1.5, 2]}>
                 {(multiplier) => (
                   <button
+                    type="button"
                     class="btn btn-sm btn-primary flex-1"
                     onClick={() => applyMultiplierToAll(multiplier)}
                   >
@@ -266,6 +272,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={props.showAddButton === true && props.onAddNewItem}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-green-600 hover:bg-green-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => props.onAddNewItem?.()}
             title="Adicionar novo item ao grupo"
@@ -279,6 +286,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={children().length > 0 && !isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => void handleConvertToRecipe()}
             title="Converter grupo em receita"
@@ -293,6 +301,7 @@ export function ItemChildrenEditor(props: ItemChildrenEditorProps) {
       <Show when={isRecipeItem(props.itemDraft())}>
         <div class="mt-4">
           <button
+            type="button"
             class="btn btn-sm bg-red-600 hover:bg-red-700 text-white w-full flex items-center justify-center gap-2"
             onClick={() => {
               const updatedItem = createItem({
@@ -325,6 +334,7 @@ type GroupChildEditorProps = {
 }
 
 function GroupChildEditor(props: GroupChildEditorProps) {
+  const useCases = useContainer()
   const handleEditChild = () => {
     if (props.onEditChild) {
       props.onEditChild(props.child)
@@ -336,7 +346,7 @@ function GroupChildEditor(props: GroupChildEditorProps) {
       props.onCopyChild(props.child)
     } else {
       // Fallback: copy to clipboard directly
-      clipboardUseCases.copy(props.child)
+      useCases.clipboardUseCases().copy(props.child)
     }
   }
 

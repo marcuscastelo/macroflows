@@ -4,6 +4,7 @@ import { MacroNutrientsExt } from '~/modules/diet/macro-nutrients/domain/macroEx
 import {
   createMacroNutrients,
   type MacroNutrients,
+  type MacroNutrientsRecord,
 } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 
 export const DayDietExt = {
@@ -11,12 +12,16 @@ export const DayDietExt = {
     const result = day.meals.reduce(
       (acc, meal) => {
         const mealMacros = ItemExt.calcItemContainerMacros(meal)
-        acc.carbs += mealMacros.carbs
-        acc.fat += mealMacros.fat
-        acc.protein += mealMacros.protein
+        acc.carbsInMg += mealMacros.carbsInMg
+        acc.fatInMg += mealMacros.fatInMg
+        acc.proteinInMg += mealMacros.proteinInMg
         return acc
       },
-      { carbs: 0, fat: 0, protein: 0 },
+      {
+        carbsInMg: 0,
+        fatInMg: 0,
+        proteinInMg: 0,
+      } satisfies MacroNutrientsRecord,
     )
     return createMacroNutrients(result)
   },

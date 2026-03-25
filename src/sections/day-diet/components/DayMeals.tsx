@@ -1,12 +1,18 @@
 import { For } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import {
-  dayUseCases,
+  createDayEditOrchestrator,
+  type DayEditOrchestrator,
   type EditMode,
 } from '~/modules/diet/day-diet/application/usecases/dayEditOrchestrator'
 import { type DayDiet } from '~/modules/diet/day-diet/domain/dayDiet'
 import { type Item } from '~/modules/diet/item/schema/itemSchema'
 import { type Meal } from '~/modules/diet/meal/domain/meal'
+import {
+  addItemToMeal,
+  updateItemInMeal,
+} from '~/modules/diet/meal/domain/mealOperations'
 import { openTemplateSearchModal } from '~/modules/search/ui/openTemplateSearchModal'
 import { showError } from '~/modules/toast/application/toastManager'
 import { CopyLastDayButton } from '~/sections/day-diet/components/CopyLastDayButton'
@@ -22,6 +28,7 @@ import { openConfirmModal } from '~/shared/modal/helpers/modalHelpers'
 import { logging } from '~/shared/utils/logging'
 
 const handleEditItem = (
+  dayEditUseCases: DayEditOrchestrator,
   meal: Meal,
   item: Item,
   props: {
@@ -30,7 +37,7 @@ const handleEditItem = (
     onRequestEditMode?: () => void
   },
 ) => {
-  const permission = dayUseCases.checkEditPermission(props.mode)
+  const permission = dayEditUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -46,7 +53,7 @@ const handleEditItem = (
     return
   }
 
-  const macroOverflow = dayUseCases.prepareMacroOverflowConfig(
+  const macroOverflow = dayEditUseCases.prepareMacroOverflowConfig(
     props.dayDiet,
     item,
   )
@@ -57,9 +64,14 @@ const handleEditItem = (
     item: () => item,
     macroOverflow: () => macroOverflow,
     onApply: (updatedItem) => {
-      dayUseCases
+      dayEditUseCases
         .updateItemInMealOrchestrated(meal, item, updatedItem)
-        .catch((e) => {
+        .catch((e: unknown) => {
+          logging.error('DayMeals item update error:', e, {
+            component: 'DayMeals',
+            mealId: meal.id,
+            itemId: item.id,
+          })
           showError(e, {}, 'Erro ao atualizar item')
         })
     },
@@ -67,14 +79,16 @@ const handleEditItem = (
     showAddItemButton: true,
   })
 }
+
 const handleUpdateMeal = async (
+  dayEditUseCases: DayEditOrchestrator,
   meal: Meal,
   props: {
     mode: EditMode
     onRequestEditMode?: () => void
   },
 ) => {
-  const permission = dayUseCases.checkEditPermission(props.mode)
+  const permission = dayEditUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -90,10 +104,11 @@ const handleUpdateMeal = async (
     return
   }
 
-  await dayUseCases.updateMealOrchestrated(meal)
+  await dayEditUseCases.updateMealOrchestrated(meal)
 }
 
 const handleNewItem = (
+  dayEditUseCases: DayEditOrchestrator,
   meal: Meal,
   newItem: Item,
   props: {
@@ -101,7 +116,7 @@ const handleNewItem = (
     onRequestEditMode?: () => void
   },
 ) => {
-  const permission = dayUseCases.checkEditPermission(props.mode)
+  const permission = dayEditUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -117,19 +132,26 @@ const handleNewItem = (
     return
   }
 
-  dayUseCases.addItemToMealOrchestrated(meal, newItem).catch((e) => {
-    showError(e, {}, 'Erro ao adicionar item')
-  })
+  dayEditUseCases
+    .addItemToMealOrchestrated(meal, newItem)
+    .catch((e: unknown) => {
+      logging.error('DayMeals item add error:', e, {
+        component: 'DayMeals',
+        mealId: meal.id,
+      })
+      showError(e, {}, 'Erro ao adicionar item')
+    })
 }
 
 const handleNewItemButton = (
+  dayEditUseCases: DayEditOrchestrator,
   meal: Meal,
   props: {
     mode: EditMode
     onRequestEditMode?: () => void
   },
 ) => {
-  const permission = dayUseCases.checkEditPermission(props.mode)
+  const permission = dayEditUseCases.checkEditPermission(props.mode)
 
   if (!permission.canEdit) {
     if (permission.confirmText && props.onRequestEditMode) {
@@ -147,7 +169,8 @@ const handleNewItemButton = (
 
   openTemplateSearchModal({
     targetName: meal.name,
-    onNewItem: (newItem) => handleNewItem(meal, newItem, props),
+    onNewItem: (newItem) =>
+      handleNewItem(dayEditUseCases, meal, newItem, props),
   })
 }
 
@@ -164,44 +187,66 @@ export default function DayMeals(props: {
   mode: EditMode
   onRequestEditMode?: () => void
 }) {
+  const useCases = useContainer()
+  const dayEditUseCases = createDayEditOrchestrator({
+    macroTargetAt: (day: Date) =>
+      useCases.macroTargetUseCases().macroTargetAt(day),
+    updateMeal: (mealId, meal) =>
+      useCases.mealUseCases().updateMeal(mealId, meal),
+    addItemToMeal,
+    updateItemInMeal,
+  })
+
   return (
     <>
       <For each={props.dayDiet.meals}>
-        {(meal) => (
-          <MealEditView
-            class="mt-5"
-            dayDiet={() => props.dayDiet}
-            meal={() => meal}
-            header={
-              <MealEditViewHeader
-                onUpdateMeal={(meal) => {
-                  handleUpdateMeal(meal, props).catch((e) => {
-                    showError(e, {}, 'Erro ao atualizar refeição')
-                  })
-                }}
-                mode={props.mode}
-              />
-            }
-            content={
-              <MealEditViewContent
-                onEditItem={(item) => {
-                  handleEditItem(meal, item, props)
-                }}
-                onUpdateMeal={(meal) => void handleUpdateMeal(meal, props)}
-                mode={props.mode}
-              />
-            }
-            actions={
-              props.mode === 'summary' ? undefined : (
-                <MealEditViewActions
-                  onNewItem={() => {
-                    handleNewItemButton(meal, props)
+        {(meal) => {
+          const targetDay = props.dayDiet.target_day
+          return (
+            <MealEditView
+              class="mt-5"
+              dayDiet={() => props.dayDiet}
+              meal={() => meal}
+              header={
+                <MealEditViewHeader
+                  onUpdateMeal={(meal) => {
+                    handleUpdateMeal(dayEditUseCases, meal, props).catch(
+                      (e: unknown) => {
+                        logging.error('DayMeals meal update error:', e, {
+                          component: 'DayMeals',
+                          mealId: meal.id,
+                          day: targetDay,
+                        })
+                        showError(e, {}, 'Erro ao atualizar refeição')
+                      },
+                    )
                   }}
+                  mode={props.mode}
                 />
-              )
-            }
-          />
-        )}
+              }
+              content={
+                <MealEditViewContent
+                  onEditItem={(item) => {
+                    handleEditItem(dayEditUseCases, meal, item, props)
+                  }}
+                  onUpdateMeal={(meal) =>
+                    void handleUpdateMeal(dayEditUseCases, meal, props)
+                  }
+                  mode={props.mode}
+                />
+              }
+              actions={
+                props.mode === 'summary' ? undefined : (
+                  <MealEditViewActions
+                    onNewItem={() => {
+                      handleNewItemButton(dayEditUseCases, meal, props)
+                    }}
+                  />
+                )
+              }
+            />
+          )
+        }}
       </For>
 
       {props.mode !== 'summary' && (

@@ -1,6 +1,11 @@
 # Copilot Short Guide
 
-See `.github/copilot-instructions.md` for the full instructions.
+> Doc status: supporting.
+> This document preserves Copilot-specific guidance. It is not a source of truth; use `../AGENTS.md` and the canonical docs instead.
+
+Use [`../AGENTS.md`](../AGENTS.md) as the canonical repo-wide policy.
+
+Keep [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) as the Copilot transport entrypoint.
 
 - Use descriptive, action-based names.
 - Never use side-effect utilities (like `showError`) in domain code.

@@ -6,8 +6,7 @@ import {
   Show,
 } from 'solid-js'
 
-import { clipboardUseCases } from '~/modules/clipboard/application/usecases/clipboardUseCases'
-import { fetchFoodByEan } from '~/modules/diet/food/application/usecases/foodCrud'
+import { useContainer } from '~/di/container'
 import { type Food } from '~/modules/diet/food/domain/food'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { ItemView } from '~/sections/item/components/ItemView'
@@ -23,6 +22,8 @@ export type EANSearchProps = {
 }
 
 export function EANSearch(props: EANSearchProps) {
+  const useCases = useContainer()
+  const foodCrud = useCases.foodCrud()
   const [loading, setLoading] = createSignal(false)
 
   const EAN_LENGTH = 13
@@ -67,7 +68,8 @@ export function EANSearch(props: EANSearchProps) {
       props.setEAN('')
     }
 
-    fetchFoodByEan(props.EAN())
+    foodCrud
+      .fetchFoodByEan(props.EAN())
       .then(afterFetch)
       .catch(catchFetch)
       .finally(finallyFetch)
@@ -113,7 +115,7 @@ export function EANSearch(props: EANSearchProps) {
                         // TODO : default handlers for ItemView
                         // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1341
                         onCopy: (item) => {
-                          clipboardUseCases.copy(item)
+                          useCases.clipboardUseCases().copy(item)
                         },
                       }}
                       mode="read-only"

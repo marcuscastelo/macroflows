@@ -6,7 +6,6 @@ import {
 import { type WeightRepository } from '~/modules/weight/domain/weight/weightRepository'
 import { createGuestWeightRepository } from '~/modules/weight/infrastructure/weight/guest/guestWeightRepository'
 import { createSupabaseWeightGateway } from '~/modules/weight/infrastructure/weight/supabase/supabaseWeightGateway'
-import { isGuestMode } from '~/shared/guest/guestState'
 
 const supabaseWeightGateway = createSupabaseWeightGateway()
 const guestWeightRepository = createGuestWeightRepository()
@@ -41,6 +40,27 @@ const supabaseWeightRepository = createSupabaseWeightRepository()
  * In guest mode, returns a repository backed by the in-memory guest database.
  * When authenticated, returns a repository backed by Supabase.
  */
-export function createWeightRepository(): WeightRepository {
-  return isGuestMode() ? guestWeightRepository : supabaseWeightRepository
+export function createWeightRepository(deps?: {
+  isGuestMode?: () => boolean
+  guestRepository?: WeightRepository
+  supabaseRepository?: WeightRepository
+}): WeightRepository {
+  const isGuestMode = deps?.isGuestMode ?? (() => false)
+  const localGuestRepository = deps?.guestRepository ?? guestWeightRepository
+  const localSupabaseRepository =
+    deps?.supabaseRepository ?? supabaseWeightRepository
+
+  const getRepository = () =>
+    isGuestMode() ? localGuestRepository : localSupabaseRepository
+
+  return {
+    fetchUserWeights: async (userId: User['uuid']) =>
+      await getRepository().fetchUserWeights(userId),
+    insertWeight: async (newWeight: NewWeight) =>
+      await getRepository().insertWeight(newWeight),
+    updateWeight: async (weightId: Weight['id'], weight: Weight) =>
+      await getRepository().updateWeight(weightId, weight),
+    deleteWeight: async (id: Weight['id']) =>
+      await getRepository().deleteWeight(id),
+  }
 }

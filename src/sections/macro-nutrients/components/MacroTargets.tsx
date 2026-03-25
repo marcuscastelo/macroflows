@@ -8,12 +8,13 @@ import {
   untrack,
 } from 'solid-js'
 
+import { useContainer } from '~/di/container'
 import {
   CARBO_CALORIES,
   FAT_CALORIES,
   PROTEIN_CALORIES,
 } from '~/modules/diet/macro-nutrients/domain/macroExt'
-import { macroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
+import { type MacroProfileUseCases } from '~/modules/diet/macro-profile/application/usecases/macroProfileUseCases'
 import {
   createNewMacroProfile,
   type MacroProfile,
@@ -48,21 +49,21 @@ const calculateMacroRepresentation = (
     carbs: {
       name: 'Carboidratos',
       percentage: caloriesPercentages.carbs,
-      grams: targetMacros.carbs(),
+      grams: targetMacros.carbsInGrams(),
       gramsPerKg: profile.gramsPerKgCarbs,
       calorieMultiplier: CARBO_CALORIES,
     },
     protein: {
       name: 'Proteínas',
       percentage: caloriesPercentages.protein,
-      grams: targetMacros.protein(),
+      grams: targetMacros.proteinInGrams(),
       gramsPerKg: profile.gramsPerKgProtein,
       calorieMultiplier: PROTEIN_CALORIES,
     },
     fat: {
       name: 'Gorduras',
       percentage: caloriesPercentages.fat,
-      grams: targetMacros.fat(),
+      grams: targetMacros.fatInGrams(),
       gramsPerKg: profile.gramsPerKgFat,
       calorieMultiplier: FAT_CALORIES,
     },
@@ -89,13 +90,17 @@ export type MacroTargetProps = {
   mode: 'edit' | 'view'
 }
 
-const onSaveMacroProfile = (profile: MacroProfile) => {
+const onSaveMacroProfile = (
+  macroProfileUseCases: MacroProfileUseCases,
+  profile: MacroProfile,
+) => {
   logging.info('[ProfilePage] Saving profile', profile)
   if (profile.target_day.getTime() > new Date(getTodayYYYYMMDD()).getTime()) {
     showError('Data alvo não pode ser no futuro')
     return
   } else if (
     profile.id !== -1 && // TODO: Better typing system for new MacroProfile instead of -1.
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1300
     profile.target_day.getTime() === new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Updating profile', profile)
@@ -117,6 +122,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
       })
   } else if (
     profile.id === -1 || // TODO: Better typing system for new MacroProfile instead of -1.
+    // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1299
     profile.target_day.getTime() < new Date(getTodayYYYYMMDD()).getTime()
   ) {
     logging.info('[ProfilePage] Inserting profile', profile)
@@ -134,6 +140,7 @@ const onSaveMacroProfile = (profile: MacroProfile) => {
 }
 
 export function MacroTarget(props: MacroTargetProps) {
+  const macroProfileUseCases = useContainer().macroProfileUseCases()
   const currentMacroRepresentation = createMemo(() =>
     calculateMacroRepresentation(props.currentProfile(), props.weight()),
   )
@@ -207,6 +214,7 @@ export function MacroTarget(props: MacroTargetProps) {
             target={currentMacroRepresentation().carbs}
             field="carbs"
             mode={props.mode}
+            macroProfileUseCases={macroProfileUseCases}
           />
 
           <MacroTargetSetting
@@ -216,6 +224,7 @@ export function MacroTarget(props: MacroTargetProps) {
             target={currentMacroRepresentation().protein}
             field="protein"
             mode={props.mode}
+            macroProfileUseCases={macroProfileUseCases}
           />
 
           <MacroTargetSetting
@@ -225,6 +234,7 @@ export function MacroTarget(props: MacroTargetProps) {
             target={currentMacroRepresentation().fat}
             field="fat"
             mode={props.mode}
+            macroProfileUseCases={macroProfileUseCases}
           />
         </div>
       </>
@@ -239,6 +249,7 @@ function MacroTargetSetting(props: {
   target: MacroRepresentation
   field: 'carbs' | 'protein' | 'fat'
   mode: 'edit' | 'view'
+  macroProfileUseCases: MacroProfileUseCases
 }) {
   const emptyIfZeroElse2Decimals = (value: number) =>
     value === 0 ? '' : value.toFixed(2)
@@ -251,7 +262,7 @@ function MacroTargetSetting(props: {
   const onSetGramsPerKg = (gramsPerKg: number) => {
     const profile_ = props.currentProfile
 
-    onSaveMacroProfile({
+    onSaveMacroProfile(props.macroProfileUseCases, {
       ...profile_,
       [`gramsPerKg${props.field.charAt(0).toUpperCase() + props.field.slice(1)}`]:
         gramsPerKg,
@@ -261,7 +272,7 @@ function MacroTargetSetting(props: {
   const onSetGrams = (grams: number) => {
     const profile_ = props.currentProfile
 
-    onSaveMacroProfile({
+    onSaveMacroProfile(props.macroProfileUseCases, {
       ...profile_,
       [`gramsPerKg${props.field.charAt(0).toUpperCase() + props.field.slice(1)}`]:
         grams / props.weight,

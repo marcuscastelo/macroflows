@@ -5,7 +5,7 @@ import {
   type ClipboardEntry,
   type ClipboardPayload,
 } from '~/modules/clipboard/domain/clipboardEntry'
-import { type ClipboardPersistence } from '~/modules/clipboard/infrastructure/clipboardPersistence'
+import { type ClipboardPersistence } from '~/modules/clipboard/domain/clipboardPersistence'
 import { createItem } from '~/modules/diet/item/schema/itemSchema'
 import { createMacroNutrients } from '~/modules/diet/macro-nutrients/domain/macroNutrients'
 import { createNewMeal, promoteMeal } from '~/modules/diet/meal/domain/meal'
@@ -42,7 +42,11 @@ describe('ClipboardStore', () => {
         reference: {
           type: 'food',
           id: 1,
-          macros: createMacroNutrients({ protein: 10, carbs: 20, fat: 5 }),
+          macros: createMacroNutrients({
+            proteinInGrams: 10,
+            carbsInGrams: 20,
+            fatInGrams: 5,
+          }),
         },
       })
 

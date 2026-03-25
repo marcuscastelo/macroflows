@@ -9,6 +9,7 @@ import {
   setMealItems,
   updateItemInMeal,
 } from '~/modules/diet/meal/domain/mealOperations'
+import { assertItemApproxEqual } from '~/shared/testing/assertions/approxEqual'
 
 function makeItem(id: number, name = 'Arroz') {
   return createItem({
@@ -18,7 +19,11 @@ function makeItem(id: number, name = 'Arroz') {
     reference: {
       type: 'food' as const,
       id,
-      macros: createMacroNutrients({ carbs: 10, protein: 2, fat: 1 }),
+      macros: createMacroNutrients({
+        carbsInGrams: 10,
+        proteinInGrams: 2,
+        fatInGrams: 1,
+      }),
     },
   })
 }
@@ -54,6 +59,9 @@ describe('mealOperations', () => {
   it('setMealItems sets items', () => {
     const items = [makeItem(2, 'Feijão')]
     const result = setMealItems(baseMeal, items)
-    expect(result.items).toEqual(items)
+    expect(result.items.length).toBe(items.length)
+    for (let i = 0; i < items.length; i++) {
+      assertItemApproxEqual(result.items[i], items[i])
+    }
   })
 })

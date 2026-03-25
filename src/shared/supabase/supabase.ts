@@ -22,7 +22,34 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
   auth: {
     persistSession: true,
-    storage: localStorage,
+    // In server / prerender environments localStorage is not available.
+    // Provide a no-op storage implementation when running outside the
+    // browser to avoid ReferenceError during build/prerender.
+    storage: ((): Storage => {
+      if (typeof window !== 'undefined') return localStorage
+
+      // Minimal Storage-like no-op implementation used during SSR/prerender.
+      const noopStorage: Storage = {
+        length: 0,
+        clear(): void {
+          /* no-op */
+        },
+        getItem(_key: string): string | null {
+          return null
+        },
+        key(_index: number): string | null {
+          return null
+        },
+        removeItem(_key: string): void {
+          /* no-op */
+        },
+        setItem(_key: string, _value: string): void {
+          /* no-op */
+        },
+      }
+
+      return noopStorage
+    })(),
   },
 })
 
@@ -64,6 +91,8 @@ export function registerSubapabaseRealtimeCallback<T>(
   supabase
     .channel(table)
     .on(
+      // TODO: Make supabase realtime only subscribe to events of the current user (how?) (Note: remember to use reactive current user ID changes)
+      // Issue URL: https://github.com/marcuscastelo/macroflows/issues/1464
       'postgres_changes',
       { event: '*', schema: 'public', table },
       handleCallback,

@@ -2,60 +2,74 @@ import {
   type MacroProfile,
   type NewMacroProfile,
 } from '~/modules/diet/macro-profile/domain/macroProfile'
-import { createMacroProfileRepository } from '~/modules/diet/macro-profile/infrastructure/macroProfileRepository'
+import { type MacroProfileRepository } from '~/modules/diet/macro-profile/domain/macroProfileRepository'
 import { showPromise } from '~/modules/toast/application/toastManager'
 import { type User } from '~/modules/user/domain/user'
 
-const macroProfileRepository = createMacroProfileRepository()
+/**
+ * Factory that returns macro profile CRUD service with injected dependencies.
+ * Allows swapping repository implementations for tests or alternate runtimes.
+ */
+export function createMacroProfileCrudService(deps: {
+  repository: MacroProfileRepository
+}) {
+  const repository = deps.repository
 
-export const macroProfileCrudService = {
-  async fetchUserMacroProfiles(
-    userId: User['uuid'],
-  ): Promise<readonly MacroProfile[]> {
-    return await macroProfileRepository.fetchUserMacroProfiles(userId)
-  },
+  return {
+    async fetchUserMacroProfiles(
+      userId: User['uuid'],
+    ): Promise<readonly MacroProfile[]> {
+      return await repository.fetchUserMacroProfiles(userId)
+    },
 
-  async insertMacroProfile(
-    newMacroProfile: NewMacroProfile,
-  ): Promise<MacroProfile | null> {
-    return await showPromise(
-      macroProfileRepository.insertMacroProfile(newMacroProfile),
-      {
-        loading: 'Criando perfil de macro...',
-        success: 'Perfil de macro criado com sucesso',
-        error: 'Erro ao criar perfil de macro',
-      },
-      { context: 'user-action' },
-    )
-  },
+    async insertMacroProfile(
+      newMacroProfile: NewMacroProfile,
+    ): Promise<MacroProfile | null> {
+      return await showPromise(
+        repository.insertMacroProfile(newMacroProfile),
+        {
+          loading: 'Criando perfil de macro...',
+          success: 'Perfil de macro criado com sucesso',
+          error: 'Erro ao criar perfil de macro',
+        },
+        { context: 'user-action' },
+      )
+    },
 
-  async updateMacroProfile(
-    macroProfileId: MacroProfile['id'],
-    newMacroProfile: NewMacroProfile,
-  ): Promise<MacroProfile | null> {
-    return await showPromise(
-      macroProfileRepository.updateMacroProfile(
-        macroProfileId,
-        newMacroProfile,
-      ),
-      {
-        loading: 'Atualizando perfil de macro...',
-        success: 'Perfil de macro atualizado com sucesso',
-        error: 'Erro ao atualizar perfil de macro',
-      },
-      { context: 'user-action' },
-    )
-  },
+    async updateMacroProfile(
+      macroProfileId: MacroProfile['id'],
+      newMacroProfile: NewMacroProfile,
+    ): Promise<MacroProfile | null> {
+      return await showPromise(
+        repository.updateMacroProfile(macroProfileId, newMacroProfile),
+        {
+          loading: 'Atualizando perfil de macro...',
+          success: 'Perfil de macro atualizado com sucesso',
+          error: 'Erro ao atualizar perfil de macro',
+        },
+        { context: 'user-action' },
+      )
+    },
 
-  async deleteMacroProfile(macroProfileId: MacroProfile['id']): Promise<void> {
-    await showPromise(
-      macroProfileRepository.deleteMacroProfile(macroProfileId),
-      {
-        loading: 'Deletando perfil de macro...',
-        success: 'Perfil de macro deletado com sucesso',
-        error: 'Erro ao deletar perfil de macro',
-      },
-      { context: 'user-action' },
-    )
-  },
+    async deleteMacroProfile(
+      macroProfileId: MacroProfile['id'],
+    ): Promise<void> {
+      await showPromise(
+        repository.deleteMacroProfile(macroProfileId),
+        {
+          loading: 'Deletando perfil de macro...',
+          success: 'Perfil de macro deletado com sucesso',
+          error: 'Erro ao deletar perfil de macro',
+        },
+        { context: 'user-action' },
+      )
+    },
+  }
 }
+
+/**
+ * Public type for the macro profile CRUD service.
+ */
+export type MacroProfileCrudService = ReturnType<
+  typeof createMacroProfileCrudService
+>

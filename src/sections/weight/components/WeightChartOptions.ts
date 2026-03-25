@@ -16,6 +16,8 @@ export function buildWeightChartOptions({
   max,
   weightsByPeriod,
   polishedData,
+  calculateWeightProgress,
+  diet,
   isMobile = false,
 }: ApexOptions & {
   min: number
@@ -26,6 +28,10 @@ export function buildWeightChartOptions({
     desiredWeight: number
   } & WeightChartOHLC)[]
   isMobile?: boolean
+  calculateWeightProgress: Parameters<
+    typeof WeightChartTooltip
+  >[0]['calculateWeightProgress']
+  diet: Parameters<typeof WeightChartTooltip>[0]['diet']
 }) {
   const y = getYAxisConfig(min, max)
   return {
@@ -96,6 +102,8 @@ export function buildWeightChartOptions({
           w,
           polishedData,
           weightsByPeriod,
+          calculateWeightProgress,
+          diet,
         }),
     },
   } satisfies ApexOptions
