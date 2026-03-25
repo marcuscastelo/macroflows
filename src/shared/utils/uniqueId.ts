@@ -10,7 +10,8 @@ const NUMERIC_ID_COUNTER_LIMIT = 2 ** 29
  * Reserve the remaining 24 safe-integer bits for a cryptographically-random
  * runtime prefix so separate execution contexts are unlikely to share the same
  * numeric ID space. Together with the counter bits above, this keeps
- * `prefix * NUMERIC_ID_COUNTER_LIMIT + counter` below `Number.MAX_SAFE_INTEGER`.
+ * `prefix * NUMERIC_ID_COUNTER_LIMIT + counter` at or below
+ * `Number.MAX_SAFE_INTEGER`.
  */
 const NUMERIC_ID_PREFIX_LIMIT = 2 ** 24
 
@@ -51,6 +52,19 @@ function formatUuidV4(bytes: Uint8Array): string {
 }
 
 /**
+ * Combines the runtime prefix and the per-runtime counter into a safe integer.
+ *
+ * The counter is zero-based so the largest possible value stays within
+ * `Number.MAX_SAFE_INTEGER`.
+ */
+export function composeNumericId(
+  numericIdPrefix: number,
+  numericIdCounter: number,
+): number {
+  return numericIdPrefix * NUMERIC_ID_COUNTER_LIMIT + numericIdCounter
+}
+
+/**
  * Generates a collision-safe UUID string using the Web Crypto API.
  *
  * @returns An RFC 4122 version 4 UUID.
@@ -86,8 +100,7 @@ export function generateNumericId(): number {
     numericIdPrefix = createNumericIdPrefix()
   }
 
-  const nextId =
-    numericIdPrefix * NUMERIC_ID_COUNTER_LIMIT + numericIdCounter + 1
+  const nextId = composeNumericId(numericIdPrefix, numericIdCounter)
   numericIdCounter += 1
 
   return nextId
