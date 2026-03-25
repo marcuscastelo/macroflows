@@ -75,7 +75,7 @@ export type DayDietRepository = {
     limit?: number,
   ) => Promise<readonly DayDiet[]>
   fetchDayDietById: (dayId: DayDiet['id']) => Promise<DayDiet | null>
-  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet | null>
+  insertDayDiet: (newDay: NewDayDiet) => Promise<DayDiet>
   updateDayDietById: (
     dayId: DayDiet['id'],
     newDay: NewDayDiet,
@@ -83,6 +83,8 @@ export type DayDietRepository = {
   deleteDayDietById: (id: DayDiet['id']) => Promise<void>
 }
 ```
+
+`insertDayDiet` returns the created `DayDiet` and surfaces errors instead of returning `null`; callers should treat failures as exceptions rather than nullable results.
 
 ### `infrastructure/supabase/supabaseDayGateway.ts`
 
@@ -253,8 +255,8 @@ export async function fetchTargetDay(
   await dayRepository.fetchDayDietByUserIdAndTargetDay(userId, targetDay);
 }
 
-export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
-  await showPromise(
+export async function insertDayDiet(dayDiet: NewDayDiet): Promise<DayDiet> {
+  return await showPromise(
     dayRepository.insertDayDiet(dayDiet),
     {
       loading: 'Criando dia de dieta...',
@@ -501,8 +503,8 @@ User operations with toast integration.
 ```typescript
 const dayRepository = createDayDietRepository()
 
-export async function insertDayDiet(dayDiet: NewDayDiet): Promise<void> {
-  await showPromise(
+export async function insertDayDiet(dayDiet: NewDayDiet): Promise<DayDiet> {
+  return await showPromise(
     dayRepository.insertDayDiet(dayDiet),
     {
       loading: 'Criando dia de dieta...',

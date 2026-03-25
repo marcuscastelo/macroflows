@@ -371,7 +371,7 @@ async function fetchDayDietsByUserIdBeforeDate(
   return dayDTOs.map((dto) => dayToDomain(dto))
 }
 
-async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet | null> {
+async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet> {
   const newDayDTO = dayToInsertDTO(newDay)
 
   const { data: dayDTO, error } = await supabase
@@ -382,6 +382,14 @@ async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet | null> {
 
   if (error !== null) {
     throw wrapErrorWithStack(error)
+  }
+
+  // Supabase types mark `data` as non-null after `.single()`, but keep a runtime guard for safety.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (dayDTO === null) {
+    throw new Error('Failed to insert day diet: Supabase returned no data', {
+      cause: { newDayDTO },
+    })
   }
 
   return dayToDomain(dayDTO)
