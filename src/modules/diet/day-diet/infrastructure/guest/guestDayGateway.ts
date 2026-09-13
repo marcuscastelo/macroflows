@@ -75,7 +75,7 @@ async function fetchDayDietsByUserIdBeforeDate(
   return dayDiets
 }
 
-async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet | null> {
+async function insertDayDiet(newDay: NewDayDiet): Promise<DayDiet> {
   const dayDiet = promoteDayDiet(newDay, { id: generateDayId() })
 
   updateGuestDatabase((db) => ({

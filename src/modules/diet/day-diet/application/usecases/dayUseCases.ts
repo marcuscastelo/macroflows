@@ -175,13 +175,11 @@ export function createDayUseCases(deps: {
             },
             { context: 'user-action' },
           )
-          if (insertedDayDiet !== null) {
-            dayCacheStore.upsertToCache(insertedDayDiet)
-          }
+          dayCacheStore.upsertToCache(insertedDayDiet)
           return insertedDayDiet
         } catch (error) {
           logging.error('DayDiet insert error:', error)
-          return null
+          throw error
         }
       },
       updateDayDietById: async (dayId: DayDiet['id'], dayDiet: NewDayDiet) => {
