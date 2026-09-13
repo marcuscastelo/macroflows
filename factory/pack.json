@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/marcuscastelo/Archon",
-  "integration_revision_required": "9a8d62927be011659712615320ef81cec5309a25",
+  "integration_revision_required": "2a7fbef05309b192af32b772fe9dc97d895504be",
   "description": "Shared workflow integration with fresh post-ready check gates and verified before/after UI evidence.",
   "source_directory": ".archon/workflows/sdlc",
   "entries": {
