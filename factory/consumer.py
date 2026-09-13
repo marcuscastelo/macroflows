@@ -1,4 +1,4 @@
-"""Invoke a pinned, complete Archon source installation. No stage policy lives here."""
+"""Invoke a pinned Archon source and enforce project-declared workflow inputs."""
 from __future__ import annotations
 
 import json
@@ -49,6 +49,61 @@ def read_settings(root: Path) -> dict:
     if not isinstance(settings, dict):
         raise ValueError(f"Invalid consumer settings: {path}")
     return settings
+
+
+def required_inputs(settings: dict, workflow: str) -> dict[str, str]:
+    configured = settings.get("required_workflow_inputs", {})
+    if not isinstance(configured, dict):
+        raise ValueError("required_workflow_inputs must be an object")
+    for configured_workflow, values in configured.items():
+        if not isinstance(configured_workflow, str) or not isinstance(values, dict):
+            raise ValueError("required_workflow_inputs must map workflow names to input objects")
+        for key, value in values.items():
+            if (not isinstance(key, str)
+                    or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key)
+                    or not isinstance(value, str)):
+                raise ValueError("Required workflow input names and values must be strings")
+    values = configured.get(workflow, {})
+    return dict(values)
+
+
+def enforce_required_inputs(settings: dict, workflow: str, args: list[str]) -> list[str]:
+    required = required_inputs(settings, workflow)
+    if not required:
+        return args
+    boundary = args.index("--") if "--" in args else len(args)
+    supplied: dict[str, list[str]] = {}
+    index = 1
+    while index < boundary:
+        token = args[index]
+        assignment = None
+        if token == "--input":
+            if index + 1 >= boundary:
+                raise ValueError("--input requires name=value")
+            assignment = args[index + 1]
+            index += 2
+        elif token.startswith("--input="):
+            assignment = token[len("--input="):]
+            index += 1
+        else:
+            index += 1
+        if assignment is not None:
+            if "=" not in assignment:
+                raise ValueError("--input requires name=value")
+            key, value = assignment.split("=", 1)
+            supplied.setdefault(key, []).append(value)
+
+    additions = []
+    for key, expected in required.items():
+        actual = supplied.get(key, [])
+        if any(value != expected for value in actual) or len(actual) > 1:
+            shown = actual[0] if len(actual) == 1 else "multiple values"
+            raise ValueError(
+                f"Factory requires {workflow} input {key}={expected}; got {shown}"
+            )
+        if not actual:
+            additions += ["--input", f"{key}={expected}"]
+    return [*args[:boundary], *additions, *args[boundary:]]
 
 
 def verify_source(settings: dict) -> Path:
@@ -186,6 +241,15 @@ def doctor(settings: dict) -> dict:
                 flag not in help_text and flag not in shared_help for flag in flags):
             raise ValueError(f"Pinned CLI missing workflow {command} capability: {flags}")
     discovered = discover(settings, source)
+    configured = settings.get("required_workflow_inputs", {})
+    if isinstance(configured, dict):
+        unknown = sorted(set(configured) - set(discovered))
+        if unknown:
+            raise ValueError("Required inputs configured for missing workflows: " + ", ".join(unknown))
+        for name in configured:
+            required_inputs(settings, name)
+    else:
+        required_inputs(settings, "")
     missing = sorted(set(MANIFEST["entries"]) - discovered.keys())
     if missing:
         raise ValueError("Incomplete integration source; missing shared workflows: " + ", ".join(missing))
@@ -301,6 +365,7 @@ def invoke(root: Path, action: str, args: list[str]) -> int:
         if name not in discover(settings, source):
             raise ValueError(f"Shared workflow '{name}' is absent from the pinned SDLC source; no fallback")
         validate(settings, source, name)
+        args = enforce_required_inputs(settings, name, args)
         options = args[:args.index("--")] if "--" in args else args
         if "--resume" not in options:
             native += ["--workflow-source", str(source)]
