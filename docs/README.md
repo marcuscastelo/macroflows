@@ -21,6 +21,10 @@ For repo-wide changes, read these first:
 - `./DOCS_GOVERNANCE.md` — lifecycle, ownership, precedence, and banner rules
 - `./adr/README.md` — ADR index and usage rules
 
+## Operational Behaviors
+
+- Canary/rc fatal errors surface a “Trocar de versão” prompt that reopens the same route on the stable URL. Heuristics favor network/5xx/runtime faults and de-duplicate via a repeat threshold (default 2 events within 5 minutes). Configure via env keys: `VITE_RELEASE_CHANNEL` (canary|rc|stable), `VITE_STABLE_BASE_URL` (override mapping), `VITE_SWITCH_TO_STABLE_ENABLED` (default true), `VITE_SWITCH_REPEAT_THRESHOLD`, and `VITE_SWITCH_REPEAT_WINDOW_MS`.
+
 ## Pointer
 
 - `../CLAUDE.md`

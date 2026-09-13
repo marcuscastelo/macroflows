@@ -30,6 +30,35 @@ const envSchema = z.object({
       return 50
     }, z.number().min(1).max(1000))
     .default(50),
+  VITE_RELEASE_CHANNEL: z.string().optional(),
+  VITE_STABLE_BASE_URL: z.string().optional(),
+  VITE_SWITCH_TO_STABLE_ENABLED: z
+    .preprocess((v) => {
+      if (typeof v === 'boolean') return v
+      if (typeof v === 'string') return v !== 'false'
+      return true
+    }, z.boolean())
+    .optional(),
+  VITE_SWITCH_REPEAT_THRESHOLD: z
+    .preprocess((v) => {
+      if (typeof v === 'number') return v
+      if (typeof v === 'string') {
+        const parsed = parseInt(v, 10)
+        return Number.isNaN(parsed) ? undefined : parsed
+      }
+      return undefined
+    }, z.number().int().positive())
+    .optional(),
+  VITE_SWITCH_REPEAT_WINDOW_MS: z
+    .preprocess((v) => {
+      if (typeof v === 'number') return v
+      if (typeof v === 'string') {
+        const parsed = parseInt(v, 10)
+        return Number.isNaN(parsed) ? undefined : parsed
+      }
+      return undefined
+    }, z.number().int().positive())
+    .optional(),
 })
 
 const getEnvVars = (): z.input<typeof envSchema> => {

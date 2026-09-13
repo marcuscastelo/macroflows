@@ -15,11 +15,19 @@ import {
   Suspense,
 } from 'solid-js'
 
+import { APP_VERSION } from '~/app-version'
 import { BackendOutageBanner } from '~/sections/common/components/BackendOutageBanner'
 import { PageLoading } from '~/sections/common/components/PageLoading'
+import { SwitchToStablePrompt } from '~/sections/common/components/SwitchToStablePrompt'
 import { Providers } from '~/sections/common/context/Providers'
 import { GuestDataWarning } from '~/sections/settings/components/GuestDataWarning'
 import env from '~/shared/config/env'
+import {
+  DEFAULT_SWITCH_TO_STABLE_CONFIG,
+  detectReleaseChannel,
+  evaluateSwitchSuggestion,
+} from '~/shared/error/switchToStable'
+import { logging } from '~/shared/utils/logging'
 
 const SentryRouter = withSentryRouterRouting(Router)
 
@@ -57,8 +65,103 @@ export default function App() {
       fallback={(err) => {
         onMount(() => {
           console.error('Uncaught error in App:', err)
+          logging.error('Uncaught error in App', err)
         })
-        return (
+
+        const releaseChannel = detectReleaseChannel({
+          envChannel: env.VITE_RELEASE_CHANNEL,
+          appVersion: APP_VERSION,
+          hostname:
+            typeof window !== 'undefined'
+              ? window.location.hostname
+              : undefined,
+        })
+
+        const location =
+          typeof window !== 'undefined'
+            ? {
+                origin: window.location.origin,
+                hostname: window.location.hostname,
+                pathname: window.location.pathname,
+                search: window.location.search,
+                hash: window.location.hash,
+              }
+            : undefined
+
+        const suggestion = evaluateSwitchSuggestion({
+          error: err,
+          location,
+          releaseChannel,
+          config: {
+            enabled:
+              env.VITE_SWITCH_TO_STABLE_ENABLED ??
+              DEFAULT_SWITCH_TO_STABLE_CONFIG.enabled,
+            stableBaseUrl: env.VITE_STABLE_BASE_URL,
+            repeatThreshold:
+              env.VITE_SWITCH_REPEAT_THRESHOLD ??
+              DEFAULT_SWITCH_TO_STABLE_CONFIG.repeatThreshold,
+            repeatWindowMs:
+              env.VITE_SWITCH_REPEAT_WINDOW_MS ??
+              DEFAULT_SWITCH_TO_STABLE_CONFIG.repeatWindowMs,
+          },
+        })
+
+        const [showLegacy, setShowLegacy] = createSignal(false)
+
+        const detailMessage =
+          err instanceof Error ? err.message : String(err ?? 'Unknown error')
+
+        const trackPrompt = (action: string) => {
+          logging.info(`switch-to-stable.${action}`, {
+            reason: suggestion.reason,
+            targetUrl: suggestion.targetUrl,
+            releaseChannel: suggestion.releaseChannel,
+            errorSignature: suggestion.errorSignature,
+            severity: suggestion.severity,
+          })
+          Sentry.captureMessage(`switch-to-stable.${action}`, {
+            level: 'info',
+            extra: {
+              reason: suggestion.reason,
+              targetUrl: suggestion.targetUrl,
+              releaseChannel: suggestion.releaseChannel,
+              signature: suggestion.errorSignature,
+              severity: suggestion.severity,
+            },
+          })
+        }
+
+        onMount(() => {
+          if (suggestion.shouldSuggest) {
+            trackPrompt('shown')
+          }
+        })
+
+        const handleSwitch = () => {
+          trackPrompt('switch')
+          if (suggestion.targetUrl !== '' && typeof window !== 'undefined') {
+            window.location.href = suggestion.targetUrl
+          }
+        }
+
+        const handleSecondary = () => {
+          trackPrompt('secondary')
+          if (
+            suggestion.reason === 'network' &&
+            typeof window !== 'undefined'
+          ) {
+            window.location.reload()
+          } else {
+            Sentry.captureException(err)
+          }
+        }
+
+        const handleDismiss = () => {
+          trackPrompt('dismiss')
+          setShowLegacy(true)
+        }
+
+        const legacyContent = (
           <div class="p-4">
             <p>
               An unexpected error occurred:{' '}
@@ -82,7 +185,6 @@ export default function App() {
                     }
 
                     const frames: Frame[] = lines.map((line) => {
-                      // V8/Node/Chrome: "at fnName (filePath:line:col)"
                       let m = line.match(
                         /^\s*at\s+(.*?)\s+\((.*?):(\d+):\d+\)\s*$/,
                       )
@@ -93,7 +195,6 @@ export default function App() {
                           line: m[3] ?? '',
                         }
 
-                      // Firefox: "fnName@filePath:line:col"
                       m = line.match(/^(.*?)@(.*?):(\d+):\d+\s*$/)
                       if (m)
                         return {
@@ -102,7 +203,6 @@ export default function App() {
                           line: m[3] ?? '',
                         }
 
-                      // V8 anonymous: "at filePath:line:col"
                       m = line.match(/^\s*at\s+(.*?):(\d+):\d+\s*$/)
                       if (m)
                         return {
@@ -111,7 +211,6 @@ export default function App() {
                           line: m[2] ?? '',
                         }
 
-                      // Fallback: whole line in name column
                       return { name: line, location: '', line: '' }
                     })
 
@@ -159,6 +258,21 @@ export default function App() {
                 : 'No stack available'}
             </pre>
           </div>
+        )
+
+        if (!suggestion.shouldSuggest) return legacyContent
+
+        return (
+          <Show when={!showLegacy()} fallback={legacyContent}>
+            <SwitchToStablePrompt
+              suggestion={suggestion}
+              stableUrl={suggestion.targetUrl}
+              details={detailMessage}
+              onSwitch={handleSwitch}
+              onSecondary={handleSecondary}
+              onDismiss={handleDismiss}
+            />
+          </Show>
         )
       }}
     >
