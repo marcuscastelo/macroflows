@@ -40,3 +40,16 @@ android/
 *.log
 
 .serena/cache
+__pycache__/
+*.pyc
+*.pyo
+.factory/consumer.json
+.factory/retired/
+.factory/STOP
+harness/.results/
+.factory/holdout/.results/
+.env.*
+!.env.example
+*.pem
+secrets.json
+credentials.json

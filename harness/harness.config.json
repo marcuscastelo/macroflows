@@ -1,0 +1,6 @@
+{
+  "static": "pnpm exec npm-run-all --parallel docs:check lint type-check",
+  "unit": "pnpm test",
+  "unit_count_pattern": "Tests\\s+(\\d+)\\s+passed",
+  "description": "Macroflows static checks and Vitest suite. Runtime scenarios are executed separately by the shared Archon workflows."
+}

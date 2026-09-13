@@ -1,0 +1,25 @@
+{
+  "description": "Macroflows browser scenarios for the shared Archon runtime workflow.",
+  "scenarios": "harness/END-TO-END.md",
+  "holdout": ".factory/holdout/HOLDOUT.md",
+  "driver": "http",
+  "http": {
+    "start": "pnpm dev --host 127.0.0.1 --port {port}",
+    "health_path": "/health",
+    "health_contains": "ok",
+    "boot_timeout_s": 90,
+    "env": {}
+  },
+  "cli": {"invoke": "", "smoke_args": "--version", "smoke_contains": ""},
+  "library": {"import_check": ""},
+  "browser": {
+    "install_check": "pnpm exec playwright --version",
+    "install_hint": "pnpm exec playwright install chromium"
+  },
+  "requirements": {
+    "fresh_environment_per": ["runtime", "holdout", "retry", "mutation"],
+    "fresh_database": true,
+    "assertion_evidence_required": true,
+    "cleanup": "Terminate the owned Vinxi process and remove only its per-run local state."
+  }
+}
